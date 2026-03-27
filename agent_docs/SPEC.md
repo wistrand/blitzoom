@@ -24,7 +24,9 @@ The practical performance of the system depends heavily on tokenisation and grou
 
 ## Per-node fixed projections *(computed once)*
 
-Properties are partitioned into semantically independent groups. For each group, compute a MinHash signature and project to 2D via a fixed Gaussian random matrix — one matrix per group, independently seeded. Store only the resulting 2D point, two floats per group. Discard the signatures.
+Properties are partitioned into semantically independent groups. For each group, compute a MinHash signature, z-score normalize it, and project to 2D via a fixed Gaussian random matrix — one matrix per group, independently seeded. Store only the resulting 2D point, two floats per group. Discard the signatures.
+
+Z-score normalization (subtract mean, divide by standard deviation) is essential, not cosmetic. MinHash values are integers in [0, p) with a large common offset (~p/2). Without normalization, the projection is dominated by this offset — all nodes project to nearly the same point, with the discriminative signal buried in the noise floor. Normalization extracts the relative pattern and scales it to unit magnitude, making the projection usable. It also discards token set size information, which is intentional: position should reflect which properties nodes share, not how many they have. As a secondary benefit, normalizing to unit variance ensures each signature component contributes equally to the Gaussian projection sum, improving CLT convergence — the projected coordinates are more accurately Gaussian, which strengthens the justification for Gaussian quantization.
 
 These projections are permanently fixed. No weight change, topology change, or graph update alters them. They are the coordinate anchors for each node.
 
@@ -83,6 +85,7 @@ Nodes sharing a cell at level L form a supernode. Cross-cell edges become weight
 - Rank quantization (when selected) destroys density information; Gaussian quantization preserves it but assumes approximately normal marginals
 - High topology weight causes oversmoothing in well-connected components
 - Rank quantization is globally unstable under node insertion; Gaussian quantization is locally stable but nodes in distribution tails may cluster at grid boundaries
+- **Undefined values cluster when their property dominates.** Empty fields produce neutral `[0,0]` projections — correct when that group has low weight, but when heavily weighted, all undefined nodes collapse to the same pre-quantization position. Rank quantization spreads them along each axis independently but preserves the 2D correlation, creating visible edge pile-up. Gaussian quantization with fixed boundaries is worse: the degenerate cluster shifts far from the stored μ, pushing nodes to grid extremes. This is inherent to the neutral-projection design — no quantization scheme can decorrelate axes that are correlated in the input.
 - Layout quality depends heavily on tokenisation and grouping quality; the pipeline faithfully preserves whatever similarity it is given
 
 ---

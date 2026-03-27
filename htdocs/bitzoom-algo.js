@@ -229,19 +229,29 @@ function phiLookup(z) {
   return PHI_TABLE[i] + f * (PHI_TABLE[i + 1] - PHI_TABLE[i]);
 }
 
-export function gaussianQuantize(nodes) {
+// stats: mutable object for fixed Gaussian boundaries per the spec.
+// First call computes μ,σ from data and stores them in stats.
+// Subsequent calls reuse stored values — boundaries don't shift on
+// weight/alpha changes. Reset stats to {} on new data load.
+export function gaussianQuantize(nodes, stats) {
   const n = nodes.length;
   if (n === 0) return;
 
-  let mxS = 0, myS = 0;
-  for (let i = 0; i < n; i++) { mxS += nodes[i].px; myS += nodes[i].py; }
-  const mx = mxS / n, my = myS / n;
-  let vxS = 0, vyS = 0;
-  for (let i = 0; i < n; i++) {
-    const dx = nodes[i].px - mx, dy = nodes[i].py - my;
-    vxS += dx * dx; vyS += dy * dy;
+  let mx, my, sx, sy;
+  if (stats && stats._initialized) {
+    mx = stats.mx; my = stats.my; sx = stats.sx; sy = stats.sy;
+  } else {
+    let mxS = 0, myS = 0;
+    for (let i = 0; i < n; i++) { mxS += nodes[i].px; myS += nodes[i].py; }
+    mx = mxS / n; my = myS / n;
+    let vxS = 0, vyS = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = nodes[i].px - mx, dy = nodes[i].py - my;
+      vxS += dx * dx; vyS += dy * dy;
+    }
+    sx = Math.sqrt(vxS / n) || 1; sy = Math.sqrt(vyS / n) || 1;
+    if (stats) { stats.mx = mx; stats.my = my; stats.sx = sx; stats.sy = sy; stats._initialized = true; }
   }
-  const sx = Math.sqrt(vxS / n) || 1, sy = Math.sqrt(vyS / n) || 1;
 
   for (let i = 0; i < n; i++) {
     const ux = phiLookup((nodes[i].px - mx) / sx);
@@ -255,7 +265,7 @@ export function gaussianQuantize(nodes) {
 
 // #3: Fixed α semantics — α is now the true convex topology weight.
 // At α=0: pure property. At α=1: pure topology (for nodes with neighbors).
-export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, passes, quantMode) {
+export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats) {
   const w = propWeights;
   let propTotal = 0;
   for (const g of groupNames) propTotal += (w[g] || 0);
@@ -277,8 +287,8 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
     nd.py = propPy[i];
   }
 
-  const quant = quantMode === 'gaussian' ? gaussianQuantize : normalizeAndQuantize;
-  if (smoothAlpha === 0 || passes === 0) { quant(nodes); return; }
+  const doQuant = () => quantMode === 'gaussian' ? gaussianQuantize(nodes, quantStats) : normalizeAndQuantize(nodes);
+  if (smoothAlpha === 0 || passes === 0) { doQuant(); return; }
 
   const alpha = Math.max(0, Math.min(1, smoothAlpha)); // clamp to [0,1]
 
@@ -318,7 +328,7 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
     }
   }
 
-  quant(nodes);
+  doQuant();
 }
 
 // ─── Level building ──────────────────────────────────────────────────────────
@@ -338,17 +348,16 @@ export function buildLevel(level, nodes, edges, nodeIndexFull, colorValFn, label
     const bid = parseInt(bidStr);
     const cx = bid >> level;
     const cy = bid & ((1 << level) - 1);
-    const k = 1 << level;
-    const ax = (cx + 0.5) / k * 2 - 1;
-    const ay = (cy + 0.5) / k * 2 - 1;
 
     const groupCounts = {};
     const colorCounts = {};
     const labelCounts = {};
     let sumDegree = 0;
+    let sumPx = 0, sumPy = 0;
     let bestDegree = -1, bestNode = members[0];
     for (let i = 0; i < members.length; i++) {
       const m = members[i];
+      sumPx += m.px; sumPy += m.py;
       groupCounts[m.group] = (groupCounts[m.group] || 0) + 1;
       if (colorValFn) {
         const cv = colorValFn(m);
@@ -361,6 +370,8 @@ export function buildLevel(level, nodes, edges, nodeIndexFull, colorValFn, label
       sumDegree += m.degree;
       if (m.degree > bestDegree) { bestDegree = m.degree; bestNode = m; }
     }
+    const ax = sumPx / members.length;
+    const ay = sumPy / members.length;
     const domGroup = maxCountKey(groupCounts);
     const avgDegree = sumDegree / members.length;
     const totalDegree = sumDegree;
@@ -371,7 +382,7 @@ export function buildLevel(level, nodes, edges, nodeIndexFull, colorValFn, label
     const cachedLabel = labelValFn ? maxCountKey(labelCounts) : repName;
 
     return { bid, members, ax, ay, domGroup, avgDegree, totalDegree, repName,
-             cachedColor, cachedLabel, x:0, y:0, cx, cy };
+             cachedColorVal, cachedColor, cachedLabel, x:0, y:0, cx, cy };
   });
 
   // #10: Build supernode edges using string keys to avoid numeric overflow.

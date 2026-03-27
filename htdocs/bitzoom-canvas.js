@@ -80,7 +80,13 @@ export class BitZoomCanvas {
     this.edgeMode = opts.edgeMode || 'curves';
     this.heatmapMode = opts.heatmapMode || 'off';
     this.quantMode = opts.quantMode || 'gaussian'; // 'gaussian' or 'rank'
+    this.showLegend = opts.showLegend || false;
+    this.showResetBtn = opts.showResetBtn || false;
+    this._quantStats = {}; // fixed Gaussian boundaries — computed once, reused
     this.labelProps = new Set(opts.labelProps || []);
+
+    // Store initial state for reset
+    this._initLevel = this.currentLevel;
 
     // Selection
     this.selectedIds = new Set();
@@ -285,7 +291,7 @@ export class BitZoomCanvas {
   setWeights(weights) {
     Object.assign(this.propWeights, weights);
     this._refreshPropCache();
-    unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5, this.quantMode);
+    unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5, this.quantMode, this._quantStats);
     this.layoutAll();
     this.render();
   }
@@ -294,7 +300,7 @@ export class BitZoomCanvas {
   setAlpha(alpha) {
     this.smoothAlpha = alpha;
     this.levels = new Array(ZOOM_LEVELS.length).fill(null);
-    unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5, this.quantMode);
+    unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5, this.quantMode, this._quantStats);
     this.layoutAll();
     this.render();
   }
@@ -312,6 +318,24 @@ export class BitZoomCanvas {
     this.render();
   }
 
+  /** Reset view to initial zoom/pan/level/selection */
+  resetView() {
+    this.currentLevel = this._initLevel;
+    this.baseLevel = this._initLevel;
+    this.zoom = 1;
+    this.pan = { x: 0, y: 0 };
+    this.selectedId = null;
+    this.hoveredId = null;
+    this.resize(); // recomputes layout + renders, same as constructor
+  }
+
+  /** Reset button bounds (top-right corner). Returns {x, y, w, h} or null. */
+  _resetBtnRect() {
+    if (!this.showResetBtn) return null;
+    const s = 24;
+    return { x: this.W - s - 8, y: 8, w: s, h: s };
+  }
+
   // ─── Event binding (canvas-only, no external DOM) ──────────────────────────
 
   _bindEvents() {
@@ -327,7 +351,13 @@ export class BitZoomCanvas {
     canvas.addEventListener('mousemove', e => {
       if (!this.mouseDown) {
         const r = canvas.getBoundingClientRect();
-        const hit = this.hitTest(e.clientX - r.left, e.clientY - r.top);
+        const mx = e.clientX - r.left, my = e.clientY - r.top;
+        const rb = this._resetBtnRect();
+        if (rb && mx >= rb.x && mx <= rb.x + rb.w && my >= rb.y && my <= rb.y + rb.h) {
+          canvas.style.cursor = 'pointer';
+          return;
+        }
+        const hit = this.hitTest(mx, my);
         const hid = hit ? (hit.type === 'node' ? hit.item.id : hit.item.bid) : null;
         if (hid !== this.hoveredId) {
           this.hoveredId = hid;
@@ -348,7 +378,14 @@ export class BitZoomCanvas {
       this.mouseDown = false;
       if (!this.mouseMoved) {
         const r = canvas.getBoundingClientRect();
-        const hit = this.hitTest(e.clientX - r.left, e.clientY - r.top);
+        const mx = e.clientX - r.left, my = e.clientY - r.top;
+        // Check reset button first
+        const rb = this._resetBtnRect();
+        if (rb && mx >= rb.x && mx <= rb.x + rb.w && my >= rb.y && my <= rb.y + rb.h) {
+          this.resetView();
+          return;
+        }
+        const hit = this.hitTest(mx, my);
         const isMulti = e.ctrlKey || e.metaKey || e.shiftKey;
         if (hit) {
           const id = hit.type === 'node' ? hit.item.id : hit.item.bid;
@@ -545,16 +582,14 @@ export function createBitZoomView(canvas, edgesText, labelsText, opts = {}) {
   const result = runPipeline(edgesText, labelsText);
   const G = result.groupNames.length;
 
-  // Hydrate nodes with projections
+  // Hydrate nodes with projections (signatures computed on demand, not stored)
   const nodes = result.nodeArray.map((n, i) => {
     const projections = {};
     for (let g = 0; g < G; g++) {
       const off = (i * G + g) * 2;
       projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
     }
-    const sigOff = i * MINHASH_K;
-    const sig = Array.from(result.sigBuf.subarray(sigOff, sigOff + MINHASH_K));
-    return { ...n, projections, sig, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
+    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
   });
 
   const nodeIndexFull = Object.fromEntries(nodes.map(n => [n.id, n]));
@@ -580,6 +615,10 @@ export function createBitZoomView(canvas, edgesText, labelsText, opts = {}) {
     propValues['label'].add(n.label || n.id);
     propValues['structure'].add(`deg:${n.degree}`);
     propValues['neighbors'].add('_');
+    if (n.edgeTypes) {
+      const types = Array.isArray(n.edgeTypes) ? n.edgeTypes : [...n.edgeTypes];
+      for (const t of types) if (propValues['edgetype']) propValues['edgetype'].add(t);
+    }
     if (n.extraProps) {
       for (const [k, v] of Object.entries(n.extraProps)) {
         if (propValues[k]) propValues[k].add(v || 'unknown');
@@ -590,14 +629,17 @@ export function createBitZoomView(canvas, edgesText, labelsText, opts = {}) {
     propColors[g] = generateGroupColors([...propValues[g]].sort());
   }
 
-  // Blend
-  unifiedBlend(nodes, result.groupNames, propWeights, opts.smoothAlpha || 0, adjList, nodeIndexFull, 5, opts.quantMode);
+  // Blend — pass a fresh stats object so the canvas gets fixed boundaries
+  const quantStats = {};
+  unifiedBlend(nodes, result.groupNames, propWeights, opts.smoothAlpha || 0, adjList, nodeIndexFull, 5, opts.quantMode, quantStats);
 
-  return new BitZoomCanvas(canvas, {
+  const view = new BitZoomCanvas(canvas, {
     nodes, edges: result.edges, nodeIndexFull, adjList,
     groupNames: result.groupNames, propWeights, propColors,
     groupColors: propColors['group'],
     hasEdgeTypes: result.hasEdgeTypes,
     ...opts,
   });
+  view._quantStats = quantStats;
+  return view;
 }

@@ -4,7 +4,7 @@
 import { degreeBucket, tokenizeLabel, tokenizeNumeric } from './bitzoom-pipeline.js';
 import {
   MINHASH_K, buildGaussianRotation,
-  computeMinHash, computeMinHashInto, _sig, projectInto,
+  computeMinHashInto, _sig, projectInto,
 } from './bitzoom-algo.js';
 
 self.onmessage = function(e) {
@@ -22,7 +22,6 @@ self.onmessage = function(e) {
     const N = nodes.length;
     const G = groupNames.length;
     const projBuf = new Float64Array(N * G * 2);
-    const sigBuf = new Float64Array(N * MINHASH_K);
 
     const tokenBuf = new Array(200);
     const progressInterval = Math.max(1, (N / 20) | 0);
@@ -81,23 +80,14 @@ self.onmessage = function(e) {
         }
       }
 
-      // combined sig
-      tc = 0;
-      tokenBuf[tc++] = 'group:' + n.group;
-      tc = tokenizeLabel(n.label, n.id, tokenBuf, tc);
-      tokenBuf[tc++] = 'deg:' + degreeBucket(n.degree);
-      tokenBuf[tc++] = 'leaf:' + (n.degree === 0);
-      const combinedSig = computeMinHash(tokenBuf, tc);
-      sigBuf.set(combinedSig, idx * MINHASH_K);
-
       if (idx % progressInterval === 0) {
         self.postMessage({ type: 'progress', done: idx, total: N });
       }
     }
 
     self.postMessage(
-      { type: 'done', projBuf, sigBuf, startIdx, count: N },
-      [projBuf.buffer, sigBuf.buffer]
+      { type: 'done', projBuf, startIdx, count: N },
+      [projBuf.buffer]
     );
   } catch (err) {
     self.postMessage({ type: 'error', message: err.message || String(err) });

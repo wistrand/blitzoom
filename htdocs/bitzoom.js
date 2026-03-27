@@ -2,10 +2,11 @@
 
 import {
   MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
-  buildGaussianRotation, generateGroupColors, unifiedBlend,
+  buildGaussianRotation, generateGroupColors, unifiedBlend, cellIdAtLevel,
 } from './bitzoom-algo.js';
 
 import { BitZoomCanvas } from './bitzoom-canvas.js';
+import { computeNodeSig } from './bitzoom-pipeline.js';
 
 // Dataset definitions. Optional `settings` configures initial weights and label checkboxes.
 const DATASETS = [
@@ -128,7 +129,7 @@ class BitZoom {
   rebuildProjections() {
     const v = this.view;
     v._refreshPropCache();
-    unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode);
+    unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode, v._quantStats);
     v.layoutAll();
     v.render();
   }
@@ -137,6 +138,19 @@ class BitZoom {
 
   switchLevel(idx) {
     const v = this.view;
+    const oldIdx = v.currentLevel;
+    const oldIsRaw = oldIdx === RAW_LEVEL - 1;
+    const newIsRaw = idx === RAW_LEVEL - 1;
+
+    // Capture old supernode screen positions for animation
+    const oldSns = !oldIsRaw ? v.getLevel(oldIdx).supernodes : null;
+    const oldLevel = oldIsRaw ? null : ZOOM_LEVELS[oldIdx];
+    const oldPosByBid = {};
+    if (oldSns) {
+      for (const sn of oldSns) oldPosByBid[sn.bid] = { x: sn.x, y: sn.y };
+    }
+
+    // Switch
     const oldRZ = v.renderZoom;
     v.currentLevel = idx;
     v.zoom = oldRZ / Math.pow(2, idx - v.baseLevel);
@@ -146,7 +160,77 @@ class BitZoom {
     v.layoutAll();
     this._updateAlgoInfo();
     this._updateOverview();
-    v.render();
+
+    // Animate if few nodes on screen and not switching to/from RAW
+    const newSns = !newIsRaw ? v.getLevel(idx).supernodes : null;
+    const shouldAnimate = oldSns && newSns && newSns.length < 80 && oldSns.length < 80;
+
+    if (!shouldAnimate) { v.render(); return; }
+
+    const newLevel = ZOOM_LEVELS[idx];
+    const zoomingIn = idx > oldIdx;
+
+    // Build animation map: newBid → {startX, startY, endX, endY}
+    const anims = [];
+    if (zoomingIn) {
+      // Each new sub-supernode animates FROM its parent supernode position
+      for (const sn of newSns) {
+        // Find parent bid at old level using first member's grid coords
+        const m0 = sn.members[0];
+        const parentBid = cellIdAtLevel(m0.gx, m0.gy, oldLevel);
+        const from = oldPosByBid[parentBid];
+        if (from) {
+          anims.push({ sn, sx: from.x, sy: from.y, ex: sn.x, ey: sn.y });
+        }
+      }
+    } else {
+      // Each old supernode animates TO its new parent supernode position
+      // We animate the NEW supernodes from the centroid of their old children
+      const newPosByBid = {};
+      for (const sn of newSns) newPosByBid[sn.bid] = { x: sn.x, y: sn.y };
+
+      for (const sn of newSns) {
+        // Find old children that map to this new supernode
+        let cx = 0, cy = 0, count = 0;
+        for (const old of oldSns) {
+          const m0 = old.members[0];
+          const parentBid = cellIdAtLevel(m0.gx, m0.gy, newLevel);
+          if (parentBid === sn.bid) {
+            cx += oldPosByBid[old.bid].x;
+            cy += oldPosByBid[old.bid].y;
+            count++;
+          }
+        }
+        if (count > 0) {
+          anims.push({ sn, sx: cx / count, sy: cy / count, ex: sn.x, ey: sn.y });
+        }
+      }
+    }
+
+    if (anims.length === 0) { v.render(); return; }
+
+    const duration = 300;
+    const startTime = performance.now();
+    const animate = (now) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+
+      for (const a of anims) {
+        a.sn.x = a.sx + (a.ex - a.sx) * e;
+        a.sn.y = a.sy + (a.ey - a.sy) * e;
+      }
+
+      v.renderNow();
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Restore final positions
+        for (const a of anims) { a.sn.x = a.ex; a.sn.y = a.ey; }
+        v.renderNow();
+      }
+    };
+    requestAnimationFrame(animate);
   }
 
   _checkAutoLevel() {
@@ -433,7 +517,7 @@ class BitZoom {
         <div class="prop-row">
           <div class="prop-key">MinHash sig (32 bits)</div>
           <div class="minhash-display">
-            ${n.sig.slice(0,32).map((val,i) => {
+            ${Array.from(computeNodeSig(n).subarray(0,32)).map((val,i) => {
               const bit = val % 2;
               const col2 = bit ? '#7c6af7' : '#1e1e2e';
               return `<div class="mh-bit" title="h${i}=${val}" style="background:${col2}"></div>`;
@@ -675,7 +759,7 @@ class BitZoom {
 
   _applyWorkerResult(result) {
     const v = this.view;
-    const { nodeMeta, projBuf, sigBuf, edges: workerEdges, groupNames, hasEdgeTypes: het } = result;
+    const { nodeMeta, projBuf, edges: workerEdges, groupNames, hasEdgeTypes: het } = result;
 
     v.groupNames = groupNames;
     v.hasEdgeTypes = het;
@@ -716,9 +800,7 @@ class BitZoom {
         const off = (i * G + g) * 2;
         projections[groupNames[g]] = [projBuf[off], projBuf[off + 1]];
       }
-      const sigOff = i * MINHASH_K;
-      const sig = Array.from(sigBuf.subarray(sigOff, sigOff + MINHASH_K));
-      return { ...meta, projections, sig, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
+      return { ...meta, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
     });
 
     v.nodeIndexFull = Object.fromEntries(v.nodes.map(n => [n.id, n]));
@@ -751,9 +833,10 @@ class BitZoom {
 
     v._refreshPropCache();
     v.smoothAlpha = 0;
+    v._quantStats = {}; // new data → fresh Gaussian boundaries
     document.getElementById('nudgeSlider').value = 0;
     document.getElementById('nudgeVal').textContent = '0';
-    unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode);
+    unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode, v._quantStats);
 
     this.dataLoaded = true;
     v.selectedId = null;
@@ -871,6 +954,7 @@ class BitZoom {
     quantBtn.addEventListener('click', () => {
       const idx = QUANT_MODES.indexOf(v.quantMode);
       v.quantMode = QUANT_MODES[(idx + 1) % QUANT_MODES.length];
+      v._quantStats = {}; // mode change → fresh boundaries
       updateQuantBtn();
       this.rebuildProjections();
     }, sig);
@@ -1102,7 +1186,7 @@ class BitZoom {
       if (this.smoothDebounceTimer) clearTimeout(this.smoothDebounceTimer);
       this.smoothDebounceTimer = setTimeout(() => {
         v.levels = new Array(ZOOM_LEVELS.length).fill(null);
-        unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode);
+        unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode, v._quantStats);
         v.layoutAll();
         v.render();
         this.smoothDebounceTimer = null;

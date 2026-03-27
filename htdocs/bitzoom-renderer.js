@@ -182,6 +182,8 @@ export function render(bz) {
   setEdgeMode(savedMode);
   renderFn(bz, 'circles');
   renderFn(bz, 'labels');
+  if (bz.showLegend) renderLegend(bz);
+  if (bz.showResetBtn) renderResetBtn(bz);
 }
 
 // ─── Supernode rendering ─────────────────────────────────────────────────────
@@ -556,6 +558,20 @@ let _densityR = null, _densityG = null, _densityB = null, _densityW = null;
 let _densityImgData = null;
 let _densityCanvas = null;
 
+// Cached maxW — recomputed when level/zoom/sizeBy/sizeLog or instance change, stable across pan.
+// Lerped toward target over ~500ms to avoid jarring jumps on level change.
+let _densityMaxW = 0;
+let _densityMaxWTarget = 0;
+let _densityMaxWKey = '';
+let _densityMaxWTime = 0;
+let _densityNextId = 0; // monotonic counter for assigning instance IDs
+let _densityLastId = 0; // last-seen instance ID for snap detection
+
+function _densityCacheKey(bz) {
+  if (!bz._densityId) bz._densityId = ++_densityNextId;
+  return bz._densityId + '|' + bz.currentLevel + '|' + bz.renderZoom.toFixed(1) + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.W + '|' + bz.H;
+}
+
 function renderHeatmapDensity(bz) {
   const W = bz.W, H = bz.H;
   const rz = bz.renderZoom;
@@ -585,8 +601,12 @@ function renderHeatmapDensity(bz) {
   _densityB.fill(0);
   _densityW.fill(0);
 
-  const kernelR = Math.max(8, Math.min(40, gw / 8));
+  const kernelR = Math.max(8, Math.min(40, Math.min(gw, gh) / 8));
   const kernelRSq = kernelR * kernelR;
+
+  // Check if maxW needs recomputing (level, zoom, size config, or viewport size changed)
+  const cacheKey = _densityCacheKey(bz);
+  const needMaxW = cacheKey !== _densityMaxWKey;
 
   for (let i = 0; i < allNodes.length; i++) {
     const n = allNodes[i];
@@ -629,17 +649,33 @@ function renderHeatmapDensity(bz) {
     }
   }
 
-  let maxW = 0;
-  for (let i = 0; i < totalCells; i++) if (_densityW[i] > maxW) maxW = _densityW[i];
-  if (maxW === 0) return;
+  // Compute maxW from current frame when config changes; lerp toward it for smooth transitions
+  if (needMaxW) {
+    let maxW = 0;
+    for (let i = 0; i < totalCells; i++) if (_densityW[i] > maxW) maxW = _densityW[i];
+    _densityMaxWTarget = maxW;
+    _densityMaxWKey = cacheKey;
+    _densityMaxWTime = performance.now();
+    const newInstance = bz._densityId !== _densityLastId;
+    _densityLastId = bz._densityId;
+    if (_densityMaxW === 0 || newInstance) _densityMaxW = maxW; // new instance or first frame: snap
+  }
+
+  // Exponential lerp toward target (~500ms to 90% convergence)
+  const dt = performance.now() - _densityMaxWTime;
+  const alpha = 1 - Math.exp(-dt / 200); // time constant 200ms
+  _densityMaxW += (_densityMaxWTarget - _densityMaxW) * alpha;
+  _densityMaxWTime = performance.now();
+
+  if (_densityMaxW < 0.001) return;
 
   const px = _densityImgData.data;
-  const invThreshold = 1 / (maxW * 0.3); // pre-compute division
+  const invThreshold = 1 / (_densityMaxW * 0.3);
   for (let i = 0; i < totalCells; i++) {
     const w = _densityW[i];
     if (w < 0.001) { px[i*4+3] = 0; continue; }
     const intensity = Math.min(1, w * invThreshold);
-    const invW = intensity / w; // combine intensity/w into single multiply
+    const invW = intensity / w;
     const off = i * 4;
     px[off]     = Math.min(255, _densityR[i] * invW + 0.5 | 0);
     px[off + 1] = Math.min(255, _densityG[i] * invW + 0.5 | 0);
@@ -654,6 +690,105 @@ function renderHeatmapDensity(bz) {
   bz.ctx.imageSmoothingQuality = 'high';
   bz.ctx.drawImage(_densityCanvas, 0, 0, W, H);
   bz.ctx.restore();
+
+  // Keep rendering while lerp hasn't converged (>1% difference)
+  if (Math.abs(_densityMaxW - _densityMaxWTarget) > _densityMaxWTarget * 0.01) {
+    bz.render();
+  }
+}
+
+// ─── Legend (compact, canvas-drawn) ──────────────────────────────────────────
+
+function renderLegend(bz) {
+  const colorMap = bz._cachedColorMap;
+  if (!colorMap) return;
+  const allEntries = Object.entries(colorMap);
+  if (allEntries.length === 0) return;
+
+  // Sort by frequency in current data
+  const isRaw = bz.currentLevel === RAW_LEVEL - 1;
+  const allNodes = isRaw ? bz.nodes : bz.getLevel(bz.currentLevel).supernodes;
+  const counts = {};
+  for (const n of allNodes) {
+    const val = isRaw ? bz._nodeColorVal(n) : (n.cachedColorVal || '');
+    counts[val] = (counts[val] || 0) + 1;
+  }
+  allEntries.sort((a, b) => (counts[b[0]] || 0) - (counts[a[0]] || 0));
+
+  const MAX_ENTRIES = 12;
+  const entries = allEntries.slice(0, MAX_ENTRIES);
+  const overflow = allEntries.length - entries.length;
+
+  const ctx = bz.ctx;
+  const fontSize = 10;
+  const dotR = 4;
+  const lineH = 16;
+  const pad = 8;
+  const maxLabelW = 90;
+
+  // Measure label widths
+  ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+  let maxW = 0;
+  for (const [label] of entries) {
+    const w = ctx.measureText(label.length > 14 ? label.slice(0, 13) + '…' : label).width;
+    if (w > maxW) maxW = w;
+  }
+  maxW = Math.min(maxW, maxLabelW);
+
+  const lines = entries.length + (overflow > 0 ? 1 : 0);
+  const boxW = dotR * 2 + 6 + maxW + pad * 2;
+  const boxH = lines * lineH + pad * 2;
+  const x = bz.W - boxW - 8;
+  const y = bz.H - boxH - 8;
+
+  // Background
+  ctx.fillStyle = 'rgba(10, 10, 15, 0.75)';
+  ctx.beginPath();
+  ctx.roundRect(x, y, boxW, boxH, 4);
+  ctx.fill();
+
+  // Entries
+  for (let i = 0; i < entries.length; i++) {
+    const [label, color] = entries[i];
+    const ey = y + pad + i * lineH + lineH / 2;
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x + pad + dotR, ey, dotR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#c8c8d8';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const truncated = label.length > 14 ? label.slice(0, 13) + '…' : label;
+    ctx.fillText(truncated, x + pad + dotR * 2 + 6, ey);
+  }
+
+  // Overflow indicator
+  if (overflow > 0) {
+    const ey = y + pad + entries.length * lineH + lineH / 2;
+    ctx.fillStyle = '#8888a0';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`+${overflow} more`, x + pad, ey);
+  }
+}
+
+// ─── Reset button (canvas-drawn) ─────────────────────────────────────────────
+
+function renderResetBtn(bz) {
+  const rb = bz._resetBtnRect();
+  if (!rb) return;
+  const ctx = bz.ctx;
+  ctx.fillStyle = 'rgba(10, 10, 15, 0.65)';
+  ctx.beginPath();
+  ctx.roundRect(rb.x, rb.y, rb.w, rb.h, 4);
+  ctx.fill();
+  ctx.fillStyle = '#8888a0';
+  ctx.font = '14px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('↺', rb.x + rb.w / 2, rb.y + rb.h / 2);
 }
 
 // ─── Hit testing ─────────────────────────────────────────────────────────────

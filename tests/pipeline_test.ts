@@ -11,7 +11,7 @@ import {
 
 import {
   parseEdgesFile, parseLabelsFile, buildGraph,
-  degreeBucket, tokenizeLabel, tokenizeNumeric, computeProjections, runPipeline,
+  degreeBucket, tokenizeLabel, tokenizeNumeric, computeProjections, runPipeline, computeNodeSig,
 } from "../htdocs/bitzoom-pipeline.js";
 
 // ─── Unit tests: bitzoom-algo.js ─────────────────────────────────────────────
@@ -244,15 +244,10 @@ Deno.test("computeProjections: produces valid output", () => {
   const N = graph.nodeArray.length;
   const G = graph.groupNames.length;
   assertEquals(result.projBuf.length, N * G * 2);
-  assertEquals(result.sigBuf.length, N * MINHASH_K);
 
   // All projections should be finite
   for (let i = 0; i < result.projBuf.length; i++) {
     assert(isFinite(result.projBuf[i]), `projBuf[${i}] should be finite`);
-  }
-  // Sigs should be non-negative
-  for (let i = 0; i < result.sigBuf.length; i++) {
-    assert(result.sigBuf[i] >= 0, `sigBuf[${i}] should be non-negative`);
   }
 });
 
@@ -275,7 +270,6 @@ Deno.test("runPipeline: end-to-end on embedded data", () => {
   assert(result.hasEdgeTypes);
   assertEquals(result.uniqueGroups.length, 2);
   assert(result.projBuf.length > 0);
-  assert(result.sigBuf.length > 0);
 });
 
 Deno.test("runPipeline: works without labels", () => {
@@ -562,7 +556,6 @@ Deno.test("E2E: Epstein dataset loads and processes correctly", async () => {
   const N = result.nodeArray.length;
   const G = result.groupNames.length;
   assertEquals(result.projBuf.length, N * G * 2);
-  assertEquals(result.sigBuf.length, N * MINHASH_K);
 
   // All projections finite
   for (let i = 0; i < result.projBuf.length; i++) {
@@ -623,16 +616,14 @@ Deno.test("E2E: Epstein dataset loads and processes correctly", async () => {
     }
   }
 
-  // Verify similar nodes cluster: persons should have some sig overlap
+  // Verify similar nodes cluster: persons should have some sig overlap (on-demand computation)
   const persons = nodes.filter(n => n.group === "Person");
   if (persons.length >= 2) {
     let anyOverlap = false;
     for (let i = 0; i < Math.min(persons.length, 10) && !anyOverlap; i++) {
-      const idxI = result.nodeArray.findIndex(n => n.id === persons[i].id);
-      const sigI = Array.from(result.sigBuf.subarray(idxI * MINHASH_K, (idxI + 1) * MINHASH_K));
+      const sigI = computeNodeSig(persons[i]);
       for (let j = i + 1; j < Math.min(persons.length, 10); j++) {
-        const idxJ = result.nodeArray.findIndex(n => n.id === persons[j].id);
-        const sigJ = Array.from(result.sigBuf.subarray(idxJ * MINHASH_K, (idxJ + 1) * MINHASH_K));
+        const sigJ = computeNodeSig(persons[j]);
         if (jaccardEstimate(sigI, sigJ) > 0) { anyOverlap = true; break; }
       }
     }

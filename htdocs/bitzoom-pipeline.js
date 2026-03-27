@@ -252,7 +252,6 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
   const N = nodeArray.length;
   const G = groupNames.length;
   const projBuf = new Float64Array(N * G * 2);
-  const sigBuf = new Float64Array(N * MINHASH_K);
 
   const gIdx = {};
   for (let i = 0; i < G; i++) gIdx[groupNames[i]] = i;
@@ -315,17 +314,21 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
       // else: projBuf already initialized to 0,0
     }
 
-    // combined signature (allocating — stored in sigBuf)
-    tc = 0;
-    tokenBuf[tc++] = 'group:' + n.group;
-    tc = tokenizeLabel(n.label, n.id, tokenBuf, tc);
-    tokenBuf[tc++] = 'deg:' + degreeBucket(n.degree);
-    tokenBuf[tc++] = 'leaf:' + (n.degree === 0);
-    const combinedSig = computeMinHash(tokenBuf, tc);
-    sigBuf.set(combinedSig, idx * MINHASH_K);
   }
 
-  return { projBuf, sigBuf, groupNames };
+  return { projBuf, groupNames };
+}
+
+// ─── On-demand signature for a single node (detail panel visualization) ──────
+
+export function computeNodeSig(node) {
+  const tokenBuf = new Array(20);
+  let tc = 0;
+  tokenBuf[tc++] = 'group:' + node.group;
+  tc = tokenizeLabel(node.label, node.id, tokenBuf, tc);
+  tokenBuf[tc++] = 'deg:' + degreeBucket(node.degree);
+  tokenBuf[tc++] = 'leaf:' + (node.degree === 0);
+  return computeMinHash(tokenBuf, tc);
 }
 
 // ─── Full pipeline: parse → build → project ──────────────────────────────────
@@ -337,9 +340,9 @@ export function runPipeline(edgesText, labelsText) {
   const extraPropNames = labelResult ? labelResult.extraPropNames : [];
 
   const graph = buildGraph(parsed, labelMap, extraPropNames);
-  const { projBuf, sigBuf } = computeProjections(
+  const { projBuf } = computeProjections(
     graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins
   );
 
-  return { ...graph, projBuf, sigBuf, extraPropNames };
+  return { ...graph, projBuf, extraPropNames };
 }

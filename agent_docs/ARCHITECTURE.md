@@ -203,7 +203,9 @@ Numeric values emit 3 tokens (coarse/medium/fine bins). Nearby values share coar
 
 - Jaccard on discretised tokens is crude for continuous/ordinal properties.
 - 2D projection doesn't preserve distances — provides ordering signal, not metric embedding.
-- Rank quantization destroys density information — uniform screen usage by design.
+- Rank quantization (when selected) destroys density information; Gaussian quantization preserves it but assumes approximately normal marginals.
+- Gaussian quantization uses fixed boundaries (μ,σ from initial snapshot) — weight changes can shift the distribution far from stored boundaries, pushing nodes to grid extremes.
+- Undefined values with high weight cause degenerate clustering. Empty fields → neutral [0,0] projection. When that group dominates, all undefined nodes collapse to one pre-quantization point. Rank quantization spreads axes independently but preserves 2D correlation → edge pile-up. Neither quantization scheme can fix this.
 - Weight stability is piecewise constant after quantization.
 - Oversmoothing at high α with many passes.
 - Layout quality depends entirely on tokenisation quality.
@@ -217,7 +219,8 @@ Individual components (MinHash, random projection, hierarchical grids, graph smo
 3. Unified blend — property weights and topology in one normalization
 4. Exact bit-prefix zoom hierarchy — all levels from two stored bytes
 5. Multi-resolution numeric tokenization — smooth similarity for continuous properties
-6. Adaptive density rendering — visibility thresholds based on visible node count
+6. Gaussian quantization as default — matched CDF for Gaussian projection output (CLT)
+7. Adaptive density rendering — visibility thresholds based on visible node count
 
 ## Test Coverage (45 tests)
 

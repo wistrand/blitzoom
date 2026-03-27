@@ -213,9 +213,8 @@
         <select id="demo-dataset" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;font-family:'JetBrains Mono',monospace">
           <option value="epstein">Epstein</option>
           <option value="data-graph-file">Karate Club</option>
-          <option value="melker-src">Melker src</option>
           <option value="bitzoom-source">BitZoom Source</option>
-          <option value="cert-polska-stix">CERT Polska</option>
+          <option value="mitre-attack">MITRE ATT&amp;CK</option>
         </select>
       </label>
       <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px">
@@ -873,6 +872,18 @@
 
 <p>Because the blend is a <strong>convex combination of fixed anchors</strong>, changing a weight smoothly moves nodes along predictable paths. No rehashing, no reprojection &mdash; just arithmetic.</p>
 
+<!-- Synthetic demo: property clustering + topology -->
+<div style="display:flex;gap:12px;margin:24px 0;flex-wrap:wrap">
+  <div style="flex:1;min-width:280px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">Property only (&alpha;=0) &mdash; clusters by role</div>
+    <canvas id="synth-prop" style="width:100%;height:240px;display:block;background:var(--bg)"></canvas>
+  </div>
+  <div style="flex:1;min-width:280px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">With topology (&alpha;=0.6) &mdash; connected nodes pull together</div>
+    <canvas id="synth-topo" style="width:100%;height:240px;display:block;background:var(--bg)"></canvas>
+  </div>
+</div>
+
 <!-- Step 5: Quantization -->
 <h2>Step 5: Rank Quantization</h2>
 
@@ -1057,6 +1068,14 @@
 </div>
 
 <p>This is <strong>O(1) per node</strong> and requires <strong>zero recomputation</strong> on zoom navigation. Nodes sharing a cell become a supernode; cross-cell edges become weighted supernode edges.</p>
+
+<!-- Synthetic demo: zoom hierarchy -->
+<div style="margin:24px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+  <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">Zoom hierarchy &mdash; arrow keys or scroll to change level</span>
+  </div>
+  <canvas id="synth-zoom" style="width:100%;height:280px;display:block;background:var(--bg)"></canvas>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <!-- RENDERING SECTION -->
@@ -1520,9 +1539,11 @@
 
 <p><strong>2D projection doesn't preserve distances.</strong> Layout reflects coarse ordering, not metric geometry.</p>
 
-<p><strong>Rank quantization destroys density.</strong> Dense and sparse regions look the same positionally. The heatmap overlay partially compensates.</p>
+<p><strong>Quantization tradeoffs.</strong> Rank quantization destroys density (uniform occupancy by design). Gaussian quantization preserves density but uses fixed boundaries from the initial blend &mdash; large weight changes can shift the distribution beyond the stored &mu;/&sigma;, pushing nodes to grid extremes.</p>
 
-<p><strong>Oversmoothing</strong> at high &alpha; with many passes &mdash; well-connected components collapse toward their centroid.</p>
+<p><strong>Undefined values with high weight</strong> cause degenerate clustering. Empty fields project to a neutral (0,0) point. When that property group dominates, all undefined nodes share the same pre-quantization position. Neither quantization scheme can decorrelate axes that are correlated in the input &mdash; the result is visible edge pile-up.</p>
+
+<p><strong>Oversmoothing</strong> at high &alpha; with many passes &mdash; well-connected components collapse toward their centroid. At &alpha;=1, both axes are driven by the same graph operator, producing a diagonal layout.</p>
 
 <div class="note">
   The individual components (MinHash, random projection, hierarchical grids, graph smoothing) are all established techniques. The contribution is their combination into a pipeline where each stage's output feeds naturally into the next, and where the stored intermediate representations support both efficient navigation and interactive parameter exploration.
@@ -1534,6 +1555,13 @@
 
 <script type="module">
 import { createBitZoomView } from './bitzoom-canvas.js';
+
+const DEMO_PRESETS = {
+  'epstein':        { initialLevel: 4, weights: { group: 8, edgetype: 4 }, labelProps: ['label'] },
+  'data-graph-file':{ initialLevel: 3, weights: {} },
+  'bitzoom-source': { initialLevel: 4, weights: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] },
+  'mitre-attack':   { initialLevel: 4, weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'], quantMode: 'rank', edgeMode: 'none' },
+};
 
 let view = null;
 
@@ -1547,11 +1575,17 @@ async function loadDemo(name) {
   if (labelsRes && labelsRes.ok) labelsText = await labelsRes.text();
 
   if (view) view.destroy();
+  const preset = DEMO_PRESETS[name] || {};
   const canvas = document.getElementById('demo-canvas');
   view = createBitZoomView(canvas, edgesText, labelsText, {
-    initialLevel: 3,
-    edgeMode: 'lines',
+    initialLevel: preset.initialLevel || 3,
+    edgeMode: preset.edgeMode || 'lines',
     heatmapMode: 'density',
+    showLegend: true,
+    showResetBtn: true,
+    weights: preset.weights || {},
+    labelProps: preset.labelProps || [],
+    quantMode: preset.quantMode,
     smoothAlpha: parseFloat(document.getElementById('demo-alpha').value),
   });
 }
@@ -1564,6 +1598,66 @@ document.getElementById('demo-dataset').addEventListener('change', e => {
 
 document.getElementById('demo-alpha').addEventListener('input', e => {
   if (view) view.setAlpha(parseFloat(e.target.value));
+});
+
+// ─── Synthetic data for illustrative canvases ─────────────────────────────
+
+// 40-node graph: 4 roles (frontend/backend/data/infra), cross-team edges
+const synthEdges = [
+  // frontend cluster
+  'fe1\tfe2', 'fe1\tfe3', 'fe2\tfe4', 'fe3\tfe4', 'fe4\tfe5', 'fe1\tfe5',
+  'fe5\tfe6', 'fe6\tfe7', 'fe2\tfe7', 'fe3\tfe8', 'fe8\tfe5',
+  // backend cluster
+  'be1\tbe2', 'be1\tbe3', 'be2\tbe4', 'be3\tbe5', 'be4\tbe5', 'be1\tbe6',
+  'be6\tbe7', 'be7\tbe3', 'be5\tbe8', 'be2\tbe8', 'be6\tbe4',
+  // data cluster
+  'da1\tda2', 'da1\tda3', 'da2\tda4', 'da3\tda5', 'da4\tda5', 'da1\tda6',
+  'da6\tda7', 'da2\tda7', 'da3\tda8', 'da5\tda8', 'da7\tda4',
+  // infra cluster
+  'in1\tin2', 'in1\tin3', 'in2\tin4', 'in3\tin5', 'in4\tin5', 'in1\tin6',
+  'in6\tin7', 'in2\tin7', 'in5\tin8', 'in3\tin8', 'in6\tin4',
+  // cross-team edges
+  'fe1\tbe1', 'fe3\tda2', 'be2\tda1', 'be5\tin1', 'da4\tin3',
+  'fe7\tin2', 'fe6\tbe4', 'da6\tin5', 'be7\tfe4', 'da7\tbe6',
+  'fe8\tda5', 'in7\tbe3', 'in8\tfe2',
+].join('\n');
+
+const synthLabels = [
+  '# NodeId\tLabel\tGroup\tLang',
+  'fe1\tApp Shell\tfrontend\tTypeScript', 'fe2\tRouter\tfrontend\tTypeScript',
+  'fe3\tState Mgr\tfrontend\tTypeScript', 'fe4\tUI Kit\tfrontend\tTypeScript',
+  'fe5\tForms\tfrontend\tTypeScript', 'fe6\tCharts\tfrontend\tJavaScript',
+  'fe7\tAuth UI\tfrontend\tTypeScript', 'fe8\tSearch UI\tfrontend\tTypeScript',
+  'be1\tAPI Gateway\tbackend\tGo', 'be2\tUser Svc\tbackend\tGo',
+  'be3\tOrder Svc\tbackend\tGo', 'be4\tPayment\tbackend\tJava',
+  'be5\tNotify\tbackend\tGo', 'be6\tAuth Svc\tbackend\tGo',
+  'be7\tSearch Svc\tbackend\tJava', 'be8\tCache\tbackend\tGo',
+  'da1\tETL\tdata\tPython', 'da2\tWarehouse\tdata\tSQL',
+  'da3\tStream\tdata\tPython', 'da4\tML Train\tdata\tPython',
+  'da5\tML Serve\tdata\tPython', 'da6\tDashboard\tdata\tPython',
+  'da7\tReports\tdata\tSQL', 'da8\tFeatures\tdata\tPython',
+  'in1\tK8s\tinfra\tYAML', 'in2\tCI/CD\tinfra\tYAML',
+  'in3\tMonitor\tinfra\tGo', 'in4\tLog Agg\tinfra\tGo',
+  'in5\tSecrets\tinfra\tYAML', 'in6\tDNS\tinfra\tTerraform',
+  'in7\tCDN\tinfra\tTerraform', 'in8\tFirewall\tinfra\tTerraform',
+].join('\n');
+
+// Property-only view (α=0)
+createBitZoomView(document.getElementById('synth-prop'), synthEdges, synthLabels, {
+  initialLevel: 3, edgeMode: 'lines', showLegend: true, showResetBtn: true, smoothAlpha: 0,
+  weights: { group: 8, Lang: 3 },
+});
+
+// Topology view (α=0.6)
+createBitZoomView(document.getElementById('synth-topo'), synthEdges, synthLabels, {
+  initialLevel: 3, edgeMode: 'lines', showLegend: true, showResetBtn: true, smoothAlpha: 0.6,
+  weights: { group: 8, Lang: 3 },
+});
+
+// Zoom hierarchy view — start zoomed out so aggregation is visible
+createBitZoomView(document.getElementById('synth-zoom'), synthEdges, synthLabels, {
+  initialLevel: 1, edgeMode: 'lines', showLegend: true, showResetBtn: true, smoothAlpha: 0,
+  weights: { group: 8, Lang: 3 },
 });
 </script>
 

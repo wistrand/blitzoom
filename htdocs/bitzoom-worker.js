@@ -41,9 +41,8 @@ self.onmessage = function(e) {
 
     progress(`Projecting ${N.toLocaleString()} nodes across ${numWorkers} workers...`, 25);
 
-    // Final merged buffers
+    // Final merged buffer
     const projBuf = new Float64Array(N * G * 2);
-    const sigBuf = new Float64Array(N * MINHASH_K);
 
     // Prepare lightweight node data for sub-workers
     const nodeData = nodeArray.map(n => ({
@@ -79,14 +78,13 @@ self.onmessage = function(e) {
         result: {
           nodeMeta,
           projBuf,
-          sigBuf,
           edges,
           groupNames,
           uniqueGroups,
           hasEdgeTypes,
         }
       };
-      self.postMessage(msg, [projBuf.buffer, sigBuf.buffer]);
+      self.postMessage(msg, [projBuf.buffer]);
     };
 
     for (let w = 0; w < numWorkers; w++) {
@@ -113,7 +111,6 @@ self.onmessage = function(e) {
         }
         if (d.type === 'done') {
           projBuf.set(d.projBuf, d.startIdx * G * 2);
-          sigBuf.set(d.sigBuf, d.startIdx * MINHASH_K);
 
           worker.terminate();
           completed++;

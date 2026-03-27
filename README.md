@@ -110,13 +110,13 @@ deno task src2snap data/output-prefix
 ## Algorithm
 
 1. **Tokenize** node properties into sets per property group
-2. **MinHash** (k=128) each token set into a fixed-length signature
-3. **Project** each signature to 2D via a seeded Gaussian random matrix (one per group)
+2. **MinHash** (k=128) each token set into a fixed-length signature via universal hashing
+3. **Project** each z-score normalized signature to 2D via a seeded Gaussian random matrix (one per group)
 4. **Blend** the per-group 2D positions as a weighted combination + optional topology smoothing
-5. **Quantize** blended positions to a uint16 grid (65536×65536) via rank ordering
+5. **Quantize** blended positions to a uint16 grid (65536×65536) — Gaussian (default, density-preserving) or rank (uniform occupancy)
 6. **Zoom** by bit-shifting grid coordinates: level L gives a 2^L × 2^L cell grid
 
-Weight changes only repeat step 4-5 (O(n)). Zoom is O(1) per node. See [SPEC.md](agent_docs/SPEC.md) for the full algorithm design.
+Weight changes only repeat step 4-5 (O(n)). Zoom is O(1) per node. Signatures are not stored — recomputed on demand for detail panel visualization. See [SPEC.md](agent_docs/SPEC.md) for the full algorithm design.
 
 ## Architecture
 

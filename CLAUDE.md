@@ -25,7 +25,7 @@ deno task src2snap    # source code → SNAP call graph
 htdocs/                    Web app (ES modules, no build step)
   index.html               HTML shell (96 lines)
   bitzoom.css              Styles (619 lines)
-  bitzoom-algo.js          Pure algorithm functions and constants (340 lines)
+  bitzoom-algo.js          Pure algorithm functions and constants (~430 lines)
   bitzoom-pipeline.js      Parsers, graph building, tokenization, projection (345 lines)
   bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (665 lines)
   bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (600 lines)
@@ -86,4 +86,6 @@ scripts/
 - `_refreshPropCache()` must be called when weights or label selection change.
 - `getLevel()` calls `layoutAll()` when building a new level.
 - `switchLevel()` adjusts zoom to preserve renderZoom across level changes.
-- Empty/undefined property values emit 0 tokens — no false clustering.
+- Empty/undefined property values emit 0 tokens → NaN sentinel → neutral [0,0] projection. No false clustering at low weight, but degenerate clustering when that group dominates (all undefined nodes share the same projection point).
+- Gaussian quantization boundaries (μ,σ) are fixed from the initial blend snapshot — stable across weight/alpha changes but can misfit if the distribution shifts significantly.
+- Heatmap density maxW is cached per level/zoom config, lerped on change — stable across pan.
