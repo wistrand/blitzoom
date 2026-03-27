@@ -64,15 +64,15 @@ Deno.test("jaccardEstimate: similar sets have high J", () => {
 });
 
 Deno.test("buildGaussianRotation is deterministic", () => {
-  const r1 = buildGaussianRotation(42, 2, MINHASH_K);
-  const r2 = buildGaussianRotation(42, 2, MINHASH_K);
+  const r1 = buildGaussianRotation(42, MINHASH_K);
+  const r2 = buildGaussianRotation(42, MINHASH_K);
   assertEquals(r1[0][0], r2[0][0]);
   assertEquals(r1[1][MINHASH_K - 1], r2[1][MINHASH_K - 1]);
 });
 
 Deno.test("projectWith returns [x, y]", () => {
   const sig = computeMinHash(["test"]);
-  const rot = buildGaussianRotation(1, 2, MINHASH_K);
+  const rot = buildGaussianRotation(1, MINHASH_K);
   const [x, y] = projectWith(sig, rot);
   assert(typeof x === "number" && !isNaN(x));
   assert(typeof y === "number" && !isNaN(y));
@@ -80,7 +80,7 @@ Deno.test("projectWith returns [x, y]", () => {
 
 Deno.test("projectInto writes to buffer", () => {
   const sig = computeMinHash(["test"]);
-  const rot = buildGaussianRotation(1, 2, MINHASH_K);
+  const rot = buildGaussianRotation(1, MINHASH_K);
   const buf = new Float64Array(4);
   projectInto(sig, rot, buf, 2);
   assert(buf[2] !== 0 || buf[3] !== 0, "Should write non-zero projection");

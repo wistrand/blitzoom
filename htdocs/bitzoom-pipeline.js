@@ -246,7 +246,7 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
   numericBins = numericBins || {};
   const groupRotations = {};
   for (let i = 0; i < groupNames.length; i++) {
-    groupRotations[groupNames[i]] = buildGaussianRotation(2001 + i, 2, MINHASH_K);
+    groupRotations[groupNames[i]] = buildGaussianRotation(2001 + i, MINHASH_K);
   }
 
   const N = nodeArray.length;

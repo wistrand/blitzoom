@@ -16,7 +16,7 @@ self.onmessage = function(e) {
 
     const groupRotations = {};
     for (let i = 0; i < groupNames.length; i++) {
-      groupRotations[groupNames[i]] = buildGaussianRotation(groupRotationSeeds[i], 2, MINHASH_K);
+      groupRotations[groupNames[i]] = buildGaussianRotation(groupRotationSeeds[i], MINHASH_K);
     }
 
     const N = nodes.length;

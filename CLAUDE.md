@@ -28,7 +28,8 @@ htdocs/                    Web app (ES modules, no build step)
   bitzoom-algo.js          Pure algorithm functions and constants (340 lines)
   bitzoom-pipeline.js      Parsers, graph building, tokenization, projection (345 lines)
   bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (665 lines)
-  bitzoom.js               BitZoom class — state, UI, events, data loading (1308 lines)
+  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (600 lines)
+  bitzoom.js               BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1185 lines)
   bitzoom-worker.js        Web Worker coordinator (145 lines)
   bitzoom-proj-worker.js   Web Worker projection (105 lines)
 
@@ -67,6 +68,7 @@ scripts/
 
 - **ES modules** — `import`/`export` everywhere. Module workers. Single `<script type="module">`.
 - **No code duplication** — GC-optimized MinHash/projection (`computeMinHashInto`, `_sig`, `projectInto`, typed-array HASH_PARAMS) in `bitzoom-algo.js`, imported by pipeline and workers.
+- **Composition** — `BitZoom` owns a `BitZoomCanvas` (`this.view`) for all graph state, rendering, and interaction primitives. BitZoom adds UI, workers, data loading, detail panel, URL hash state. `BitZoomCanvas` is standalone (no DOM beyond `<canvas>`), with `createBitZoomView()` factory and `skipEvents`/`onRender` options for embedding.
 - **Web Workers** — coordinator fans out to up to 3 projection sub-workers. Transferable Float64Array buffers.
 - **Supernode color/label cached at build time** — not recomputed per frame. `_refreshPropCache()` invalidates level cache.
 - **Two-zoom system** — logical zoom triggers level changes; `renderZoom = max(1, zoom * 2^levelOffset)` keeps visual scale continuous.

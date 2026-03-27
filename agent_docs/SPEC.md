@@ -58,7 +58,7 @@ Two designs are viable with different tradeoffs.
 
 **Fixed Gaussian boundaries:** place boundaries at Φ⁻¹(i / GRID_SIZE). Gives a fixed coordinate system — node insertion does not shift other nodes' cells. Concentrates resolution near the distribution center. Assumes approximately Gaussian positions after blending, which weakens when one weight dominates and the distribution becomes multimodal.
 
-The current implementation uses rank-based quantization because the graph is static and post-blend distribution is not reliably Gaussian. For live graphs, fixed boundaries computed from an initial snapshot are preferable — update stability outweighs the occupancy guarantee. Operational questions remain open: nodes whose projections fall outside the initial range, distribution drift over time, and schema changes all require explicit policy.
+The current implementation defaults to Gaussian quantization — the matched CDF for the distribution that Gaussian random projection produces (via the Central Limit Theorem). This preserves density structure: clusters stay tight, sparse regions stay sparse. Rank-based quantization is available as a toggle for cases where the post-blend distribution departs significantly from Gaussian (e.g., high α with topology smoothing, or when a single weight dominates and the distribution becomes multimodal).
 
 Either way the output is a uint16 coordinate pair (gx, gy) — four stored bytes per node. All zoom cell indices derive from these stored uint16 coordinates via bit shifts.
 
@@ -80,9 +80,9 @@ Nodes sharing a cell at level L form a supernode. Cross-cell edges become weight
 
 - Jaccard is crude for continuous or ordinal properties; results are discretisation-sensitive
 - 2D projection does not preserve pairwise distances; layout reflects coarse ordering, not metric geometry
-- Rank quantization destroys density information; dense and sparse regions are visually indistinguishable by position alone
+- Rank quantization (when selected) destroys density information; Gaussian quantization preserves it but assumes approximately normal marginals
 - High topology weight causes oversmoothing in well-connected components
-- Rank quantization is globally unstable under node insertion; fixed Gaussian boundaries solve this at the cost of occupancy guarantees and require update policy for distribution drift
+- Rank quantization is globally unstable under node insertion; Gaussian quantization is locally stable but nodes in distribution tails may cluster at grid boundaries
 - Layout quality depends heavily on tokenisation and grouping quality; the pipeline faithfully preserves whatever similarity it is given
 
 ---
@@ -99,7 +99,8 @@ The system requires empirical evaluation against: semantic neighbourhood preserv
 |---|---|
 | Group projections | O(n · k · G) |
 | Unified blend | O(passes · (n + E)) |
-| Rank quantization | O(n log n) |
+| Quantization (rank) | O(n log n) |
+| Quantization (gaussian) | O(n) |
 | Level construction | O(n + E) per level, lazy |
 | Per-node zoom-cell derivation | O(1) |
 

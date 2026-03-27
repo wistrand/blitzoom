@@ -13,7 +13,8 @@ htdocs/                    Web application (ES modules, served by Deno)
   bitzoom-algo.js          Pure algorithm functions and constants (no DOM)
   bitzoom-pipeline.js      Shared parsers, graph building, tokenization, projection
   bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (no state mutation)
-  bitzoom.js               BitZoom class — state, navigation, UI, events, data loading
+  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering
+  bitzoom.js               BitZoom app (composes BitZoomCanvas) — UI, workers, data loading
   bitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
   bitzoom-proj-worker.js   Web Worker — imports from algo+pipeline, computes projections
 
@@ -38,13 +39,17 @@ bitzoom-algo.js              (no deps — pure functions + constants)
   ↑
 bitzoom-pipeline.js          (imports from algo)
   ↑             ↑
+bitzoom-canvas.js            (imports from algo + renderer)
+  ↑             ↑
 bitzoom.js      bitzoom-worker.js → bitzoom-proj-worker.js
-  ↑                                    ↑
-bitzoom-renderer.js                 (imports from algo + pipeline)
+  (composes                            ↑
+   BitZoomCanvas)            (imports from algo + pipeline)
+  ↑
+bitzoom-renderer.js
   (imports from algo)
 ```
 
-No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in `bitzoom-algo.js`.
+No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in `bitzoom-algo.js`. `BitZoom` composes `BitZoomCanvas` (`this.view`) — all graph state, rendering, and interaction primitives live on the canvas component.
 
 ## Data Format (SNAP)
 
@@ -65,10 +70,11 @@ No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`
 Pure functions, no DOM. Single source of truth for MinHash/projection.
 
 - **Constants**: `MINHASH_K=128`, `GRID_BITS=16`, `GRID_SIZE=65536`, `ZOOM_LEVELS[1..14]`, `RAW_LEVEL=15`, `LEVEL_LABELS`
-- **MinHash** (GC-optimized): `HASH_PARAMS_A/B` (Int32Array), `computeMinHashInto` → reusable `_sig` Float64Array, `computeMinHash` (allocating wrapper)
-- **Projection** (GC-optimized): `projectInto(sig, ROT, buf, offset)` → writes to buffer, `projectWith` (convenience wrapper returning `[px, py]`)
-- **Blend**: `unifiedBlend(nodes, groupNames, weights, alpha, adjList, nodeIndex, passes)`
-- **Grid**: `cellIdAtLevel(gx, gy, level)`, `normalizeAndQuantize(nodes)`
+- **MinHash** (GC-optimized): `HASH_PARAMS_A/B` (Int32Array), `computeMinHashInto` → reusable `_sig` Float64Array (NaN sentinel for empty tokens), `computeMinHash` (allocating wrapper). Universal hash via multi-word modular multiply (`hashSlot`) — no 32-bit truncation.
+- **Projection** (GC-optimized): `projectInto(sig, ROT, buf, offset)` → writes to buffer, `projectWith` (convenience wrapper returning `[px, py]`). NaN sentinel check: `sig[0] !== sig[0]`.
+- **Blend**: `unifiedBlend(nodes, groupNames, weights, alpha, adjList, nodeIndex, passes, quantMode)`
+- **Quantization**: `normalizeAndQuantize(nodes)` (rank-based, O(n log n)), `gaussianQuantize(nodes)` (Φ(z) via precomputed lookup table, O(n)). Default: Gaussian — matched CDF for Gaussian projection output (CLT).
+- **Grid**: `cellIdAtLevel(gx, gy, level)`
 - **Level building**: `buildLevel(level, nodes, edges, nodeIndex, colorFn, labelFn, colorLookup)` — caches `cachedColor`/`cachedLabel` on supernodes, numeric edge keys (no string allocation)
 - **Helpers**: `maxCountKey` (O(k) max), `generateGroupColors` (golden-angle HSL → hex), `getNodePropValue`, `getSupernodeDominantValue`
 
@@ -105,21 +111,31 @@ Canvas rendering. Reads BitZoom instance, no state mutation (except `n.x`/`n.y` 
 
 **Other**: cubic bezier edges, Gaussian splat heatmap (additive), KDE density heatmap (1/4 resolution, persistent buffers), hit testing.
 
-### bitzoom.js (1308 lines)
+### bitzoom-canvas.js (~600 lines)
 
-`BitZoom` class — application state and orchestration.
+Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
-**State**: graph data, property weights/presets/colors, view (zoom/pan/level/baseLevel), multi-selection (`selectedIds` Set), cached dominant prop.
+**`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propWeights, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Constructor accepts `skipEvents` (for composition) and `onRender` callback.
 
-**Navigation**: `switchLevel` (preserves renderZoom), `_checkAutoLevel` (zoom>=2 → up, <0.5 → down), `renderZoom = max(1, zoom * 2^(level-base))`, `zoomToNode` (animated 350ms), `_animateZoom` (shift+dblclick zoom-out).
+**`createBitZoomView(canvas, edgesText, labelsText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, blends, returns ready-to-use canvas view.
 
-**Multi-select**: Ctrl+click toggles `selectedIds`. `selectedId` getter/setter for primary. Edges highlight for all selected nodes.
+**Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
+
+### bitzoom.js (~1185 lines)
+
+`BitZoom` class — composes `BitZoomCanvas` as `this.view`. Adds application UI and orchestration.
+
+**Composition**: all graph/view state accessed via `this.view.*`. BitZoom owns app-only state (dataLoaded, presets, workers, hash timers, mouse state).
+
+**Navigation**: `switchLevel` (delegates to view + UI updates), `_checkAutoLevel` (delegates to view, adds stepper/info updates), `zoomToNode` (animated 350ms with reselection after level change), `_animateZoom` (shift+dblclick zoom-out).
+
+**Multi-select**: Ctrl+click toggles `view.selectedIds`. Edges highlight for all selected nodes.
 
 **Data loading**: module workers with transferable Float64Array. `DATASETS[]` presets. Hash state restore on load.
 
-**URL hash**: `d=name&l=level&z=zoom&x=pan&y=pan&bl=base&s=selected`. Updates via `replaceState` on each render (coalesced via rAF).
+**URL hash**: `d=name&l=level&z=zoom&x=pan&y=pan&bl=base&s=selected`. Updates via `replaceState` on each render (via `onRender` callback).
 
-**UI**: dynamic weight sliders, preset buttons, label source selector, size-by toggle (members/edges), heatmap mode cycle (off/splat/density), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation.
+**UI**: dynamic weight sliders, preset buttons, label checkboxes, size-by toggle (members/edges), quantization mode toggle (gaussian/rank), heatmap mode cycle (off/splat/density), edge mode cycle (curves/lines/none), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation.
 
 ### Workers (145 + 105 lines)
 

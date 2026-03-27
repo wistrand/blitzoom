@@ -1,125 +1,83 @@
-// bitzoom.js — BitZoom application class. State, navigation, UI, events, data loading.
+// bitzoom.js — BitZoom application. Composes BitZoomCanvas with UI, workers, data loading.
 
 import {
   MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
-  buildGaussianRotation, generateGroupColors, unifiedBlend, buildLevel,
-  getNodePropValue, getSupernodeDominantValue, maxCountKey,
+  buildGaussianRotation, generateGroupColors, unifiedBlend,
 } from './bitzoom-algo.js';
 
-import { layoutAll, render, worldToScreen, screenToWorld, hitTest } from './bitzoom-renderer.js';
+import { BitZoomCanvas } from './bitzoom-canvas.js';
 
+// Dataset definitions. Optional `settings` configures initial weights and label checkboxes.
 const DATASETS = [
   { name: 'Karate Club',     edges: 'data/data-graph-file.edges', labels: 'data/data-graph-file.labels', desc: '34 nodes' },
-  { name: 'Epstein',         edges: 'data/epstein.edges',         labels: 'data/epstein.labels',         desc: '~100 nodes, edge types' },
-  { name: 'Melker src',      edges: 'data/melker-src.edges',      labels: 'data/melker-src.labels',      desc: '305 modules' },
+  { name: 'Epstein',         edges: 'data/epstein.edges',         labels: 'data/epstein.labels',         desc: '~100 nodes, edge types',
+    settings: { weights: { group: 5, edgetype: 8 }, labelProps: ['label'] } },
+  { name: 'Melker src',      edges: 'data/melker-src.edges',      labels: 'data/melker-src.labels',      desc: '305 modules',
+    settings: { labelProps: ['label'] } },
   { name: 'Amazon',          edges: 'data/amazon-copurchase.edges',labels: 'data/amazon-copurchase.labels',desc: '367K nodes' },
-  { name: 'CERT Polska STIX',edges: 'data/cert-polska-stix.edges',labels: 'data/cert-polska-stix.labels',desc: '93 nodes, edge types' },
-  { name: 'Synth Packages',  edges: 'data/synth-packages.edges',  labels: 'data/synth-packages.labels',  desc: '2K nodes' },
-  { name: 'OpenCTI PAP',    edges: 'data/opencti-pap-clear.edges',labels: 'data/opencti-pap-clear.labels',desc: '107 nodes' },
-  { name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  labels: 'data/bitzoom-source.labels',  desc: '147 nodes, call graph' },
-  { name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   labels: 'data/mitre-attack.labels',   desc: '9K nodes, kill chains' },
+  { name: 'CERT Polska STIX',edges: 'data/cert-polska-stix.edges',labels: 'data/cert-polska-stix.labels',desc: '93 nodes, edge types',
+    settings: { weights: { group: 5, platforms: 8 }, labelProps: ['label', 'group'] } },
+  { name: 'Synth Packages',  edges: 'data/synth-packages.edges',  labels: 'data/synth-packages.labels',  desc: '2K nodes',
+    settings: { weights: { group: 5, downloads: 3, license: 2 }, labelProps: ['label', 'group'] } },
+  { name: 'OpenCTI PAP',    edges: 'data/opencti-pap-clear.edges',labels: 'data/opencti-pap-clear.labels',desc: '107 nodes',
+    settings: { weights: { createdby: 5, tags: 4 }, labelProps: ['label', 'createdby'] } },
+  { name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  labels: 'data/bitzoom-source.labels',  desc: '147 nodes, call graph',
+    settings: { weights: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] } },
+  { name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   labels: 'data/mitre-attack.labels',   desc: '9K nodes, kill chains',
+    settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
 ];
 
 class BitZoom {
   constructor() {
-    // Graph state
-    this.nodes = [];
-    this.edges = [];
-    this.nodeIndexFull = {};
-    this.adjList = {};
-    this.propWeights = {};
-    this.presets = {};
-    this.groupNames = [];
-    this.groupRotations = {};
-    this.groupColors = {};
-    this.propColors = {};
-    this.smoothAlpha = 0;
-    this.levels = [];
-    this.maxDegree = 1;
+    const canvas = document.getElementById('canvas');
+
+    // The canvas view handles all graph state, rendering, interaction primitives
+    this.view = new BitZoomCanvas(canvas, {
+      skipEvents: true,
+      heatmapMode: 'density',
+      initialLevel: 0,
+      onRender: () => this._scheduleHashUpdate(),
+    });
+
+    // App-specific state
     this.dataLoaded = false;
-    this.hasEdgeTypes = false;
-
-    // View state
-    this.W = 0;
-    this.H = 0;
-    this.currentLevel = 0;
-    this.pan = {x: 0, y: 0};
-    this.zoom = 1;
-    this.baseLevel = 0;
-    this.sizeBy = 'edges';
-    this.labelProps = new Set(); // checked label properties; empty = auto (dominant)
-    this.edgeMode = 'curves'; // 'curves', 'lines', 'none'
-    this.sizeLog = false;    // log scale for size/heatmap
-    this.heatmapMode = 'density';
-    this.selectedIds = new Set();  // multi-select via ctrl+click
-    this._primarySelectedId = null;
-    this.hoveredId = null;
-
-    // Timers & workers
-    this.rebuildTimer = null;
-    this.smoothDebounceTimer = null;
+    this.presets = {};
     this.activeWorker = null;
-
-    // File loader
     this.pendingEdgesText = null;
     this.pendingLabelsText = null;
+    this.rebuildTimer = null;
+    this.smoothDebounceTimer = null;
+    this._zoomTargetMembers = null;
+    this._zoomTargetLabel = null;
+    this._hashUpdateTimer = null;
+    this._currentDatasetName = null;
+    this._uiUpdatePending = false;
 
-    // DOM
-    this.canvas = document.getElementById('canvas');
-    this.ctx = this.canvas.getContext('2d');
-
-    // Input state
+    // Own event state
     this.mouseDown = false;
     this.mouseMoved = false;
     this.mouseStart = null;
     this.t1 = null;
     this.t2 = null;
     this.touchMoved = false;
-
-    // Zoom animation target
-    this._zoomTargetMembers = null;
-    this._zoomTargetLabel = null;
-
-    this._hashUpdateTimer = null;
-    this._currentDatasetName = null;
+    this._abortController = new AbortController();
 
     this._bindEvents();
     this._buildDatasetButtons();
   }
 
-  // Primary selection — last clicked node. Setting clears multi-select to just this one.
-  get selectedId() { return this._primarySelectedId; }
-  set selectedId(id) {
-    this._primarySelectedId = id;
-    if (id === null) { this.selectedIds.clear(); }
-    else if (!this.selectedIds.has(id)) { this.selectedIds.clear(); this.selectedIds.add(id); }
-  }
-
-  // Check if a node is in the selection set
-  isSelected(id) { return this.selectedIds.has(id); }
-
-  // Toggle selection (for ctrl+click)
-  toggleSelection(id) {
-    if (this.selectedIds.has(id)) {
-      this.selectedIds.delete(id);
-      this._primarySelectedId = this.selectedIds.size > 0 ? [...this.selectedIds].pop() : null;
-    } else {
-      this.selectedIds.add(id);
-      this._primarySelectedId = id;
-    }
-  }
-
   // ─── URL hash state ────────────────────────────────────────────────────────
 
   _serializeHash() {
+    const v = this.view;
     const parts = [];
     if (this._currentDatasetName) parts.push(`d=${encodeURIComponent(this._currentDatasetName)}`);
-    parts.push(`l=${this.currentLevel}`);
-    parts.push(`z=${this.zoom.toFixed(3)}`);
-    parts.push(`x=${this.pan.x.toFixed(0)}`);
-    parts.push(`y=${this.pan.y.toFixed(0)}`);
-    parts.push(`bl=${this.baseLevel}`);
-    if (this.selectedId) parts.push(`s=${encodeURIComponent(this.selectedId)}`);
+    parts.push(`l=${v.currentLevel}`);
+    parts.push(`z=${v.zoom.toFixed(3)}`);
+    parts.push(`x=${v.pan.x.toFixed(0)}`);
+    parts.push(`y=${v.pan.y.toFixed(0)}`);
+    parts.push(`bl=${v.baseLevel}`);
+    if (v.selectedId) parts.push(`s=${encodeURIComponent(v.selectedId)}`);
     return parts.join('&');
   }
 
@@ -139,286 +97,165 @@ class BitZoom {
     if (!hash) return null;
     const params = {};
     for (const part of hash.split('&')) {
-      const [k, v] = part.split('=');
-      if (k && v !== undefined) params[k] = decodeURIComponent(v);
+      const [k, val] = part.split('=');
+      if (k && val !== undefined) params[k] = decodeURIComponent(val);
     }
     return params;
   }
 
   _applyHashState(params) {
     if (!params || !this.dataLoaded) return;
-    if (params.l !== undefined) this.currentLevel = parseInt(params.l) || 0;
-    if (params.bl !== undefined) this.baseLevel = parseInt(params.bl) || 0;
-    if (params.z !== undefined) this.zoom = parseFloat(params.z) || 1;
-    if (params.x !== undefined) this.pan.x = parseFloat(params.x) || 0;
-    if (params.y !== undefined) this.pan.y = parseFloat(params.y) || 0;
+    const v = this.view;
+    if (params.l !== undefined) v.currentLevel = parseInt(params.l) || 0;
+    if (params.bl !== undefined) v.baseLevel = parseInt(params.bl) || 0;
+    if (params.z !== undefined) v.zoom = parseFloat(params.z) || 1;
+    if (params.x !== undefined) v.pan.x = parseFloat(params.x) || 0;
+    if (params.y !== undefined) v.pan.y = parseFloat(params.y) || 0;
     if (params.s) {
-      this.selectedId = params.s;
-      // Show detail if node exists
-      const n = this.nodeIndexFull[params.s];
+      v.selectedId = params.s;
+      const n = v.nodeIndexFull[params.s];
       if (n) this._showDetail({ type: 'node', item: n });
     }
     this._updateStepperUI();
-    this.layoutAll();
+    v.layoutAll();
     this._updateAlgoInfo();
     this._updateOverview();
-    this.render();
-  }
-
-  // ─── Computed properties ───────────────────────────────────────────────────
-
-  get renderZoom() {
-    const levelOffset = this.currentLevel - this.baseLevel;
-    return Math.max(1, this.zoom * Math.pow(2, levelOffset));
-  }
-
-  // Cached dominant prop — recalculated only when weights change
-  _cachedDominant = 'label';
-  _cachedLabelProps = ['label']; // array of active label properties
-  _cachedColorMap = null;
-
-  _refreshPropCache() {
-    let best = 'label', bestW = 0;
-    for (const g of this.groupNames) {
-      if ((this.propWeights[g] || 0) > bestW) {
-        bestW = this.propWeights[g];
-        best = g;
-      }
-    }
-    this._cachedDominant = best;
-    this._cachedLabelProps = this.labelProps.size > 0 ? [...this.labelProps] : [best];
-    this._cachedColorMap = this.propColors[best] || {};
-    this.levels = new Array(ZOOM_LEVELS.length).fill(null);
-  }
-
-  get _dominantProp() { return this._cachedDominant; }
-  get _labelProp() { return this._cachedLabelProps[0]; } // primary for supernodeLabel fallback
-
-  // ─── Node property accessors (used by renderer) ───────────────────────────
-
-  _nodeLabel(n) {
-    const props = this._cachedLabelProps;
-    if (props.length === 1) return getNodePropValue(n, props[0], this.adjList);
-    const parts = [];
-    for (const p of props) {
-      const v = getNodePropValue(n, p, this.adjList);
-      if (v && v !== 'unknown' && v !== n.id) parts.push(v);
-    }
-    return parts.length > 0 ? parts.join(' · ') : n.label || n.id;
-  }
-
-  _supernodeLabel(sn) {
-    const props = this._cachedLabelProps;
-    if (props.length === 1) return getSupernodeDominantValue(sn, props[0], this.adjList);
-    const parts = [];
-    for (const p of props) {
-      const v = getSupernodeDominantValue(sn, p, this.adjList);
-      if (v && v !== 'unknown') parts.push(v);
-    }
-    return parts.length > 0 ? parts.join(' · ') : sn.repName;
-  }
-
-  _nodeColorVal(n) { return getNodePropValue(n, this._cachedDominant, this.adjList); }
-  _nodeColor(n) {
-    const val = this._nodeColorVal(n);
-    return this._cachedColorMap[val] || '#888888';
-  }
-  _supernodeColor(sn) {
-    const prop = this._dominantProp;
-    const counts = {};
-    for (const m of sn.members) {
-      const val = this._nodeColorVal(m);
-      counts[val] = (counts[val] || 0) + 1;
-    }
-    const topVal = maxCountKey(counts);
-    return (this.propColors[prop] && this.propColors[prop][topVal]) || '#888888';
+    v.render();
   }
 
   // ─── Algorithm wrappers ────────────────────────────────────────────────────
 
   rebuildProjections() {
-    this._refreshPropCache();
-    unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5);
-    this.layoutAll();
-    this.render();
+    const v = this.view;
+    v._refreshPropCache();
+    unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode);
+    v.layoutAll();
+    v.render();
   }
 
-  getLevel(idx) {
-    if (!this.levels[idx]) {
-      const colorProp = this._dominantProp;
-      const propColors = this.propColors[colorProp];
-      this.levels[idx] = buildLevel(
-        ZOOM_LEVELS[idx], this.nodes, this.edges, this.nodeIndexFull,
-        n => getNodePropValue(n, colorProp, this.adjList),
-        n => this._nodeLabel(n),
-        val => (propColors && propColors[val]) || '#888888'
-      );
-      // New supernodes need screen positions computed
-      this.layoutAll();
-    }
-    return this.levels[idx];
-  }
-
-  // ─── Layout & render delegates ─────────────────────────────────────────────
-
-  layoutAll() { layoutAll(this); }
-
-  _renderPending = false;
-  render() {
-    if (this._renderPending) return;
-    this._renderPending = true;
-    requestAnimationFrame(() => {
-      this._renderPending = false;
-      render(this);
-      this._scheduleHashUpdate();
-    });
-  }
-
-  // Force immediate render (for animations that manage their own rAF)
-  renderNow() { render(this); }
-  worldToScreen(wx, wy) { return worldToScreen(this, wx, wy); }
-  screenToWorld(sx, sy) { return screenToWorld(this, sx, sy); }
-  hitTest(sx, sy) { return hitTest(this, sx, sy); }
-
-  resize() {
-    const rect = this.canvas.getBoundingClientRect();
-    this.W = Math.floor(rect.width) || this.canvas.offsetWidth || 300;
-    this.H = Math.floor(rect.height) || this.canvas.offsetHeight || 300;
-    this.canvas.width = this.W;
-    this.canvas.height = this.H;
-    this.layoutAll();
-    this.render();
-  }
-
-  // ─── Navigation ────────────────────────────────────────────────────────────
-
-  zoomForLevel(levelIdx) {
-    const TARGET_PX = 44;
-    const isRaw = levelIdx === RAW_LEVEL - 1;
-    const k = isRaw ? 256 : (1 << ZOOM_LEVELS[levelIdx]);
-    const pad = Math.min(60, this.W * 0.08, this.H * 0.08);
-    const availMin = Math.min(this.W - pad*2, this.H - pad*2);
-    const cellSizePx = availMin / k;
-    const targetZoom = Math.max(1, TARGET_PX / cellSizePx);
-    this.pan.x = this.W/2 - (this.W/2) * targetZoom;
-    this.pan.y = this.H/2 - (this.H/2) * targetZoom;
-    this.zoom = targetZoom;
-  }
+  // ─── Navigation ─────────────────────────────────────────────────────────────
 
   switchLevel(idx) {
-    // Adjust zoom so renderZoom stays the same across the level change
-    const oldRZ = this.renderZoom;
-    this.currentLevel = idx;
-    // Solve: oldRZ = max(1, newZoom * 2^(idx - baseLevel))
-    // → newZoom = oldRZ / 2^(idx - baseLevel)
-    const newZoom = oldRZ / Math.pow(2, idx - this.baseLevel);
-    this.zoom = newZoom;
+    const v = this.view;
+    const oldRZ = v.renderZoom;
+    v.currentLevel = idx;
+    v.zoom = oldRZ / Math.pow(2, idx - v.baseLevel);
     this._updateStepperUI();
-    this.selectedId = null;
+    v.selectedId = null;
     document.getElementById('node-panel').classList.remove('open');
-    this.layoutAll();
+    v.layoutAll();
     this._updateAlgoInfo();
     this._updateOverview();
-    this.render();
+    v.render();
+  }
+
+  _checkAutoLevel() {
+    const v = this.view;
+    const prev = v.currentLevel;
+    v._checkAutoLevel();
+    if (v.currentLevel !== prev) {
+      this._updateStepperUI();
+      this._deferUIUpdate();
+    }
   }
 
   _animateZoom(factor, anchorX, anchorY) {
-    const startPan = { x: this.pan.x, y: this.pan.y };
-    const startZoom = this.zoom;
+    const v = this.view;
+    const startPan = { x: v.pan.x, y: v.pan.y };
+    const startZoom = v.zoom;
     const targetZoom = Math.max(0.25, startZoom * factor);
-    const startRZ = this.renderZoom;
-    const targetRZ = Math.max(1, targetZoom * Math.pow(2, this.currentLevel - this.baseLevel));
+    const startRZ = v.renderZoom;
+    const targetRZ = Math.max(1, targetZoom * Math.pow(2, v.currentLevel - v.baseLevel));
     const f = targetRZ / startRZ;
     const targetPan = {
       x: anchorX - (anchorX - startPan.x) * f,
       y: anchorY - (anchorY - startPan.y) * f,
     };
     const startTime = performance.now();
-    const duration = 300;
     const animate = (now) => {
-      const t = Math.min(1, (now - startTime) / duration);
+      const t = Math.min(1, (now - startTime) / 300);
       const e = 1 - Math.pow(1 - t, 3);
-      this.zoom = startZoom + (targetZoom - startZoom) * e;
-      this.pan.x = startPan.x + (targetPan.x - startPan.x) * e;
-      this.pan.y = startPan.y + (targetPan.y - startPan.y) * e;
-      this.renderNow();
+      v.zoom = startZoom + (targetZoom - startZoom) * e;
+      v.pan.x = startPan.x + (targetPan.x - startPan.x) * e;
+      v.pan.y = startPan.y + (targetPan.y - startPan.y) * e;
+      v.renderNow();
       if (t < 1) {
         requestAnimationFrame(animate);
       } else {
         this._checkAutoLevel();
-        this.renderNow();
+        v.renderNow();
       }
     };
     requestAnimationFrame(animate);
   }
 
   zoomToNode(hit) {
+    const v = this.view;
     const isNode = hit.type === 'node';
     const item = hit.item;
 
     this._zoomTargetMembers = isNode ? [item] : item.members;
-    this._zoomTargetLabel = isNode ? this._nodeLabel(item) : this._supernodeLabel(item);
-    this.selectedId = isNode ? item.id : item.bid;
-    // Don't open detail panel — just zoom
+    this._zoomTargetLabel = isNode ? v._nodeLabel(item) : v._supernodeLabel(item);
+    v.selectedId = isNode ? item.id : item.bid;
 
-    const startPan = { x: this.pan.x, y: this.pan.y };
-    const startZoom = this.zoom;
+    const startPan = { x: v.pan.x, y: v.pan.y };
+    const startZoom = v.zoom;
     const targetZoom = startZoom * 2;
 
-    const wp = this.worldToScreen(item.x, item.y);
-    const startRZ = this.renderZoom;
-    const targetRZ = Math.max(1, targetZoom * Math.pow(2, this.currentLevel - this.baseLevel));
+    const wp = v.worldToScreen(item.x, item.y);
+    const startRZ = v.renderZoom;
+    const targetRZ = Math.max(1, targetZoom * Math.pow(2, v.currentLevel - v.baseLevel));
     const f = targetRZ / startRZ;
     const targetPan = {
-      x: this.W / 2 - (this.W / 2 - startPan.x) * f - (wp.x - this.W / 2) * f,
-      y: this.H / 2 - (this.H / 2 - startPan.y) * f - (wp.y - this.H / 2) * f,
+      x: v.W / 2 - (v.W / 2 - startPan.x) * f - (wp.x - v.W / 2) * f,
+      y: v.H / 2 - (v.H / 2 - startPan.y) * f - (wp.y - v.H / 2) * f,
     };
 
     const startTime = performance.now();
-    const duration = 350;
     const animate = (now) => {
-      const t = Math.min(1, (now - startTime) / duration);
+      const t = Math.min(1, (now - startTime) / 350);
       const e = 1 - Math.pow(1 - t, 3);
-      this.zoom = startZoom + (targetZoom - startZoom) * e;
-      this.pan.x = startPan.x + (targetPan.x - startPan.x) * e;
-      this.pan.y = startPan.y + (targetPan.y - startPan.y) * e;
-      this.renderNow();
+      v.zoom = startZoom + (targetZoom - startZoom) * e;
+      v.pan.x = startPan.x + (targetPan.x - startPan.x) * e;
+      v.pan.y = startPan.y + (targetPan.y - startPan.y) * e;
+      v.renderNow();
       if (t < 1) {
         requestAnimationFrame(animate);
       } else {
-        const prevLevel = this.currentLevel;
+        const prevLevel = v.currentLevel;
         this._checkAutoLevel();
-        if (this.currentLevel !== prevLevel && this._zoomTargetMembers) {
+        if (v.currentLevel !== prevLevel && this._zoomTargetMembers) {
           this._reselectAfterLevelChange();
         }
-        this.renderNow();
+        v.renderNow();
       }
     };
     requestAnimationFrame(animate);
   }
 
   _reselectAfterLevelChange() {
+    const v = this.view;
     if (!this._zoomTargetMembers || this._zoomTargetMembers.length === 0) return;
     const targetLabel = this._zoomTargetLabel || '';
 
-    if (this.currentLevel === RAW_LEVEL - 1) {
-      let best = this.nodeIndexFull[this._zoomTargetMembers[0].id];
+    if (v.currentLevel === RAW_LEVEL - 1) {
+      let best = v.nodeIndexFull[this._zoomTargetMembers[0].id];
       if (targetLabel) {
         for (const m of this._zoomTargetMembers) {
-          const n = this.nodeIndexFull[m.id];
-          if (n && this._nodeLabel(n) === targetLabel) { best = n; break; }
+          const n = v.nodeIndexFull[m.id];
+          if (n && v._nodeLabel(n) === targetLabel) { best = n; break; }
         }
       }
       if (best) {
-        this.selectedId = best.id;
-        this.layoutAll();
+        v.selectedId = best.id;
+        v.layoutAll();
         this._showDetail({ type: 'node', item: best });
         this._centerOnNode(best);
       }
       return;
     }
 
-    const level = this.getLevel(this.currentLevel);
+    const level = v.getLevel(v.currentLevel);
     const memberIds = new Set(this._zoomTargetMembers.map(m => m.id));
 
     let bestSn = null;
@@ -428,7 +265,7 @@ class BitZoom {
       for (const m of sn.members) {
         if (memberIds.has(m.id)) overlap++;
       }
-      const snLabel = this._supernodeLabel(sn);
+      const snLabel = v._supernodeLabel(sn);
       const labelBonus = (targetLabel && snLabel === targetLabel) ? 10000 : 0;
       const score = labelBonus + overlap;
       if (score > bestScore) {
@@ -438,64 +275,35 @@ class BitZoom {
     }
 
     if (bestSn) {
-      this.selectedId = bestSn.bid;
+      v.selectedId = bestSn.bid;
       this._zoomTargetMembers = bestSn.members;
-      this._zoomTargetLabel = this._supernodeLabel(bestSn);
-      this.layoutAll();
+      this._zoomTargetLabel = v._supernodeLabel(bestSn);
+      v.layoutAll();
       this._showDetail({ type: 'supernode', item: bestSn });
       this._centerOnNode(bestSn);
     }
   }
 
   _centerOnNode(item) {
-    const p = this.worldToScreen(item.x, item.y);
-    this.pan.x += this.W / 2 - p.x;
-    this.pan.y += this.H / 2 - p.y;
+    const v = this.view;
+    const p = v.worldToScreen(item.x, item.y);
+    v.pan.x += v.W / 2 - p.x;
+    v.pan.y += v.H / 2 - p.y;
   }
 
   selectNode(id) {
-    const n = this.nodeIndexFull[id];
+    const v = this.view;
+    const n = v.nodeIndexFull[id];
     if (!n) return;
-    this.selectedId = id;
+    v.selectedId = id;
     this.switchLevel(RAW_LEVEL - 1);
-    const p = this.worldToScreen(n.x, n.y);
-    this.pan.x += this.W/2 - p.x;
-    this.pan.y += this.H/2 - p.y;
-    this._showDetail({type:'node', item:n});
-    this.render();
+    const p = v.worldToScreen(n.x, n.y);
+    v.pan.x += v.W / 2 - p.x;
+    v.pan.y += v.H / 2 - p.y;
+    this._showDetail({ type: 'node', item: n });
+    v.render();
   }
 
-  _checkAutoLevel() {
-    const idx = this.currentLevel;
-    const maxIdx = LEVEL_LABELS.length - 1;
-
-    if (idx < maxIdx && this.zoom >= 2) {
-      this.zoom /= 2;
-      this.currentLevel = idx + 1;
-      this._updateStepperUI();
-      this.layoutAll();
-      this._deferUIUpdate();
-      return;
-    }
-
-    if (idx > 0 && this.zoom < 0.5) {
-      this.zoom *= 2;
-      this.currentLevel = idx - 1;
-      this._updateStepperUI();
-      this.layoutAll();
-      this._deferUIUpdate();
-      if (this.renderZoom <= 1) {
-        this.pan = {x: 0, y: 0};
-      }
-      return;
-    }
-
-    if (this.currentLevel === 0 && this.renderZoom <= 1) {
-      this.pan = {x: 0, y: 0};
-    }
-  }
-
-  // Debounce heavy DOM updates (overview/algoInfo) to avoid thrashing during rapid zoom
   _deferUIUpdate() {
     if (this._uiUpdatePending) return;
     this._uiUpdatePending = true;
@@ -509,39 +317,42 @@ class BitZoom {
   // ─── UI updates ────────────────────────────────────────────────────────────
 
   _updateStepperUI() {
-    const label = LEVEL_LABELS[this.currentLevel];
+    const v = this.view;
+    const label = LEVEL_LABELS[v.currentLevel];
     const el = document.getElementById('zoomCurrent');
     if (el.textContent !== label) el.textContent = label;
-    document.getElementById('zoomPrev').disabled = this.currentLevel === 0;
-    document.getElementById('zoomNext').disabled = this.currentLevel === LEVEL_LABELS.length - 1;
+    document.getElementById('zoomPrev').disabled = v.currentLevel === 0;
+    document.getElementById('zoomNext').disabled = v.currentLevel === LEVEL_LABELS.length - 1;
   }
 
   _updateOverview() {
+    const v = this.view;
     const stats = document.getElementById('overview-stats');
-    const isRaw = this.currentLevel === RAW_LEVEL - 1;
+    const isRaw = v.currentLevel === RAW_LEVEL - 1;
     if (isRaw) {
       stats.innerHTML = `
-        <div class="stat-row"><span class="stat-label">Nodes</span><span class="stat-value">${this.nodes.length}</span></div>
-        <div class="stat-row"><span class="stat-label">Edges</span><span class="stat-value">${this.edges.length}</span></div>
+        <div class="stat-row"><span class="stat-label">Nodes</span><span class="stat-value">${v.nodes.length}</span></div>
+        <div class="stat-row"><span class="stat-label">Edges</span><span class="stat-value">${v.edges.length}</span></div>
         <div class="stat-row"><span class="stat-label">MinHash k</span><span class="stat-value">${MINHASH_K}</span></div>
         <div class="stat-row"><span class="stat-label">Grid</span><span class="stat-value">${GRID_SIZE}×${GRID_SIZE}</span></div>
         <div class="stat-row"><span class="stat-label">Level</span><span class="stat-value">RAW</span></div>`;
     } else {
-      const lv = this.getLevel(this.currentLevel);
-      const k = 1 << ZOOM_LEVELS[this.currentLevel];
+      const lv = v.getLevel(v.currentLevel);
+      const k = 1 << ZOOM_LEVELS[v.currentLevel];
       stats.innerHTML = `
-        <div class="stat-row"><span class="stat-label">Nodes</span><span class="stat-value">${this.nodes.length}</span></div>
+        <div class="stat-row"><span class="stat-label">Nodes</span><span class="stat-value">${v.nodes.length}</span></div>
         <div class="stat-row"><span class="stat-label">Supernodes</span><span class="stat-value">${lv.supernodes.length}</span></div>
         <div class="stat-row"><span class="stat-label">Super-edges</span><span class="stat-value">${lv.snEdges.length}</span></div>
         <div class="stat-row"><span class="stat-label">Grid k</span><span class="stat-value">${k}×${k}</span></div>
         <div class="stat-row"><span class="stat-label">Cells used</span><span class="stat-value">${lv.supernodes.length} / ${k*k}</span></div>
-        <div class="stat-row"><span class="stat-label">Avg bucket</span><span class="stat-value">${(this.nodes.length/lv.supernodes.length).toFixed(1)} nodes</span></div>`;
+        <div class="stat-row"><span class="stat-label">Avg bucket</span><span class="stat-value">${(v.nodes.length/lv.supernodes.length).toFixed(1)} nodes</span></div>`;
     }
   }
 
   _updateAlgoInfo() {
-    const isRaw = this.currentLevel === RAW_LEVEL - 1;
-    const lvNum = ZOOM_LEVELS[this.currentLevel];
+    const v = this.view;
+    const isRaw = v.currentLevel === RAW_LEVEL - 1;
+    const lvNum = ZOOM_LEVELS[v.currentLevel];
     const k = isRaw ? GRID_SIZE : (1 << lvNum);
     const desc = isRaw
       ? `RAW: individual nodes. MinHash(k=128) → Gaussian rotation → 2D. Grid (gx,gy) uint16.`
@@ -550,14 +361,15 @@ class BitZoom {
   }
 
   _showDetail(hit) {
+    const v = this.view;
     const panel = document.getElementById('node-panel');
     const detail = document.getElementById('node-detail');
     panel.classList.add('open');
 
     if (hit.type === 'node') {
       const n = hit.item;
-      const col = this._nodeColor(n);
-      const nbrCount = (this.adjList[n.id] || []).length;
+      const col = v._nodeColor(n);
+      const nbrCount = (v.adjList[n.id] || []).length;
       let propsHtml = `
         <div class="prop-row"><div class="prop-key">Group</div><div class="prop-val">${n.group}</div></div>
         <div class="prop-row"><div class="prop-key">Label</div><div class="prop-val">${n.label}</div></div>
@@ -572,17 +384,15 @@ class BitZoom {
           }
         }
       }
-      const nbrIds = this.adjList[n.id] || [];
+      const nbrIds = v.adjList[n.id] || [];
       if (nbrIds.length > 0) {
-        // Group neighbors by type, sort each group by degree, show top entries
         const nbrByGroup = {};
         for (const nid of nbrIds) {
-          const nb = this.nodeIndexFull[nid];
+          const nb = v.nodeIndexFull[nid];
           const g = nb ? nb.group : 'unknown';
           if (!nbrByGroup[g]) nbrByGroup[g] = [];
           nbrByGroup[g].push(nb || { id: nid, group: 'unknown', degree: 0, label: nid });
         }
-        // Sort groups by size descending, within each group sort by degree
         const groups = Object.entries(nbrByGroup).sort((a, b) => b[1].length - a[1].length);
         let nbrHtml = '';
         const MAX_PER_GROUP = 5;
@@ -590,11 +400,11 @@ class BitZoom {
         for (let gi = 0; gi < Math.min(groups.length, MAX_GROUPS); gi++) {
           const [gName, members] = groups[gi];
           members.sort((a, b) => b.degree - a.degree);
-          const gc = this.groupColors[gName] || '#888888';
+          const gc = v.groupColors[gName] || '#888888';
           nbrHtml += `<div style="margin-top:4px"><span class="prop-key" style="color:${gc}">${gName} (${members.length})</span></div>`;
           for (let mi = 0; mi < Math.min(members.length, MAX_PER_GROUP); mi++) {
             const nb = members[mi];
-            const nc = this._nodeColor(nb);
+            const nc = v._nodeColor(nb);
             const label = nb.label || nb.id;
             const shortLabel = label.length > 40 ? label.slice(0, 37) + '…' : label;
             nbrHtml += `<div class="neighbor-item" onclick="bz.selectNode('${nb.id}')" style="cursor:pointer">
@@ -623,21 +433,21 @@ class BitZoom {
         <div class="prop-row">
           <div class="prop-key">MinHash sig (32 bits)</div>
           <div class="minhash-display">
-            ${n.sig.slice(0,32).map((v,i) => {
-              const bit = v % 2;
+            ${n.sig.slice(0,32).map((val,i) => {
+              const bit = val % 2;
               const col2 = bit ? '#7c6af7' : '#1e1e2e';
-              return `<div class="mh-bit" title="h${i}=${v}" style="background:${col2}"></div>`;
+              return `<div class="mh-bit" title="h${i}=${val}" style="background:${col2}"></div>`;
             }).join('')}
           </div>
         </div>`;
     } else {
       const sn = hit.item;
       const col = sn.cachedColor;
-      const lvNum = ZOOM_LEVELS[this.currentLevel];
+      const lvNum = ZOOM_LEVELS[v.currentLevel];
       const groupBreakdown = {};
       for (const m of sn.members) groupBreakdown[m.group] = (groupBreakdown[m.group]||0)+1;
       const groupRows = Object.entries(groupBreakdown).sort((a,b)=>b[1]-a[1])
-        .map(([g,n]) => `<div class="neighbor-item"><span>${g}</span><span style="color:${this.groupColors[g]||'#888888'}">${n}</span></div>`).join('');
+        .map(([g,cnt]) => `<div class="neighbor-item"><span>${g}</span><span style="color:${v.groupColors[g]||'#888888'}">${cnt}</span></div>`).join('');
 
       let extraHtml = '';
       if (sn.members.length > 0 && sn.members[0].extraProps) {
@@ -645,17 +455,16 @@ class BitZoom {
         for (const key of propKeys) {
           const counts = {};
           for (const m of sn.members) {
-            const v = m.extraProps?.[key] || 'unknown';
-            counts[v] = (counts[v] || 0) + 1;
+            const val = m.extraProps?.[key] || 'unknown';
+            counts[val] = (counts[val] || 0) + 1;
           }
           const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-          const top = sorted.slice(0, 3).map(([v, c]) => `${v} (${c})`).join(', ');
+          const top = sorted.slice(0, 3).map(([val, c]) => `${val} (${c})`).join(', ');
           extraHtml += `<div class="prop-row"><div class="prop-key">${key}</div><div class="prop-val">${top}</div></div>`;
         }
       }
 
-      // Top linked supernodes from cross-cell edges
-      const level = this.getLevel(this.currentLevel);
+      const level = v.getLevel(v.currentLevel);
       const linkedSns = [];
       for (const e of level.snEdges) {
         if (e.a === sn.bid) linkedSns.push({ bid: e.b, weight: e.weight });
@@ -679,14 +488,13 @@ class BitZoom {
         linkedHtml += `<div class="hint">+${linkedSns.length - MAX_LINKED} more</div>`;
       }
 
-      // Top members by degree
       const topMembers = sn.members.slice().sort((a, b) => b.degree - a.degree);
       const memberList = topMembers.slice(0, 8).map(m => {
         const ml = m.label || m.id;
         const shortMl = ml.length > 35 ? ml.slice(0, 32) + '…' : ml;
         return `<div class="neighbor-item" onclick="bz.selectNode('${m.id}')" style="cursor:pointer">
           <span>${shortMl}</span>
-          <span style="color:${this.groupColors[m.group]||'#888888'};font-size:9px">deg:${m.degree}</span>
+          <span style="color:${v.groupColors[m.group]||'#888888'};font-size:9px">deg:${m.degree}</span>
         </div>`;
       }).join('') + (sn.members.length > 8 ? `<div class="hint">+${sn.members.length-8} more…</div>` : '');
 
@@ -712,7 +520,35 @@ class BitZoom {
     }
   }
 
+  _applyDatasetSettings(settings) {
+    const v = this.view;
+    if (settings.weights) {
+      for (const [prop, val] of Object.entries(settings.weights)) {
+        if (prop in v.propWeights) v.propWeights[prop] = val;
+      }
+    }
+    v.labelProps.clear();
+    if (settings.labelProps) {
+      for (const prop of settings.labelProps) {
+        if (v.groupNames.includes(prop)) v.labelProps.add(prop);
+      }
+    }
+    this._syncWeightUI();
+    this._syncLabelCheckboxes();
+    v._refreshPropCache();
+    this.rebuildProjections();
+  }
+
+  _syncLabelCheckboxes() {
+    const v = this.view;
+    for (const key of v.groupNames) {
+      const cb = document.getElementById(`lbl-${key}`);
+      if (cb) cb.checked = v.labelProps.has(key);
+    }
+  }
+
   _buildDynamicUI() {
+    const v = this.view;
     const presetRow = document.getElementById('presetRow');
     presetRow.innerHTML = '';
     for (const name of Object.keys(this.presets)) {
@@ -726,26 +562,26 @@ class BitZoom {
 
     const sliderContainer = document.getElementById('weightSliders');
     sliderContainer.innerHTML = '';
-    for (const key of this.groupNames) {
+    for (const key of v.groupNames) {
       const row = document.createElement('div');
       row.className = 'weight-row';
       row.innerHTML = `
         <input type="checkbox" id="lbl-${key}" title="Include in label">
         <span class="weight-label">${key}</span>
-        <input class="weight-slider" type="range" id="w-${key}" min="1" max="10" step="1" value="${this.propWeights[key]}">
-        <span class="weight-val" id="wv-${key}">${this.propWeights[key]}</span>`;
+        <input class="weight-slider" type="range" id="w-${key}" min="1" max="10" step="1" value="${v.propWeights[key]}">
+        <span class="weight-val" id="wv-${key}">${v.propWeights[key]}</span>`;
       sliderContainer.appendChild(row);
       row.querySelector('.weight-slider').addEventListener('input', e => {
-        this.propWeights[key] = parseInt(e.target.value);
-        document.getElementById(`wv-${key}`).textContent = this.propWeights[key];
+        v.propWeights[key] = parseInt(e.target.value);
+        document.getElementById(`wv-${key}`).textContent = v.propWeights[key];
         document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
         this._scheduleRebuild();
       });
       row.querySelector('input[type=checkbox]').addEventListener('change', e => {
-        if (e.target.checked) this.labelProps.add(key);
-        else this.labelProps.delete(key);
-        this._refreshPropCache();
-        this.render();
+        if (e.target.checked) v.labelProps.add(key);
+        else v.labelProps.delete(key);
+        v._refreshPropCache();
+        v.render();
       });
     }
   }
@@ -756,7 +592,8 @@ class BitZoom {
   }
 
   _syncWeightUI() {
-    for (const [key, val] of Object.entries(this.propWeights)) {
+    const v = this.view;
+    for (const [key, val] of Object.entries(v.propWeights)) {
       const sl = document.getElementById(`w-${key}`);
       const vl = document.getElementById(`wv-${key}`);
       if (sl) { sl.value = val; vl.textContent = val; }
@@ -764,9 +601,10 @@ class BitZoom {
   }
 
   _applyPreset(name) {
+    const v = this.view;
     const p = this.presets[name];
     if (!p) return;
-    Object.assign(this.propWeights, p);
+    Object.assign(v.propWeights, p);
     this._syncWeightUI();
     document.querySelectorAll('.preset-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.preset === name);
@@ -836,13 +674,14 @@ class BitZoom {
   }
 
   _applyWorkerResult(result) {
-    const { nodeMeta, projBuf, sigBuf, edges: workerEdges, groupNames, uniqueGroups, hasEdgeTypes: het } = result;
+    const v = this.view;
+    const { nodeMeta, projBuf, sigBuf, edges: workerEdges, groupNames, hasEdgeTypes: het } = result;
 
-    this.groupNames = groupNames;
-    this.hasEdgeTypes = het;
+    v.groupNames = groupNames;
+    v.hasEdgeTypes = het;
 
     // Build color maps for every property group
-    this.propColors = {};
+    v.propColors = {};
     const propValues = {};
     for (const g of groupNames) propValues[g] = new Set();
     for (const meta of nodeMeta) {
@@ -851,8 +690,8 @@ class BitZoom {
       propValues['structure'].add(`deg:${meta.degree}`);
       propValues['neighbors'].add('_');
       if (meta.extraProps) {
-        for (const [k, v] of Object.entries(meta.extraProps)) {
-          if (propValues[k]) propValues[k].add(v || 'unknown');
+        for (const [k, val] of Object.entries(meta.extraProps)) {
+          if (propValues[k]) propValues[k].add(val || 'unknown');
         }
       }
       if (meta.edgeTypes) {
@@ -861,18 +700,17 @@ class BitZoom {
       }
     }
     for (const g of groupNames) {
-      this.propColors[g] = generateGroupColors([...propValues[g]].sort());
+      v.propColors[g] = generateGroupColors([...propValues[g]].sort());
     }
-    this.groupColors = this.propColors['group'];
+    v.groupColors = v.propColors['group'];
 
-    this.groupRotations = {};
-    for (let i = 0; i < this.groupNames.length; i++) {
-      this.groupRotations[this.groupNames[i]] = buildGaussianRotation(2001 + i, 2, MINHASH_K);
+    v.groupRotations = {};
+    for (let i = 0; i < v.groupNames.length; i++) {
+      v.groupRotations[v.groupNames[i]] = buildGaussianRotation(2001 + i, MINHASH_K);
     }
 
-    const N = nodeMeta.length;
     const G = groupNames.length;
-    this.nodes = nodeMeta.map((meta, i) => {
+    v.nodes = nodeMeta.map((meta, i) => {
       const projections = {};
       for (let g = 0; g < G; g++) {
         const off = (i * G + g) * 2;
@@ -883,53 +721,53 @@ class BitZoom {
       return { ...meta, projections, sig, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
     });
 
-    this.nodeIndexFull = Object.fromEntries(this.nodes.map(n => [n.id, n]));
-    this.edges = workerEdges;
+    v.nodeIndexFull = Object.fromEntries(v.nodes.map(n => [n.id, n]));
+    v.edges = workerEdges;
     let md = 1;
-    for (let i = 0; i < this.nodes.length; i++) { if (this.nodes[i].degree > md) md = this.nodes[i].degree; }
-    this.maxDegree = md;
+    for (let i = 0; i < v.nodes.length; i++) { if (v.nodes[i].degree > md) md = v.nodes[i].degree; }
+    v.maxDegree = md;
 
-    this.adjList = Object.fromEntries(this.nodes.map(n => [n.id, []]));
-    for (const e of this.edges) {
-      if (this.adjList[e.src] && this.adjList[e.dst]) {
-        this.adjList[e.src].push(e.dst);
-        this.adjList[e.dst].push(e.src);
+    v.adjList = Object.fromEntries(v.nodes.map(n => [n.id, []]));
+    for (const e of v.edges) {
+      if (v.adjList[e.src] && v.adjList[e.dst]) {
+        v.adjList[e.src].push(e.dst);
+        v.adjList[e.dst].push(e.src);
       }
     }
 
-    this.propWeights = {};
+    v.propWeights = {};
     this.presets = { balanced: {} };
-    for (const g of this.groupNames) {
-      this.propWeights[g] = (g === 'group') ? 3 : 1;
+    for (const g of v.groupNames) {
+      v.propWeights[g] = (g === 'group') ? 3 : 1;
       this.presets.balanced[g] = (g === 'group') ? 3 : 1;
     }
-    for (const g of this.groupNames) {
+    for (const g of v.groupNames) {
       const preset = {};
-      for (const g2 of this.groupNames) preset[g2] = (g2 === g) ? 8 : 1;
+      for (const g2 of v.groupNames) preset[g2] = (g2 === g) ? 8 : 1;
       this.presets[g] = preset;
     }
 
     this._buildDynamicUI();
 
-    this._refreshPropCache();
-    this.smoothAlpha = 0;
+    v._refreshPropCache();
+    v.smoothAlpha = 0;
     document.getElementById('nudgeSlider').value = 0;
     document.getElementById('nudgeVal').textContent = '0';
-    unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5);
+    unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode);
 
     this.dataLoaded = true;
-    this.selectedId = null;
+    v.selectedId = null;
     document.getElementById('node-panel').classList.remove('open');
     document.getElementById('loader-screen').classList.add('hidden');
     document.getElementById('canvas').style.display = 'block';
     document.getElementById('loadNewBtn').style.display = '';
     history.replaceState(null, '', location.pathname);
 
-    this.currentLevel = 3; // L4
-    this.baseLevel = 3;
+    v.currentLevel = 3; // L4
+    v.baseLevel = 3;
     requestAnimationFrame(() => {
-      this.resize();
-      this.zoomForLevel(this.currentLevel);
+      v.resize();
+      v.zoomForLevel(v.currentLevel);
       this._updateStepperUI();
       this._updateOverview();
       this._updateAlgoInfo();
@@ -956,7 +794,7 @@ class BitZoom {
       }
       await this.loadGraph(edgesText, labelsText);
       this._currentDatasetName = dataset.name;
-      // Restore view state from hash if dataset matches
+      if (dataset.settings) this._applyDatasetSettings(dataset.settings);
       const params = this._restoreFromHash();
       if (params && params.d === dataset.name) {
         this._applyHashState(params);
@@ -991,100 +829,116 @@ class BitZoom {
   // ─── Event binding ─────────────────────────────────────────────────────────
 
   _bindEvents() {
-    const canvas = this.canvas;
+    const v = this.view;
+    const canvas = v.canvas;
+    const sig = { signal: this._abortController.signal };
 
     // Size-by toggle
     const sizeMemBtn = document.getElementById('sizeByMembers');
     const sizeEdgBtn = document.getElementById('sizeByEdges');
     const updateSizeButtons = () => {
-      sizeMemBtn.style.background = this.sizeBy === 'members' ? 'var(--accent)' : '';
-      sizeMemBtn.style.color = this.sizeBy === 'members' ? '#fff' : '';
-      sizeEdgBtn.style.background = this.sizeBy === 'edges' ? 'var(--accent)' : '';
-      sizeEdgBtn.style.color = this.sizeBy === 'edges' ? '#fff' : '';
+      sizeMemBtn.style.background = v.sizeBy === 'members' ? 'var(--accent)' : '';
+      sizeMemBtn.style.color = v.sizeBy === 'members' ? '#fff' : '';
+      sizeEdgBtn.style.background = v.sizeBy === 'edges' ? 'var(--accent)' : '';
+      sizeEdgBtn.style.color = v.sizeBy === 'edges' ? '#fff' : '';
     };
     updateSizeButtons();
-    sizeMemBtn.addEventListener('click', () => { this.sizeBy = 'members'; updateSizeButtons(); this.render(); });
-    sizeEdgBtn.addEventListener('click', () => { this.sizeBy = 'edges'; updateSizeButtons(); this.render(); });
+    sizeMemBtn.addEventListener('click', () => { v.sizeBy = 'members'; updateSizeButtons(); v.render(); }, sig);
+    sizeEdgBtn.addEventListener('click', () => { v.sizeBy = 'edges'; updateSizeButtons(); v.render(); }, sig);
 
     const sizeLogBtn = document.getElementById('sizeLogBtn');
     const updateLogBtn = () => {
-      sizeLogBtn.style.background = this.sizeLog ? 'var(--accent)' : '';
-      sizeLogBtn.style.color = this.sizeLog ? '#fff' : '';
+      sizeLogBtn.style.background = v.sizeLog ? 'var(--accent)' : '';
+      sizeLogBtn.style.color = v.sizeLog ? '#fff' : '';
     };
     updateLogBtn();
     sizeLogBtn.addEventListener('click', () => {
-      this.sizeLog = !this.sizeLog;
+      v.sizeLog = !v.sizeLog;
       updateLogBtn();
-      this.render();
-    });
+      v.render();
+    }, sig);
 
-    // Label checkboxes are wired in _buildDynamicUI
+    // Quantization mode toggle
+    const quantBtn = document.getElementById('quantModeBtn');
+    const QUANT_MODES = ['rank', 'gaussian'];
+    const QUANT_LABELS = { rank: 'Q:R', gaussian: 'Q:G' };
+    const updateQuantBtn = () => {
+      quantBtn.textContent = QUANT_LABELS[v.quantMode];
+      quantBtn.style.background = v.quantMode !== 'rank' ? 'var(--accent)' : '';
+      quantBtn.style.color = v.quantMode !== 'rank' ? '#fff' : '';
+    };
+    updateQuantBtn();
+    quantBtn.addEventListener('click', () => {
+      const idx = QUANT_MODES.indexOf(v.quantMode);
+      v.quantMode = QUANT_MODES[(idx + 1) % QUANT_MODES.length];
+      updateQuantBtn();
+      this.rebuildProjections();
+    }, sig);
 
     // Edge mode toggle
     const edgeBtn = document.getElementById('edgeModeBtn');
     const EDGE_MODES = ['curves', 'lines', 'none'];
     const EDGE_LABELS = { curves: 'E:C', lines: 'E:L', none: 'E:—' };
     const updateEdgeBtn = () => {
-      edgeBtn.textContent = EDGE_LABELS[this.edgeMode];
-      edgeBtn.style.background = this.edgeMode !== 'none' ? '' : 'var(--accent)';
-      edgeBtn.style.color = this.edgeMode !== 'none' ? '' : '#fff';
+      edgeBtn.textContent = EDGE_LABELS[v.edgeMode];
+      edgeBtn.style.background = v.edgeMode !== 'none' ? '' : 'var(--accent)';
+      edgeBtn.style.color = v.edgeMode !== 'none' ? '' : '#fff';
     };
     updateEdgeBtn();
     edgeBtn.addEventListener('click', () => {
-      const idx = EDGE_MODES.indexOf(this.edgeMode);
-      this.edgeMode = EDGE_MODES[(idx + 1) % EDGE_MODES.length];
+      const idx = EDGE_MODES.indexOf(v.edgeMode);
+      v.edgeMode = EDGE_MODES[(idx + 1) % EDGE_MODES.length];
       updateEdgeBtn();
-      this.render();
-    });
+      v.render();
+    }, sig);
 
     // Heatmap toggle
     const heatBtn = document.getElementById('heatmapBtn');
     const HEAT_MODES = ['off', 'splat', 'density'];
     const HEAT_LABELS = { off: 'H', splat: 'H:S', density: 'H:D' };
     const updateHeatBtn = () => {
-      heatBtn.textContent = HEAT_LABELS[this.heatmapMode];
-      heatBtn.style.background = this.heatmapMode !== 'off' ? 'var(--accent)' : '';
-      heatBtn.style.color = this.heatmapMode !== 'off' ? '#fff' : '';
+      heatBtn.textContent = HEAT_LABELS[v.heatmapMode];
+      heatBtn.style.background = v.heatmapMode !== 'off' ? 'var(--accent)' : '';
+      heatBtn.style.color = v.heatmapMode !== 'off' ? '#fff' : '';
     };
     updateHeatBtn();
     heatBtn.addEventListener('click', () => {
-      const idx = HEAT_MODES.indexOf(this.heatmapMode);
-      this.heatmapMode = HEAT_MODES[(idx + 1) % HEAT_MODES.length];
+      const idx = HEAT_MODES.indexOf(v.heatmapMode);
+      v.heatmapMode = HEAT_MODES[(idx + 1) % HEAT_MODES.length];
       updateHeatBtn();
-      this.render();
-    });
+      v.render();
+    }, sig);
 
     // Sidebar
-    document.getElementById('sidebarToggle').addEventListener('click', () => this._toggleSidebar());
-    document.getElementById('sidebarBackdrop')?.addEventListener('click', () => this._toggleSidebar(false));
+    document.getElementById('sidebarToggle').addEventListener('click', () => this._toggleSidebar(), sig);
+    document.getElementById('sidebarBackdrop')?.addEventListener('click', () => this._toggleSidebar(false), sig);
     document.getElementById('nodePanelClose').addEventListener('click', () => {
-      this.selectedId = null;
+      v.selectedId = null;
       document.getElementById('node-panel').classList.remove('open');
-      this.render();
-    });
+      v.render();
+    }, sig);
 
     // Mouse
     canvas.addEventListener('mousedown', e => {
       this.mouseDown = true; this.mouseMoved = false;
       this.mouseStart = { x: e.clientX, y: e.clientY };
-    });
+    }, sig);
     canvas.addEventListener('mousemove', e => {
       if (!this.mouseDown) {
         const r = canvas.getBoundingClientRect();
         const p = { x: e.clientX - r.left, y: e.clientY - r.top };
-        const hit = this.hitTest(p.x, p.y);
+        const hit = v.hitTest(p.x, p.y);
         const hid = hit ? (hit.type === 'node' ? hit.item.id : hit.item.bid) : null;
-        if (hid !== this.hoveredId) { this.hoveredId = hid; canvas.style.cursor = hid ? 'pointer' : 'grab'; this.render(); }
+        if (hid !== v.hoveredId) { v.hoveredId = hid; canvas.style.cursor = hid ? 'pointer' : 'grab'; v.render(); }
         return;
       }
-      this.pan.x += e.clientX - this.mouseStart.x;
-      this.pan.y += e.clientY - this.mouseStart.y;
+      v.pan.x += e.clientX - this.mouseStart.x;
+      v.pan.y += e.clientY - this.mouseStart.y;
       this.mouseStart = { x: e.clientX, y: e.clientY };
-      if (Math.abs(this.pan.x) > 4 || Math.abs(this.pan.y) > 4) this.mouseMoved = true;
-      this.render();
-    });
+      if (Math.abs(v.pan.x) > 4 || Math.abs(v.pan.y) > 4) this.mouseMoved = true;
+      v.render();
+    }, sig);
     let clickTimer = null;
-    let clickCtrl = false;
     canvas.addEventListener('mouseup', e => {
       this.mouseDown = false;
       if (!this.mouseMoved) {
@@ -1094,20 +948,20 @@ class BitZoom {
         const isMulti = e.ctrlKey || e.metaKey || e.shiftKey;
         clickTimer = setTimeout(() => {
           clickTimer = null;
-          const hit = this.hitTest(p.x, p.y);
+          const hit = v.hitTest(p.x, p.y);
           if (hit) {
             const id = hit.type === 'node' ? hit.item.id : hit.item.bid;
-            if (isMulti) { this.toggleSelection(id); } else { this.selectedId = id; }
+            if (isMulti) { v.toggleSelection(id); } else { v.selectedId = id; }
             this._showDetail(hit);
           } else if (!isMulti) {
-            this.selectedId = null;
+            v.selectedId = null;
             document.getElementById('node-panel').classList.remove('open');
           }
-          this.render();
+          v.render();
         }, 250);
       }
-    });
-    canvas.addEventListener('mouseleave', () => { this.mouseDown = false; });
+    }, sig);
+    canvas.addEventListener('mouseleave', () => { this.mouseDown = false; }, sig);
     canvas.addEventListener('dblclick', e => {
       e.preventDefault();
       if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
@@ -1116,21 +970,19 @@ class BitZoom {
       if (e.shiftKey) {
         this._animateZoom(1 / 2, mx, my);
       } else {
-        const hit = this.hitTest(mx, my);
+        const hit = v.hitTest(mx, my);
         if (hit) {
           this.zoomToNode(hit);
         } else {
           this._animateZoom(2, mx, my);
         }
       }
-    });
+    }, sig);
 
-    // Touch — hoisted helpers to avoid closure allocation per event
-    const _tp = {id: 0, x: 0, y: 0};
-    const _tp2 = {id: 0, x: 0, y: 0};
+    // Touch
     const touchPos = (t) => {
       const r = canvas.getBoundingClientRect();
-      return {id: t.identifier, x: t.clientX - r.left, y: t.clientY - r.top};
+      return { id: t.identifier, x: t.clientX - r.left, y: t.clientY - r.top };
     };
     const touchDist = (a, b) => Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
 
@@ -1139,54 +991,51 @@ class BitZoom {
       this.touchMoved = false;
       if (e.touches.length === 1) { this.t1 = touchPos(e.touches[0]); this.t2 = null; }
       else if (e.touches.length === 2) { this.t1 = touchPos(e.touches[0]); this.t2 = touchPos(e.touches[1]); }
-    }, { passive: false });
+    }, { passive: false, signal: this._abortController.signal });
 
     canvas.addEventListener('touchmove', e => {
       e.preventDefault();
       this.touchMoved = true;
-
       if (e.touches.length === 1 && !this.t2) {
         const cur = touchPos(e.touches[0]);
-        if (this.t1) { this.pan.x += cur.x - this.t1.x; this.pan.y += cur.y - this.t1.y; }
+        if (this.t1) { v.pan.x += cur.x - this.t1.x; v.pan.y += cur.y - this.t1.y; }
         this.t1 = cur;
-        this.render();
+        v.render();
       } else if (e.touches.length === 2) {
         const a = touchPos(e.touches[0]), b = touchPos(e.touches[1]);
         if (this.t1 && this.t2) {
-          const prevDist = touchDist(this.t1, this.t2);
-          const curDist = touchDist(a, b);
-          const factor = curDist / (prevDist || 1);
+          const factor = touchDist(a, b) / (touchDist(this.t1, this.t2) || 1);
           const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-          const oldRZ = this.renderZoom;
-          this.zoom = Math.max(0.25, Math.min(10000, this.zoom * factor));
+          const oldRZ = v.renderZoom;
+          v.zoom = Math.max(0.25, Math.min(10000, v.zoom * factor));
           this._checkAutoLevel();
-          const rf = this.renderZoom / oldRZ;
-          this.pan.x = mx - (mx - this.pan.x) * rf;
-          this.pan.y = my - (my - this.pan.y) * rf;
+          const rf = v.renderZoom / oldRZ;
+          v.pan.x = mx - (mx - v.pan.x) * rf;
+          v.pan.y = my - (my - v.pan.y) * rf;
           const pmx = (this.t1.x + this.t2.x) / 2, pmy = (this.t1.y + this.t2.y) / 2;
-          this.pan.x += mx - pmx;
-          this.pan.y += my - pmy;
-          this.render();
+          v.pan.x += mx - pmx;
+          v.pan.y += my - pmy;
+          v.render();
         }
         this.t1 = a; this.t2 = b;
       }
-    }, { passive: false });
+    }, { passive: false, signal: this._abortController.signal });
 
     canvas.addEventListener('touchend', e => {
       e.preventDefault();
       if (e.touches.length === 0) {
         if (!this.touchMoved && this.t1) {
-          const hit = this.hitTest(this.t1.x, this.t1.y);
-          if (hit) { this.selectedId = hit.type==='node'?hit.item.id:hit.item.bid; this._showDetail(hit); }
-          else { this.selectedId = null; document.getElementById('node-panel').classList.remove('open'); }
-          this.render();
+          const hit = v.hitTest(this.t1.x, this.t1.y);
+          if (hit) { v.selectedId = hit.type==='node'?hit.item.id:hit.item.bid; this._showDetail(hit); }
+          else { v.selectedId = null; document.getElementById('node-panel').classList.remove('open'); }
+          v.render();
         }
         this.t1 = null; this.t2 = null;
       } else if (e.touches.length === 1) {
         this.t1 = touchPos(e.touches[0]); this.t2 = null; this.touchMoved = true;
       }
-    }, { passive: false });
-    canvas.addEventListener('touchcancel', () => { this.t1 = null; this.t2 = null; });
+    }, { passive: false, signal: this._abortController.signal });
+    canvas.addEventListener('touchcancel', () => { this.t1 = null; this.t2 = null; }, sig);
 
     // Wheel zoom
     canvas.addEventListener('wheel', e => {
@@ -1194,87 +1043,86 @@ class BitZoom {
       const rect = canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left, my = e.clientY - rect.top;
       const factor = e.deltaY < 0 ? 1.05 : 1/1.05;
-      const oldRZ = this.renderZoom;
-      this.zoom = Math.max(0.25, Math.min(10000, this.zoom * factor));
+      const oldRZ = v.renderZoom;
+      v.zoom = Math.max(0.25, Math.min(10000, v.zoom * factor));
       this._checkAutoLevel();
-      const newRZ = this.renderZoom;
-      const f = newRZ / oldRZ;
-      this.pan.x = mx - (mx - this.pan.x) * f;
-      this.pan.y = my - (my - this.pan.y) * f;
-      this.render();
-    }, {passive: false});
+      const f = v.renderZoom / oldRZ;
+      v.pan.x = mx - (mx - v.pan.x) * f;
+      v.pan.y = my - (my - v.pan.y) * f;
+      v.render();
+    }, { passive: false, signal: this._abortController.signal });
 
     // Level stepper + keyboard
     document.getElementById('zoomPrev').addEventListener('click', () => {
-      if (this.currentLevel > 0) this.switchLevel(this.currentLevel - 1);
-    });
+      if (v.currentLevel > 0) this.switchLevel(v.currentLevel - 1);
+    }, sig);
     document.getElementById('zoomNext').addEventListener('click', () => {
-      if (this.currentLevel < LEVEL_LABELS.length - 1) this.switchLevel(this.currentLevel + 1);
-    });
+      if (v.currentLevel < LEVEL_LABELS.length - 1) this.switchLevel(v.currentLevel + 1);
+    }, sig);
     document.getElementById('resetBtn').addEventListener('click', () => {
-      this.pan = {x: 0, y: 0};
-      this.zoom = 1;
-      this.baseLevel = this.currentLevel;
-      this.zoomForLevel(this.currentLevel);
-      this.render();
-    });
+      v.pan = {x: 0, y: 0};
+      v.zoom = 1;
+      v.baseLevel = v.currentLevel;
+      v.zoomForLevel(v.currentLevel);
+      v.render();
+    }, sig);
 
     window.addEventListener('keydown', e => {
       if (!this.dataLoaded) return;
-      if (e.key === 'ArrowLeft' && this.currentLevel > 0) {
-        e.preventDefault(); this.switchLevel(this.currentLevel - 1);
-      } else if (e.key === 'ArrowRight' && this.currentLevel < LEVEL_LABELS.length - 1) {
-        e.preventDefault(); this.switchLevel(this.currentLevel + 1);
+      if (e.key === 'ArrowLeft' && v.currentLevel > 0) {
+        e.preventDefault(); this.switchLevel(v.currentLevel - 1);
+      } else if (e.key === 'ArrowRight' && v.currentLevel < LEVEL_LABELS.length - 1) {
+        e.preventDefault(); this.switchLevel(v.currentLevel + 1);
       } else if (e.key === '+' || e.key === '=') {
         e.preventDefault();
-        const oldRZ = this.renderZoom;
-        this.zoom = Math.min(10000, this.zoom * 1.15);
+        const oldRZ = v.renderZoom;
+        v.zoom = Math.min(10000, v.zoom * 1.15);
         this._checkAutoLevel();
-        const f = this.renderZoom / oldRZ;
-        this.pan.x = this.W/2 - (this.W/2 - this.pan.x) * f;
-        this.pan.y = this.H/2 - (this.H/2 - this.pan.y) * f;
-        this.render();
+        const f = v.renderZoom / oldRZ;
+        v.pan.x = v.W/2 - (v.W/2 - v.pan.x) * f;
+        v.pan.y = v.H/2 - (v.H/2 - v.pan.y) * f;
+        v.render();
       } else if (e.key === '-' || e.key === '_') {
         e.preventDefault();
-        const oldRZ = this.renderZoom;
-        this.zoom = Math.max(0.25, this.zoom / 1.15);
+        const oldRZ = v.renderZoom;
+        v.zoom = Math.max(0.25, v.zoom / 1.15);
         this._checkAutoLevel();
-        const f = this.renderZoom / oldRZ;
-        this.pan.x = this.W/2 - (this.W/2 - this.pan.x) * f;
-        this.pan.y = this.H/2 - (this.H/2 - this.pan.y) * f;
-        this.render();
+        const f = v.renderZoom / oldRZ;
+        v.pan.x = v.W/2 - (v.W/2 - v.pan.x) * f;
+        v.pan.y = v.H/2 - (v.H/2 - v.pan.y) * f;
+        v.render();
       }
-    });
+    }, sig);
 
     // Topology alpha slider
     document.getElementById('nudgeSlider').addEventListener('input', e => {
       if (!this.dataLoaded) return;
-      this.smoothAlpha = parseFloat(e.target.value);
-      document.getElementById('nudgeVal').textContent = this.smoothAlpha.toFixed(2);
+      v.smoothAlpha = parseFloat(e.target.value);
+      document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
       if (this.smoothDebounceTimer) clearTimeout(this.smoothDebounceTimer);
       this.smoothDebounceTimer = setTimeout(() => {
-        this.levels = new Array(ZOOM_LEVELS.length).fill(null);
-        unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5);
-        this.layoutAll();
-        this.render();
+        v.levels = new Array(ZOOM_LEVELS.length).fill(null);
+        unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode);
+        v.layoutAll();
+        v.render();
         this.smoothDebounceTimer = null;
       }, 120);
-    });
+    }, sig);
 
-    window.addEventListener('resize', () => { if (this.dataLoaded) this.resize(); });
+    window.addEventListener('resize', () => { if (this.dataLoaded) v.resize(); }, sig);
 
     // Load button + file inputs + drop zone
-    document.getElementById('loadNewBtn').addEventListener('click', () => this.showLoaderScreen());
+    document.getElementById('loadNewBtn').addEventListener('click', () => this.showLoaderScreen(), sig);
     document.getElementById('edgesFile').addEventListener('change', e => {
       if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'edges');
-    });
+    }, sig);
     document.getElementById('labelsFile').addEventListener('change', e => {
       if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'labels');
-    });
+    }, sig);
 
     const dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); }, sig);
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'), sig);
     dropZone.addEventListener('drop', e => {
       e.preventDefault();
       dropZone.classList.remove('dragover');
@@ -1282,7 +1130,7 @@ class BitZoom {
         if (f.name.endsWith('.edges')) this._handleFileSelect(f, 'edges');
         else if (f.name.endsWith('.labels')) this._handleFileSelect(f, 'labels');
       }
-    });
+    }, sig);
 
     document.getElementById('loadBtn').addEventListener('click', async () => {
       const progressBar = document.getElementById('loadProgress');
@@ -1291,7 +1139,7 @@ class BitZoom {
       document.getElementById('loadBtn').disabled = true;
       try { await this.loadGraph(this.pendingEdgesText, this.pendingLabelsText); }
       catch (_err) { /* shown by worker handler */ }
-    });
+    }, sig);
   }
 
   _toggleSidebar(open) {
@@ -1336,15 +1184,13 @@ class BitZoom {
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
 const bz = new BitZoom();
-window.bz = bz; // expose for onclick handlers in dynamic HTML
+window.bz = bz;
 
-// Load dataset from hash, or default
 const hashParams = bz._restoreFromHash();
 const hashDataset = hashParams?.d ? DATASETS.find(d => d.name === hashParams.d) : null;
 const startDataset = hashDataset || DATASETS.find(d => d.name === 'Melker src');
 if (startDataset) bz.loadDataset(startDataset);
 
-// Handle browser back/forward
 window.addEventListener('hashchange', () => {
   const params = bz._restoreFromHash();
   if (params && params.d === bz._currentDatasetName) {
