@@ -1,4 +1,4 @@
-# BitZoom
+````# BitZoom
 
 A deterministic layout and hierarchical aggregation system for large property graphs. Nodes are positioned in a 2D grid such that similar nodes occupy nearby cells. The hierarchy gives stable zoom levels derived purely from stored coordinates — no layout recomputation on navigation; only level lookup and aggregation.
 
@@ -42,7 +42,7 @@ Let W = Σ_g w_g be the sum of property weights. Define the blended position as:
 px_i = (1 − α) · (Σ_g w_g · p_g(i) / W)  +  α · avg_{j∈N(i)}(px_j)
 ```
 
-where α ∈ [0,1] is the topology weight. At α=0 position is determined entirely by property similarity. At α=1 it is determined entirely by the neighbor average. The property term is a convex combination of fixed group anchors; in continuous space, weight changes move each node affinely as a blend of those fixed anchors.
+and analogously for py_i. Here α ∈ [0,1] is the topology weight. At α=0 position is determined entirely by property similarity. At α=1 it is determined entirely by the neighbor average. The property term is a convex combination of fixed group anchors; in continuous space, weight changes move each node affinely as a blend of those fixed anchors.
 
 For degree-zero nodes the neighbor average is undefined; the topology term is omitted and position is determined by the property term alone.
 
@@ -60,7 +60,7 @@ Two designs are viable with different tradeoffs.
 
 **Fixed Gaussian boundaries:** place boundaries at Φ⁻¹(i / GRID_SIZE). Gives a fixed coordinate system — node insertion does not shift other nodes' cells. Concentrates resolution near the distribution center. Assumes approximately Gaussian positions after blending, which weakens when one weight dominates and the distribution becomes multimodal.
 
-The current implementation defaults to Gaussian quantization — the matched CDF for the distribution that Gaussian random projection produces (via the Central Limit Theorem). This preserves density structure: clusters stay tight, sparse regions stay sparse. Rank-based quantization is available as a toggle for cases where the post-blend distribution departs significantly from Gaussian (e.g., high α with topology smoothing, or when a single weight dominates and the distribution becomes multimodal).
+The current implementation defaults to Gaussian quantization, using a Gaussian CDF as a fixed coordinate mapping. This is a reasonable fit when blended coordinates are roughly bell-shaped, but it is an approximation rather than a guarantee. In practice it tends to preserve density structure better than rank quantization: clusters remain tighter and sparse regions remain more spread out. Rank-based quantization is available as a toggle for cases where the post-blend distribution departs significantly from Gaussian (e.g., high α with topology smoothing, or when a single weight dominates and the distribution becomes multimodal).
 
 Either way the output is a uint16 coordinate pair (gx, gy) — four stored bytes per node. All zoom cell indices derive from these stored uint16 coordinates via bit shifts.
 
@@ -74,7 +74,7 @@ At level L: `cx = gx >> (16 − L)`, cell ID = `(cx << L) | cy`. Level 1 is a 2�
 
 ## Supernode aggregation
 
-Nodes sharing a cell at level L form a supernode. Cross-cell edges become weighted supernode edges with weight equal to the count of underlying cross-cell edges. Supernode position is the centroid of member continuous coordinates before quantization. Level structures are built lazily on first access and invalidated on parameter change.
+Nodes sharing a cell at level L form a supernode. Cross-cell edges become weighted supernode edges with weight equal to the count of underlying cross-cell edges. Supernode position is the centroid of member post-quantization display coordinates, not the original continuous blended coordinates. This is an approximation: the quantization transform (rank ordering or Φ(z)) is nonlinear, so centroids in quantized space differ from centroids in blended space. The discrepancy is typically small at fine zoom levels, where each cell covers a narrow local region, and can be more noticeable at coarse levels (L1-L3). Storing pre-quantization coordinates would fix this at a cost of 8 bytes per node. Level structures are built lazily on first access and invalidated on parameter change.
 
 ---
 
@@ -85,7 +85,7 @@ Nodes sharing a cell at level L form a supernode. Cross-cell edges become weight
 - Rank quantization (when selected) destroys density information; Gaussian quantization preserves it but assumes approximately normal marginals
 - High topology weight causes oversmoothing in well-connected components
 - Rank quantization is globally unstable under node insertion; Gaussian quantization is locally stable but nodes in distribution tails may cluster at grid boundaries
-- **Undefined values cluster when their property dominates.** Empty fields produce neutral `[0,0]` projections — correct when that group has low weight, but when heavily weighted, all undefined nodes collapse to the same pre-quantization position. Rank quantization spreads them along each axis independently but preserves the 2D correlation, creating visible edge pile-up. Gaussian quantization with fixed boundaries (frozen from dataset-tuned weights) is worse: the degenerate cluster shifts far from the stored μ, pushing nodes to grid extremes. This is inherent to the neutral-projection design — no quantization scheme can decorrelate axes that are correlated in the input.
+- **Undefined values cluster when their property dominates.** Empty fields produce neutral `[0,0]` projections — correct when that group has low weight, but when heavily weighted, all undefined nodes collapse to the same pre-quantization position. Rank quantization spreads them along each axis independently but preserves the 2D correlation, creating visible edge pile-up. Gaussian quantization with fixed boundaries (frozen from dataset-tuned weights) is worse: the degenerate cluster shifts far from the stored μ, pushing nodes to grid extremes. This is largely inherent to the neutral-projection design: simple axis-wise quantization cannot remove 2D correlation already present in the input.
 - Layout quality depends heavily on tokenisation and grouping quality; the pipeline faithfully preserves whatever similarity it is given
 
 ---
@@ -108,3 +108,4 @@ The system requires empirical evaluation against: semantic neighbourhood preserv
 | Per-node zoom-cell derivation | O(1) |
 
 **Memory per node:** 2G floats for fixed projections + four bytes for uint16 grid coordinates.
+````

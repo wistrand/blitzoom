@@ -73,7 +73,7 @@ Pure functions, no DOM. Single source of truth for MinHash/projection.
 - **MinHash** (GC-optimized): `HASH_PARAMS_A/B` (Int32Array), `computeMinHashInto` → reusable `_sig` Float64Array (NaN sentinel for empty tokens), `computeMinHash` (allocating wrapper). Universal hash via multi-word modular multiply (`hashSlot`) — no 32-bit truncation.
 - **Projection** (GC-optimized): `projectInto(sig, ROT, buf, offset)` → writes to buffer, `projectWith` (convenience wrapper returning `[px, py]`). NaN sentinel check: `sig[0] !== sig[0]`.
 - **Blend**: `unifiedBlend(nodes, groupNames, weights, alpha, adjList, nodeIndex, passes, quantMode)`
-- **Quantization**: `normalizeAndQuantize(nodes)` (rank-based, O(n log n)), `gaussianQuantize(nodes)` (Φ(z) via precomputed lookup table, O(n)). Default: Gaussian — matched CDF for Gaussian projection output (CLT).
+- **Quantization**: `normalizeAndQuantize(nodes)` (rank-based, O(n log n)), `gaussianQuantize(nodes)` (Φ(z) via precomputed lookup table, O(n)). Default: Gaussian. Reasonable fit when blended coordinates are roughly bell-shaped; an approximation, not a guarantee.
 - **Grid**: `cellIdAtLevel(gx, gy, level)`
 - **Level building**: `buildLevel(level, nodes, edges, nodeIndex, colorFn, labelFn, colorLookup)` — caches `cachedColor`/`cachedLabel` on supernodes, numeric edge keys (no string allocation)
 - **Helpers**: `maxCountKey` (O(k) max), `generateGroupColors` (golden-angle HSL → hex), `getNodePropValue`, `getSupernodeDominantValue`
@@ -204,9 +204,10 @@ Numeric values emit 3 tokens (coarse/medium/fine bins). Nearby values share coar
 
 - Jaccard on discretised tokens is crude for continuous/ordinal properties.
 - 2D projection doesn't preserve distances — provides ordering signal, not metric embedding.
-- Rank quantization (when selected) destroys density information; Gaussian quantization preserves it but assumes approximately normal marginals.
+- Rank quantization (when selected) destroys density information; Gaussian quantization tends to preserve it better but assumes approximately normal marginals.
 - Gaussian quantization uses fixed boundaries (μ,σ frozen from dataset-tuned weights, reset in `_applyDatasetSettings`) — subsequent weight changes can shift the distribution far from stored boundaries, pushing nodes to grid extremes.
 - Undefined values with high weight cause degenerate clustering. Empty fields → neutral [0,0] projection. When that group dominates, all undefined nodes collapse to one pre-quantization point. Rank quantization spreads axes independently but preserves 2D correlation → edge pile-up. Neither quantization scheme can fix this.
+- Supernode centroids use post-quantization display coordinates, not the original continuous blended coordinates. The nonlinear quantization transform (rank or Φ) means centroids in quantized space differ from centroids in blended space. The discrepancy is typically small at fine zoom levels and can be more noticeable at coarse levels (L1-L3).
 - Weight stability is piecewise constant after quantization.
 - Oversmoothing at high α with many passes.
 - Layout quality depends entirely on tokenisation quality.
@@ -220,7 +221,7 @@ Individual components (MinHash, random projection, hierarchical grids, graph smo
 3. Unified blend — property weights and topology in one normalization
 4. Exact bit-prefix zoom hierarchy — all levels from two stored bytes
 5. Multi-resolution numeric tokenization — smooth similarity for continuous properties
-6. Gaussian quantization as default — matched CDF for Gaussian projection output (CLT)
+6. Gaussian quantization as default — reasonable CDF fit for roughly bell-shaped blended coordinates
 7. Adaptive density rendering — visibility thresholds based on visible node count
 
 ## Test Coverage (45 tests)

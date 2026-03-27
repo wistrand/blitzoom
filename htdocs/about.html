@@ -660,7 +660,7 @@
 
 <p>Continuous positions are quantized to <strong>uint16 grid coordinates</strong> (65536 &times; 65536). Two modes are available:</p>
 
-<p><strong>Gaussian (default)</strong>: maps through <a href="https://en.wikipedia.org/wiki/Normal_distribution#Cumulative_distribution_function">&Phi;(z)</a> using fixed boundaries (&mu;, &sigma;) computed once from the initial blend. This is a reasonable fit when projected coordinates are roughly bell-shaped (as Gaussian random projection tends to produce via the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>), but it is an approximation, not a guaranteed model. Post-blend distributions can be multimodal or skewed, especially at high &alpha; or with dominant weights. The boundaries are fixed across weight changes; only the node positions shift.</p>
+<p><strong>Gaussian (default)</strong>: maps through <a href="https://en.wikipedia.org/wiki/Normal_distribution#Cumulative_distribution_function">&Phi;(z)</a> using fixed boundaries (&mu;, &sigma;) computed once from the dataset-tuned blend. This is a reasonable fit when blended coordinates are roughly bell-shaped, which often holds when multiple projected components contribute, but it is an approximation rather than a guarantee. In practice it tends to preserve density structure better than rank quantization: clusters remain tighter and sparse regions remain more spread out. Post-blend distributions can be multimodal or skewed, especially at high &alpha; or with dominant weights. The boundaries are fixed across weight changes; only the node positions shift.</p>
 
 <div class="math-block">
 <math display="block">
@@ -1319,9 +1319,9 @@
 
 <p><strong>2D projection doesn't preserve distances.</strong> Layout reflects coarse ordering, not metric geometry.</p>
 
-<p><strong>Quantization tradeoffs.</strong> Rank quantization destroys density (uniform occupancy by design). Gaussian quantization preserves density but uses fixed boundaries from the initial blend. Large weight changes can shift the distribution beyond the stored &mu;/&sigma;, pushing nodes to grid extremes.</p>
+<p><strong>Quantization tradeoffs.</strong> Rank quantization destroys density (uniform occupancy by design). Gaussian quantization tends to preserve density better but uses fixed boundaries from the initial blend. Large weight changes can shift the distribution beyond the stored &mu;/&sigma;, pushing nodes to grid extremes.</p>
 
-<p><strong>Undefined values with high weight</strong> cause degenerate clustering. Empty fields project to a neutral (0,0) point. When that property group dominates, all undefined nodes share the same pre-quantization position. Neither quantization scheme can decorrelate axes that are correlated in the input, and the result is visible edge pile-up.</p>
+<p><strong>Undefined values with high weight</strong> cause degenerate clustering. Empty fields project to a neutral (0,0) point. When that property group dominates, all undefined nodes share the same pre-quantization position. Simple axis-wise quantization cannot remove 2D correlation already present in the input, and the result is visible edge pile-up.</p>
 
 <p><strong>Oversmoothing</strong> at high &alpha; with many passes. Well-connected components collapse toward their centroid. At high &alpha;, both axes are increasingly driven by the same smoothing operator, which can produce poorly separated, low-variance structure.</p>
 
