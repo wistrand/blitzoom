@@ -206,7 +206,7 @@ Numeric values emit 3 tokens (coarse/medium/fine bins). Nearby values share coar
 - 2D projection doesn't preserve distances — provides ordering signal, not metric embedding.
 - Rank quantization (when selected) destroys density information; Gaussian quantization tends to preserve it better but assumes approximately normal marginals.
 - Gaussian quantization uses fixed boundaries (μ,σ frozen from dataset-tuned weights, reset in `_applyDatasetSettings`) — subsequent weight changes can shift the distribution far from stored boundaries, pushing nodes to grid extremes.
-- Undefined values with high weight cause degenerate clustering. Empty fields → neutral [0,0] projection. When that group dominates, all undefined nodes collapse to one pre-quantization point. Rank quantization spreads axes independently but preserves 2D correlation → edge pile-up. Neither quantization scheme can fix this.
+- Undefined values with high weight cause degenerate clustering. Empty fields → neutral [0,0] projection. When that group dominates, all undefined nodes collapse to one pre-quantization point. Rank quantization spreads axes independently but preserves 2D correlation → edge pile-up. Simple axis-wise quantization cannot remove the 2D correlation.
 - Supernode centroids use post-quantization display coordinates, not the original continuous blended coordinates. The nonlinear quantization transform (rank or Φ) means centroids in quantized space differ from centroids in blended space. The discrepancy is typically small at fine zoom levels and can be more noticeable at coarse levels (L1-L3).
 - Weight stability is piecewise constant after quantization.
 - Oversmoothing at high α with many passes.
