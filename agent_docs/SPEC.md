@@ -48,6 +48,8 @@ and analogously for py_i. Here α ∈ [0,1] is the topology weight. At α=0 posi
 
 For degree-zero nodes the neighbor average is undefined; the topology term is omitted and position is determined by the property term alone.
 
+A design convention: when all weights are zero (W=0), the formula is undefined (0/0). The implementation falls back to equal weights (w_g=1 for all groups), producing a balanced blend rather than collapsing all nodes to a single point.
+
 Run synchronously for k passes, each using the previous pass's positions as the neighbor signal. This is closely related to degree-normalised graph smoothing. At high α with many passes, well-connected components collapse toward their degree-weighted centroid — the standard oversmoothing failure mode of iterative graph smoothing.
 
 After quantization the mapping is piecewise constant. Small weight changes produce either no cell movement or discrete steps, never catastrophic global reorganisation.

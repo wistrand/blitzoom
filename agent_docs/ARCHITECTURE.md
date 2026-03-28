@@ -23,7 +23,7 @@ docs/                    Web application (ES modules, served by Deno)
 
 tests/pipeline_test.ts     48 Deno tests: algo unit, pipeline, numeric, undefined, E2E
 
-docs/data/                 5 SNAP-format graph datasets (.edges + .nodes, Amazon .gz compressed)
+docs/data/                 6 SNAP-format graph datasets (.edges + .nodes, Amazon .gz compressed)
 agent_docs/                Architecture and spec documentation
 scripts/
   serve.ts                 Deno HTTP server (serves everything from docs/, no-cache headers)
@@ -69,7 +69,7 @@ No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`
 
 ## Module Responsibilities
 
-### [bitzoom-algo.js](../docs/bitzoom-algo.js) (471 lines)
+### [bitzoom-algo.js](../docs/bitzoom-algo.js) (502 lines)
 
 Pure functions, no DOM. Single source of truth for MinHash/projection.
 
@@ -126,7 +126,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
 
-### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (1336 lines)
+### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (1337 lines)
 
 `BitZoom` class — composes `BitZoomCanvas` as `this.view`. Adds application UI and orchestration.
 

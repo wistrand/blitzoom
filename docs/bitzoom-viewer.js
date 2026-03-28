@@ -13,6 +13,7 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 
 // Dataset definitions. Optional `settings` configures initial weights and label checkboxes.
 const DATASETS = [
+    { id: 'karate',     name: 'Karate Club',     edges: 'data/karate.edges',          nodes: 'data/karate.nodes',          desc: '34 nodes, Zachary 1977' },
     { id: 'epstein',    name: 'Epstein',         edges: 'data/epstein.edges',         nodes: 'data/epstein.nodes',         desc: '364 nodes, edge types',
         settings: { weights: { group: 5, edgetype: 8 }, labelProps: ['label'] } },
     { id: 'bz-source',  name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  nodes: 'data/bitzoom-source.nodes',  desc: '145 nodes, call graph',

@@ -2,7 +2,7 @@
 
 A deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash signatures and Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
 
-![Datasets](https://img.shields.io/badge/datasets-5-blue) ![Tests](https://img.shields.io/badge/tests-48%20passing-green)
+![Datasets](https://img.shields.io/badge/datasets-6-blue) ![Tests](https://img.shields.io/badge/tests-48%20passing-green)
 
 **[Live Demo](https://wistrand.github.io/bitzoom/)** · [How It Works](https://wistrand.github.io/bitzoom/about.html) · [Developer Guide](https://wistrand.github.io/bitzoom/howto.html)
 
@@ -84,8 +84,9 @@ D	Dave	manager	88
 
 | Dataset             | Nodes | Edges  | Source              |
 | ------------------- | ----- | ------ | ------------------- |
+| Karate Club         | 34    | 78     | Zachary 1977        |
 | Epstein Network     | 364   | 534    | Public records      |
-| BitZoom Source      | 405   | 974    | This project's code |
+| BitZoom Source      | 440   | 1,058  | This project's code |
 | Synth Packages      | 2,000 | 4,050  | Generated           |
 | MITRE ATT&CK       | 4,736 | 25,856 | MITRE ATT&CK v15    |
 | Amazon Co-purchase  | 367K  | 988K   | SNAP Stanford       |

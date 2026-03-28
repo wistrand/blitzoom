@@ -28,15 +28,15 @@ docs/                    Web app (ES modules, no build step)
   about.html               How It Works page (1478 lines)
   howto.html               Developer Guide (513 lines)
   bitzoom.css              Styles (646 lines)
-  bitzoom-algo.js          Pure algorithm functions and constants (471 lines)
+  bitzoom-algo.js          Pure algorithm functions and constants (502 lines)
   bitzoom-pipeline.js      Parsers, graph building, tokenization, projection (348 lines)
-  bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (937 lines)
+  bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (938 lines)
   bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (773 lines)
-  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1336 lines)
+  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1337 lines)
   bitzoom-worker.js        Web Worker coordinator (142 lines)
   bitzoom-proj-worker.js   Web Worker projection (95 lines)
 
-docs/data/                 5 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
+docs/data/                 6 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
 tests/pipeline_test.ts     48 tests: unit, numeric, undefined values, E2E
 scripts/
   serve.ts                 Deno HTTP server (no-cache headers)
@@ -57,8 +57,9 @@ scripts/
 
 | Name             | Nodes | Edges  | Properties                            |
 | ---------------- | ----- | ------ | ------------------------------------- |
+| Karate Club      | 34    | 78     | group                                 |
 | Epstein          | 364   | 534    | group, edge types                     |
-| BitZoom Source   | 405   | 974    | kind, file, lines, bytes, age         |
+| BitZoom Source   | 440   | 1,058  | kind, file, lines, bytes, age         |
 | Synth Packages   | 2,000 | 4,050  | downloads, license, version, depcount |
 | MITRE ATT&CK    | 4,736 | 25,856 | kill chain, platforms, aliases         |
 | Amazon           | 367K  | 988K   | product category                      |

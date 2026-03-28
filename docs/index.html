@@ -201,7 +201,7 @@
     <div style="display:flex;gap:8px;align-items:center">
       <select id="demo-dataset">
         <option value="epstein">Epstein</option>
-        <option value="data-graph-file">Karate Club</option>
+        <option value="karate">Karate Club</option>
         <option value="bitzoom-source">BitZoom Source</option>
         <option value="mitre-attack">MITRE ATT&CK</option>
       </select>
@@ -221,7 +221,7 @@ import { createBitZoomView } from './bitzoom-canvas.js';
 
 const PRESETS = {
   'epstein':        { initialLevel: 3, weights: { group: 8, edgetype: 4 }, labelProps: ['label'] },
-  'data-graph-file':{ initialLevel: 3 },
+  'karate':{ initialLevel: 3 },
   'bitzoom-source': { initialLevel: 4, weights: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] },
   'mitre-attack':   { initialLevel: 4, weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'], quantMode: 'rank', edgeMode: 'none' },
 };

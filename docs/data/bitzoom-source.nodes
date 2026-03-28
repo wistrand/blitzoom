@@ -1,28 +1,35 @@
 # NodeId	Label	Group	Kind	File	Lines	Bytes	AgeHours
-file:scripts/bench-hashslot.js	scripts/bench-hashslot.js	scripts	file	scripts	109	3305	8
-file:scripts/csv2snap.ts	scripts/csv2snap.ts	scripts	file	scripts	252	8160	
-file:scripts/serve.ts	scripts/serve.ts	scripts	file	scripts	46	1240	
-file:scripts/stix2snap.ts	scripts/stix2snap.ts	scripts	file	scripts	384	13326	
-file:scripts/src2snap.ts	scripts/src2snap.ts	scripts	file	scripts	503	19419	
-file:tests/pipeline_test.ts	tests/pipeline_test.ts	tests	file	tests	795	31984	
-file:agent_docs/SPEC.md	agent_docs/SPEC.md	agent_docs	file	agent_docs	113	10785	1
-file:agent_docs/PLAN-rename-labels-to-nodes.md	agent_docs/PLAN-rename-labels-to-nodes.md	agent_docs	file	agent_docs	106	4501	
-file:agent_docs/ARCHITECTURE.md	agent_docs/ARCHITECTURE.md	agent_docs	file	agent_docs	243	15700	
-file:CLAUDE.md	CLAUDE.md	.	file	.	102	6243	
-file:deno.json	deno.json	.	file	.	11	458	
-file:README.md	README.md	.	file	.	144	6334	
-file:docs/bitzoom-renderer.js	docs/bitzoom-renderer.js	docs	file	docs	939	35408	1
-file:docs/index.html	docs/index.html	docs	file	docs	266	7777	
-file:docs/bitzoom-worker.js	docs/bitzoom-worker.js	docs	file	docs	143	4407	
-file:docs/bitzoom-viewer.js	docs/bitzoom-viewer.js	docs	file	docs	1337	60395	
-file:docs/howto.html	docs/howto.html	docs	file	docs	514	30912	
-file:docs/bitzoom.css	docs/bitzoom.css	docs	file	docs	647	15386	3
-file:docs/about.html	docs/about.html	docs	file	docs	1479	85757	
-file:docs/bitzoom-pipeline.js	docs/bitzoom-pipeline.js	docs	file	docs	349	12639	
-file:docs/bitzoom-canvas.js	docs/bitzoom-canvas.js	docs	file	docs	774	29955	
-file:docs/bitzoom-proj-worker.js	docs/bitzoom-proj-worker.js	docs	file	docs	96	3400	8
-file:docs/viewer.html	docs/viewer.html	docs	file	docs	106	4873	
-file:docs/bitzoom-algo.js	docs/bitzoom-algo.js	docs	file	docs	472	18256	4
+file:scripts/bench-hashslot.js	scripts/bench-hashslot.js	scripts	file	scripts	109	3305	11
+file:scripts/bench-minhash.js	scripts/bench-minhash.js	scripts	file	scripts	77	3073	
+file:scripts/bench-oph-threshold.js	scripts/bench-oph-threshold.js	scripts	file	scripts	79	2811	
+file:scripts/bench-viewer.js	scripts/bench-viewer.js	scripts	file	scripts	224	9805	2
+file:scripts/csv2snap.ts	scripts/csv2snap.ts	scripts	file	scripts	252	8160	2
+file:scripts/bench-pipeline.js	scripts/bench-pipeline.js	scripts	file	scripts	84	3627	2
+file:scripts/serve.ts	scripts/serve.ts	scripts	file	scripts	46	1240	3
+file:scripts/stix2snap.ts	scripts/stix2snap.ts	scripts	file	scripts	384	13326	2
+file:scripts/bench-render.js	scripts/bench-render.js	scripts	file	scripts	115	4659	2
+file:scripts/src2snap.ts	scripts/src2snap.ts	scripts	file	scripts	503	19419	2
+file:scripts/bench-3M.js	scripts/bench-3M.js	scripts	file	scripts	185	7579	1
+file:tests/pipeline_test.ts	tests/pipeline_test.ts	tests	file	tests	805	32915	
+file:agent_docs/SPEC.md	agent_docs/SPEC.md	agent_docs	file	agent_docs	113	10785	4
+file:agent_docs/RESEARCH-precompute-optimizations.md	agent_docs/RESEARCH-precompute-optimizations.md	agent_docs	file	agent_docs	177	6850	1
+file:agent_docs/PLAN-30M-incremental.md	agent_docs/PLAN-30M-incremental.md	agent_docs	file	agent_docs	332	12966	1
+file:agent_docs/ARCHITECTURE.md	agent_docs/ARCHITECTURE.md	agent_docs	file	agent_docs	243	15705	2
+file:CLAUDE.md	CLAUDE.md	.	file	.	102	6243	2
+file:deno.json	deno.json	.	file	.	11	670	2
+file:README.md	README.md	.	file	.	144	6334	2
+file:docs/bitzoom-renderer.js	docs/bitzoom-renderer.js	docs	file	docs	939	35408	3
+file:docs/index.html	docs/index.html	docs	file	docs	266	7759	
+file:docs/bitzoom-worker.js	docs/bitzoom-worker.js	docs	file	docs	143	4413	2
+file:docs/bitzoom-viewer.js	docs/bitzoom-viewer.js	docs	file	docs	1338	60572	
+file:docs/howto.html	docs/howto.html	docs	file	docs	514	30912	3
+file:docs/bitzoom.css	docs/bitzoom.css	docs	file	docs	647	15386	5
+file:docs/about.html	docs/about.html	docs	file	docs	1479	85748	
+file:docs/bitzoom-pipeline.js	docs/bitzoom-pipeline.js	docs	file	docs	349	12655	
+file:docs/bitzoom-canvas.js	docs/bitzoom-canvas.js	docs	file	docs	774	29961	
+file:docs/bitzoom-proj-worker.js	docs/bitzoom-proj-worker.js	docs	file	docs	96	3420	
+file:docs/viewer.html	docs/viewer.html	docs	file	docs	106	4873	3
+file:docs/bitzoom-algo.js	docs/bitzoom-algo.js	docs	file	docs	501	19280	
 const:scripts/bench-hashslot.js:LARGE_PRIME	LARGE_PRIME	scripts/bench-hashslot.js	constant	scripts/bench-hashslot.js	1		
 const:scripts/bench-hashslot.js:MINHASH_K	MINHASH_K	scripts/bench-hashslot.js	constant	scripts/bench-hashslot.js	1		
 fn:scripts/bench-hashslot.js:mulberry32	mulberry32	scripts/bench-hashslot.js	function	scripts/bench-hashslot.js	8		
@@ -37,9 +44,27 @@ fn:scripts/bench-hashslot.js:computeMinHashNew	computeMinHashNew	scripts/bench-h
 const:scripts/bench-hashslot.js:NODES	NODES	scripts/bench-hashslot.js	constant	scripts/bench-hashslot.js	1		
 const:scripts/bench-hashslot.js:TOKENS_PER_NODE	TOKENS_PER_NODE	scripts/bench-hashslot.js	constant	scripts/bench-hashslot.js	1		
 const:scripts/bench-hashslot.js:RUNS	RUNS	scripts/bench-hashslot.js	constant	scripts/bench-hashslot.js	1		
+fn:scripts/bench-minhash.js:fmt	fmt	scripts/bench-minhash.js	function	scripts/bench-minhash.js	3		
+const:scripts/bench-minhash.js:SETS	SETS	scripts/bench-minhash.js	constant	scripts/bench-minhash.js	1		
+fn:scripts/bench-minhash.js:randomSet	randomSet	scripts/bench-minhash.js	function	scripts/bench-minhash.js	6		
+const:scripts/bench-minhash.js:PAIRS	PAIRS	scripts/bench-minhash.js	constant	scripts/bench-minhash.js	1		
+const:scripts/bench-minhash.js:ROT	ROT	scripts/bench-minhash.js	constant	scripts/bench-minhash.js	1		
+fn:scripts/bench-oph-threshold.js:mersMod	mersMod	scripts/bench-oph-threshold.js	function	scripts/bench-oph-threshold.js	4		
+fn:scripts/bench-oph-threshold.js:hashSlot	hashSlot	scripts/bench-oph-threshold.js	function	scripts/bench-oph-threshold.js	6		
+fn:scripts/bench-oph-threshold.js:standardMinHash	standardMinHash	scripts/bench-oph-threshold.js	function	scripts/bench-oph-threshold.js	11		
+fn:scripts/bench-oph-threshold.js:ophMinHash	ophMinHash	scripts/bench-oph-threshold.js	function	scripts/bench-oph-threshold.js	22		
+const:scripts/bench-oph-threshold.js:REPS	REPS	scripts/bench-oph-threshold.js	constant	scripts/bench-oph-threshold.js	1		
+fn:scripts/bench-viewer.js:fmt	fmt	scripts/bench-viewer.js	function	scripts/bench-viewer.js	4		
+fn:scripts/bench-viewer.js:generateSNAP	generateSNAP	scripts/bench-viewer.js	function	scripts/bench-viewer.js	29		
+fn:scripts/bench-viewer.js:hydrateResult	hydrateResult	scripts/bench-viewer.js	function	scripts/bench-viewer.js	23		
+fn:scripts/bench-viewer.js:simulateLayout	simulateLayout	scripts/bench-viewer.js	function	scripts/bench-viewer.js	22		
+fn:scripts/bench-viewer.js:simulateHitTests	simulateHitTests	scripts/bench-viewer.js	function	scripts/bench-viewer.js	27		
+const:scripts/bench-viewer.js:SCALES	SCALES	scripts/bench-viewer.js	constant	scripts/bench-viewer.js	7		
 fn:scripts/csv2snap.ts:parseCsvLine	parseCsvLine	scripts/csv2snap.ts	function	scripts/csv2snap.ts	32		
 fn:scripts/csv2snap.ts:truncate	truncate	scripts/csv2snap.ts	function	scripts/csv2snap.ts	5		
 fn:scripts/csv2snap.ts:main	main	scripts/csv2snap.ts	function	scripts/csv2snap.ts	195		
+const:scripts/bench-pipeline.js:DATASETS	DATASETS	scripts/bench-pipeline.js	constant	scripts/bench-pipeline.js	2		
+fn:scripts/bench-pipeline.js:fmt	fmt	scripts/bench-pipeline.js	function	scripts/bench-pipeline.js	72		
 const:scripts/serve.ts:NO_CACHE	NO_CACHE	scripts/serve.ts	constant	scripts/serve.ts	5		
 fn:scripts/serve.ts:resolve	resolve	scripts/serve.ts	function	scripts/serve.ts	23		
 fn:scripts/stix2snap.ts:truncate	truncate	scripts/stix2snap.ts	function	scripts/stix2snap.ts	5		
@@ -50,15 +75,25 @@ fn:scripts/stix2snap.ts:aliases	aliases	scripts/stix2snap.ts	function	scripts/st
 fn:scripts/stix2snap.ts:sophisticationLevel	sophisticationLevel	scripts/stix2snap.ts	function	scripts/stix2snap.ts	8		
 fn:scripts/stix2snap.ts:platforms	platforms	scripts/stix2snap.ts	function	scripts/stix2snap.ts	7		
 fn:scripts/stix2snap.ts:main	main	scripts/stix2snap.ts	function	scripts/stix2snap.ts	226		
+fn:scripts/bench-render.js:fmt	fmt	scripts/bench-render.js	function	scripts/bench-render.js	3		
+const:scripts/bench-render.js:nodes	nodes	scripts/bench-render.js	constant	scripts/bench-render.js	8		
+const:scripts/bench-render.js:ITERS	ITERS	scripts/bench-render.js	constant	scripts/bench-render.js	1		
+const:scripts/bench-render.js:LOOKUPS	LOOKUPS	scripts/bench-render.js	constant	scripts/bench-render.js	1		
 fn:scripts/src2snap.ts:addSymbol	addSymbol	scripts/src2snap.ts	function	scripts/src2snap.ts	4		
 fn:scripts/src2snap.ts:addEdge	addEdge	scripts/src2snap.ts	function	scripts/src2snap.ts	8		
 const:scripts/src2snap.ts:EXTENSIONS	EXTENSIONS	scripts/src2snap.ts	constant	scripts/src2snap.ts	1		
 const:scripts/src2snap.ts:SKIP_DIRS	SKIP_DIRS	scripts/src2snap.ts	constant	scripts/src2snap.ts	1		
 const:scripts/src2snap.ts:edgeLines	edgeLines	scripts/src2snap.ts	constant	scripts/src2snap.ts	5		
 const:scripts/src2snap.ts:nodeLines	nodeLines	scripts/src2snap.ts	constant	scripts/src2snap.ts	3		
+fn:scripts/bench-3M.js:fmt	fmt	scripts/bench-3M.js	function	scripts/bench-3M.js	6		
+const:scripts/bench-3M.js:EDGES_PER_NODE	EDGES_PER_NODE	scripts/bench-3M.js	constant	scripts/bench-3M.js	1		
+const:scripts/bench-3M.js:GROUPS	GROUPS	scripts/bench-3M.js	constant	scripts/bench-3M.js	1		
+const:scripts/bench-3M.js:GROUP_NAMES	GROUP_NAMES	scripts/bench-3M.js	constant	scripts/bench-3M.js	1		
+const:scripts/bench-3M.js:LOOKUPS	LOOKUPS	scripts/bench-3M.js	constant	scripts/bench-3M.js	1		
+const:scripts/bench-3M.js:LINEAR_LOOKUPS	LINEAR_LOOKUPS	scripts/bench-3M.js	constant	scripts/bench-3M.js	1		
 const:tests/pipeline_test.ts:SAMPLE_EDGES	SAMPLE_EDGES	tests/pipeline_test.ts	constant	tests/pipeline_test.ts	1		
 const:tests/pipeline_test.ts:SAMPLE_LABELS	SAMPLE_LABELS	tests/pipeline_test.ts	constant	tests/pipeline_test.ts	1		
-fn:tests/pipeline_test.ts:jaccardTokens	jaccardTokens	tests/pipeline_test.ts	function	tests/pipeline_test.ts	440		
+fn:tests/pipeline_test.ts:jaccardTokens	jaccardTokens	tests/pipeline_test.ts	function	tests/pipeline_test.ts	447		
 fn:docs/bitzoom-renderer.js:maxEdgesToDraw	maxEdgesToDraw	docs/bitzoom-renderer.js	function	docs/bitzoom-renderer.js	5		
 fn:docs/bitzoom-renderer.js:hexToRgb	hexToRgb	docs/bitzoom-renderer.js	function	docs/bitzoom-renderer.js	11		
 fn:docs/bitzoom-renderer.js:fontStr	fontStr	docs/bitzoom-renderer.js	function	docs/bitzoom-renderer.js	9		
@@ -194,8 +229,8 @@ const:docs/bitzoom-algo.js:HASH_PARAMS_A	HASH_PARAMS_A	docs/bitzoom-algo.js	cons
 const:docs/bitzoom-algo.js:HASH_PARAMS_B	HASH_PARAMS_B	docs/bitzoom-algo.js	constant	docs/bitzoom-algo.js	1		
 fn:docs/bitzoom-algo.js:hashToken	hashToken	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	10		
 fn:docs/bitzoom-algo.js:mersMod	mersMod	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	4		
-fn:docs/bitzoom-algo.js:hashSlot	hashSlot	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	10		
-fn:docs/bitzoom-algo.js:computeMinHashInto	computeMinHashInto	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	16		
+fn:docs/bitzoom-algo.js:hashSlot	hashSlot	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	12		
+fn:docs/bitzoom-algo.js:computeMinHashInto	computeMinHashInto	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	41		
 fn:docs/bitzoom-algo.js:computeMinHash	computeMinHash	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	8		
 fn:docs/bitzoom-algo.js:jaccardEstimate	jaccardEstimate	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	12		
 fn:docs/bitzoom-algo.js:buildGaussianProjection	buildGaussianProjection	docs/bitzoom-algo.js	function	docs/bitzoom-algo.js	17		

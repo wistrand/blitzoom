@@ -1,0 +1,77 @@
+BitZoom 3M Node Benchmark Results
+==================================
+
+Config: 3,000,000 nodes, ~9,000,000 edges, 30 groups, 6 property groups
+Runtime: Deno, V8 --max-old-space-size=8192
+
+=== Data Generation ===
+  Generate nodes: 7.54s
+  Generate 9.0M edges: 26.19s
+
+=== Blend + Quantize ===
+  Blend (α=0, gaussian): 8.96s
+  Blend (α=0, rank): 13.72s
+  Weight change (reblend): 1.26s
+  Topo blend (α=0.3, 5 passes): 53.52s
+
+=== Level Building (Two-Phase) ===
+  L2:  nodes=2.81s edges=4.48s  → 16 sn, 120 se
+  L4:  nodes=2.42s edges=4.46s  → 256 sn, 28,555 se
+  L6:  nodes=2.41s edges=13.01s → 3,535 sn, 3,749,558 se
+  L8:  nodes=5.72s edges=15.15s → 53,299 sn, 8,957,819 se
+  L10: nodes=9.57s edges=15.42s → 759,688 sn, 8,999,741 se
+
+=== Layout ===
+  Layout 3M nodes: 2.05s
+
+=== Spatial Hit Test (L6) ===
+  100K spatial lookups: 45.6ms (0.5µs/lookup)
+  1000 linear scans (3,535 sn): 20.8ms (21µs/scan)
+  Spatial speedup: ~31x
+
+=== Memory Estimate ===
+  Nodes: ~0.7 GB
+  Edges: ~0.4 GB
+  AdjList: ~0.5 GB
+  Total: ~1.7 GB
+
+
+Analysis
+========
+
+Bottleneck breakdown at 3M nodes:
+  - Initial blend (α=0): 9s — dominated by O(n×G) anchor recompute
+  - Weight change (α=0): 1.3s — same anchor recompute, no topology passes
+  - Topology blend (α=0.3): 54s — 5 passes × O(n+|E|) with 9M edges
+  - Level build edges: 4-15s depending on level (O(|E|))
+  - Level build nodes: 2-10s depending on level (O(n))
+
+What stays interactive:
+  - Spatial hit test: 0.5µs/lookup regardless of scale
+  - Edge sampling: bounded by maxEdgesToDraw cap (5000)
+
+What doesn't scale:
+  - Topology smoothing: linear in passes × (n+|E|), 54s at 3M/9M
+  - Level building at high zoom: L10 has 760K supernodes, 9M super-edges
+  - Full blend on weight change: 1.3s even without topology
+
+Gaussian vs rank quantization:
+  - Gaussian: 9.0s (O(n) — table lookup)
+  - Rank: 13.7s (O(n log n) — sort)
+  - Gaussian 34% faster at this scale
+
+Two-phase level build value:
+  - L6 nodes phase: 2.4s (user sees supernodes)
+  - L6 edges phase: 13.0s (edges appear later via rAF chunks)
+  - Without two-phase: 15.4s blocking stall
+
+Memory:
+  - 1.7 GB total for 3M nodes + 9M edges
+  - Browser tab limit typically 2-4 GB
+  - 3M nodes is near the practical ceiling for single-tab browser use
+
+Recommendations for >1M node graphs:
+  - Web Worker for blend (move unifiedBlend off main thread)
+  - Reduce MinHash k from 128 to 64 (halves pipeline, reduces accuracy)
+  - Stream parsing (avoid holding full SNAP text + parsed arrays simultaneously)
+  - Consider WebGL rendering (Canvas2D can't draw 50K+ circles at 60fps)

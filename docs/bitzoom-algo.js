@@ -69,21 +69,50 @@ function hashSlot(a, tv, b) {
 }
 
 // #6: Compute MinHash into the reusable _sig buffer.
-// If tokenCount is 0, fills with NaN (sentinel). NaN cannot appear as a valid
-// hash output, so a single sig[0] !== sig[0] check detects empty with zero
-// false positives.
+// Uses OPH+DOPH (Li et al. 2012, Shrivastava & Li 2014) when tokenCount >= 12,
+// falls back to standard k-hash MinHash for small sets where OPH's densification
+// overhead exceeds the savings from fewer hashes.
+// If tokenCount is 0, fills with NaN (sentinel).
+
+const _occupied = new Uint8Array(MINHASH_K); // reusable for OPH
+
 export function computeMinHashInto(tokens, tokenCount) {
   if (tokenCount === 0) {
     for (let i = 0; i < MINHASH_K; i++) _sig[i] = NaN;
     return;
   }
-  for (let i = 0; i < MINHASH_K; i++) _sig[i] = LARGE_PRIME; // max valid value, not Infinity
+
+  if (tokenCount < 12) {
+    // Standard MinHash: k hash evaluations per token. Better for small sets.
+    for (let i = 0; i < MINHASH_K; i++) _sig[i] = LARGE_PRIME;
+    for (let t = 0; t < tokenCount; t++) {
+      const tv = hashToken(tokens[t]);
+      for (let j = 0; j < MINHASH_K; j++) {
+        const hv = hashSlot(HASH_PARAMS_A[j], tv, HASH_PARAMS_B[j]);
+        if (hv < _sig[j]) _sig[j] = hv;
+      }
+    }
+    return;
+  }
+
+  // OPH: single hash per token, then densify empty bins.
+  for (let i = 0; i < MINHASH_K; i++) { _sig[i] = LARGE_PRIME; _occupied[i] = 0; }
   for (let t = 0; t < tokenCount; t++) {
     const tv = hashToken(tokens[t]);
-    for (let j = 0; j < MINHASH_K; j++) {
-      const hv = hashSlot(HASH_PARAMS_A[j], tv, HASH_PARAMS_B[j]);
-      if (hv < _sig[j]) _sig[j] = hv;
+    const hv = hashSlot(HASH_PARAMS_A[0], tv, HASH_PARAMS_B[0]);
+    const bin = hv % MINHASH_K;
+    const val = (hv / MINHASH_K) | 0;
+    if (val < _sig[bin]) { _sig[bin] = val; _occupied[bin] = 1; }
+  }
+  for (let i = 0; i < MINHASH_K; i++) {
+    if (_occupied[i]) continue;
+    let donor = ((i * 2654435761) >>> 0) % MINHASH_K;
+    let attempts = 0;
+    while (!_occupied[donor] && attempts < MINHASH_K) {
+      donor = ((donor * 2654435761 + 1) >>> 0) % MINHASH_K;
+      attempts++;
     }
+    if (_occupied[donor]) _sig[i] = _sig[donor];
   }
 }
 
@@ -275,8 +304,9 @@ export function gaussianQuantize(nodes, stats) {
 export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats) {
   const w = propWeights;
   let propTotal = 0;
-  for (const g of groupNames) propTotal += (w[g] || 0);
-  if (propTotal === 0) propTotal = 1;
+  const allZero = groupNames.every(g => !(w[g]));
+  for (const g of groupNames) propTotal += allZero ? 1 : (w[g] || 0);
+  // If all weights are zero, blend with equal weights to avoid collapsing to one point
 
   // Precompute per-node property anchors (#13: cache across passes)
   const propPx = new Float64Array(nodes.length);
@@ -286,7 +316,8 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
     let px = 0, py = 0;
     for (const g of groupNames) {
       const p = nd.projections[g];
-      if (p) { px += p[0] * (w[g] || 0); py += p[1] * (w[g] || 0); }
+      const wg = allZero ? 1 : (w[g] || 0);
+      if (p) { px += p[0] * wg; py += p[1] * wg; }
     }
     propPx[i] = px / propTotal;
     propPy[i] = py / propTotal;
