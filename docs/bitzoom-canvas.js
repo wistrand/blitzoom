@@ -309,15 +309,10 @@ export class BitZoomCanvas {
   // ─── Navigation ────────────────────────────────────────────────────────────
 
   zoomForLevel(levelIdx) {
-    const TARGET_PX = 44;
-    const isRaw = levelIdx === RAW_LEVEL;
-    const k = isRaw ? 256 : (1 << ZOOM_LEVELS[levelIdx]);
-    const pad = Math.min(60, this.W * 0.08, this.H * 0.08);
-    const availMin = Math.min(this.W - pad*2, this.H - pad*2);
-    const targetZoom = Math.max(1, TARGET_PX / (availMin / k));
-    this.pan.x = this.W/2 - (this.W/2) * targetZoom;
-    this.pan.y = this.H/2 - (this.H/2) * targetZoom;
-    this.zoom = targetZoom;
+    // Keep zoom at 1 and pan at origin — layoutAll already fits nodes to the canvas with padding.
+    // Previous implementation could set zoom>1, pushing edge nodes outside the padded area.
+    this.zoom = 1;
+    this.pan = { x: 0, y: 0 };
   }
 
   switchLevel(idx) {

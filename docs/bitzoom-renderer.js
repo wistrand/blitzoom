@@ -128,7 +128,8 @@ export function layoutAll(bz) {
   const rangeX = maxX - minX || 1;
   const rangeY = maxY - minY || 1;
 
-  const pad = Math.min(60, bz.W * 0.08, bz.H * 0.08);
+  // Padding: percentage of shorter dimension, capped. Heatmap glow may extend beyond (acceptable).
+  const pad = Math.max(40, Math.min(100, Math.min(bz.W, bz.H) * 0.08));
   const availW = bz.W - pad * 2;
   const availH = bz.H - pad * 2;
   const scale = Math.min(availW / rangeX, availH / rangeY);
