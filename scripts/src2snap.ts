@@ -470,8 +470,8 @@ for (const e of validEdges) {
 }
 Deno.writeTextFileSync(prefix + ".edges", edgeLines.join("\n") + "\n");
 
-// Write .labels — Lines, Bytes, AgeHours are numeric, auto-binned by pipeline
-const labelLines = [
+// Write .nodes — Lines, Bytes, AgeHours are numeric, auto-binned by pipeline
+const nodeLines = [
   "# NodeId\tLabel\tGroup\tKind\tFile\tLines\tBytes\tAgeHours",
 ];
 for (const [id, sym] of symbols) {
@@ -479,13 +479,13 @@ for (const [id, sym] of symbols) {
   const group = sym.file;
   const bytesStr = sym.bytes > 0 ? String(sym.bytes) : '';
   const ageStr = sym.ageHours > 0 ? String(sym.ageHours) : '';
-  labelLines.push(`${id}\t${label}\t${group}\t${sym.kind}\t${sym.file}\t${sym.size}\t${bytesStr}\t${ageStr}`);
+  nodeLines.push(`${id}\t${label}\t${group}\t${sym.kind}\t${sym.file}\t${sym.size}\t${bytesStr}\t${ageStr}`);
 }
-Deno.writeTextFileSync(prefix + ".labels", labelLines.join("\n") + "\n");
+Deno.writeTextFileSync(prefix + ".nodes", nodeLines.join("\n") + "\n");
 
 // Summary
 console.log(`Wrote ${prefix}.edges (${validEdges.length} edges)`);
-console.log(`Wrote ${prefix}.labels (${symbols.size} nodes)`);
+console.log(`Wrote ${prefix}.nodes (${symbols.size} nodes)`);
 console.log();
 
 const kindCounts: Record<string, number> = {};

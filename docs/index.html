@@ -229,17 +229,17 @@ const PRESETS = {
 let view = null;
 
 async function loadDemo(name) {
-  const [edgesRes, labelsRes] = await Promise.all([
+  const [edgesRes, nodesRes] = await Promise.all([
     fetch(`data/${name}.edges`),
-    fetch(`data/${name}.labels`).catch(() => null),
+    fetch(`data/${name}.nodes`).catch(() => null),
   ]);
   const edgesText = await edgesRes.text();
-  let labelsText = null;
-  if (labelsRes && labelsRes.ok) labelsText = await labelsRes.text();
+  let nodesText = null;
+  if (nodesRes && nodesRes.ok) nodesText = await nodesRes.text();
 
   if (view) view.destroy();
   const preset = PRESETS[name] || {};
-  view = createBitZoomView(document.getElementById('demo-canvas'), edgesText, labelsText, {
+  view = createBitZoomView(document.getElementById('demo-canvas'), edgesText, nodesText, {
     initialLevel: preset.initialLevel || 3,
     edgeMode: preset.edgeMode || 'lines',
     heatmapMode: 'density',

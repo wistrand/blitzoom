@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 /**
- * Convert a STIX 2.1 bundle JSON to SNAP-style .edges and .labels files.
+ * Convert a STIX 2.1 bundle JSON to SNAP-style .edges and .nodes files.
  *
  * Handles all STIX 2.1 object types:
  *   SDOs: attack-pattern, campaign, course-of-action, grouping, identity,
@@ -346,9 +346,9 @@ function main() {
   const edgesPath = prefix + ".edges";
   Deno.writeTextFileSync(edgesPath, edgeLines.join("\n") + "\n");
 
-  // Write .labels
-  const labelLines: string[] = [];
-  labelLines.push(`# NodeId\tLabel\tGroup\tSubType\tKillChain\tAliases\tLevel\tPlatforms`);
+  // Write .nodes
+  const nodeLines: string[] = [];
+  nodeLines.push(`# NodeId\tLabel\tGroup\tSubType\tKillChain\tAliases\tLevel\tPlatforms`);
   for (const [id, obj] of nodeMap) {
     const label = truncate(clean(nodeLabel(obj)), 80);
     const group = obj.type;
@@ -357,15 +357,15 @@ function main() {
     const al = clean(aliases(obj));
     const lvl = clean(sophisticationLevel(obj));
     const plat = clean(platforms(obj));
-    labelLines.push(`${id}\t${label}\t${group}\t${st}\t${kc}\t${al}\t${lvl}\t${plat}`);
+    nodeLines.push(`${id}\t${label}\t${group}\t${st}\t${kc}\t${al}\t${lvl}\t${plat}`);
   }
 
-  const labelsPath = prefix + ".labels";
-  Deno.writeTextFileSync(labelsPath, labelLines.join("\n") + "\n");
+  const nodesPath = prefix + ".nodes";
+  Deno.writeTextFileSync(nodesPath, nodeLines.join("\n") + "\n");
 
   // Summary
   console.log(`Wrote ${edgesPath} (${dedupEdges.length} edges)`);
-  console.log(`Wrote ${labelsPath} (${nodeMap.size} nodes)`);
+  console.log(`Wrote ${nodesPath} (${nodeMap.size} nodes)`);
   console.log();
   const typeCounts: Record<string, number> = {};
   for (const obj of nodeMap.values()) typeCounts[obj.type] = (typeCounts[obj.type] || 0) + 1;

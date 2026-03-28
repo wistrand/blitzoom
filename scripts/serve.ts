@@ -6,7 +6,7 @@ const MIME: Record<string, string> = {
   css: "text/css",
   json: "application/json",
   edges: "text/plain; charset=utf-8",
-  labels: "text/plain; charset=utf-8",
+  nodes: "text/plain; charset=utf-8",
   svg: "image/svg+xml",
   png: "image/png",
   gz: "application/gzip",

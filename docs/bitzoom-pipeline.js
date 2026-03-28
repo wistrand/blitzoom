@@ -50,8 +50,8 @@ export function parseEdgesFile(text) {
   return { edgeFrom, edgeTo, edgeCount: edgeFrom.length, edgeTypeMap: hasThirdCol ? edgeTypeMap : null, nodeIds };
 }
 
-export function parseLabelsFile(text) {
-  const labels = new Map();
+export function parseNodesFile(text) {
+  const nodes = new Map();
   const extraPropNames = [];
   const lines = text.split('\n');
 
@@ -81,11 +81,11 @@ export function parseLabelsFile(text) {
       entry.extraProps[name] = parts[j];
     }
 
-    labels.set(parts[0], entry);
+    nodes.set(parts[0], entry);
   }
 
   if (extraPropNames.length === 0) {
-    for (const entry of labels.values()) {
+    for (const entry of nodes.values()) {
       for (const k of Object.keys(entry.extraProps)) {
         if (!extraPropNames.includes(k)) extraPropNames.push(k);
       }
@@ -93,16 +93,16 @@ export function parseLabelsFile(text) {
     }
   }
 
-  return { labels, extraPropNames };
+  return { nodes, extraPropNames };
 }
 
 // ─── Graph building ──────────────────────────────────────────────────────────
 
-export function buildGraph(parsed, labelMap, extraPropNames) {
+export function buildGraph(parsed, nodesMap, extraPropNames) {
   const nodeArray = [];
   const nodeIndex = {};
   for (const id of parsed.nodeIds) {
-    const info = labelMap ? labelMap.get(id) : null;
+    const info = nodesMap ? nodesMap.get(id) : null;
     const group = info ? info.group : 'unknown';
     const label = info ? info.label : id;
     const edgeTypes = parsed.edgeTypeMap
@@ -244,9 +244,9 @@ export function tokenizeNumeric(propName, value, bins, tokenBuf, offset) {
 
 export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins) {
   numericBins = numericBins || {};
-  const groupRotations = {};
+  const groupProjections = {};
   for (let i = 0; i < groupNames.length; i++) {
-    groupRotations[groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
+    groupProjections[groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
   }
 
   const N = nodeArray.length;
@@ -265,18 +265,18 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
     // group
     tokenBuf[0] = 'group:' + n.group;
     computeMinHashInto(tokenBuf, 1);
-    projectInto(_sig, groupRotations.group, projBuf, baseOff + gIdx.group * 2);
+    projectInto(_sig, groupProjections.group, projBuf, baseOff + gIdx.group * 2);
 
     // label
     const labelEnd = tokenizeLabel(n.label, n.id, tokenBuf, 0);
     computeMinHashInto(tokenBuf, labelEnd);
-    projectInto(_sig, groupRotations.label, projBuf, baseOff + gIdx.label * 2);
+    projectInto(_sig, groupProjections.label, projBuf, baseOff + gIdx.label * 2);
 
     // structure
     tokenBuf[0] = 'deg:' + degreeBucket(n.degree);
     tokenBuf[1] = 'leaf:' + (n.degree === 0);
     computeMinHashInto(tokenBuf, 2);
-    projectInto(_sig, groupRotations.structure, projBuf, baseOff + gIdx.structure * 2);
+    projectInto(_sig, groupProjections.structure, projBuf, baseOff + gIdx.structure * 2);
 
     // neighbors
     const adj = adjGroups[idx];
@@ -287,7 +287,7 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
       tokenBuf[0] = 'ngroup:isolated'; tc = 1;
     }
     computeMinHashInto(tokenBuf, tc);
-    projectInto(_sig, groupRotations.neighbors, projBuf, baseOff + gIdx.neighbors * 2);
+    projectInto(_sig, groupProjections.neighbors, projBuf, baseOff + gIdx.neighbors * 2);
 
     // edge types
     if (hasEdgeTypes) {
@@ -298,7 +298,7 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
         tokenBuf[0] = 'etype:none'; tc = 1;
       }
       computeMinHashInto(tokenBuf, tc);
-      projectInto(_sig, groupRotations.edgetype, projBuf, baseOff + gIdx.edgetype * 2);
+      projectInto(_sig, groupProjections.edgetype, projBuf, baseOff + gIdx.edgetype * 2);
     }
 
     // extra props (with multi-resolution numeric tokenization)
@@ -309,7 +309,7 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
       const epEnd = tokenizeNumeric(ep, val, numericBins[ep], tokenBuf, 0);
       if (epEnd > 0) {
         computeMinHashInto(tokenBuf, epEnd);
-        projectInto(_sig, groupRotations[ep], projBuf, baseOff + gIdx[ep] * 2);
+        projectInto(_sig, groupProjections[ep], projBuf, baseOff + gIdx[ep] * 2);
       }
       // else: projBuf already initialized to 0,0
     }
@@ -333,13 +333,13 @@ export function computeNodeSig(node) {
 
 // ─── Full pipeline: parse → build → project ──────────────────────────────────
 
-export function runPipeline(edgesText, labelsText) {
+export function runPipeline(edgesText, nodesText) {
   const parsed = parseEdgesFile(edgesText);
-  const labelResult = labelsText ? parseLabelsFile(labelsText) : null;
-  const labelMap = labelResult ? labelResult.labels : null;
-  const extraPropNames = labelResult ? labelResult.extraPropNames : [];
+  const nodesResult = nodesText ? parseNodesFile(nodesText) : null;
+  const nodesMap = nodesResult ? nodesResult.nodes : null;
+  const extraPropNames = nodesResult ? nodesResult.extraPropNames : [];
 
-  const graph = buildGraph(parsed, labelMap, extraPropNames);
+  const graph = buildGraph(parsed, nodesMap, extraPropNames);
   const { projBuf } = computeProjections(
     graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins
   );

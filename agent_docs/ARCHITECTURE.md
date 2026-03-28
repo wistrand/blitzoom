@@ -23,10 +23,10 @@ docs/                    Web application (ES modules, served by Deno)
 
 tests/pipeline_test.ts     48 Deno tests: algo unit, pipeline, numeric, undefined, E2E
 
-data/                      5 SNAP-format graph datasets (.edges + .labels, Amazon .gz compressed)
+docs/data/                 5 SNAP-format graph datasets (.edges + .nodes, Amazon .gz compressed)
 agent_docs/                Architecture and spec documentation
 scripts/
-  serve.ts                 Deno HTTP server (docs/ + data/ at root, no-cache headers)
+  serve.ts                 Deno HTTP server (serves everything from docs/, no-cache headers)
   stix2snap.ts             STIX 2.1 JSON → SNAP (extracts platforms, kill chains, aliases)
   csv2snap.ts              OpenCTI CSV → SNAP (Jaccard co-reference container graph)
   src2snap.ts              Source code → SNAP call graph (files, functions, methods, calls)
@@ -61,7 +61,7 @@ No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`
 - 2-column: `FromNodeId\tToNodeId`
 - 3-column: `FromNodeId\tToNodeId\tEdgeType`
 
-**`.labels`** (optional): tab-delimited.
+**`.nodes`** (optional): tab-delimited.
 - Header: `# NodeId\tLabel\tGroup[\tExtraProp1\tExtraProp2...]`
 - Extra columns become additional MinHash property groups.
 - **Numeric columns**: auto-detected (>=80% of non-empty values parseable). Tokenized at 3 resolution levels (coarse: 5 bins, medium: 50, fine: 500) for smooth Jaccard similarity.
@@ -86,13 +86,13 @@ Pure functions, no DOM. Single source of truth for MinHash/projection.
 
 Shared parsing, graph building, tokenization. Imports from algo. No DOM.
 
-- **Parsers**: `parseEdgesFile` (streaming line-by-line, flat arrays), `parseLabelsFile` (header detection, extra columns, preserves empty tabs)
+- **Parsers**: `parseEdgesFile` (streaming line-by-line, flat arrays), `parseNodesFile` (header detection, extra columns, preserves empty tabs)
 - **Graph building**: `buildGraph` — nodes, edges, adjacency, neighbor groups, numeric column auto-detection (`numericBins`)
 - **Tokenization**: `degreeBucket`, `tokenizeLabel` (inline word scanner), `tokenizeNumeric` (3-level for numeric, categorical fallback, 0 tokens for empty/undefined)
 - **Signature**: `computeNodeSig(node)` — on-demand signature computation (signatures not stored on nodes)
-- **Full pipeline**: `computeProjections` (GC-optimized), `runPipeline(edgesText, labelsText)` (parse → build → project)
+- **Full pipeline**: `computeProjections` (GC-optimized), `runPipeline(edgesText, nodesText)` (parse → build → project)
 
-### [bitzoom-renderer.js](../docs/bitzoom-renderer.js) (937 lines)
+### [bitzoom-renderer.js](../docs/bitzoom-renderer.js) (938 lines)
 
 Canvas rendering. Reads BitZoom instance, no state mutation (except `n.x`/`n.y` in layout).
 
@@ -116,13 +116,13 @@ Canvas rendering. Reads BitZoom instance, no state mutation (except `n.x`/`n.y` 
 
 **Other**: cubic bezier edges, Gaussian splat heatmap (additive), KDE density heatmap (1/4 resolution, persistent buffers), hit testing.
 
-### [bitzoom-canvas.js](../docs/bitzoom-canvas.js) (778 lines)
+### [bitzoom-canvas.js](../docs/bitzoom-canvas.js) (773 lines)
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
 **`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propWeights, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Constructor accepts `skipEvents` (for composition), `onRender` callback, `showLegend`, and `showResetBtn` options.
 
-**`createBitZoomView(canvas, edgesText, labelsText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, blends, returns ready-to-use canvas view.
+**`createBitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, blends, returns ready-to-use canvas view.
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
 
@@ -151,7 +151,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 ## Key Data Flow
 
 ```
-SNAP files (.edges, .labels)
+SNAP files (.edges, .nodes)
   → bitzoom-worker.js: parse (streaming), build graph, detect numeric columns
     → bitzoom-proj-worker.js (×3): tokenize → MinHash → project → Float64Array
   → main thread: unpack → hydrate → unifiedBlend → quantize → render

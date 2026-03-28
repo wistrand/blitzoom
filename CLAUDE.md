@@ -31,12 +31,12 @@ docs/                    Web app (ES modules, no build step)
   bitzoom-algo.js          Pure algorithm functions and constants (471 lines)
   bitzoom-pipeline.js      Parsers, graph building, tokenization, projection (348 lines)
   bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (937 lines)
-  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (778 lines)
+  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (773 lines)
   bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1336 lines)
   bitzoom-worker.js        Web Worker coordinator (142 lines)
   bitzoom-proj-worker.js   Web Worker projection (95 lines)
 
-data/                      5 SNAP-format datasets (.edges + .labels, Amazon .gz compressed)
+docs/data/                 5 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
 tests/pipeline_test.ts     48 tests: unit, numeric, undefined values, E2E
 scripts/
   serve.ts                 Deno HTTP server (no-cache headers)
@@ -48,7 +48,7 @@ scripts/
 ## Data Format (SNAP)
 
 - `.edges` (required): tab-delimited, `#` comments. `From\tTo` or `From\tTo\tEdgeType`.
-- `.labels` (optional): tab-delimited. `# NodeId\tLabel\tGroup[\tExtra1\tExtra2...]`.
+- `.nodes` (optional): tab-delimited. `# NodeId\tLabel\tGroup[\tExtra1\tExtra2...]`.
   - Extra columns become MinHash property groups.
   - Numeric columns auto-detected (>=80% parseable) → 3-level tokenization (coarse/medium/fine).
   - Empty fields = undefined → 0 tokens, neutral projection, no false clustering.
@@ -57,8 +57,8 @@ scripts/
 
 | Name             | Nodes | Edges  | Properties                            |
 | ---------------- | ----- | ------ | ------------------------------------- |
-| Epstein          | 514   | 534    | group, edge types                     |
-| BitZoom Source   | 403   | 971    | kind, file, lines, bytes, age         |
+| Epstein          | 364   | 534    | group, edge types                     |
+| BitZoom Source   | 405   | 974    | kind, file, lines, bytes, age         |
 | Synth Packages   | 2,000 | 4,050  | downloads, license, version, depcount |
 | MITRE ATT&CK    | 4,736 | 25,856 | kill chain, platforms, aliases         |
 | Amazon           | 367K  | 988K   | product category                      |

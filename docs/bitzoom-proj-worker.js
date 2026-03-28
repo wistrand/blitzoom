@@ -9,14 +9,14 @@ import {
 
 self.onmessage = function(e) {
   try {
-    const { nodes, groupNames, groupRotationSeeds, hasEdgeTypes, extraPropNames, numericBins, adjGroups, startIdx } = e.data;
+    const { nodes, groupNames, groupProjectionSeeds, hasEdgeTypes, extraPropNames, numericBins, adjGroups, startIdx } = e.data;
 
     const gIdx = {};
     for (let i = 0; i < groupNames.length; i++) gIdx[groupNames[i]] = i;
 
-    const groupRotations = {};
+    const groupProjections = {};
     for (let i = 0; i < groupNames.length; i++) {
-      groupRotations[groupNames[i]] = buildGaussianProjection(groupRotationSeeds[i], MINHASH_K);
+      groupProjections[groupNames[i]] = buildGaussianProjection(groupProjectionSeeds[i], MINHASH_K);
     }
 
     const N = nodes.length;
@@ -33,18 +33,18 @@ self.onmessage = function(e) {
       // group
       tokenBuf[0] = 'group:' + n.group;
       computeMinHashInto(tokenBuf, 1);
-      projectInto(_sig, groupRotations.group, projBuf, baseOff + gIdx.group * 2);
+      projectInto(_sig, groupProjections.group, projBuf, baseOff + gIdx.group * 2);
 
       // label
       const labelEnd = tokenizeLabel(n.label, n.id, tokenBuf, 0);
       computeMinHashInto(tokenBuf, labelEnd);
-      projectInto(_sig, groupRotations.label, projBuf, baseOff + gIdx.label * 2);
+      projectInto(_sig, groupProjections.label, projBuf, baseOff + gIdx.label * 2);
 
       // structure
       tokenBuf[0] = 'deg:' + degreeBucket(n.degree);
       tokenBuf[1] = 'leaf:' + (n.degree === 0);
       computeMinHashInto(tokenBuf, 2);
-      projectInto(_sig, groupRotations.structure, projBuf, baseOff + gIdx.structure * 2);
+      projectInto(_sig, groupProjections.structure, projBuf, baseOff + gIdx.structure * 2);
 
       // neighbors
       const adj = adjGroups[idx];
@@ -55,7 +55,7 @@ self.onmessage = function(e) {
         tokenBuf[0] = 'ngroup:isolated'; tc = 1;
       }
       computeMinHashInto(tokenBuf, tc);
-      projectInto(_sig, groupRotations.neighbors, projBuf, baseOff + gIdx.neighbors * 2);
+      projectInto(_sig, groupProjections.neighbors, projBuf, baseOff + gIdx.neighbors * 2);
 
       // edge types
       if (hasEdgeTypes) {
@@ -66,7 +66,7 @@ self.onmessage = function(e) {
           tokenBuf[0] = 'etype:none'; tc = 1;
         }
         computeMinHashInto(tokenBuf, tc);
-        projectInto(_sig, groupRotations.edgetype, projBuf, baseOff + gIdx.edgetype * 2);
+        projectInto(_sig, groupProjections.edgetype, projBuf, baseOff + gIdx.edgetype * 2);
       }
 
       // extra props (with multi-resolution numeric tokenization)
@@ -76,7 +76,7 @@ self.onmessage = function(e) {
         const epEnd = tokenizeNumeric(ep, val, numericBins ? numericBins[ep] : undefined, tokenBuf, 0);
         if (epEnd > 0) {
           computeMinHashInto(tokenBuf, epEnd);
-          projectInto(_sig, groupRotations[ep], projBuf, baseOff + gIdx[ep] * 2);
+          projectInto(_sig, groupProjections[ep], projBuf, baseOff + gIdx[ep] * 2);
         }
       }
 

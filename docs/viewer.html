@@ -54,15 +54,15 @@
 <div id="loader-screen" class="loader-screen">
   <div class="drop-zone" id="dropZone">
     <div class="drop-title">Load Graph</div>
-    <div class="drop-hint">Pick a dataset or drop your own .edges / .labels files</div>
+    <div class="drop-hint">Pick a dataset or drop your own .edges / .nodes files</div>
     <div class="dataset-list" id="datasetList"></div>
     <div class="drop-hint" style="margin-top:16px;margin-bottom:12px;border-top:1px solid var(--border);padding-top:16px">Or load from file</div>
     <div class="file-input-row">
       <label>.edges (required)
         <input type="file" id="edgesFile" accept=".edges,.txt,.tsv,.gz">
       </label>
-      <label>.labels (optional)
-        <input type="file" id="labelsFile" accept=".labels,.txt,.tsv,.gz">
+      <label>.nodes (optional)
+        <input type="file" id="nodesFile" accept=".nodes,.labels,.txt,.tsv,.gz">
       </label>
     </div>
     <button class="load-btn" id="loadBtn" disabled>Load Graph</button>

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 /**
- * Convert an OpenCTI CSV export (semicolon-delimited) to SNAP .edges and .labels.
+ * Convert an OpenCTI CSV export (semicolon-delimited) to SNAP .edges and .nodes.
  *
  * Builds a container-only graph:
  *   - Nodes = Report/Grouping rows from the CSV (with all their rich properties)
@@ -203,14 +203,14 @@ function main() {
   const edgesPath = prefix + ".edges";
   Deno.writeTextFileSync(edgesPath, edgeLines.join("\n") + "\n");
 
-  // Write .labels
-  const labelLines: string[] = [];
-  labelLines.push(`# NodeId\tLabel\tGroup\tCreatedBy\tMarking\tReportType\tTags\tPublished\tConfidence\tEntityCount`);
+  // Write .nodes
+  const nodeLines: string[] = [];
+  nodeLines.push(`# NodeId\tLabel\tGroup\tCreatedBy\tMarking\tReportType\tTags\tPublished\tConfidence\tEntityCount`);
 
   for (const r of rows) {
     const label = truncate(clean(r.name), 80);
     const tags = r.tags.slice(0, 8).join(",");
-    labelLines.push([
+    nodeLines.push([
       r.id,
       label,
       r.entityType,
@@ -224,12 +224,12 @@ function main() {
     ].join("\t"));
   }
 
-  const labelsPath = prefix + ".labels";
-  Deno.writeTextFileSync(labelsPath, labelLines.join("\n") + "\n");
+  const nodesPath = prefix + ".nodes";
+  Deno.writeTextFileSync(nodesPath, nodeLines.join("\n") + "\n");
 
   // Summary
   console.log(`Wrote ${edgesPath} (${edges.length} edges)`);
-  console.log(`Wrote ${labelsPath} (${rows.length} nodes)`);
+  console.log(`Wrote ${nodesPath} (${rows.length} nodes)`);
   console.log();
 
   const edgeTypeCounts: Record<string, number> = {};

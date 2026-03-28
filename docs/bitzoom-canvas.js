@@ -7,7 +7,7 @@
 //   import { runPipeline } from './bitzoom-pipeline.js';
 //   import { unifiedBlend, buildLevel, ... } from './bitzoom-algo.js';
 //
-//   const result = runPipeline(edgesText, labelsText);
+//   const result = runPipeline(edgesText, nodesText);
 //   // ... hydrate nodes with projections, blend ...
 //   const view = new BitZoomCanvas(canvasElement, { nodes, edges, ... });
 
@@ -54,14 +54,14 @@ export class BitZoomCanvas {
     this.propWeights = { ...opts.propWeights } || {};
     this.propColors = opts.propColors || {};
     this.groupColors = opts.groupColors || this.propColors['group'] || {};
-    this.groupRotations = {};
+    this.groupProjections = {};
     this.smoothAlpha = opts.smoothAlpha || 0;
     this.maxDegree = 1;
     this.hasEdgeTypes = opts.hasEdgeTypes || false;
 
-    // Build rotation matrices
+    // Build projection matrices
     for (let i = 0; i < this.groupNames.length; i++) {
-      this.groupRotations[this.groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
+      this.groupProjections[this.groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
     }
 
     // Compute max degree
@@ -693,15 +693,15 @@ function _hydrateAndLink(nodeArray, projBuf, groupNames, edges) {
 }
 
 /**
- * Create a BitZoomCanvas from SNAP .edges/.labels text.
+ * Create a BitZoomCanvas from SNAP .edges/.nodes text.
  * @param {HTMLCanvasElement} canvas
  * @param {string} edgesText
- * @param {string|null} labelsText
+ * @param {string|null} nodesText
  * @param {object} [opts] - additional BitZoomCanvas options
  * @returns {BitZoomCanvas}
  */
-export function createBitZoomView(canvas, edgesText, labelsText, opts = {}) {
-  const result = runPipeline(edgesText, labelsText);
+export function createBitZoomView(canvas, edgesText, nodesText, opts = {}) {
+  const result = runPipeline(edgesText, nodesText);
   const { nodes, nodeIndexFull, adjList } = _hydrateAndLink(result.nodeArray, result.projBuf, result.groupNames, result.edges);
   return _finalize(canvas, nodes, result.edges, nodeIndexFull, adjList, result.groupNames, result.hasEdgeTypes, opts);
 }

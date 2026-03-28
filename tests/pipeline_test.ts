@@ -10,7 +10,7 @@ import {
 } from "../docs/bitzoom-algo.js";
 
 import {
-  parseEdgesFile, parseLabelsFile, buildGraph,
+  parseEdgesFile, parseNodesFile, buildGraph,
   degreeBucket, tokenizeLabel, tokenizeNumeric, computeProjections, runPipeline, computeNodeSig,
 } from "../docs/bitzoom-pipeline.js";
 
@@ -152,27 +152,27 @@ Deno.test("parseEdgesFile: skips comments and empty lines", () => {
   assertEquals(r.edgeCount, 2);
 });
 
-Deno.test("parseLabelsFile: parses header and extra columns", () => {
-  const r = parseLabelsFile(SAMPLE_LABELS);
+Deno.test("parseNodesFile: parses header and extra columns", () => {
+  const r = parseNodesFile(SAMPLE_LABELS);
   assertEquals(r.extraPropNames.length, 1);
   assertEquals(r.extraPropNames[0], "score");
-  const alice = r.labels.get("A");
+  const alice = r.nodes.get("A");
   assertExists(alice);
   assertEquals(alice!.label, "Alice");
   assertEquals(alice!.group, "people");
   assertEquals(alice!.extraProps.score, "high");
 });
 
-Deno.test("parseLabelsFile: handles missing header", () => {
-  const r = parseLabelsFile("X\tXena\twarrior\nY\tYoda\tjedi\n");
-  assertEquals(r.labels.size, 2);
-  assertEquals(r.labels.get("X")!.group, "warrior");
+Deno.test("parseNodesFile: handles missing header", () => {
+  const r = parseNodesFile("X\tXena\twarrior\nY\tYoda\tjedi\n");
+  assertEquals(r.nodes.size, 2);
+  assertEquals(r.nodes.get("X")!.group, "warrior");
 });
 
 Deno.test("buildGraph: builds nodes, edges, adjacency", () => {
   const parsed = parseEdgesFile(SAMPLE_EDGES);
-  const labelResult = parseLabelsFile(SAMPLE_LABELS);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
+  const nodesResult = parseNodesFile(SAMPLE_LABELS);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
 
   assertEquals(graph.nodeArray.length, 4);
   assertEquals(graph.edges.length, 3);
@@ -235,10 +235,10 @@ Deno.test("tokenizeLabel: respects offset", () => {
 
 Deno.test("computeProjections: produces valid output", () => {
   const parsed = parseEdgesFile(SAMPLE_EDGES);
-  const labelResult = parseLabelsFile(SAMPLE_LABELS);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
+  const nodesResult = parseNodesFile(SAMPLE_LABELS);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
   const result = computeProjections(
-    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, labelResult.extraPropNames, graph.numericBins,
+    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins,
   );
 
   const N = graph.nodeArray.length;
@@ -253,10 +253,10 @@ Deno.test("computeProjections: produces valid output", () => {
 
 Deno.test("computeProjections: deterministic", () => {
   const parsed = parseEdgesFile(SAMPLE_EDGES);
-  const labelResult = parseLabelsFile(SAMPLE_LABELS);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
-  const r1 = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, labelResult.extraPropNames, graph.numericBins);
-  const r2 = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, labelResult.extraPropNames, graph.numericBins);
+  const nodesResult = parseNodesFile(SAMPLE_LABELS);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
+  const r1 = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins);
+  const r2 = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins);
   for (let i = 0; i < r1.projBuf.length; i++) {
     assertEquals(r1.projBuf[i], r2.projBuf[i], `projBuf[${i}] should be deterministic`);
   }
@@ -369,8 +369,8 @@ B\tBob\tp\t200
 C\tCarol\tp\t300
 D\tDave\tp\tN/A`;
   const parsed = parseEdgesFile(numEdges);
-  const labelResult = parseLabelsFile(numLabels);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
+  const nodesResult = parseNodesFile(numLabels);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
   // 3 out of 4 are numeric (75%) — should detect as numeric (threshold 80%)
   // Actually N/A makes it 3/4 = 75% < 80%, so should NOT be numeric
   assertEquals(Object.keys(graph.numericBins).length, 0, "75% numeric should not trigger (threshold 80%)");
@@ -385,8 +385,8 @@ C\tCarol\tp\t300
 D\tDave\tp\t400
 E\tEve\tp\tN/A`;
   const parsed = parseEdgesFile(numEdges);
-  const labelResult = parseLabelsFile(numLabels);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
+  const nodesResult = parseNodesFile(numLabels);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
   // 4 out of 5 = 80% — should detect
   assert(graph.numericBins.weight !== undefined, "80% numeric should trigger");
   assertEquals(graph.numericBins.weight.min, 100);
@@ -453,13 +453,13 @@ C\tCarol\tp\t`;
   assertEquals(result.projBuf[cOff + 1], 0);
 });
 
-Deno.test("parseLabelsFile: trailing empty tabs preserved as empty strings", () => {
+Deno.test("parseNodesFile: trailing empty tabs preserved as empty strings", () => {
   const text = "# NodeId\tLabel\tGroup\tA\tB\nX\tXena\tg\t10\t\nY\tYoda\tg\t\t20\n";
-  const r = parseLabelsFile(text);
-  assertEquals(r.labels.get("X").extraProps.a, "10");
-  assertEquals(r.labels.get("X").extraProps.b, "");
-  assertEquals(r.labels.get("Y").extraProps.a, "");
-  assertEquals(r.labels.get("Y").extraProps.b, "20");
+  const r = parseNodesFile(text);
+  assertEquals(r.nodes.get("X").extraProps.a, "10");
+  assertEquals(r.nodes.get("X").extraProps.b, "");
+  assertEquals(r.nodes.get("Y").extraProps.a, "");
+  assertEquals(r.nodes.get("Y").extraProps.b, "20");
 });
 
 Deno.test("buildGraph: numeric detection ignores empty values", () => {
@@ -472,8 +472,8 @@ D\td\tg\t400
 E\te\tg\t
 F\tf\tg\t`;
   const parsed = parseEdgesFile(edges);
-  const labelResult = parseLabelsFile(labels);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
+  const nodesResult = parseNodesFile(labels);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
   // 4 numeric out of 4 non-empty (E and F are empty, not counted as total)
   assert(graph.numericBins.weight !== undefined, "Should detect numeric ignoring empties");
   assertEquals(graph.numericBins.weight.min, 100);
@@ -539,9 +539,9 @@ Deno.test("buildLevel: creates supernodes and edges", () => {
 
 Deno.test("E2E: Epstein dataset loads and processes correctly", async () => {
   const edgesText = await Deno.readTextFile("docs/data/epstein.edges");
-  const labelsText = await Deno.readTextFile("docs/data/epstein.labels");
+  const nodesText = await Deno.readTextFile("docs/data/epstein.nodes");
 
-  const result = runPipeline(edgesText, labelsText);
+  const result = runPipeline(edgesText, nodesText);
 
   // Epstein: ~100 nodes with edge types
   assert(result.nodeArray.length > 50, `Expected >50 nodes, got ${result.nodeArray.length}`);
@@ -633,8 +633,8 @@ Deno.test("E2E: Epstein dataset loads and processes correctly", async () => {
 
 Deno.test("E2E: Epstein with topology alpha > 0", async () => {
   const edgesText = await Deno.readTextFile("docs/data/epstein.edges");
-  const labelsText = await Deno.readTextFile("docs/data/epstein.labels");
-  const result = runPipeline(edgesText, labelsText);
+  const nodesText = await Deno.readTextFile("docs/data/epstein.nodes");
+  const result = runPipeline(edgesText, nodesText);
 
   const G = result.groupNames.length;
   const nodes = result.nodeArray.map((n, i) => {
@@ -728,9 +728,9 @@ Deno.test("MinHash Jaccard estimates converge to true Jaccard", () => {
 
 Deno.test("buildLevelNodes: returns supernodes with empty snEdges", () => {
   const parsed = parseEdgesFile(SAMPLE_EDGES);
-  const labelResult = parseLabelsFile(SAMPLE_LABELS);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
-  const { projBuf } = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, labelResult.extraPropNames, graph.numericBins);
+  const nodesResult = parseNodesFile(SAMPLE_LABELS);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
+  const { projBuf } = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins);
   const G = graph.groupNames.length;
   const nodes = graph.nodeArray.map((n, i) => {
     const projections = {};
@@ -758,9 +758,9 @@ Deno.test("buildLevelNodes: returns supernodes with empty snEdges", () => {
 
 Deno.test("buildLevelEdges: populates snEdges correctly", () => {
   const parsed = parseEdgesFile(SAMPLE_EDGES);
-  const labelResult = parseLabelsFile(SAMPLE_LABELS);
-  const graph = buildGraph(parsed, labelResult.labels, labelResult.extraPropNames);
-  const { projBuf } = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, labelResult.extraPropNames, graph.numericBins);
+  const nodesResult = parseNodesFile(SAMPLE_LABELS);
+  const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
+  const { projBuf } = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins);
   const G = graph.groupNames.length;
   const nodes = graph.nodeArray.map((n, i) => {
     const projections = {};

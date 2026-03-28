@@ -1,7 +1,7 @@
 // bitzoom-worker.js — coordinator that fans out projection to sub-workers.
 // Uses shared pipeline for parsing and graph building.
 
-import { parseEdgesFile, parseLabelsFile, buildGraph } from './bitzoom-pipeline.js';
+import { parseEdgesFile, parseNodesFile, buildGraph } from './bitzoom-pipeline.js';
 
 const MAX_WORKERS = 3;
 
@@ -11,7 +11,7 @@ function progress(message, pct) {
 
 self.onmessage = function(e) {
   try {
-    const { edgesText, labelsText } = e.data;
+    const { edgesText, nodesText } = e.data;
 
     // Parse
     progress('Parsing edges...', 0);
@@ -20,17 +20,17 @@ self.onmessage = function(e) {
     const edgeCount = parsed.edgeCount;
 
     progress(`Parsed ${nodeCount.toLocaleString()} nodes, ${edgeCount.toLocaleString()} edges`, 10);
-    const labelResult = labelsText ? parseLabelsFile(labelsText) : null;
-    const labelMap = labelResult ? labelResult.labels : null;
-    const extraPropNames = labelResult ? labelResult.extraPropNames : [];
+    const nodesResult = nodesText ? parseNodesFile(nodesText) : null;
+    const nodesMap = nodesResult ? nodesResult.nodes : null;
+    const extraPropNames = nodesResult ? nodesResult.extraPropNames : [];
 
     // Build graph
     progress('Building graph...', 15);
-    const graph = buildGraph(parsed, labelMap, extraPropNames);
+    const graph = buildGraph(parsed, nodesMap, extraPropNames);
     const { nodeArray, edges, adjGroups, groupNames, uniqueGroups, hasEdgeTypes, numericBins } = graph;
 
-    // Rotation matrix seeds (deterministic, sub-workers rebuild from these)
-    const groupRotationSeeds = groupNames.map((_, i) => 2001 + i);
+    // Projection matrix seeds (deterministic, sub-workers rebuild from these)
+    const groupProjectionSeeds = groupNames.map((_, i) => 2001 + i);
 
     // ── Fan out to sub-workers ──
     const N = nodeArray.length;
@@ -127,7 +127,7 @@ self.onmessage = function(e) {
       worker.postMessage({
         nodes: slice,
         groupNames,
-        groupRotationSeeds,
+        groupProjectionSeeds,
         hasEdgeTypes,
         extraPropNames,
         numericBins,

@@ -139,7 +139,7 @@
 <span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(
   document.getElementById(<span class="string">'canvas'</span>),
   edgesText,   <span class="comment">// SNAP .edges file content (string)</span>
-  labelsText,  <span class="comment">// SNAP .labels file content or null</span>
+  nodesText,  <span class="comment">// SNAP .nodes file content or null</span>
   { initialLevel: 3, heatmapMode: <span class="string">'density'</span>, showLegend: true }
 );</pre>
 
@@ -157,12 +157,12 @@
 <p>The code above is the full embed. All you need is a <code>&lt;canvas&gt;</code> element and the SNAP data as strings. The canvas auto-sizes via <code>ResizeObserver</code>.</p>
 
 <pre><span class="comment">// Fetch data, create view</span>
-<span class="keyword">const</span> [edges, labels] = <span class="keyword">await</span> Promise.all([
+<span class="keyword">const</span> [edges, nodes] = <span class="keyword">await</span> Promise.all([
   fetch(<span class="string">'data/epstein.edges'</span>).then(r => r.text()),
-  fetch(<span class="string">'data/epstein.labels'</span>).then(r => r.text()),
+  fetch(<span class="string">'data/epstein.nodes'</span>).then(r => r.text()),
 ]);
 
-<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, labels, {
+<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
   initialLevel: 3,
   edgeMode: <span class="string">'lines'</span>,
   heatmapMode: <span class="string">'density'</span>,
@@ -243,7 +243,7 @@
 
 <p>React to user interaction without touching the DOM:</p>
 
-<pre><span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, labels, {
+<pre><span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
   <span class="fn">onSelect</span>(hit) {
     <span class="comment">// hit = { type: 'node'|'supernode', item: nodeObj|supernodeObj }</span>
     <span class="keyword">if</span> (hit) console.log(<span class="string">'Selected:'</span>, hit.item.id || hit.item.bid);
@@ -301,7 +301,7 @@ view.<span class="fn">setOptions</span>({
 <span class="keyword">import</span> { unifiedBlend, normalizeAndQuantize, buildLevel } <span class="keyword">from</span> <span class="string">'./bitzoom-algo.js'</span>;
 
 <span class="comment">// Parse + tokenize + project (no DOM needed)</span>
-<span class="keyword">const</span> result = <span class="fn">runPipeline</span>(edgesText, labelsText);
+<span class="keyword">const</span> result = <span class="fn">runPipeline</span>(edgesText, nodesText);
 console.log(result.nodeArray.length, <span class="string">'nodes'</span>);
 console.log(result.groupNames);  <span class="comment">// ['group', 'label', 'structure', ...]</span>
 
@@ -414,7 +414,7 @@ Jeffrey Epstein	Les Wexner	CLIENT_OF
 Ghislaine Maxwell	Jean-Luc Brunel	RECRUITED
 </pre>
 
-<h3>.labels (optional)</h3>
+<h3>.nodes (optional)</h3>
 
 <p>Tab-delimited. First comment line defines column names. Extra columns become property groups.</p>
 
@@ -474,8 +474,8 @@ createBitZoomFromGraph(document.getElementById('demo-from-js'),
 
 // Epstein demo
 fetch('data/epstein.edges').then(r => r.text()).then(edges => {
-  fetch('data/epstein.labels').then(r => r.text()).then(labels => {
-    createBitZoomView(document.getElementById('demo-epstein'), edges, labels, {
+  fetch('data/epstein.nodes').then(r => r.text()).then(nodes => {
+    createBitZoomView(document.getElementById('demo-epstein'), edges, nodes, {
       initialLevel: 3, edgeMode: 'lines', heatmapMode: 'density',
       showLegend: true, showResetBtn: true,
       weights: { group: 8, edgetype: 4 }, labelProps: ['label'],
@@ -485,12 +485,12 @@ fetch('data/epstein.edges').then(r => r.text()).then(edges => {
 
 // BitZoom Source demos: two weight configs side by side
 fetch('data/bitzoom-source.edges').then(r => r.text()).then(edges => {
-  fetch('data/bitzoom-source.labels').then(r => r.text()).then(labels => {
-    createBitZoomView(document.getElementById('demo-kind'), edges, labels, {
+  fetch('data/bitzoom-source.nodes').then(r => r.text()).then(nodes => {
+    createBitZoomView(document.getElementById('demo-kind'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
       weights: { kind: 8, group: 1 }, labelProps: ['kind'],
     });
-    createBitZoomView(document.getElementById('demo-group'), edges, labels, {
+    createBitZoomView(document.getElementById('demo-group'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
       weights: { kind: 1, group: 8 }, labelProps: ['file'],
     });

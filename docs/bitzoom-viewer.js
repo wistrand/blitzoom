@@ -1,4 +1,4 @@
-// bitzoom.js — BitZoom application. Composes BitZoomCanvas with UI, workers, data loading.
+// bitzoom-viewer.js — BitZoom viewer application. Composes BitZoomCanvas with UI, workers, data loading.
 
 import {
     MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
@@ -13,15 +13,15 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 
 // Dataset definitions. Optional `settings` configures initial weights and label checkboxes.
 const DATASETS = [
-    { id: 'epstein',    name: 'Epstein',         edges: 'data/epstein.edges',         labels: 'data/epstein.labels',         desc: '364 nodes, edge types',
+    { id: 'epstein',    name: 'Epstein',         edges: 'data/epstein.edges',         nodes: 'data/epstein.nodes',         desc: '364 nodes, edge types',
         settings: { weights: { group: 5, edgetype: 8 }, labelProps: ['label'] } },
-    { id: 'bz-source',  name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  labels: 'data/bitzoom-source.labels',  desc: '145 nodes, call graph',
+    { id: 'bz-source',  name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  nodes: 'data/bitzoom-source.nodes',  desc: '145 nodes, call graph',
         settings: { weights: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] } },
-    { id: 'synth-pkg',  name: 'Synth Packages',  edges: 'data/synth-packages.edges',  labels: 'data/synth-packages.labels',  desc: '1.9K nodes',
+    { id: 'synth-pkg',  name: 'Synth Packages',  edges: 'data/synth-packages.edges',  nodes: 'data/synth-packages.nodes',  desc: '1.9K nodes',
         settings: { weights: { group: 5, downloads: 3, license: 2 }, labelProps: ['label', 'group'] } },
-    { id: 'mitre',      name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   labels: 'data/mitre-attack.labels',   desc: '4.7K nodes, kill chains',
+    { id: 'mitre',      name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   nodes: 'data/mitre-attack.nodes',   desc: '4.7K nodes, kill chains',
         settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
-    { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',labels: 'data/amazon-copurchase.labels.gz',desc: '367K nodes' },
+    { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',nodes: 'data/amazon-copurchase.nodes.gz',desc: '367K nodes' },
 ];
 
 class BitZoom {
@@ -41,7 +41,7 @@ class BitZoom {
         this.presets = {};
         this.activeWorker = null;
         this.pendingEdgesText = null;
-        this.pendingLabelsText = null;
+        this.pendingNodesText = null;
         this.rebuildTimer = null;
         this.smoothDebounceTimer = null;
         this._zoomTargetMembers = null;
@@ -435,7 +435,7 @@ class BitZoom {
         const lvNum = ZOOM_LEVELS[v.currentLevel];
         const k = isRaw ? GRID_SIZE : (1 << lvNum);
         const desc = isRaw
-            ? `RAW: individual nodes. MinHash(k=128) → Gaussian rotation → 2D. Grid (gx,gy) uint16.`
+            ? `RAW: individual nodes. MinHash(k=128) → Gaussian projection → 2D. Grid (gx,gy) uint16.`
             : `L${lvNum}: k=${k}/axis → ${k*k} cells. Shift uint16 gx,gy right by ${GRID_BITS-lvNum} bits.`;
         document.getElementById('algo-info').textContent = desc;
     }
@@ -695,7 +695,7 @@ class BitZoom {
 
     // ─── Data loading ──────────────────────────────────────────────────────────
 
-    loadGraph(edgesText, labelsText) {
+    loadGraph(edgesText, nodesText) {
         return new Promise((resolve, reject) => {
             if (this.activeWorker) { this.activeWorker.terminate(); this.activeWorker = null; }
             const status = document.getElementById('loadStatus');
@@ -750,7 +750,7 @@ class BitZoom {
 
             status.textContent = 'Starting worker...';
             if (progressBar) progressBar.value = 0;
-            worker.postMessage({ edgesText, labelsText });
+            worker.postMessage({ edgesText, nodesText });
         });
     }
 
@@ -785,9 +785,9 @@ class BitZoom {
         }
         v.groupColors = v.propColors['group'];
 
-        v.groupRotations = {};
+        v.groupProjections = {};
         for (let i = 0; i < v.groupNames.length; i++) {
-            v.groupRotations[v.groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
+            v.groupProjections[v.groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
         }
 
         const G = groupNames.length;
@@ -878,11 +878,11 @@ class BitZoom {
 
         try {
             const edgesText = await this._fetchText(dataset.edges);
-            let labelsText = null;
-            if (dataset.labels) {
-                labelsText = await this._fetchText(dataset.labels).catch(() => null);
+            let nodesText = null;
+            if (dataset.nodes) {
+                nodesText = await this._fetchText(dataset.nodes).catch(() => null);
             }
-            await this.loadGraph(edgesText, labelsText);
+            await this.loadGraph(edgesText, nodesText);
             this._currentDatasetId = dataset.id;
             if (dataset.settings) this._applyDatasetSettings(dataset.settings);
             const params = this._restoreFromHash();
@@ -902,9 +902,9 @@ class BitZoom {
         if (this.activeWorker) { this.activeWorker.terminate(); this.activeWorker = null; }
         this.dataLoaded = false;
         this.pendingEdgesText = null;
-        this.pendingLabelsText = null;
+        this.pendingNodesText = null;
         document.getElementById('edgesFile').value = '';
-        document.getElementById('labelsFile').value = '';
+        document.getElementById('nodesFile').value = '';
         document.getElementById('loadBtn').disabled = true;
         document.getElementById('loadStatus').textContent = '';
         document.getElementById('loadStatus').classList.remove('error');
@@ -1212,7 +1212,7 @@ class BitZoom {
         document.getElementById('edgesFile').addEventListener('change', e => {
             if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'edges');
         }, sig);
-        document.getElementById('labelsFile').addEventListener('change', e => {
+        document.getElementById('nodesFile').addEventListener('change', e => {
             if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'labels');
         }, sig);
 
@@ -1225,7 +1225,7 @@ class BitZoom {
             for (const f of e.dataTransfer.files) {
                 const n = f.name;
                 if (n.endsWith('.edges') || n.endsWith('.edges.gz')) this._handleFileSelect(f, 'edges');
-                else if (n.endsWith('.labels') || n.endsWith('.labels.gz')) this._handleFileSelect(f, 'labels');
+                else if (n.endsWith('.nodes') || n.endsWith('.nodes.gz') || n.endsWith('.labels') || n.endsWith('.labels.gz')) this._handleFileSelect(f, 'labels');
             }
         }, sig);
 
@@ -1234,7 +1234,7 @@ class BitZoom {
             progressBar.style.display = 'block';
             progressBar.value = 0;
             document.getElementById('loadBtn').disabled = true;
-            try { await this.loadGraph(this.pendingEdgesText, this.pendingLabelsText); }
+            try { await this.loadGraph(this.pendingEdgesText, this.pendingNodesText); }
             catch (_err) { /* shown by worker handler */ }
         }, sig);
     }
@@ -1290,7 +1290,7 @@ class BitZoom {
             text = await file.text();
         }
         if (type === 'edges') this.pendingEdgesText = text;
-        else this.pendingLabelsText = text;
+        else this.pendingNodesText = text;
         this._updateLoadStatus();
     }
 
@@ -1298,7 +1298,7 @@ class BitZoom {
         const status = document.getElementById('loadStatus');
         const parts = [];
         if (this.pendingEdgesText) parts.push('edges file ready');
-        if (this.pendingLabelsText) parts.push('labels file ready');
+        if (this.pendingNodesText) parts.push('labels file ready');
         status.textContent = parts.length > 0 ? parts.join(' · ') : '';
         status.classList.remove('error');
         document.getElementById('loadBtn').disabled = !this.pendingEdgesText;

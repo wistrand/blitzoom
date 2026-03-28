@@ -27,7 +27,7 @@ deno task serve
 # Open http://localhost:8000
 ```
 
-The viewer loads the default dataset and renders immediately. Use the dataset picker to switch between included datasets, or drop your own `.edges` and `.labels` files.
+The viewer loads the default dataset and renders immediately. Use the dataset picker to switch between included datasets, or drop your own `.edges` and `.nodes` files.
 
 ## Interaction
 
@@ -63,7 +63,7 @@ C	D	COLLEAGUE
 
 2 columns (undirected) or 3 columns (with edge type).
 
-### `.labels` (optional)
+### `.nodes` (optional)
 
 Tab-delimited node properties. First comment line defines column names.
 
@@ -84,8 +84,8 @@ D	Dave	manager	88
 
 | Dataset             | Nodes | Edges  | Source              |
 | ------------------- | ----- | ------ | ------------------- |
-| Epstein Network     | 514   | 534    | Public records      |
-| BitZoom Source      | 403   | 971    | This project's code |
+| Epstein Network     | 364   | 534    | Public records      |
+| BitZoom Source      | 405   | 974    | This project's code |
 | Synth Packages      | 2,000 | 4,050  | Generated           |
 | MITRE ATT&CK       | 4,736 | 25,856 | MITRE ATT&CK v15    |
 | Amazon Co-purchase  | 367K  | 988K   | SNAP Stanford       |
