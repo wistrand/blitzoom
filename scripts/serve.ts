@@ -9,6 +9,7 @@ const MIME: Record<string, string> = {
   labels: "text/plain; charset=utf-8",
   svg: "image/svg+xml",
   png: "image/png",
+  gz: "application/gzip",
   md: "text/plain; charset=utf-8",
 };
 

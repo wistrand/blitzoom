@@ -13,22 +13,15 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 
 // Dataset definitions. Optional `settings` configures initial weights and label checkboxes.
 const DATASETS = [
-    { id: 'karate',     name: 'Karate Club',     edges: 'data/data-graph-file.edges', labels: 'data/data-graph-file.labels', desc: '34 nodes' },
-    { id: 'epstein',    name: 'Epstein',         edges: 'data/epstein.edges',         labels: 'data/epstein.labels',         desc: '~100 nodes, edge types',
+    { id: 'epstein',    name: 'Epstein',         edges: 'data/epstein.edges',         labels: 'data/epstein.labels',         desc: '364 nodes, edge types',
         settings: { weights: { group: 5, edgetype: 8 }, labelProps: ['label'] } },
-    { id: 'melker',     name: 'Melker src',      edges: 'data/melker-src.edges',      labels: 'data/melker-src.labels',      desc: '305 modules',
-        settings: { labelProps: ['label'] } },
-    { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges',labels: 'data/amazon-copurchase.labels',desc: '367K nodes' },
-    { id: 'cert-stix',  name: 'CERT Polska STIX',edges: 'data/cert-polska-stix.edges',labels: 'data/cert-polska-stix.labels',desc: '93 nodes, edge types',
-        settings: { weights: { group: 5, platforms: 8 }, labelProps: ['label', 'group'] } },
-    { id: 'synth-pkg',  name: 'Synth Packages',  edges: 'data/synth-packages.edges',  labels: 'data/synth-packages.labels',  desc: '2K nodes',
-        settings: { weights: { group: 5, downloads: 3, license: 2 }, labelProps: ['label', 'group'] } },
-    { id: 'opencti',    name: 'OpenCTI PAP',    edges: 'data/opencti-pap-clear.edges',labels: 'data/opencti-pap-clear.labels',desc: '107 nodes',
-        settings: { weights: { createdby: 5, tags: 4 }, labelProps: ['label', 'createdby'] } },
-    { id: 'bz-source',  name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  labels: 'data/bitzoom-source.labels',  desc: '147 nodes, call graph',
+    { id: 'bz-source',  name: 'BitZoom Source', edges: 'data/bitzoom-source.edges',  labels: 'data/bitzoom-source.labels',  desc: '145 nodes, call graph',
         settings: { weights: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] } },
-    { id: 'mitre',      name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   labels: 'data/mitre-attack.labels',   desc: '9K nodes, kill chains',
+    { id: 'synth-pkg',  name: 'Synth Packages',  edges: 'data/synth-packages.edges',  labels: 'data/synth-packages.labels',  desc: '1.9K nodes',
+        settings: { weights: { group: 5, downloads: 3, license: 2 }, labelProps: ['label', 'group'] } },
+    { id: 'mitre',      name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   labels: 'data/mitre-attack.labels',   desc: '4.7K nodes, kill chains',
         settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
+    { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',labels: 'data/amazon-copurchase.labels.gz',desc: '367K nodes' },
 ];
 
 class BitZoom {
@@ -844,6 +837,7 @@ class BitZoom {
         v.quantMode = 'gaussian';
         v.labelProps.clear();
         v._quantStats = {};
+        v._densityId = null; // force heatmap maxW recalculation
         v._refreshPropCache();
         document.getElementById('nudgeSlider').value = 0;
         document.getElementById('nudgeVal').textContent = '0';
@@ -883,13 +877,10 @@ class BitZoom {
         document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = true);
 
         try {
-            const edgesResp = await fetch(dataset.edges);
-            if (!edgesResp.ok) throw new Error(`Failed to fetch ${dataset.edges}: ${edgesResp.status}`);
-            const edgesText = await edgesResp.text();
+            const edgesText = await this._fetchText(dataset.edges);
             let labelsText = null;
             if (dataset.labels) {
-                const labelsResp = await fetch(dataset.labels);
-                if (labelsResp.ok) labelsText = await labelsResp.text();
+                labelsText = await this._fetchText(dataset.labels).catch(() => null);
             }
             await this.loadGraph(edgesText, labelsText);
             this._currentDatasetId = dataset.id;
@@ -1232,8 +1223,9 @@ class BitZoom {
             e.preventDefault();
             dropZone.classList.remove('dragover');
             for (const f of e.dataTransfer.files) {
-                if (f.name.endsWith('.edges')) this._handleFileSelect(f, 'edges');
-                else if (f.name.endsWith('.labels')) this._handleFileSelect(f, 'labels');
+                const n = f.name;
+                if (n.endsWith('.edges') || n.endsWith('.edges.gz')) this._handleFileSelect(f, 'edges');
+                else if (n.endsWith('.labels') || n.endsWith('.labels.gz')) this._handleFileSelect(f, 'labels');
             }
         }, sig);
 
@@ -1255,14 +1247,51 @@ class BitZoom {
         if (backdrop) backdrop.classList.toggle('open', isOpen);
     }
 
-    _handleFileSelect(file, type) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (type === 'edges') this.pendingEdgesText = e.target.result;
-            else this.pendingLabelsText = e.target.result;
-            this._updateLoadStatus();
-        };
-        reader.readAsText(file);
+    async _fetchText(url) {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`Failed to fetch ${url}: ${resp.status}`);
+        if (url.endsWith('.gz')) {
+            const ds = new DecompressionStream('gzip');
+            const reader = resp.body.pipeThrough(ds).getReader();
+            const chunks = [];
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+            }
+            const merged = new Uint8Array(chunks.reduce((s, c) => s + c.length, 0));
+            let off = 0;
+            for (const c of chunks) { merged.set(c, off); off += c.length; }
+            return new TextDecoder().decode(merged);
+        }
+        return resp.text();
+    }
+
+    async _handleFileSelect(file, type) {
+        let text;
+        if (file.name.endsWith('.gz')) {
+            const buf = await file.arrayBuffer();
+            const ds = new DecompressionStream('gzip');
+            const reader = ds.readable.getReader();
+            const writer = ds.writable.getWriter();
+            writer.write(new Uint8Array(buf));
+            writer.close();
+            const chunks = [];
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+            }
+            const merged = new Uint8Array(chunks.reduce((s, c) => s + c.length, 0));
+            let off = 0;
+            for (const c of chunks) { merged.set(c, off); off += c.length; }
+            text = new TextDecoder().decode(merged);
+        } else {
+            text = await file.text();
+        }
+        if (type === 'edges') this.pendingEdgesText = text;
+        else this.pendingLabelsText = text;
+        this._updateLoadStatus();
     }
 
     _updateLoadStatus() {
@@ -1293,7 +1322,7 @@ window.bz = bz;
 
 const hashParams = bz._restoreFromHash();
 const hashDataset = hashParams?.d ? DATASETS.find(d => d.id === hashParams.d) : null;
-const startDataset = hashDataset || DATASETS.find(d => d.id === 'melker');
+const startDataset = hashDataset || DATASETS.find(d => d.id === 'epstein');
 if (startDataset) bz.loadDataset(startDataset);
 
 window.addEventListener('hashchange', () => {
