@@ -86,7 +86,7 @@ scripts/
 - `_refreshPropCache()` must be called when weights or label selection change.
 - `getLevel()` calls `layoutAll()` when building a new level.
 - `switchLevel()` adjusts zoom to preserve renderZoom across level changes.
-- Empty/undefined property values emit 0 tokens → NaN sentinel → neutral [0,0] projection. No false clustering at low weight, but degenerate clustering when that group dominates (all undefined nodes share the same projection point).
+- Empty/undefined property values emit 0 tokens → NaN sentinel → neutral [0,0] projection. Adaptive weight floor (`WEIGHT_FLOOR_RATIO=0.10`, `WEIGHT_FLOOR_MIN=0.10`) ensures zero-weight high-entropy groups always contribute 10% spreading, preventing low-entropy collapse. No special all-zero case: the floor produces equal blend naturally with smooth weight transitions.
 - Gaussian quantization boundaries (μ,σ) freeze from the dataset-tuned weight snapshot (reset in `_applyDatasetSettings`) — stable across subsequent weight/alpha changes but can misfit if the distribution shifts significantly.
 - Heatmap density maxW is cached per level/zoom config, lerped on change — stable across pan.
 

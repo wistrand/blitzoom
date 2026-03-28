@@ -48,7 +48,7 @@ and analogously for py_i. Here α ∈ [0,1] is the topology weight. At α=0 posi
 
 For degree-zero nodes the neighbor average is undefined; the topology term is omitted and position is determined by the property term alone.
 
-A design convention: when all weights are zero (W=0), the formula is undefined (0/0). The implementation falls back to equal weights (w_g=1 for all groups), producing a balanced blend rather than collapsing all nodes to a single point.
+Weights use an adaptive floor to prevent low-entropy collapse and ensure smooth transitions. Each group's effective weight is max(w_g, floor) where floor = max(maxWeight × 0.10, 0.10). This guarantees that zero-weight high-entropy groups still contribute 10% spreading, preventing nodes with identical low-entropy properties from collapsing to the same position. When all input weights are zero, the absolute minimum floor produces an equal blend with no discontinuity — sliding a weight from zero upward produces continuous position changes.
 
 Run synchronously for k passes, each using the previous pass's positions as the neighbor signal. This is closely related to degree-normalised graph smoothing. At high α with many passes, well-connected components collapse toward their degree-weighted centroid — the standard oversmoothing failure mode of iterative graph smoothing.
 
@@ -89,7 +89,7 @@ Nodes sharing a cell at level L form a supernode. Cross-cell edges become weight
 - Rank quantization (when selected) destroys density information; Gaussian quantization preserves it but assumes approximately normal marginals
 - High topology weight causes oversmoothing in well-connected components
 - Rank quantization is globally unstable under node insertion; Gaussian quantization is locally stable but nodes in distribution tails may cluster at grid boundaries
-- **Undefined values cluster when their property dominates.** Empty fields produce neutral `[0,0]` projections — correct when that group has low weight, but when heavily weighted, all undefined nodes collapse to the same pre-quantization position. Rank quantization spreads them along each axis independently but preserves the 2D correlation, creating visible edge pile-up. Gaussian quantization with fixed boundaries (frozen from dataset-tuned weights) is worse: the degenerate cluster shifts far from the stored μ, pushing nodes to grid extremes. This is largely inherent to the neutral-projection design: simple axis-wise quantization cannot remove 2D correlation already present in the input.
+- **Low-entropy and undefined-value collapse mitigated by adaptive weight floor.** Empty fields produce neutral `[0,0]` projections; low-entropy properties (few distinct values) produce few distinct projection points. The adaptive weight floor (10% of max weight, minimum 0.10) ensures zero-weight high-entropy groups always contribute spreading. With 3 zero-weight groups, the dominant group controls ~83% of layout — enough to preserve intent while preventing degenerate clustering. Trade-off: the floor spreads nodes using dimensions the user deprioritized, so the spreading axis does not reflect the user's stated preferences. When many nodes share the same undefined value under a dominant group, some edge concentration still occurs.
 - Layout quality depends heavily on tokenisation and grouping quality; the pipeline faithfully preserves whatever similarity it is given
 
 ---

@@ -18,6 +18,8 @@ export const GRID_SIZE = 1 << GRID_BITS; // 65536
 export const ZOOM_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 export const RAW_LEVEL = 14; // index into LEVEL_LABELS for the raw (individual node) level
 export const LEVEL_LABELS = ['L1','L2','L3','L4','L5','L6','L7','L8','L9','L10','L11','L12','L13','L14','RAW'];
+export const WEIGHT_FLOOR_RATIO = 0.10; // adaptive floor: 10% of max weight — prevents low-entropy collapse
+export const WEIGHT_FLOOR_MIN = 0.10;   // absolute minimum floor — gives equal blend when all weights are zero
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
 
@@ -303,10 +305,22 @@ export function gaussianQuantize(nodes, stats) {
 // At α=0: pure property. At α=1: pure topology (for nodes with neighbors).
 export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats) {
   const w = propWeights;
+  // Adaptive weight floor: max(10% of max weight, absolute minimum of 0.10).
+  // Prevents low-entropy collapse: zero-weight high-entropy groups always contribute 10% spreading.
+  // At all-zero weights the absolute minimum gives equal blend (no discontinuity).
+  // As weights grow, the ratio-based floor scales with the user's range.
+  let maxW = 0;
+  for (const g of groupNames) {
+    const raw = w[g] || 0;
+    if (raw > maxW) maxW = raw;
+  }
+  const floor = Math.max(maxW * WEIGHT_FLOOR_RATIO, WEIGHT_FLOOR_MIN);
   let propTotal = 0;
-  const allZero = groupNames.every(g => !(w[g]));
-  for (const g of groupNames) propTotal += allZero ? 1 : (w[g] || 0);
-  // If all weights are zero, blend with equal weights to avoid collapsing to one point
+  const effW = {};
+  for (const g of groupNames) {
+    effW[g] = Math.max(w[g] || 0, floor);
+    propTotal += effW[g];
+  }
 
   // Precompute per-node property anchors (#13: cache across passes)
   const propPx = new Float64Array(nodes.length);
@@ -316,8 +330,7 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
     let px = 0, py = 0;
     for (const g of groupNames) {
       const p = nd.projections[g];
-      const wg = allZero ? 1 : (w[g] || 0);
-      if (p) { px += p[0] * wg; py += p[1] * wg; }
+      if (p) { px += p[0] * effW[g]; py += p[1] * effW[g]; }
     }
     propPx[i] = px / propTotal;
     propPy[i] = py / propTotal;
