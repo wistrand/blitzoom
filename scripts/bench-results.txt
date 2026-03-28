@@ -1,0 +1,161 @@
+[0m[32mTask[0m [0m[36mbench[0m deno run --allow-read scripts/bench-hashslot.js && deno run --allow-read scripts/bench-minhash.js && deno run --allow-read scripts/bench-pipeline.js && deno run --allow-read scripts/bench-render.js && deno run --allow-read scripts/bench-viewer.js
+Run 1: old=118.8ms  new=67.0ms  speedup=43.6%
+Run 2: old=114.3ms  new=65.1ms  speedup=43.0%
+Run 3: old=117.5ms  new=60.8ms  speedup=48.3%
+Run 4: old=110.1ms  new=62.4ms  speedup=43.3%
+Run 5: old=116.6ms  new=69.5ms  speedup=40.4%
+
+Total hashSlot evaluations per run: 3,840,000
+5000 token sets, avg size 19.6
+
+=== MinHash Signature ===
+  computeMinHash (allocating): 250.7ms for 5000 sets (50µs/set)
+  computeMinHashInto (reuse _sig): 266.4ms (53µs/set)
+  Speedup: 0.9x
+
+=== Jaccard Estimation ===
+  50000 estimates: 23.6ms (471ns/pair)
+  Mean J: 0.0186
+
+=== Gaussian Projection ===
+  projectInto: 7.0ms for 5000 sigs (1398ns/sig)
+  projectWith (allocating): 7.9ms (1589ns/sig)
+  Speedup: 1.1x
+
+=== Empty Token Sentinel ===
+  100K empty signatures: 17.7ms (177ns/call)
+
+=== Epstein ===
+  Nodes: 364, Edges: 534, Groups: 5
+  runPipeline (parse+build+project): 27.1ms
+  Blend (α=0, gaussian): 1.5ms
+  Blend (α=0.5, 5 passes, gaussian): 3.2ms
+  Blend (α=0, rank): 1.1ms
+  buildLevel(L4): 2.1ms → 147 supernodes, 386 edges
+  buildLevel(L8): 1.6ms → 362 supernodes, 492 edges
+  Total: 30.8ms
+
+=== Synth Packages ===
+  Nodes: 1868, Edges: 4050, Groups: 8
+  runPipeline (parse+build+project): 107.6ms
+  Blend (α=0, gaussian): 3.1ms
+  Blend (α=0.5, 5 passes, gaussian): 5.1ms
+  Blend (α=0, rank): 4.2ms
+  buildLevel(L4): 5.2ms → 211 supernodes, 2192 edges
+  buildLevel(L8): 7.2ms → 1827 supernodes, 4040 edges
+  Total: 115.9ms
+
+=== MITRE ATT&CK ===
+  Nodes: 4736, Edges: 25856, Groups: 10
+  runPipeline (parse+build+project): 396.4ms
+  Blend (α=0, gaussian): 8.4ms
+  Blend (α=0.5, 5 passes, gaussian): 31.4ms
+  Blend (α=0, rank): 14.0ms
+  buildLevel(L4): 16.2ms → 256 supernodes, 6936 edges
+  buildLevel(L8): 23.9ms → 4400 supernodes, 25073 edges
+  Total: 421.0ms
+Dataset: MITRE ATT&CK (4736 nodes, 25856 edges)
+
+=== Two-Phase Level Building ===
+  L3: nodes=6.6ms edges=4.6ms total=11.2ms → 11 sn, 15 se
+  L5: nodes=3.5ms edges=3.5ms total=7.0ms → 14 sn, 25 se
+  L7: nodes=2.5ms edges=3.2ms total=5.7ms → 14 sn, 25 se
+  L9: nodes=2.0ms edges=3.7ms total=5.7ms → 14 sn, 25 se
+
+=== cellIdAtLevel Throughput ===
+  473600 calls: 5.0ms (10.6ns/call)
+
+=== Spatial Lookup (hitTest-style) ===
+  10000 lookups: 6.7ms (0.7µs/lookup, 198 cell hits)
+  10000 linear scans: 6.4ms (0.6µs/scan)
+  Speedup: 1x
+
+======================================================================
+1,000 nodes, ~3,000 edges, 5 groups, 2 extra props
+======================================================================
+  Generate SNAP text: 3.3ms
+  runPipeline: 97.8ms (1000 nodes, 2997 edges, 6 groups)
+  Hydrate: 17.3ms
+  Blend (α=0, gaussian): 4.2ms
+  Layout: 1.9ms
+  buildLevel L4: nodes=3.0ms edges=3.2ms → 117 sn, 1567 se
+  buildLevel L6: nodes=3.5ms edges=2.9ms → 613 sn, 2943 se
+  buildLevel L8: nodes=1.9ms edges=2.6ms → 958 sn, 2991 se
+  Weight change (reblend): 1.8ms
+  Topo blend (α=0.5): 12.5ms
+  Level rebuild after weights: 4.3ms → 141 sn
+  10000 spatial hit tests: 5.7ms (0.6µs/test)
+  Edge sampling sim: 1.6ms (2311/2977 drawn)
+  ── Load total: 102.0ms | Per weight change: 1.8ms
+
+======================================================================
+5,000 nodes, ~20,000 edges, 10 groups, 3 extra props
+======================================================================
+  Generate SNAP text: 10.1ms
+  runPipeline: 492.3ms (5000 nodes, 19996 edges, 7 groups)
+  Hydrate: 30.1ms
+  Blend (α=0, gaussian): 9.9ms
+  Layout: 2.2ms
+  buildLevel L4: nodes=12.2ms edges=6.3ms → 197 sn, 7317 se
+  buildLevel L6: nodes=10.8ms edges=8.8ms → 1758 sn, 19507 se
+  buildLevel L8: nodes=11.1ms edges=6.0ms → 4360 sn, 19961 se
+  Weight change (reblend): 2.5ms
+  Topo blend (α=0.5): 23.7ms
+  Level rebuild after weights: 13.4ms → 143 sn
+  10000 spatial hit tests: 5.9ms (0.6µs/test)
+  Edge sampling sim: 2.3ms (4531/19589 drawn)
+  ── Load total: 502.2ms | Per weight change: 2.5ms
+
+======================================================================
+20,000 nodes, ~100,000 edges, 15 groups, 3 extra props
+======================================================================
+  Generate SNAP text: 59.2ms
+  runPipeline: 2138.7ms (20000 nodes, 99993 edges, 7 groups)
+  Hydrate: 53.3ms
+  Blend (α=0, gaussian): 25.4ms
+  Layout: 2.4ms
+  buildLevel L4: nodes=27.9ms edges=30.2ms → 225 sn, 15212 se
+  buildLevel L6: nodes=38.7ms edges=48.6ms → 2761 sn, 94237 se
+  buildLevel L8: nodes=86.0ms edges=36.8ms → 13803 sn, 99898 se
+  Weight change (reblend): 16.3ms
+  Topo blend (α=0.5): 105.1ms
+  Level rebuild after weights: 48.4ms → 172 sn
+  10000 spatial hit tests: 10.0ms (1.0µs/test)
+  Edge sampling sim: 9.9ms (5001/94736 drawn)
+  ── Load total: 2164.1ms | Per weight change: 16.3ms
+
+======================================================================
+50,000 nodes, ~200,000 edges, 20 groups, 4 extra props
+======================================================================
+  Generate SNAP text: 82.4ms
+  runPipeline: 5036.0ms (50000 nodes, 199998 edges, 8 groups)
+  Hydrate: 158.1ms
+  Blend (α=0, gaussian): 34.4ms
+  Layout: 2.8ms
+  buildLevel L4: nodes=78.2ms edges=94.0ms → 228 sn, 17290 se
+  buildLevel L6: nodes=88.0ms edges=122.9ms → 3053 sn, 181943 se
+  buildLevel L8: nodes=204.9ms edges=178.6ms → 24262 sn, 199794 se
+  Weight change (reblend): 49.4ms
+  Topo blend (α=0.5): 510.2ms
+  Level rebuild after weights: 137.1ms → 182 sn
+  10000 spatial hit tests: 3.6ms (0.4µs/test)
+  Edge sampling sim: 1.2ms (5001/179835 drawn)
+  ── Load total: 5070.4ms | Per weight change: 49.4ms
+
+======================================================================
+100,000 nodes, ~300,000 edges, 25 groups, 2 extra props
+======================================================================
+  Generate SNAP text: 140.9ms
+  runPipeline: 7984.1ms (100000 nodes, 299996 edges, 6 groups)
+  Hydrate: 282.0ms
+  Blend (α=0, gaussian): 39.8ms
+  Layout: 3.6ms
+  buildLevel L4: nodes=155.2ms edges=156.5ms → 239 sn, 20903 se
+  buildLevel L6: nodes=143.1ms edges=285.2ms → 3413 sn, 268184 se
+  buildLevel L8: nodes=230.0ms edges=265.4ms → 34722 sn, 299750 se
+  Weight change (reblend): 34.2ms
+  Topo blend (α=0.5): 674.9ms
+  Level rebuild after weights: 341.4ms → 195 sn
+  10000 spatial hit tests: 3.1ms (0.3µs/test)
+  Edge sampling sim: 1.2ms (5001/260986 drawn)
+  ── Load total: 8023.8ms | Per weight change: 34.2ms
