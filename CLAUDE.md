@@ -28,15 +28,17 @@ docs/                    Web app (ES modules, no build step)
   about.html               How It Works page (1478 lines)
   howto.html               Developer Guide (513 lines)
   bitzoom.css              Styles (646 lines)
-  bitzoom-algo.js          Pure algorithm functions and constants (502 lines)
+  bitzoom-algo.js          Pure algorithm functions and constants (516 lines)
   bitzoom-pipeline.js      Parsers, graph building, tokenization, projection (348 lines)
   bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (938 lines)
-  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (773 lines)
-  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1337 lines)
+  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (843 lines)
+  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1415 lines)
+  bitzoom-utils.js         Auto-tune optimizer (276 lines)
   bitzoom-worker.js        Web Worker coordinator (142 lines)
   bitzoom-proj-worker.js   Web Worker projection (95 lines)
 
-docs/data/                 6 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
+docs/data/                 9 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
+benchmarks/                Layout comparison suite (export, compare, Docker runner)
 tests/pipeline_test.ts     48 tests: unit, numeric, undefined values, E2E
 scripts/
   serve.ts                 Deno HTTP server (no-cache headers)
@@ -59,16 +61,20 @@ scripts/
 | ---------------- | ----- | ------ | ------------------------------------- |
 | Karate Club      | 34    | 78     | group                                 |
 | Epstein          | 364   | 534    | group, edge types                     |
-| BitZoom Source   | 440   | 1,058  | kind, file, lines, bytes, age         |
-| Synth Packages   | 2,000 | 4,050  | downloads, license, version, depcount |
+| BitZoom Source   | 433   | 940    | kind, file, lines, bytes, age         |
+| Synth Packages   | 1,868 | 4,044  | downloads, license, version, depcount |
 | MITRE ATT&CK    | 4,736 | 25,856 | kill chain, platforms, aliases         |
+| Email EU         | 1,005 | 25,571 | (edge-only)                           |
+| Facebook         | 4,039 | 88,234 | (edge-only)                           |
+| Power Grid       | 4,941 | 6,594  | (edge-only)                           |
 | Amazon           | 367K  | 988K   | product category                      |
 
 ## Key Design Decisions
 
 - **ES modules** — `import`/`export` everywhere. Module workers. `<script type="module">` in each HTML page.
 - **No code duplication** — GC-optimized MinHash/projection (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) in [bitzoom-algo.js](docs/bitzoom-algo.js), imported by pipeline and workers.
-- **Composition** — `BitZoom` owns a `BitZoomCanvas` (`this.view`) for all graph state, rendering, and interaction primitives. `BitZoom` adds UI, workers, data loading, detail panel, URL hash state. `BitZoomCanvas` is standalone (no DOM beyond `<canvas>`), with `createBitZoomView()` factory and `skipEvents`/`onRender` options for embedding.
+- **Composition** — `BitZoom` owns a `BitZoomCanvas` (`this.view`) for all graph state, rendering, and interaction primitives. `BitZoom` adds UI, workers, data loading, detail panel, URL hash state. `BitZoomCanvas` is standalone (no DOM beyond `<canvas>`), with `createBitZoomView()` factory and `skipEvents`/`onRender`/`autoTune` options for embedding.
+- **Auto-tune** — `autoTuneWeights` in [bitzoom-utils.js](docs/bitzoom-utils.js) optimizes weights/alpha/quant by maximizing spread × clumpiness at L5. Async with yield-based progress. Supports `AbortSignal` and timeout. Viewer has "Auto" button; embedded views accept `autoTune` option.
 - **Web Workers** — coordinator fans out to up to 3 projection sub-workers. Transferable Float64Array buffers.
 - **Supernode color/label cached at build time** — not recomputed per frame. `_refreshPropCache()` invalidates level cache.
 - **Two-zoom system** — logical zoom triggers level changes; `renderZoom = max(1, zoom * 2^levelOffset)` keeps visual scale continuous.

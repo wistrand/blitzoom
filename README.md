@@ -2,9 +2,9 @@
 
 A deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash signatures and Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
 
-![Datasets](https://img.shields.io/badge/datasets-6-blue) ![Tests](https://img.shields.io/badge/tests-48%20passing-green)
+![Datasets](https://img.shields.io/badge/datasets-9-blue) ![Tests](https://img.shields.io/badge/tests-48%20passing-green)
 
-**[Live Demo](https://wistrand.github.io/bitzoom/)** · [How It Works](https://wistrand.github.io/bitzoom/about.html) · [Developer Guide](https://wistrand.github.io/bitzoom/howto.html)
+**[Live Demo](https://wistrand.github.io/bitzoom/)** · [How It Works](https://wistrand.github.io/bitzoom/about.html) · [Developer Guide](https://wistrand.github.io/bitzoom/howto.html) · [Layout Comparison](https://wistrand.github.io/bitzoom/comparison.html)
 
 <p align="center">
   <img src="docs/images/bitzoom-1.png" width="48%" alt="BitZoom density heatmap with clustered supernodes">
@@ -86,9 +86,12 @@ D	Dave	manager	88
 | ------------------- | ----- | ------ | ------------------- |
 | Karate Club         | 34    | 78     | Zachary 1977        |
 | Epstein Network     | 364   | 534    | Public records      |
-| BitZoom Source      | 440   | 1,058  | This project's code |
-| Synth Packages      | 2,000 | 4,050  | Generated           |
+| BitZoom Source      | 433   | 940    | This project's code |
+| Synth Packages      | 1,868 | 4,044  | Generated           |
 | MITRE ATT&CK       | 4,736 | 25,856 | MITRE ATT&CK v15    |
+| Email EU            | 1,005 | 25,571 | SNAP Stanford       |
+| Facebook            | 4,039 | 88,234 | SNAP Stanford       |
+| Power Grid          | 4,941 | 6,594  | KONECT              |
 | Amazon Co-purchase  | 367K  | 988K   | SNAP Stanford       |
 
 ## Converters

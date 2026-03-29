@@ -301,8 +301,10 @@ export function gaussianQuantize(nodes, stats) {
   }
 }
 
-// #3: Fixed α semantics — α is now the true convex topology weight.
+// Iterative topology smoothing via convex combination of property anchors and neighbor mean.
 // At α=0: pure property. At α=1: pure topology (for nodes with neighbors).
+// Each pass blends (1-α)*property + α*neighbor_mean using current positions.
+// Partial convergence after k passes preserves intermediate topology structure.
 export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats) {
   const w = propWeights;
   // Adaptive weight floor: max(10% of max weight, absolute minimum of 0.10).
@@ -322,10 +324,11 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
     propTotal += effW[g];
   }
 
-  // Precompute per-node property anchors (#13: cache across passes)
-  const propPx = new Float64Array(nodes.length);
-  const propPy = new Float64Array(nodes.length);
-  for (let i = 0; i < nodes.length; i++) {
+  // Precompute per-node property anchors (cached across passes)
+  const N = nodes.length;
+  const propPx = new Float64Array(N);
+  const propPy = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
     const nd = nodes[i];
     let px = 0, py = 0;
     for (const g of groupNames) {
@@ -344,13 +347,12 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
   const alpha = Math.max(0, Math.min(1, smoothAlpha)); // clamp to [0,1]
 
   for (let pass = 0; pass < passes; pass++) {
-    const newPx = new Float64Array(nodes.length);
-    const newPy = new Float64Array(nodes.length);
+    const newPx = new Float64Array(N);
+    const newPy = new Float64Array(N);
 
-    for (let i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < N; i++) {
       const nd = nodes[i];
       const neighbors = adjList[nd.id];
-      // #4: Guard missing neighbor IDs
       if (neighbors && neighbors.length > 0) {
         let nx = 0, ny = 0, validCount = 0;
         for (const nid of neighbors) {
@@ -360,7 +362,6 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
         if (validCount > 0) {
           nx /= validCount;
           ny /= validCount;
-          // #3: True convex combination: (1-α)*property + α*neighbor
           newPx[i] = (1 - alpha) * propPx[i] + alpha * nx;
           newPy[i] = (1 - alpha) * propPy[i] + alpha * ny;
         } else {
@@ -373,7 +374,7 @@ export function unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjLis
       }
     }
 
-    for (let i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < N; i++) {
       nodes[i].px = newPx[i];
       nodes[i].py = newPy[i];
     }

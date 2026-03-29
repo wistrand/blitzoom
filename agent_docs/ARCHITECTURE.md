@@ -18,12 +18,14 @@ docs/                    Web application (ES modules, served by Deno)
   bitzoom-renderer.js      Canvas rendering, heatmaps, hit testing (no state mutation)
   bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering
   bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading
+  bitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
   bitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
   bitzoom-proj-worker.js   Web Worker — imports from algo+pipeline, computes projections
 
 tests/pipeline_test.ts     48 Deno tests: algo unit, pipeline, numeric, undefined, E2E
 
-docs/data/                 6 SNAP-format graph datasets (.edges + .nodes, Amazon .gz compressed)
+docs/data/                 9 SNAP-format graph datasets (.edges + .nodes, Amazon .gz compressed)
+benchmarks/                Layout comparison vs ForceAtlas2, UMAP, t-SNE (Docker runner)
 agent_docs/                Architecture and spec documentation
 scripts/
   serve.ts                 Deno HTTP server (serves everything from docs/, no-cache headers)
@@ -43,7 +45,9 @@ bitzoom-algo.js              (no deps — pure functions + constants)
   ↑
 bitzoom-pipeline.js          (imports from algo)
   ↑             ↑
-bitzoom-canvas.js            (imports from algo + renderer)
+bitzoom-utils.js             (imports from algo — autoTuneWeights)
+  ↑
+bitzoom-canvas.js            (imports from algo + renderer + utils)
   ↑             ↑
 bitzoom-viewer.js  bitzoom-worker.js → bitzoom-proj-worker.js
   (composes                            ↑
@@ -126,7 +130,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
 
-### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (1337 lines)
+### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (1407 lines)
 
 `BitZoom` class — composes `BitZoomCanvas` as `this.view`. Adds application UI and orchestration.
 

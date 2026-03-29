@@ -4,6 +4,7 @@ import {
     MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
     buildGaussianProjection, generateGroupColors, unifiedBlend, cellIdAtLevel,
 } from './bitzoom-algo.js';
+import { autoTuneWeights } from './bitzoom-utils.js';
 
 import { BitZoomCanvas } from './bitzoom-canvas.js';
 import { computeNodeSig } from './bitzoom-pipeline.js';
@@ -1031,6 +1032,56 @@ class BitZoom {
             v.heatmapMode = HEAT_MODES[(idx + 1) % HEAT_MODES.length];
             updateHeatBtn();
             v.render();
+        }, sig);
+
+        // Auto-tune button (click to start, click again to stop)
+        const autoBtn = document.getElementById('autoTuneBtn');
+        let tuneAbort = null;
+        const applyTuneResult = (result) => {
+            for (const g of v.groupNames) v.propWeights[g] = result.weights[g] ?? 0;
+            v.smoothAlpha = result.alpha;
+            v.quantMode = result.quantMode;
+            v._quantStats = {};
+            // Apply tuned label props
+            if (result.labelProps) {
+                v.labelProps.clear();
+                for (const p of result.labelProps) {
+                    if (v.groupNames.includes(p)) v.labelProps.add(p);
+                }
+                this._syncLabelCheckboxes();
+            }
+            this._syncWeightUI();
+            document.getElementById('nudgeSlider').value = v.smoothAlpha;
+            document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
+            this._updateQuantBtn();
+            v._progressText = null;
+            this.rebuildProjections();
+            this._updateOverview();
+            autoBtn.textContent = 'Auto';
+            autoBtn.style.background = '';
+            autoBtn.style.color = '';
+            tuneAbort = null;
+        };
+        autoBtn.addEventListener('click', async () => {
+            // If running, abort and apply best so far
+            if (tuneAbort) { tuneAbort.abort(); return; }
+
+            tuneAbort = new AbortController();
+            autoBtn.style.background = 'var(--accent)';
+            autoBtn.style.color = '#fff';
+            autoBtn.textContent = 'Stop';
+            const result = await autoTuneWeights(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
+                weights: true, alpha: true, quant: true,
+                signal: tuneAbort.signal,
+                onProgress: (info) => {
+                    const pct = Math.round(100 * info.step / Math.max(1, info.total));
+                    const phase = info.phase === 'presets' ? 'scanning presets'
+                        : info.phase === 'done' ? 'done' : 'refining';
+                    v.showProgress(`Auto-tuning: ${phase} (${pct}%) — click Stop to apply`);
+                },
+            });
+            applyTuneResult(result);
+            console.log(`Auto-tune: ${result.blends} blends, ${result.quants} quants in ${result.timeMs}ms, score=${result.score.toFixed(3)}`);
         }, sig);
 
         // Sidebar

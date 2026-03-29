@@ -17,6 +17,7 @@ import {
   buildLevelNodes, buildLevelEdges, cellIdAtLevel,
   getNodePropValue, getSupernodeDominantValue, maxCountKey,
 } from './bitzoom-algo.js';
+import { autoTuneWeights } from './bitzoom-utils.js';
 
 import { layoutAll, render, worldToScreen, screenToWorld, hitTest } from './bitzoom-renderer.js';
 
@@ -83,6 +84,7 @@ export class BitZoomCanvas {
     this.quantMode = opts.quantMode || 'gaussian'; // 'gaussian' or 'rank'
     this.showLegend = opts.showLegend || false;
     this.showResetBtn = opts.showResetBtn || false;
+    this._progressText = null; // overlay text shown during auto-tune
     this._quantStats = {}; // fixed Gaussian boundaries — computed once, reused
     this.labelProps = new Set(opts.labelProps || []);
 
@@ -291,6 +293,28 @@ export class BitZoomCanvas {
 
   /** Hook for post-render actions (e.g., hash state updates). */
   _postRender() { if (this._onRender) this._onRender(); }
+
+  /** Show progress overlay on the canvas. Set to null to clear. */
+  showProgress(text) {
+    this._progressText = text;
+    // Render the graph first, then overlay progress on top
+    render(this);
+    if (text) {
+      const ctx = this.canvas.getContext('2d');
+      const W = this.W, H = this.H;
+      // Semi-transparent bar behind text
+      const barH = 28;
+      const y = H / 2 - barH / 2;
+      ctx.fillStyle = 'rgba(10, 10, 15, 0.8)';
+      ctx.fillRect(0, y, W, barH);
+      ctx.fillStyle = '#c8c8d8';
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, W / 2, H / 2);
+    }
+  }
+
   renderNow() { render(this); }
   worldToScreen(wx, wy) { return worldToScreen(this, wx, wy); }
   screenToWorld(sx, sy) { return screenToWorld(this, sx, sy); }
@@ -665,17 +689,54 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
     propColors[g] = generateGroupColors([...propValues[g]].sort());
   }
 
+  let smoothAlpha = opts.smoothAlpha || 0;
+  let quantMode = opts.quantMode;
+
   const quantStats = {};
-  unifiedBlend(nodes, groupNames, propWeights, opts.smoothAlpha || 0, adjList, nodeIndexFull, 5, opts.quantMode, quantStats);
+  unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, 5, quantMode, quantStats);
 
   const view = new BitZoomCanvas(canvas, {
     nodes, edges, nodeIndexFull, adjList,
     groupNames, propWeights, propColors,
     groupColors: propColors['group'],
     hasEdgeTypes,
+    smoothAlpha,
+    quantMode,
     ...opts,
   });
   view._quantStats = quantStats;
+
+  // Auto-tune: run async in background, apply results and re-render when done.
+  // The view is returned immediately with default weights; auto-tune updates it.
+  if (opts.autoTune) {
+    view.showProgress('Auto-tuning...');
+    const tuneOpts = { ...opts.autoTune };
+    tuneOpts.onProgress = (info) => {
+      const pct = Math.round(100 * info.step / Math.max(1, info.total));
+      const phase = info.phase === 'presets' ? 'scanning presets'
+        : info.phase === 'done' ? 'done' : 'refining';
+      view.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
+    };
+    autoTuneWeights(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, tuneOpts).then(result => {
+      if (tuneOpts.weights !== false && !opts.weights) {
+        for (const g of view.groupNames) view.propWeights[g] = result.weights[g] ?? 0;
+      }
+      if (tuneOpts.alpha !== false && opts.smoothAlpha == null) view.smoothAlpha = result.alpha;
+      if (tuneOpts.quant !== false && !opts.quantMode) view.quantMode = result.quantMode;
+      if (result.labelProps && !opts.labelProps) {
+        view.labelProps = new Set(result.labelProps.filter(p => view.groupNames.includes(p)));
+      }
+      view._quantStats = {};
+      view.levels = new Array(ZOOM_LEVELS.length).fill(null);
+      unifiedBlend(view.nodes, view.groupNames, view.propWeights, view.smoothAlpha,
+        view.adjList, view.nodeIndexFull, 5, view.quantMode, view._quantStats);
+      view._progressText = null;
+      view._refreshPropCache();
+      view.layoutAll();
+      view.render();
+    });
+  }
+
   return view;
 }
 

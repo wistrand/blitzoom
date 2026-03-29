@@ -126,6 +126,7 @@
   <a href="#options">Options</a>
   <a href="#callbacks">Callbacks</a>
   <a href="#weights">Weight Tuning</a>
+  <a href="#autotune">Auto-Tune</a>
   <a href="#offline">Offline Pipeline</a>
   <a href="#similarity">Similarity Queries</a>
   <a href="#levels">Hierarchy Access</a>
@@ -306,6 +307,87 @@ view.<span class="fn">setOptions</span>({
   sizeBy: <span class="string">'members'</span>,
   labelProps: [<span class="string">'file'</span>, <span class="string">'kind'</span>],
 });</pre>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<h2 id="autotune">Auto-Tune</h2>
+
+<p>When loading an unfamiliar dataset, the default weights may produce a collapsed or uniform layout. The auto-tune optimizer searches the weight/alpha/quant parameter space to find a configuration with good visual structure, then applies it automatically.</p>
+
+<p>Synth Packages dataset: default weights (left) vs auto-tuned (right).</p>
+
+<div style="display:flex;gap:12px;margin:24px 0;flex-wrap:wrap">
+  <div style="flex:1;min-width:280px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">Default weights</div>
+    <canvas id="demo-autotune-default" style="width:100%;height:240px;display:block;background:var(--bg)"></canvas>
+  </div>
+  <div style="flex:1;min-width:280px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">autoTune: { weights: true, alpha: true, quant: true }</div>
+    <canvas id="demo-autotune-tuned" style="width:100%;height:240px;display:block;background:var(--bg)"></canvas>
+  </div>
+</div>
+
+<h3>Embedded usage</h3>
+
+<p>Pass <code>autoTune</code> in the options. The view renders immediately with defaults; the optimizer runs in the background and re-renders when done. A progress overlay appears on the canvas during optimization.</p>
+
+<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom-canvas.js'</span>;
+
+<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edgesText, nodesText, {
+  <span class="comment">// Auto-tune all parameters</span>
+  autoTune: { weights: <span class="keyword">true</span>, alpha: <span class="keyword">true</span>, quant: <span class="keyword">true</span> },
+});
+
+<span class="comment">// view is returned synchronously — usable immediately</span>
+<span class="comment">// auto-tune runs async and re-renders when done</span></pre>
+
+<p>Control which parameters are tuned:</p>
+
+<pre><span class="comment">// Only tune weights, keep alpha and quant as specified</span>
+<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
+  smoothAlpha: 0.5,
+  quantMode: <span class="string">'gaussian'</span>,
+  autoTune: { weights: <span class="keyword">true</span>, alpha: <span class="keyword">false</span>, quant: <span class="keyword">false</span> },
+});</pre>
+
+<p>Explicit <code>weights</code>, <code>smoothAlpha</code>, and <code>quantMode</code> in the options take precedence over tuned values.</p>
+
+<h3>Programmatic usage</h3>
+
+<p>Call <code>autoTuneWeights</code> directly for full control:</p>
+
+<pre><span class="keyword">import</span> { autoTuneWeights } <span class="keyword">from</span> <span class="string">'./bitzoom-utils.js'</span>;
+
+<span class="keyword">const</span> result = <span class="keyword">await</span> <span class="fn">autoTuneWeights</span>(
+  view.nodes, view.groupNames, view.adjList, view.nodeIndexFull,
+  {
+    weights: <span class="keyword">true</span>, alpha: <span class="keyword">true</span>, quant: <span class="keyword">true</span>,
+    <span class="fn">onProgress</span>(info) {
+      console.log(<span class="string">`${info.phase} ${info.step}/${info.total}`</span>);
+    },
+  }
+);
+
+console.log(result);
+<span class="comment">// { weights: {group:8, ...}, alpha: 0.5, quantMode: 'gaussian',</span>
+<span class="comment">//   labelProps: ['group'], score: 0.42, blends: 87, quants: 174, timeMs: 320 }</span>
+
+<span class="comment">// Apply to an existing view</span>
+<span class="keyword">for</span> (<span class="keyword">const</span> g <span class="keyword">of</span> view.groupNames) view.propWeights[g] = result.weights[g];
+view.smoothAlpha = result.alpha;
+view.quantMode = result.quantMode;
+view.setWeights(result.weights); <span class="comment">// triggers re-blend and render</span></pre>
+
+<h3>How it works</h3>
+
+<p>The optimizer maximizes <strong>spread &times; clumpiness</strong> at zoom level L5 (32&times;32 grid). Spread (fraction of cells occupied) penalizes collapse. Clumpiness (coefficient of variation of per-cell node counts) penalizes uniform scatter and rewards clusters with gaps between them. The search runs in two phases:</p>
+
+<ol>
+<li><strong>Preset scan.</strong> Balanced weights and each group solo, crossed with alpha values and quant modes. Picks the best starting point.</li>
+<li><strong>Coordinate descent.</strong> Optimizes one parameter at a time from the best preset. Three rounds, early exit if no improvement.</li>
+</ol>
+
+<p>Each evaluation runs a full blend + quantize cycle (~1-3ms per evaluation depending on graph size). Total time is typically 200-800ms for graphs under 5K nodes.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
@@ -509,6 +591,19 @@ fetch('data/bitzoom-source.edges').then(r => r.text()).then(edges => {
     createBitZoomView(document.getElementById('demo-group'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
       weights: { kind: 1, group: 8 }, labelProps: ['file'],
+    });
+  });
+});
+
+// Auto-tune demo: Synth Packages, default vs auto-tuned
+fetch('data/synth-packages.edges').then(r => r.text()).then(edges => {
+  fetch('data/synth-packages.nodes').then(r => r.text()).then(nodes => {
+    createBitZoomView(document.getElementById('demo-autotune-default'), edges, nodes, {
+      initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
+    });
+    createBitZoomView(document.getElementById('demo-autotune-tuned'), edges, nodes, {
+      initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
+      autoTune: { weights: true, alpha: true, quant: true },
     });
   });
 });
