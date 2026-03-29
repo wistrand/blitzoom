@@ -93,6 +93,14 @@
   pre .string { color: var(--accent3); }
   pre .fn { color: var(--accent2); }
 
+  .site-nav {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .site-nav a { color: var(--text-dim); text-decoration: none; }
+  .site-nav a:hover { color: var(--accent); }
+
   .note {
     padding: 12px 16px;
     background: rgba(124,106,247,0.08);
@@ -125,8 +133,16 @@
   <a href="#modules">Module Map</a>
 </nav>
 
+<div class="site-nav">
+  <a href="index.html">Home</a> &middot;
+  <a href="viewer.html">Viewer</a> &middot;
+  <a href="about.html">How It Works</a> &middot;
+  <a href="comparison.html">Comparison</a> &middot;
+  <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+</div>
+
 <h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Bit<span>Zoom</span></a> Developer Guide</h1>
-<p class="subtitle">Embed interactive graph views or run the pipeline offline. <a href="about.html">How It Works</a> &middot; <a href="viewer.html">Viewer</a></p>
+<p class="subtitle">Embed interactive graph views or run the pipeline offline.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 

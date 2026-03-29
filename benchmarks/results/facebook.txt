@@ -1,0 +1,10 @@
+# Dataset: /data/facebook.edges
+# Nodes: 4039, Edges: 88234
+#
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  NbrPreserv
+--------------------------------------------------------------------------------
+BitZoom:facebook-a000             0.010         0.4775        0.4618      0.0019
+BitZoom:facebook-a075             0.010         0.3861        0.3672      0.0050
+BitZoom:facebook-a100             0.010         0.0633        0.0320      0.1103
+Force-Directed                  545.432         0.0112        0.0077      0.1157
+t-SNE                            21.708         0.0714        0.0385      0.1764

@@ -104,6 +104,14 @@
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
 
+  .site-nav {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .site-nav a { color: var(--text-dim); text-decoration: none; }
+  .site-nav a:hover { color: var(--accent); }
+
   code {
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
@@ -242,8 +250,16 @@
   <a href="#code">Code</a>
 </nav>
 
+<div class="site-nav">
+  <a href="index.html">Home</a> &middot;
+  <a href="viewer.html">Viewer</a> &middot;
+  <a href="howto.html">Developer Guide</a> &middot;
+  <a href="comparison.html">Comparison</a> &middot;
+  <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+</div>
+
 <h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Bit<span>Zoom</span></a></h1>
-<p class="subtitle">Deterministic property-similarity layout with hierarchical bit-shift aggregation &middot; <a href="viewer.html">Viewer</a> &middot; <a href="howto.html">Developer Guide</a></p>
+<p class="subtitle">Deterministic property-similarity layout with hierarchical bit-shift aggregation.</p>
 
 <!-- Live interactive demo -->
 <div style="margin:32px 0 48px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">

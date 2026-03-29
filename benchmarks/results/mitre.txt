@@ -1,0 +1,10 @@
+# Dataset: /data/mitre-attack.edges
+# Nodes: 4736, Edges: 25856
+#
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  NbrPreserv
+--------------------------------------------------------------------------------
+BitZoom:mitre-a000                0.016         0.4612        0.4303      0.0013
+BitZoom:mitre-a000-weighted       0.016         0.5335        0.5097      0.0015
+BitZoom:mitre-a050-weighted       0.016         0.4821        0.4569      0.0016
+Force-Directed                  703.272         0.1185        0.0844      0.0031
+t-SNE                            25.683         0.2924        0.2882      0.0037
