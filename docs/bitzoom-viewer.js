@@ -30,11 +30,11 @@ const DATASETS = [
         settings: { weights: {}, initialLevel: 4, quantMode: 'rank', smoothAlpha: 1.0 } },
     { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',nodes: 'data/amazon-copurchase.nodes.gz',desc: '367K nodes' },
     { id: 'mitre-ics',  name: 'ATT&CK ICS',
-        stix: 'data/ics-attack.json',
+        stix: 'data/ics-attack.json.gz',
         desc: 'STIX 2.1, ~1.8K objects',
         settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
     { id: 'mitre-mobile', name: 'ATT&CK Mobile',
-        stix: 'data/mobile-attack.json',
+        stix: 'data/mobile-attack.json.gz',
         desc: 'STIX 2.1, ~2.5K objects',
         settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
 ];
@@ -1309,7 +1309,8 @@ class BitZoom {
         document.getElementById('edgesFile').addEventListener('change', e => {
             const f = e.target.files[0];
             if (!f) return;
-            if (f.name.toLowerCase().endsWith('.json')) this._handleStixFile(f);
+            const n = f.name.toLowerCase();
+            if (n.endsWith('.json') || n.endsWith('.json.gz')) this._handleStixFile(f);
             else this._handleFileSelect(f, 'edges');
         }, sig);
         document.getElementById('nodesFile').addEventListener('change', e => {
@@ -1324,7 +1325,7 @@ class BitZoom {
             dropZone.classList.remove('dragover');
             for (const f of e.dataTransfer.files) {
                 const n = f.name.toLowerCase();
-                if (n.endsWith('.json')) this._handleStixFile(f);
+                if (n.endsWith('.json') || n.endsWith('.json.gz')) this._handleStixFile(f);
                 else if (n.endsWith('.edges') || n.endsWith('.edges.gz')) this._handleFileSelect(f, 'edges');
                 else if (n.endsWith('.nodes') || n.endsWith('.nodes.gz') || n.endsWith('.labels') || n.endsWith('.labels.gz')) this._handleFileSelect(f, 'labels');
             }
@@ -1397,10 +1398,31 @@ class BitZoom {
 
     async _handleStixFile(file) {
         const status = document.getElementById('loadStatus');
-        status.textContent = 'Converting STIX 2.1 JSON...';
+        status.textContent = 'Loading STIX 2.1 JSON...';
         status.classList.remove('error');
         try {
-            const jsonText = await file.text();
+            let jsonText;
+            if (file.name.endsWith('.gz')) {
+                const buf = await file.arrayBuffer();
+                const ds = new DecompressionStream('gzip');
+                const reader = ds.readable.getReader();
+                const writer = ds.writable.getWriter();
+                writer.write(new Uint8Array(buf));
+                writer.close();
+                const chunks = [];
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                }
+                const merged = new Uint8Array(chunks.reduce((s, c) => s + c.length, 0));
+                let off = 0;
+                for (const c of chunks) { merged.set(c, off); off += c.length; }
+                jsonText = new TextDecoder().decode(merged);
+            } else {
+                jsonText = await file.text();
+            }
+            status.textContent = 'Converting STIX 2.1 JSON...';
             const result = convertStixToSnap(jsonText);
             this.pendingEdgesText = result.edgesText;
             this.pendingNodesText = result.nodesText;
