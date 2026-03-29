@@ -1,10 +1,11 @@
 # Dataset: /data/powergrid.edges
 # Nodes: 4941, Edges: 6594
+# Token sets: 4941 nodes
 #
-Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  NbrPreserv
---------------------------------------------------------------------------------
-BitZoom:powergrid-a000            0.026         0.5044        0.4888      0.0004
-BitZoom:powergrid-a075            0.014         0.2709        0.2478      0.0029
-BitZoom:powergrid-a100            0.013         0.3801        0.3372      0.0034
-Force-Directed                  741.325         0.0063        0.0044      0.1874
-t-SNE                            36.059         0.1775        0.1191      0.0412
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
+----------------------------------------------------------------------------------------
+BitZoom:powergrid-a000            0.007         0.5044        0.4888    0.0004    0.0014
+BitZoom:powergrid-a075            0.008         0.2709        0.2478    0.0029    0.0015
+BitZoom:powergrid-a100            0.007         0.3801        0.3372    0.0034    0.0026
+Force-Directed                  152.413         0.0054        0.0026    0.1968    0.0022
+t-SNE                            25.859         0.1775        0.1191    0.0412    0.0018

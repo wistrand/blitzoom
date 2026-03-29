@@ -96,6 +96,7 @@ docker_bz() {
 run_compare "Email-EU" \
   --edges /data/email-eu.edges \
   --bitzoom $(docker_bz email-eu) \
+  --tokens /bench/layouts/email-eu.tokens \
   --ground-truth /bench/ground-truth/email-eu-departments.txt \
   --out /bench/results/email-eu.txt
 
@@ -103,6 +104,7 @@ run_compare "Email-EU" \
 run_compare "Facebook" \
   --edges /data/facebook.edges \
   --bitzoom $(docker_bz facebook) \
+  --tokens /bench/layouts/facebook.tokens \
   --skip-umap \
   --out /bench/results/facebook.txt
 
@@ -110,6 +112,7 @@ run_compare "Facebook" \
 run_compare "Power Grid" \
   --edges /data/powergrid.edges \
   --bitzoom $(docker_bz powergrid) \
+  --tokens /bench/layouts/powergrid.tokens \
   --skip-umap \
   --out /bench/results/powergrid.txt
 
@@ -117,6 +120,7 @@ run_compare "Power Grid" \
 run_compare "MITRE ATT&CK" \
   --edges /data/mitre-attack.edges \
   --bitzoom $(docker_bz mitre) \
+  --tokens /bench/layouts/mitre.tokens \
   --skip-umap \
   --out /bench/results/mitre.txt
 

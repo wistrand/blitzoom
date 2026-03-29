@@ -6,7 +6,7 @@
 //
 // Runs the full pipeline: parse → project → blend → quantize → export.
 
-import { runPipeline } from '../docs/bitzoom-pipeline.js';
+import { runPipeline, tokenizeLabel, tokenizeNumeric, degreeBucket } from '../docs/bitzoom-pipeline.js';
 import { buildGaussianProjection, unifiedBlend, MINHASH_K } from '../docs/bitzoom-algo.js';
 
 function parseArgs() {
@@ -80,6 +80,55 @@ for (const n of nodes) {
 }
 
 await Deno.writeTextFile(opts.out, lines.join('\n') + '\n');
+
+// Export per-node token sets for property-similarity evaluation.
+// Only written once per dataset (alpha/weights don't affect tokens).
+const tokensPath = opts.out.replace(/(-a\d+.*)?\.tsv$/, '.tokens');
+try {
+  await Deno.stat(tokensPath);
+  // Already exists — skip
+} catch {
+  const { adjGroups, hasEdgeTypes, extraPropNames, numericBins } = result;
+  const tokenBuf = new Array(200);
+  const tokenLines = ['# id\ttokens (space-separated)'];
+  for (let idx = 0; idx < nodes.length; idx++) {
+    const n = nodeArray[idx];
+    const allTokens = [];
+    // group
+    allTokens.push('group:' + n.group);
+    // label
+    const labelEnd = tokenizeLabel(n.label, n.id, tokenBuf, 0);
+    for (let t = 0; t < labelEnd; t++) allTokens.push(tokenBuf[t]);
+    // structure
+    allTokens.push('deg:' + degreeBucket(n.degree));
+    allTokens.push('leaf:' + (n.degree === 0));
+    // neighbors
+    const adj = adjGroups[idx];
+    if (adj.length > 0) {
+      for (let ai = 0; ai < adj.length; ai++) allTokens.push('ngroup:' + adj[ai]);
+    } else {
+      allTokens.push('ngroup:isolated');
+    }
+    // edge types
+    if (hasEdgeTypes) {
+      if (n.edgeTypes && n.edgeTypes.length > 0) {
+        for (const t of n.edgeTypes) allTokens.push('etype:' + t);
+      } else {
+        allTokens.push('etype:none');
+      }
+    }
+    // extra props
+    for (const ep of (extraPropNames || [])) {
+      const val = n.extraProps && n.extraProps[ep];
+      const epEnd = tokenizeNumeric(ep, val, (numericBins || {})[ep], tokenBuf, 0);
+      for (let t = 0; t < epEnd; t++) allTokens.push(tokenBuf[t]);
+    }
+    tokenLines.push(n.id + '\t' + allTokens.join(' '));
+  }
+  await Deno.writeTextFile(tokensPath, tokenLines.join('\n') + '\n');
+  console.log(`  Tokens: ${tokensPath}`);
+}
+
 console.log(`Exported ${nodes.length} nodes to ${opts.out}`);
 console.log(`  Groups: ${groupNames.join(', ') || '(none)'}`);
 console.log(`  Alpha: ${opts.alpha}, Quant: ${opts.quant}`);

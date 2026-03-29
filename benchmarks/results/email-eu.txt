@@ -1,13 +1,14 @@
 # Dataset: /data/email-eu.edges
 # Nodes: 1005, Edges: 16706
+# Token sets: 1005 nodes
 # Ground truth: 1005 labels, 42 classes
 #
-Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  NbrPreserv  Silhouette
---------------------------------------------------------------------------------------------
-BitZoom:email-eu-a000             0.002         0.4663        0.4614      0.0058     -0.4710
-BitZoom:email-eu-a050             0.002         0.4480        0.4419      0.0074     -0.4537
-BitZoom:email-eu-a075             0.002         0.4348        0.4283      0.0079     -0.4570
-BitZoom:email-eu-a100             0.002         0.2212        0.1839      0.0559     -0.2916
-Force-Directed                   63.932         0.0244        0.0218      0.0426     -0.3301
-UMAP                             17.511         0.1822        0.0826      0.1066      0.0108
-t-SNE                             4.920         0.1536        0.1040      0.1086     -0.1184
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP  Silhouette
+----------------------------------------------------------------------------------------------------
+BitZoom:email-eu-a000             0.002         0.4663        0.4614    0.0058    0.0073     -0.4710
+BitZoom:email-eu-a050             0.001         0.4480        0.4419    0.0074    0.0077     -0.4537
+BitZoom:email-eu-a075             0.001         0.4348        0.4283    0.0079    0.0080     -0.4570
+BitZoom:email-eu-a100             0.001         0.2212        0.1839    0.0559    0.0065     -0.2916
+Force-Directed                   53.578         0.0075        0.0064    0.0642    0.0075     -0.4048
+UMAP                             11.164         0.1822        0.0826    0.1066    0.0096      0.0108
+t-SNE                             2.780         0.1536        0.1040    0.1086    0.0093     -0.1184

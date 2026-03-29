@@ -140,6 +140,25 @@
     line-height: 1.6;
   }
   .callout strong { color: var(--text-bright); }
+
+  .chart-group {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 16px 0 28px;
+  }
+  .chart-wrap {
+    flex: 1;
+    min-width: 260px;
+  }
+  .chart-title {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
@@ -168,53 +187,53 @@
 <h2 id="why">Why compare?</h2>
 
 <p>Graph layout is a solved problem in many contexts. Force-directed algorithms like
-Fruchterman-Reingold have decades of refinement. Dimensionality reduction methods like
-UMAP and t-SNE produce excellent 2D embeddings from high-dimensional feature spaces.
-BitZoom takes a different approach: it positions nodes by property similarity first,
-uses topology as a secondary signal, and produces a hierarchical zoom structure from
-stored coordinates. The natural question is what you gain and what you give up.</p>
+ForceAtlas2 have decades of refinement. Dimensionality reduction methods like UMAP
+and t-SNE produce excellent 2D embeddings. BitZoom takes a different approach:
+it positions nodes by property similarity first, uses topology as a secondary signal,
+and produces a hierarchical zoom structure from stored coordinates.</p>
 
-<p>To answer that, we ran all four methods on the same graphs and measured how well each
-layout preserves graph connectivity. These metrics intentionally favor topology-oriented
-methods. BitZoom's primary goal (property-based grouping) is not directly measured,
-which is an important caveat throughout.</p>
+<p>The natural question is what you gain and what you give up. Previous versions of this
+comparison only measured topology preservation, which favors force-directed methods by
+construction. We now also measure <strong>property-similarity preservation</strong>:
+do nodes with similar attributes end up near each other? This directly evaluates
+BitZoom's core design goal.</p>
 
 <h2 id="metrics">What we measured</h2>
 
 <ul>
-<li><strong>EdgeLen:</strong> How close are connected nodes in the layout? Normalized Euclidean distance between edge endpoints. Lower = tighter topology.</li>
-<li><strong>NbrP:</strong> Do a node's graph neighbors end up as its layout neighbors? Jaccard overlap at k=10. Higher = better topology fidelity.</li>
+<li><strong>EdgeLen:</strong> How close are connected nodes? Normalized Euclidean distance between edge endpoints. Lower = tighter topology.</li>
+<li><strong>TopoNbrP:</strong> Do a node's graph neighbors end up as its layout neighbors? Jaccard overlap at k=10. Higher = better topology fidelity.</li>
+<li><strong>PropNbrP:</strong> Do a node's most property-similar nodes end up as its layout neighbors? Jaccard overlap at k=10. Higher = better property grouping. Measured using per-node token sets (the same tokens BitZoom's MinHash operates on).</li>
 <li><strong>Silhouette:</strong> Do known communities form visible clusters? Score vs ground-truth labels, -1 to +1. Only available for Email-EU (42 departments).</li>
 </ul>
 
 <h2 id="summary">The short version</h2>
 
-<p>The answer depends on the graph. On dense social networks, BitZoom at high topology
-weight (&alpha;=1.0) produces neighborhood quality comparable to force-directed, in
-milliseconds instead of minutes. On sparse, chain-like graphs, five smoothing passes
-cannot propagate signal far enough, and force-directed produces substantially better
-layouts. On heterogeneous knowledge graphs, all methods struggle with these metrics
-because graph neighbors are often semantically different node types.</p>
+<p>On topology metrics, ForceAtlas2 and t-SNE lead. On property-similarity, BitZoom
+with tuned weights leads. The gap is clearest on MITRE ATT&CK, the only dataset with
+rich node properties: BitZoom places property-similar nodes 2.6x closer together than
+ForceAtlas2 (PropNbrP 0.034 vs 0.013). On edge-only datasets, property scores are
+uniformly low across all methods.</p>
 
 <table>
 <tr>
-  <th>Dataset</th><th>Nodes</th><th>Edges</th><th>BitZoom</th><th>Speedup</th><th>EdgeLen</th><th>NbrP</th><th style="text-align:left">Takeaway</th>
+  <th>Dataset</th><th>Nodes</th><th>Edges</th><th>BitZoom</th><th>Time</th><th>FA2 time</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Takeaway</th>
 </tr>
 <tr>
-  <td>Email-EU</td><td>1,005</td><td>16.7K</td><td>&alpha;=1.0</td><td>~32,000x</td><td>9x</td><td>1.3x</td><td class="note">Comparable neighborhood quality to FD</td>
+  <td>Email-EU</td><td>1,005</td><td>16.7K</td><td>&alpha;=1.0</td><td>1 ms</td><td>54s</td><td>0.87x</td><td>0.87x</td><td class="note">Edge-only; topology comparable</td>
 </tr>
 <tr>
-  <td>Facebook</td><td>4,039</td><td>88.2K</td><td>&alpha;=1.0</td><td>~55,000x</td><td>6x</td><td>0.95x</td><td class="note">Dense communities transfer well to smoothing</td>
+  <td>Facebook</td><td>4,039</td><td>88.2K</td><td>&alpha;=1.0</td><td>6 ms</td><td>172s</td><td>0.74x</td><td>0.79x</td><td class="note">Dense; smoothing works well</td>
 </tr>
 <tr>
-  <td>Power Grid</td><td>4,941</td><td>6.6K</td><td>&alpha;=0.75</td><td>~53,000x</td><td>43x</td><td>0.02x</td><td class="note">Long chains beyond 5-pass smoothing reach</td>
+  <td>Power Grid</td><td>4,941</td><td>6.6K</td><td>&alpha;=0.75</td><td>8 ms</td><td>152s</td><td>0.01x</td><td>0.68x</td><td class="note">Sparse chains; smoothing limited</td>
 </tr>
 <tr>
-  <td>MITRE</td><td>4,736</td><td>25.9K</td><td>&alpha;=0.5 wt</td><td>~44,000x</td><td>4x</td><td>0.52x</td><td class="note">All methods score low; graph is too mixed</td>
+  <td>MITRE</td><td>4,736</td><td>25.9K</td><td>&alpha;=0 wt</td><td>8 ms</td><td>178s</td><td>0.37x</td><td class="best">2.57x</td><td class="note">Property-first layout pays off</td>
 </tr>
 </table>
 <p class="section-note">
-Ratios are BitZoom / Force-Directed. Lower EdgeLen = better. Higher NbrP = better.
+Ratios are BitZoom / ForceAtlas2. Higher = better for both NbrP columns.
 </p>
 
 <h2 id="datasets">Dataset by dataset</h2>
@@ -222,101 +241,185 @@ Ratios are BitZoom / Force-Directed. Lower EdgeLen = better. Higher NbrP = bette
 <h3>Email-EU: a dense communication network</h3>
 
 <p>1,005 researchers at a European institution, 16.7K emails, 42 departments as ground truth.
-A good test case because the community structure is real and well-documented.</p>
+Edge-only (no node properties beyond auto-generated tokens).</p>
 
-<table>
-<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>NbrP</th><th>Silhouette</th><th style="text-align:left">Note</th></tr>
-<tr><td>BitZoom &alpha;=0</td><td>2ms</td><td>0.466</td><td>0.006</td><td>-0.47</td><td class="note">No topology; layout is near-random</td></tr>
-<tr><td>BitZoom &alpha;=1.0</td><td>2ms</td><td>0.221</td><td>0.056</td><td>-0.29</td><td class="note">Best BitZoom; edges still 9x longer than FD</td></tr>
-<tr><td>Force-Directed</td><td>64s</td><td class="best">0.024</td><td>0.043</td><td>-0.33</td><td class="note">Shortest edges; optimizes directly for this</td></tr>
-<tr><td>UMAP</td><td>18s</td><td>0.182</td><td class="best">0.107</td><td class="best">+0.01</td><td class="note">Only method with positive silhouette</td></tr>
-<tr><td>t-SNE</td><td>5s</td><td>0.154</td><td>0.109</td><td>-0.12</td><td class="note">Highest neighborhood preservation</td></tr>
+<table data-chart="TopoNbrP,PropNbrP">
+<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th>Silhouette</th><th style="text-align:left">Note</th></tr>
+<tr><td>BitZoom &alpha;=0</td><td>2ms</td><td>0.466</td><td>0.006</td><td>0.007</td><td>-0.47</td><td class="note">Near-random layout</td></tr>
+<tr><td>BitZoom &alpha;=1.0</td><td>1ms</td><td>0.221</td><td>0.056</td><td>0.007</td><td>-0.29</td><td class="note">Best BitZoom for topology</td></tr>
+<tr><td>ForceAtlas2</td><td>54s</td><td class="best">0.008</td><td>0.064</td><td>0.008</td><td>-0.40</td><td class="note">Shortest edges</td></tr>
+<tr><td>UMAP</td><td>11s</td><td>0.182</td><td class="best">0.107</td><td>0.010</td><td class="best">+0.01</td><td class="note">Only positive silhouette</td></tr>
+<tr><td>t-SNE</td><td>3s</td><td>0.154</td><td>0.109</td><td>0.009</td><td>-0.12</td><td class="note">Highest TopoNbrP</td></tr>
 </table>
 
-<p>UMAP and t-SNE recover department structure that neither BitZoom nor force-directed
-fully capture. BitZoom at &alpha;=1.0 is in the same neighborhood-preservation range as
-force-directed but with longer edges.</p>
+<p>PropNbrP is uniformly low (0.007-0.010) across all methods. Without real node
+properties, auto-generated tokens provide little differentiation. UMAP and t-SNE
+recover department structure best on topology metrics.</p>
 
 <h3>Facebook: dense ego networks</h3>
 
-<p>4,039 users from combined Facebook ego networks, 88K friendship edges. Dense community
-structure with clear social circles.</p>
+<p>4,039 users, 88K friendship edges. Dense community structure.</p>
 
-<table>
-<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>NbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>BitZoom &alpha;=1.0</td><td>10ms</td><td>0.063</td><td>0.110</td><td class="note">Similar NbrP to FD; edges 6x longer</td></tr>
-<tr><td>Force-Directed</td><td>545s</td><td class="best">0.011</td><td>0.116</td><td class="note">Shortest edges; 9 minutes to compute</td></tr>
-<tr><td>t-SNE</td><td>22s</td><td>0.071</td><td class="best">0.176</td><td class="note">Highest neighborhood preservation</td></tr>
+<table data-chart="TopoNbrP">
+<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
+<tr><td>BitZoom &alpha;=1.0</td><td>6ms</td><td>0.063</td><td>0.110</td><td>0.003</td><td class="note">74% of FA2's TopoNbrP</td></tr>
+<tr><td>ForceAtlas2</td><td>172s</td><td class="best">0.011</td><td>0.150</td><td>0.003</td><td class="note">Shortest edges</td></tr>
+<tr><td>t-SNE</td><td>15s</td><td>0.071</td><td class="best">0.176</td><td>0.003</td><td class="note">Highest TopoNbrP</td></tr>
 </table>
 
-<p>This is where topology smoothing works well. The dense ego-network structure means
-5 passes are enough to capture most community relationships. BitZoom and force-directed
-produce similar neighborhood preservation; the main difference is edge length.</p>
+<p>Dense ego-network structure responds well to topology smoothing. BitZoom at &alpha;=1.0
+reaches 74% of ForceAtlas2's TopoNbrP. PropNbrP is uniformly low (edge-only dataset).</p>
 
 <h3>Power Grid: sparse chains</h3>
 
-<p>4,941 substations and generators in the western US power grid, connected by 6.6K
-transmission lines. Average degree 2.7, diameter ~46. The classic small-world network.</p>
+<p>4,941 substations, 6.6K transmission lines. Average degree 2.7, diameter ~46.</p>
 
-<table>
-<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>NbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>BitZoom &alpha;=0.75</td><td>14ms</td><td>0.271</td><td>0.003</td><td class="note">Best BitZoom; &alpha;=1.0 is worse</td></tr>
-<tr><td>Force-Directed</td><td>741s</td><td class="best">0.006</td><td class="best">0.187</td><td class="note">Traces long chains via global forces</td></tr>
-<tr><td>t-SNE</td><td>36s</td><td>0.178</td><td>0.041</td><td class="note">Also limited by sparse adjacency</td></tr>
+<table data-chart="TopoNbrP">
+<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
+<tr><td>BitZoom &alpha;=0.75</td><td>8ms</td><td>0.271</td><td>0.003</td><td>0.002</td><td class="note">Best BitZoom; &alpha;=1.0 is worse</td></tr>
+<tr><td>ForceAtlas2</td><td>152s</td><td class="best">0.005</td><td class="best">0.197</td><td>0.002</td><td class="note">Traces chains via global forces</td></tr>
+<tr><td>t-SNE</td><td>26s</td><td>0.178</td><td>0.041</td><td>0.002</td><td class="note">Limited by sparse adjacency</td></tr>
 </table>
 
-<p>This is where BitZoom's approach breaks down. The graph is dominated by long chains,
-and 5 smoothing passes can propagate signal at most 5 hops. Force-directed's global
-repulsion/attraction model traces these chains naturally. Note that &alpha;=0.75
-outperforms &alpha;=1.0: pure topology with few passes oversmooths hubs while leaving
-chains unresolved.</p>
+<p>ForceAtlas2 dominates. Its global optimization traces long chains (diameter ~46)
+that 5-pass local smoothing cannot reach. &alpha;=0.75 outperforms &alpha;=1.0 because
+pure topology with few passes oversmooths hubs while leaving chains unresolved.</p>
 
-<h3>MITRE ATT&CK: heterogeneous knowledge graph</h3>
+<h3>MITRE ATT&CK: the property-similarity test</h3>
 
-<p>4,736 nodes (techniques, tactics, software, mitigations) connected by 25.9K typed
-relationships. Rich node properties: platforms, kill chain phases, aliases.</p>
+<p>4,736 nodes (techniques, tactics, software, mitigations) with rich properties:
+platforms, kill chain phases, aliases. This is the dataset that tests BitZoom's
+core claim.</p>
 
-<table>
-<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>NbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>BitZoom &alpha;=0.5 wt</td><td>16ms</td><td>0.482</td><td>0.002</td><td class="note">Property-first grouping by platform/phase</td></tr>
-<tr><td>Force-Directed</td><td>703s</td><td class="best">0.119</td><td>0.003</td><td class="note">Shorter edges; still low NbrP</td></tr>
-<tr><td>t-SNE</td><td>26s</td><td>0.292</td><td class="best">0.004</td><td class="note">Highest NbrP but still very low</td></tr>
+<table data-chart="TopoNbrP,PropNbrP">
+<tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
+<tr><td>BitZoom &alpha;=0</td><td>10ms</td><td>0.461</td><td>0.001</td><td>0.007</td><td class="note">No property weights</td></tr>
+<tr><td>BitZoom &alpha;=0 wt</td><td>8ms</td><td>0.534</td><td>0.002</td><td class="best">0.034</td><td class="note">Property weights: best PropNbrP</td></tr>
+<tr><td>BitZoom &alpha;=0.5 wt</td><td>8ms</td><td>0.482</td><td>0.002</td><td>0.034</td><td class="note">Adding topology barely changes PropNbrP</td></tr>
+<tr><td>ForceAtlas2</td><td>178s</td><td>0.203</td><td>0.004</td><td>0.013</td><td class="note">Shorter edges; lower PropNbrP</td></tr>
+<tr><td>t-SNE</td><td>23s</td><td>0.292</td><td>0.004</td><td>0.026</td><td class="note">Second-highest PropNbrP</td></tr>
 </table>
 
-<p>All methods score low. The reason: graph neighbors in MITRE ATT&CK are semantically
-different types (a technique connects to a mitigation, not to another technique). The
-topology metrics penalize every method here. This is the kind of dataset where BitZoom's
-property-first layout matters most, but these metrics do not capture that value.</p>
+<p>BitZoom with property weights (group=5, platforms=6, killchain=4) scores 2.6x higher
+than ForceAtlas2 on PropNbrP (0.034 vs 0.013). Without property weights, BitZoom's
+PropNbrP drops to 0.007 — the weights are what provide the signal. All methods score
+low on TopoNbrP because graph neighbors are often semantically different node types.
+t-SNE scores second on PropNbrP (0.026), likely because adjacency partially correlates
+with property similarity.</p>
 
 <h2 id="methods">What each method is good at</h2>
 
 <table>
 <tr>
   <th style="text-align:left">Aspect</th>
-  <th style="text-align:left">Force-Directed</th>
+  <th style="text-align:left">ForceAtlas2</th>
   <th style="text-align:left">UMAP / t-SNE</th>
   <th style="text-align:left">BitZoom</th>
 </tr>
 <tr><td>Edge length</td><td class="note">Best (optimizes for this)</td><td class="note">Moderate</td><td class="note">Improves with &alpha;</td></tr>
-<tr><td>Neighborhood quality</td><td class="note">Good on dense graphs</td><td class="note">Best overall</td><td class="note">Comparable at high &alpha;</td></tr>
+<tr><td>Topology preservation</td><td class="note">Strong; global forces</td><td class="note">Best overall (t-SNE)</td><td class="note">Comparable on dense graphs</td></tr>
+<tr><td>Property grouping</td><td class="note">Incidental</td><td class="note">Moderate (via adjacency)</td><td class="note">Best with property weights</td></tr>
 <tr><td>Sparse / chain graphs</td><td class="note">Strong (global forces)</td><td class="note">Limited</td><td class="note">Limited (local smoothing)</td></tr>
-<tr><td>Speed</td><td class="note">Minutes (O(n&sup2;)/iter)</td><td class="note">Seconds</td><td class="note">Milliseconds (O(n))</td></tr>
+<tr><td>Speed</td><td class="note">Minutes (O(n log n)/iter)</td><td class="note">Seconds</td><td class="note">Milliseconds (O(n))</td></tr>
 <tr><td>Hierarchical zoom</td><td class="note">No</td><td class="note">No</td><td class="note">14 levels from 4 bytes/node</td></tr>
-<tr><td>Property grouping</td><td class="note">No</td><td class="note">Possible with features</td><td class="note">Primary design goal</td></tr>
 <tr><td>Determinism</td><td class="note">Seed-dependent</td><td class="note">Seed-dependent</td><td class="note">Fully deterministic</td></tr>
 </table>
 
-<h2 id="caveats">What this comparison does not measure</h2>
+<h2 id="caveats">Caveats</h2>
 
-<p>All three metrics evaluate topology preservation. BitZoom's primary design goal is
-property-similarity layout: nodes that share attributes should be nearby regardless of
-whether they share edges. A property-similarity metric would provide a more complete
-picture but requires ground-truth property groupings not available for most datasets.
-The hierarchical zoom structure (14 levels derived from 4 stored bytes per node) is also
-not captured by any metric. These are real capabilities that the numbers above do not reflect.</p>
+<p><strong>PropNbrP uses the same similarity BitZoom optimizes.</strong> Token-set Jaccard
+is both the ground-truth similarity and the signal BitZoom's MinHash approximates. This
+is partially circular. A fully independent property-similarity metric (e.g., domain-expert
+labels) would be stronger evidence.</p>
+
+<p><strong>Edge-only datasets show no property differentiation.</strong> Three of four datasets
+have no real node properties. PropNbrP is uniformly low across all methods on these graphs.
+The property-similarity comparison is meaningful only for MITRE ATT&CK.</p>
+
+<p><strong>Hierarchical zoom is not measured.</strong> BitZoom derives 14 aggregation levels from
+4 stored bytes per node. No other method produces a zoom hierarchy. This capability is not
+captured by any metric above.</p>
 
 <script>
-// TOC scroll sync
+// ─── Bar charts from table data ──────────────────────────────────────────────
+(function() {
+  const COLORS = {
+    'BitZoom':     '#7c6af7',
+    'ForceAtlas2': '#f76a8c',
+    'UMAP':        '#6af7c8',
+    't-SNE':       '#f7c86a',
+  };
+
+  function colorFor(label) {
+    for (const [key, color] of Object.entries(COLORS)) {
+      if (label.startsWith(key)) return color;
+    }
+    return '#888';
+  }
+
+  function buildChart(labels, values, metric) {
+    const maxVal = Math.max(...values.filter(v => isFinite(v)));
+    if (maxVal <= 0) return null;
+
+    const barH = 22, gap = 4, labelW = 140, valueW = 50;
+    const chartW = 400, barArea = chartW - labelW - valueW;
+    const h = labels.length * (barH + gap) + 4;
+
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${chartW}" height="${h}" viewBox="0 0 ${chartW} ${h}" style="width:100%;max-width:${chartW}px;height:auto">`;
+
+    for (let i = 0; i < labels.length; i++) {
+      const y = i * (barH + gap) + 2;
+      const v = values[i];
+      const w = isFinite(v) && v > 0 ? (v / maxVal) * barArea : 0;
+      const color = colorFor(labels[i]);
+
+      // Label
+      svg += `<text x="${labelW - 6}" y="${y + barH * 0.72}" fill="#8888a0" font-size="11" font-family="Inter,sans-serif" text-anchor="end">${labels[i]}</text>`;
+      // Bar
+      svg += `<rect x="${labelW}" y="${y + 2}" width="${w}" height="${barH - 4}" rx="2" fill="${color}" opacity="0.8"/>`;
+      // Value
+      svg += `<text x="${labelW + w + 6}" y="${y + barH * 0.72}" fill="#c8c8d8" font-size="11" font-family="JetBrains Mono,monospace">${v.toFixed(3)}</text>`;
+    }
+
+    svg += '</svg>';
+    return svg;
+  }
+
+  document.querySelectorAll('table[data-chart]').forEach(table => {
+    const metrics = table.dataset.chart.split(',').map(s => s.trim());
+    const headers = [...table.querySelectorAll('th')].map(th => th.textContent.trim());
+
+    const rows = [...table.querySelectorAll('tr')].slice(1); // skip header
+    const labels = rows.map(r => r.cells[0].textContent.trim());
+
+    const group = document.createElement('div');
+    group.className = 'chart-group';
+
+    for (const metric of metrics) {
+      const colIdx = headers.indexOf(metric);
+      if (colIdx < 0) continue;
+
+      const values = rows.map(r => {
+        const text = r.cells[colIdx].textContent.trim();
+        return parseFloat(text) || 0;
+      });
+
+      const svg = buildChart(labels, values, metric);
+      if (!svg) continue;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-wrap';
+      wrap.innerHTML = `<div class="chart-title">${metric} (higher = better)</div>${svg}`;
+      group.appendChild(wrap);
+    }
+
+    if (group.children.length > 0) {
+      table.insertAdjacentElement('afterend', group);
+    }
+  });
+})();
+
+// ─── TOC scroll sync
 const tocLinks = document.querySelectorAll('.toc a');
 const sections = [...tocLinks].map(a => document.querySelector(a.getAttribute('href')));
 function syncToc() {

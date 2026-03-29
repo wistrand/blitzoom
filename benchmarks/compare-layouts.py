@@ -43,6 +43,20 @@ def parse_bitzoom(path):
             pos[parts[0]] = (float(parts[1]), float(parts[2]))
     return pos
 
+def parse_tokens(path):
+    """Parse token sets file. Returns dict {id: set of tokens}."""
+    tokens = {}
+    with open(path) as f:
+        for line in f:
+            if line.startswith('#'):
+                continue
+            parts = line.strip().split('\t', 1)
+            if len(parts) == 2:
+                tokens[parts[0]] = set(parts[1].split())
+            else:
+                tokens[parts[0]] = set()
+    return tokens
+
 def parse_ground_truth(path):
     """Parse ground truth labels. Format: id<whitespace>label per line."""
     labels = {}
@@ -64,10 +78,12 @@ def build_graph(edges):
     return G
 
 def layout_force_directed(G):
-    """Force-directed layout (Fruchterman-Reingold)."""
-    import networkx as nx
+    """ForceAtlas2 layout (Barnes-Hut accelerated)."""
+    from fa2_modified import ForceAtlas2
+    fa2 = ForceAtlas2(barnesHutOptimize=True, barnesHutTheta=1.2,
+                      scalingRatio=2.0, gravity=1.0, verbose=False)
     t0 = time.time()
-    pos = nx.spring_layout(G, iterations=500, seed=42)
+    pos = fa2.forceatlas2_networkx_layout(G, iterations=2000)
     elapsed = time.time() - t0
     return {str(k): (float(v[0]), float(v[1])) for k, v in pos.items()}, elapsed
 
@@ -196,6 +212,59 @@ def neighborhood_preservation(pos, G, k=10):
 
     return float(np.mean(scores)) if scores else float('nan')
 
+def property_neighborhood_preservation(pos, token_sets, k=10, max_nodes=500):
+    """
+    For each node (sampled if n > max_nodes), check overlap between k most
+    property-similar nodes (by Jaccard on token sets) and k nearest layout
+    neighbors. Reports mean Jaccard overlap.
+    """
+    from scipy.spatial import KDTree
+
+    common = [n for n in pos if n in token_sets
+              and np.isfinite(pos[n][0]) and np.isfinite(pos[n][1])]
+    if len(common) < k + 1:
+        return float('nan')
+
+    node_list = sorted(common)
+    coords = np.array([[pos[n][0], pos[n][1]] for n in node_list])
+    n = len(node_list)
+
+    tree = KDTree(coords)
+    _, layout_nn = tree.query(coords, k=min(k + 1, n))
+
+    # Sample query nodes for O(n) instead of O(n^2)
+    rng = np.random.RandomState(42)
+    if n > max_nodes:
+        sample_idx = rng.choice(n, max_nodes, replace=False)
+    else:
+        sample_idx = np.arange(n)
+
+    scores = []
+    for i in sample_idx:
+        ts_i = token_sets[node_list[i]]
+        if not ts_i:
+            continue
+        # Find k most similar nodes by Jaccard (still O(n) per query node)
+        sims = []
+        for j in range(n):
+            if i == j:
+                continue
+            ts_j = token_sets[node_list[j]]
+            if not ts_j:
+                continue
+            inter = len(ts_i & ts_j)
+            union = len(ts_i | ts_j)
+            sims.append((inter / union if union > 0 else 0, j))
+        sims.sort(key=lambda x: -x[0])
+        prop_nbrs = set(j for _, j in sims[:k])
+        layout_nbrs = set(layout_nn[i, 1:k+1])
+        inter = len(prop_nbrs & layout_nbrs)
+        union = len(prop_nbrs | layout_nbrs)
+        if union > 0:
+            scores.append(inter / union)
+
+    return float(np.mean(scores)) if scores else float('nan')
+
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -207,15 +276,19 @@ def main():
     parser.add_argument('--skip-umap', action='store_true', help='Skip UMAP (requires umap-learn)')
     parser.add_argument('--skip-tsne', action='store_true', help='Skip t-SNE')
     parser.add_argument('--skip-fd', action='store_true', help='Skip force-directed')
+    parser.add_argument('--tokens', help='Token sets file for property-similarity metrics')
     args = parser.parse_args()
 
     edges = parse_edges(args.edges)
     G = build_graph(edges)
     gt = parse_ground_truth(args.ground_truth) if args.ground_truth else None
+    ts = parse_tokens(args.tokens) if args.tokens else None
 
     print(f'Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges')
     if gt:
         print(f'Ground truth: {len(gt)} labels, {len(set(gt.values()))} classes')
+    if ts:
+        print(f'Token sets: {len(ts)} nodes')
     print()
 
     layouts = {}
@@ -253,7 +326,9 @@ def main():
     print()
 
     # Evaluate
-    header = f'{"Layout":<30} {"Time(s)":>8} {"EdgeLen(mean)":>14} {"EdgeLen(med)":>13} {"NbrPreserv":>11}'
+    header = f'{"Layout":<30} {"Time(s)":>8} {"EdgeLen(mean)":>14} {"EdgeLen(med)":>13} {"TopoNbrP":>9}'
+    if ts:
+        header += f' {"PropNbrP":>9}'
     if gt:
         header += f' {"Silhouette":>11}'
     lines = [header, '-' * len(header)]
@@ -261,7 +336,11 @@ def main():
     for name, (pos, elapsed) in layouts.items():
         mean_el, med_el = edge_length_stats(pos, edges)
         nbr = neighborhood_preservation(pos, G, k=10)
-        row = f'{name:<30} {elapsed:>8.3f} {mean_el:>14.4f} {med_el:>13.4f} {nbr:>11.4f}'
+        row = f'{name:<30} {elapsed:>8.3f} {mean_el:>14.4f} {med_el:>13.4f} {nbr:>9.4f}'
+        if ts:
+            print(f'  Computing PropNbrP for {name}...')
+            pnbr = property_neighborhood_preservation(pos, ts, k=10)
+            row += f' {pnbr:>9.4f}'
         if gt:
             sil = cluster_quality(pos, gt)
             row += f' {sil:>11.4f}'
@@ -275,6 +354,8 @@ def main():
         with open(args.out, 'w') as f:
             f.write(f'# Dataset: {args.edges}\n')
             f.write(f'# Nodes: {G.number_of_nodes()}, Edges: {G.number_of_edges()}\n')
+            if ts:
+                f.write(f'# Token sets: {len(ts)} nodes\n')
             if gt:
                 f.write(f'# Ground truth: {len(gt)} labels, {len(set(gt.values()))} classes\n')
             f.write(f'#\n')

@@ -1,10 +1,11 @@
 # Dataset: /data/mitre-attack.edges
 # Nodes: 4736, Edges: 25856
+# Token sets: 4736 nodes
 #
-Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  NbrPreserv
---------------------------------------------------------------------------------
-BitZoom:mitre-a000                0.016         0.4612        0.4303      0.0013
-BitZoom:mitre-a000-weighted       0.016         0.5335        0.5097      0.0015
-BitZoom:mitre-a050-weighted       0.016         0.4821        0.4569      0.0016
-Force-Directed                  703.272         0.1185        0.0844      0.0031
-t-SNE                            25.683         0.2924        0.2882      0.0037
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
+----------------------------------------------------------------------------------------
+BitZoom:mitre-a000                0.010         0.4612        0.4303    0.0013    0.0068
+BitZoom:mitre-a000-weighted       0.008         0.5335        0.5097    0.0015    0.0339
+BitZoom:mitre-a050-weighted       0.008         0.4821        0.4569    0.0016    0.0335
+Force-Directed                  177.867         0.2032        0.1836    0.0041    0.0132
+t-SNE                            23.083         0.2924        0.2882    0.0037    0.0259

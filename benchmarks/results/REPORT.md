@@ -3,24 +3,30 @@
 ## 1. Summary
 
 Four graph datasets were laid out using BitZoom (at multiple topology weights),
-force-directed (Fruchterman-Reingold, 500 iterations), UMAP, and t-SNE. All methods
-received the same input graphs. Layouts were evaluated on edge length, neighborhood
-preservation, and cluster quality.
+ForceAtlas2 (2000 iterations, Barnes-Hut), UMAP, and t-SNE. All methods received
+the same input graphs. Layouts were evaluated on both topology preservation (edge
+length, neighborhood overlap) and property-similarity preservation (whether nodes
+with similar attributes end up nearby).
 
-The results reflect different design goals. Force-directed minimizes edge lengths and
+The results confirm that these methods optimize for different objectives. ForceAtlas2
 produces the tightest topological layouts. UMAP and t-SNE preserve neighborhood
-structure from the adjacency matrix. BitZoom provides deterministic property-similarity
-positioning with hierarchical zoom levels and completes in milliseconds rather than
-minutes.
+structure from adjacency. BitZoom positions nodes by property similarity, completes
+in milliseconds, and produces a hierarchical zoom structure.
 
-| Dataset     | Nodes | Edges  | BitZoom config | Speedup vs FD | EdgeLen ratio | NbrPreserv ratio | Note                                      |
-| ----------- | ----: | -----: | -------------- | ------------: | ------------: | ---------------: | ----------------------------------------- |
-| Email-EU    | 1,005 | 16,706 | α=1.0          |      ~32,000x |            9x |             1.3x | Comparable neighborhood quality to FD     |
-| Facebook    | 4,039 | 88,234 | α=1.0          |      ~55,000x |            6x |            0.95x | Dense community structure transfers well  |
-| Power Grid  | 4,941 |  6,594 | α=0.75         |      ~53,000x |           43x |            0.02x | Sparse chains beyond smoothing reach      |
-| MITRE       | 4,736 | 25,856 | α=0.5 weighted |      ~44,000x |            4x |            0.52x | All methods score low on this graph       |
+On the MITRE ATT&CK dataset (the only dataset with rich node properties), BitZoom
+with tuned property weights scores 2.6x higher than ForceAtlas2 on property-similarity
+preservation (PropNbrP 0.034 vs 0.013). On edge-only datasets, property-similarity
+scores are uniformly low across all methods because auto-generated tokens provide
+little differentiation.
 
-Ratios are BitZoom / Force-Directed. Lower EdgeLen = better. Higher NbrPreserv = better.
+| Dataset     | Nodes | Edges  | BitZoom config | Time    | FA2 time | TopoNbrP ratio | PropNbrP ratio |
+| ----------- | ----: | -----: | -------------- | ------: | -------: | --------------: | -------------: |
+| Email-EU    | 1,005 | 16,706 | α=1.0          |    1 ms |      54s |           0.87x |          0.87x |
+| Facebook    | 4,039 | 88,234 | α=1.0          |    6 ms |     172s |           0.74x |          0.79x |
+| Power Grid  | 4,941 |  6,594 | α=0.75         |    8 ms |     152s |           0.01x |          0.68x |
+| MITRE       | 4,736 | 25,856 | α=0 weighted   |    8 ms |     178s |           0.37x |          2.57x |
+
+Ratios are BitZoom / ForceAtlas2. Higher = better for both NbrP columns.
 
 ---
 
@@ -33,8 +39,10 @@ blended with iterative topology smoothing (5 passes), quantized to a uint16 grid
 Tested at topology weights α = 0, 0.5, 0.75, and 1.0, with and without property
 weights.
 
-**Force-Directed (Fruchterman-Reingold).** NetworkX `spring_layout`, 500 iterations,
-seed=42. Repulsive forces between all node pairs, attractive forces along edges.
+**ForceAtlas2.** [`fa2-modified`](https://pypi.org/project/fa2-modified/) with
+Barnes-Hut optimization (θ=1.2), 2000 iterations, scalingRatio=2, gravity=1.
+O(n log n) per iteration. Replaces NetworkX `spring_layout` from the initial version
+of this benchmark.
 
 **UMAP.** umap-learn, Jaccard metric on binary adjacency rows, 2 components, seed=42.
 Only run on Email-EU (1K nodes). Skipped on larger datasets due to the cost of
@@ -49,17 +57,20 @@ perplexity = min(30, n-1).
 Lower means connected nodes are placed closer. Distances normalized by layout span
 (max coordinate range across both axes) for cross-algorithm comparability.
 
-**NbrPreserv.** Jaccard overlap between each node's k=10 nearest graph neighbors and
-k=10 nearest layout neighbors (Euclidean distance, KD-tree). Higher means the layout
-reflects graph connectivity in spatial proximity. A score of 1.0 would mean perfect
-overlap.
+**TopoNbrP.** Topology neighborhood preservation. Jaccard overlap between each node's
+k=10 nearest graph neighbors and k=10 nearest layout neighbors (Euclidean distance,
+KD-tree). Higher means the layout reflects graph connectivity in spatial proximity.
+
+**PropNbrP.** Property-similarity neighborhood preservation. For each node, find its
+k=10 most property-similar nodes (by Jaccard on token sets) and its k=10 nearest
+layout neighbors. Compute Jaccard overlap. Higher means nodes with similar properties
+end up near each other. Sampled at 500 nodes for datasets larger than 500 nodes.
 
 **Silhouette.** Silhouette score of layout positions against ground-truth community
-labels. Ranges from -1 to +1. Positive values indicate same-community nodes are closer
-than different-community nodes. Only available for Email-EU (42 departments).
+labels. Ranges from -1 to +1. Only available for Email-EU (42 departments).
 
 **Time.** Wall-clock seconds. BitZoom times include full pipeline execution in the
-export script. Force-directed, UMAP, and t-SNE times measure layout computation only.
+export script. ForceAtlas2, UMAP, and t-SNE times measure layout computation only.
 
 ### 2.3 Datasets
 
@@ -70,30 +81,35 @@ export script. Force-directed, UMAP, and t-SNE times measure layout computation 
 | Power Grid | 4,941 |  6,594 | KONECT        | none (edge-only)              | none           |
 | MITRE      | 4,736 | 25,856 | MITRE ATT&CK  | platforms, kill chain, aliases | none           |
 
-Edge counts reflect undirected edges after deduplication by NetworkX. Email-EU ground
-truth labels are from the SNAP companion file `email-Eu-core-department-labels.txt`.
+Edge counts reflect undirected edges after deduplication. Email-EU ground truth labels
+are from the SNAP companion file `email-Eu-core-department-labels.txt`.
 
 ### 2.4 Pipeline and reproducibility
 
-1. **Export BitZoom layouts** (Deno, native). `benchmarks/export-layout.ts` runs the
-   full pipeline (parse, tokenize, MinHash, project, blend, quantize) and writes node
-   positions as TSV. Multiple configurations exported per dataset.
+1. **Export BitZoom layouts** (Deno, native). [`export-layout.ts`](../export-layout.ts)
+   runs the full pipeline (parse, tokenize, MinHash, project, blend, quantize) and
+   writes node positions as TSV plus a companion `.tokens` file with per-node token
+   sets for property-similarity evaluation.
 
-2. **Compute competing layouts** (Python 3.12, Docker). `benchmarks/compare-layouts.py`
-   loads the same edge file, computes force-directed / UMAP / t-SNE, imports BitZoom
-   exports, and evaluates all layouts on the same metrics. Runs inside a Docker
-   container (`python:3.12-slim` with networkx, scikit-learn, umap-learn, scipy).
+2. **Compute competing layouts** (Python 3.12, Docker).
+   [`compare-layouts.py`](../compare-layouts.py) loads the same edge file, computes
+   ForceAtlas2 / UMAP / t-SNE, imports BitZoom exports, and evaluates all layouts
+   on the same metrics. Runs inside a Docker container
+   ([`Dockerfile`](../Dockerfile): `python:3.12-slim` with networkx, scikit-learn,
+   umap-learn, scipy, fa2-modified).
 
-3. **Evaluate metrics** on all layouts against the same edge list and ground-truth
-   labels where available.
+3. **Evaluate metrics** on all layouts against the same edge list, token sets, and
+   ground-truth labels where available.
 
 ```sh
 # Reproduce from repository root (requires Deno and Docker):
 bash benchmarks/run-comparison.sh
 ```
 
-Total runtime is approximately 40 minutes, dominated by force-directed layout on
-the 4-5K node datasets.
+See [`run-comparison.sh`](../run-comparison.sh) for the full orchestration script.
+
+Total runtime is approximately 15 minutes, dominated by ForceAtlas2 on the 4-5K node
+datasets.
 
 ---
 
@@ -104,87 +120,85 @@ the 4-5K node datasets.
 European research institution email network.
 1,005 nodes, 16,706 edges, 42 department ground-truth labels.
 
-| Layout             | Time (s) | EdgeLen mean | EdgeLen med | NbrPreserv | Silhouette | Note                                           |
-| ------------------ | -------: | -----------: | ----------: | ---------: | ---------: | ---------------------------------------------- |
-| BitZoom α=0        |    0.002 |       0.4663 |      0.4614 |     0.0058 |    -0.4710 | No topology signal; near-random layout         |
-| BitZoom α=0.5      |    0.002 |       0.4480 |      0.4419 |     0.0074 |    -0.4537 | Marginal improvement from topology             |
-| BitZoom α=0.75     |    0.002 |       0.4348 |      0.4283 |     0.0079 |    -0.4570 | Limited by 5-pass smoothing                    |
-| BitZoom α=1.0      |    0.002 |       0.2212 |      0.1839 |     0.0559 |    -0.2916 | Best BitZoom; edges 9x longer than FD          |
-| Force-Directed     |   63.932 |       0.0244 |      0.0218 |     0.0426 |    -0.3301 | Shortest edges; 500 iterations                 |
-| UMAP (Jaccard)     |   17.511 |       0.1822 |      0.0826 |     0.1066 |     0.0108 | Only positive silhouette; best cluster quality |
-| t-SNE              |    4.920 |       0.1536 |      0.1040 |     0.1086 |    -0.1184 | Highest neighborhood preservation              |
+| Layout             | Time (s) | EdgeLen mean | EdgeLen med | TopoNbrP | PropNbrP | Silhouette | Note                                           |
+| ------------------ | -------: | -----------: | ----------: | -------: | -------: | ---------: | ---------------------------------------------- |
+| BitZoom α=0        |    0.002 |       0.4663 |      0.4614 |   0.0058 |   0.0073 |    -0.4710 | No topology signal; near-random layout         |
+| BitZoom α=0.5      |    0.002 |       0.4480 |      0.4419 |   0.0074 |   0.0077 |    -0.4537 | Marginal improvement from topology             |
+| BitZoom α=0.75     |    0.002 |       0.4348 |      0.4283 |   0.0079 |   0.0080 |    -0.4570 | Limited by 5-pass smoothing                    |
+| BitZoom α=1.0      |    0.001 |       0.2212 |      0.1839 |   0.0559 |   0.0065 |    -0.2916 | Best BitZoom for topology                      |
+| ForceAtlas2        |   53.578 |       0.0075 |      0.0064 |   0.0642 |   0.0075 |    -0.4048 | Shortest edges; 2000 iterations                |
+| UMAP (Jaccard)     |   11.164 |       0.1822 |      0.0826 |   0.1066 |   0.0096 |     0.0108 | Only positive silhouette                       |
+| t-SNE              |    2.780 |       0.1536 |      0.1040 |   0.1086 |   0.0093 |    -0.1184 | Highest topology neighborhood preservation     |
 
-- Force-directed produces the shortest edges (it optimizes directly for this).
-- UMAP and t-SNE produce the best neighborhood preservation and are the only methods
-  with positive silhouette scores, recovering department structure from adjacency alone.
-- BitZoom at α=1.0 halves edge lengths compared to α=0. Neighborhood preservation is
-  in the same range as force-directed but below UMAP and t-SNE.
+- Edge-only dataset: auto-generated tokens (group, label, structure, neighbors) provide
+  little differentiation, so PropNbrP is uniformly low across all methods (0.006-0.010).
+- UMAP and t-SNE recover department structure better than ForceAtlas2 or BitZoom
+  (highest TopoNbrP, only positive silhouette from UMAP).
+- BitZoom at α=1.0 is in the same TopoNbrP range as ForceAtlas2 (0.056 vs 0.064).
 
 ### 3.2 Facebook
 
 Combined Facebook ego networks.
-4,039 nodes, 88,234 edges. No ground-truth labels. UMAP skipped (dense matrix too slow).
+4,039 nodes, 88,234 edges. No ground-truth labels. UMAP skipped.
 
-| Layout             | Time (s) | EdgeLen mean | EdgeLen med | NbrPreserv | Note                                      |
-| ------------------ | -------: | -----------: | ----------: | ---------: | ----------------------------------------- |
-| BitZoom α=0        |    0.010 |       0.4775 |      0.4618 |     0.0019 | No topology; no meaningful structure      |
-| BitZoom α=0.75     |    0.010 |       0.3861 |      0.3672 |     0.0050 | Moderate smoothing; edges still long      |
-| BitZoom α=1.0      |    0.010 |       0.0633 |      0.0320 |     0.1103 | Similar NbrP to FD; edges 6x longer       |
-| Force-Directed     |  545.432 |       0.0112 |      0.0077 |     0.1157 | Shortest edges; 9 minutes computation     |
-| t-SNE              |   21.708 |       0.0714 |      0.0385 |     0.1764 | Highest neighborhood preservation         |
+| Layout             | Time (s) | EdgeLen mean | EdgeLen med | TopoNbrP | PropNbrP | Note                                      |
+| ------------------ | -------: | -----------: | ----------: | -------: | -------: | ----------------------------------------- |
+| BitZoom α=0        |    0.006 |       0.4775 |      0.4618 |   0.0019 |   0.0016 | No topology; no meaningful structure      |
+| BitZoom α=0.75     |    0.006 |       0.3861 |      0.3672 |   0.0050 |   0.0032 | Moderate smoothing; edges still long      |
+| BitZoom α=1.0      |    0.006 |       0.0633 |      0.0320 |   0.1103 |   0.0026 | Similar TopoNbrP to FA2; edges 6x longer  |
+| ForceAtlas2        |  171.659 |       0.0108 |      0.0071 |   0.1498 |   0.0033 | Shortest edges; highest TopoNbrP          |
+| t-SNE              |   15.397 |       0.0714 |      0.0385 |   0.1764 |   0.0027 | Highest topology neighborhood preservation|
 
-- BitZoom at α=1.0 produces similar neighborhood preservation to force-directed
-  (0.110 vs 0.116) with longer edges (0.063 vs 0.011).
-- t-SNE produces the highest neighborhood preservation (0.176).
-- The dense ego-network structure responds well to topology smoothing: 5 passes at
-  α=1.0 capture most of the community structure.
+- Dense ego-network structure responds well to topology smoothing: BitZoom at α=1.0
+  reaches 74% of ForceAtlas2's TopoNbrP (0.110 vs 0.150).
+- PropNbrP is uniformly low (edge-only dataset).
+- t-SNE produces the highest TopoNbrP (0.176), likely because its neighborhood-focused
+  objective aligns well with dense community structure.
 
 ### 3.3 US Power Grid
 
 Western US power grid (Watts-Strogatz small-world network).
-4,941 nodes, 6,594 edges. No ground-truth labels. UMAP skipped (dense matrix too slow).
+4,941 nodes, 6,594 edges. No ground-truth labels. UMAP skipped.
 
-| Layout             | Time (s) | EdgeLen mean | EdgeLen med | NbrPreserv | Note                                           |
-| ------------------ | -------: | -----------: | ----------: | ---------: | ---------------------------------------------- |
-| BitZoom α=0        |    0.026 |       0.5044 |      0.4888 |     0.0004 | No structure captured                          |
-| BitZoom α=0.75     |    0.014 |       0.2709 |      0.2478 |     0.0029 | Best BitZoom; outperforms α=1.0                |
-| BitZoom α=1.0      |    0.013 |       0.3801 |      0.3372 |     0.0034 | Oversmoothing; worse than α=0.75               |
-| Force-Directed     |  741.325 |       0.0063 |      0.0044 |     0.1874 | Traces long chains via global forces           |
-| t-SNE              |   36.059 |       0.1775 |      0.1191 |     0.0412 | Limited by sparse adjacency (avg degree 2.7)   |
+| Layout             | Time (s) | EdgeLen mean | EdgeLen med | TopoNbrP | PropNbrP | Note                                           |
+| ------------------ | -------: | -----------: | ----------: | -------: | -------: | ---------------------------------------------- |
+| BitZoom α=0        |    0.007 |       0.5044 |      0.4888 |   0.0004 |   0.0014 | No structure captured                          |
+| BitZoom α=0.75     |    0.008 |       0.2709 |      0.2478 |   0.0029 |   0.0015 | Best BitZoom; outperforms α=1.0                |
+| BitZoom α=1.0      |    0.007 |       0.3801 |      0.3372 |   0.0034 |   0.0026 | Oversmoothing; worse than α=0.75               |
+| ForceAtlas2        |  152.413 |       0.0054 |      0.0026 |   0.1968 |   0.0022 | Traces long chains via global forces           |
+| t-SNE              |   25.859 |       0.1775 |      0.1191 |   0.0412 |   0.0018 | Also limited by sparse adjacency               |
 
-- Force-directed dominates. Its 500-iteration global optimization traces the long chain
-  structures (diameter ~46) that define the power grid.
-- BitZoom's 5-pass smoothing diffuses locally and cannot propagate signal along long
-  chains. This is the expected limitation of iterative local smoothing.
-- α=0.75 outperforms α=1.0: pure topology with only 5 passes causes oversmoothing in
-  well-connected subgraphs while leaving long chains unresolved. The 25% property term
-  provides beneficial spreading.
-- t-SNE also scores low relative to force-directed. The adjacency matrix is extremely
-  sparse (avg degree 2.67), offering little structure to embed.
+- ForceAtlas2 dominates. Its global optimization traces the long chain structures
+  (diameter ~46) that define the power grid.
+- BitZoom's 5-pass smoothing cannot propagate signal along long chains. α=0.75
+  outperforms α=1.0 because pure topology with few passes oversmooths hubs while
+  leaving chains unresolved.
+- PropNbrP is uniformly low (edge-only dataset).
 
 ### 3.4 MITRE ATT&CK
 
 MITRE ATT&CK knowledge base (techniques, tactics, mitigations, relationships).
 4,736 nodes, 25,856 edges. Node properties: platforms, kill chain phases, aliases.
-No ground-truth labels. UMAP skipped (dense matrix too slow).
+UMAP skipped.
 
-| Layout             | Time (s) | EdgeLen mean | EdgeLen med | NbrPreserv | Note                                           |
-| ------------------ | -------: | -----------: | ----------: | ---------: | ---------------------------------------------- |
-| BitZoom α=0        |    0.016 |       0.4612 |      0.4303 |     0.0013 | Groups by auto-generated properties            |
-| BitZoom α=0 wt     |    0.016 |       0.5335 |      0.5097 |     0.0015 | Property weights increase edge length          |
-| BitZoom α=0.5 wt   |    0.016 |       0.4821 |      0.4569 |     0.0016 | Topology helps slightly                        |
-| Force-Directed     |  703.272 |       0.1185 |      0.0844 |     0.0031 | Shortest edges; all methods score low on NbrP  |
-| t-SNE              |   25.683 |       0.2924 |      0.2882 |     0.0037 | Highest NbrP but still very low                |
+| Layout             | Time (s) | EdgeLen mean | EdgeLen med | TopoNbrP | PropNbrP | Note                                           |
+| ------------------ | -------: | -----------: | ----------: | -------: | -------: | ---------------------------------------------- |
+| BitZoom α=0        |    0.010 |       0.4612 |      0.4303 |   0.0013 |   0.0068 | Auto-generated tokens only                     |
+| BitZoom α=0 wt     |    0.008 |       0.5335 |      0.5097 |   0.0015 |   0.0339 | Property weights: best PropNbrP of all methods |
+| BitZoom α=0.5 wt   |    0.008 |       0.4821 |      0.4569 |   0.0016 |   0.0335 | Adding topology barely changes PropNbrP        |
+| ForceAtlas2        |  177.867 |       0.2032 |      0.1836 |   0.0041 |   0.0132 | Shorter edges; topology doesn't help much      |
+| t-SNE              |   23.083 |       0.2924 |      0.2882 |   0.0037 |   0.0259 | Second-highest PropNbrP                        |
 
-- All methods score low on neighborhood preservation. MITRE ATT&CK has heterogeneous
-  node types connected by typed relationships. Graph neighbors are often semantically
-  different node types, not similar nodes.
-- Property weights (group=5, platforms=6, killchain=4) increase edge length compared
-  to unweighted. Property similarity and graph connectivity are weakly correlated in
-  this dataset.
-- BitZoom's property-first layout groups nodes by attributes (platform, kill chain
-  phase) rather than graph distance. The topology-oriented metrics above do not
-  capture this.
+- **BitZoom with property weights scores highest on PropNbrP** (0.034), 2.6x higher
+  than ForceAtlas2 (0.013) and 1.3x higher than t-SNE (0.026). This directly measures
+  BitZoom's core design goal: positioning nodes by property similarity.
+- Without property weights (α=0), BitZoom's PropNbrP drops to 0.007 — comparable to
+  the other methods. The property weights are what provide the signal.
+- All methods score low on TopoNbrP. This graph has heterogeneous node types connected
+  by typed relationships. Graph neighbors are often semantically different types.
+- ForceAtlas2 produces shorter edges but does not group similar properties together.
+- t-SNE scores second on PropNbrP (0.026), likely because adjacency correlates somewhat
+  with property similarity in this dataset.
 
 ---
 
@@ -192,67 +206,69 @@ No ground-truth labels. UMAP skipped (dense matrix too slow).
 
 ### 4.1 Strengths and weaknesses by method
 
-| Aspect                 | Force-Directed            | UMAP / t-SNE              | BitZoom                       |
-| ---------------------- | ------------------------- | ------------------------- | ----------------------------- |
-| Edge length            | Best (optimizes for this) | Moderate                  | Worst at low α; improves with α |
-| Neighborhood preserv.  | Good on dense graphs      | Best overall              | Comparable to FD at high α    |
-| Cluster separation     | Moderate                  | Best (positive silhouette)| Poor without property signal  |
-| Sparse graph handling  | Strong (global forces)    | Limited                   | Limited (local smoothing)     |
-| Speed                  | Minutes (O(n^2)/iter)     | Seconds                   | Milliseconds (O(n))           |
-| Hierarchical zoom      | No                        | No                        | Yes (14 levels from 4 bytes)  |
-| Property grouping      | No                        | Possible with features    | Primary design goal           |
-| Determinism            | Seed-dependent            | Seed-dependent            | Fully deterministic           |
+| Aspect                | ForceAtlas2                 | UMAP / t-SNE              | BitZoom                         |
+| --------------------- | --------------------------- | ------------------------- | ------------------------------- |
+| Edge length           | Best (optimizes for this)   | Moderate                  | Improves with α                 |
+| Topology preservation | Strong; global forces       | Best overall (t-SNE)      | Comparable to FA2 on dense      |
+| Property grouping     | Not measured; incidental    | Moderate (via adjacency)  | Best with property weights      |
+| Sparse graph handling | Strong (global forces)      | Limited                   | Limited (local smoothing)       |
+| Speed                 | Minutes (O(n log n)/iter)   | Seconds                   | Milliseconds (O(n))             |
+| Hierarchical zoom     | No                          | No                        | 14 levels from 4 bytes/node     |
+| Determinism           | Seed-dependent              | Seed-dependent            | Fully deterministic             |
 
 ### 4.2 Key findings
 
-**Dense graphs respond well to topology smoothing.** On Facebook (88K edges,
-avg degree 44), BitZoom at α=1.0 produces neighborhood preservation within 5% of
-force-directed. The dense connectivity allows 5 smoothing passes to propagate signal
-effectively.
+**Property-similarity preservation validates BitZoom's design goal.** On MITRE ATT&CK,
+BitZoom with tuned property weights places property-similar nodes 2.6x closer together
+than ForceAtlas2 and 1.3x closer than t-SNE. This is the first quantitative evidence
+that BitZoom's property-first layout produces measurably better property grouping than
+topology-optimized methods.
 
-**Sparse graphs expose the limits of local smoothing.** On the power grid (6.6K edges,
-avg degree 2.7, diameter ~46), 5 passes propagate information at most 5 hops.
-Force-directed's global repulsion/attraction model handles this naturally. Increasing
-the pass count would help at the cost of computation time.
+**The signal comes from property weights, not from topology.** BitZoom without property
+weights (α=0, equal weights) scores 0.007 on PropNbrP — no better than ForceAtlas2.
+With tuned weights (group=5, platforms=6, killchain=4), it scores 0.034. The α
+parameter has minimal effect on PropNbrP: α=0 and α=0.5 produce nearly identical
+property grouping (0.034 vs 0.034).
 
-**Property similarity and graph connectivity can diverge.** On MITRE ATT&CK, property
-weights increase edge length because nodes connected by edges often have different
-attributes (a technique connects to a mitigation, not to another similar technique).
-All methods score low on neighborhood preservation for this graph.
+**Edge-only datasets show no property differentiation.** On Email-EU, Facebook, and
+Power Grid, PropNbrP is uniformly low (0.001-0.013) across all methods. Auto-generated
+tokens (group, label, structure, neighbors) do not provide enough signal for meaningful
+property-based grouping. These datasets are topology benchmarks.
 
-**α=1.0 is not always optimal.** On the power grid, α=0.75 outperforms α=1.0 because
-pure topology smoothing with few passes oversmooths well-connected subgraphs while
-leaving long chains unresolved.
+**Dense graphs respond well to topology smoothing.** On Facebook (88K edges, avg
+degree 44), BitZoom at α=1.0 reaches 74% of ForceAtlas2's TopoNbrP. The dense
+connectivity allows 5 smoothing passes to propagate signal effectively.
 
-**These metrics do not measure property-similarity layout quality.** All three metrics
-(edge length, neighborhood preservation, silhouette) evaluate topology preservation.
-BitZoom's primary design goal is positioning nodes by property similarity, which
-would require a separate metric (e.g., do nodes with similar properties end up
-nearby?).
+**Sparse graphs expose the limits of local smoothing.** On the power grid (diameter
+~46), 5 passes cannot propagate signal along long chains. ForceAtlas2 handles this
+through global repulsion/attraction. α=0.75 outperforms α=1.0 because pure topology
+with few passes oversmooths hubs while leaving chains unresolved.
 
 ---
 
 ## 5. Limitations
 
-- **Topology-only metrics.** All metrics evaluate how well the layout preserves graph
-  connectivity. A property-similarity metric would provide a more complete picture but
-  requires ground-truth property groupings not available for most datasets.
+- **Property-similarity metric limitations.** PropNbrP uses token-set Jaccard as the
+  ground-truth similarity measure — the same similarity that BitZoom's MinHash
+  approximates. This is circular to some extent: BitZoom optimizes a noisy version
+  of the same objective it is measured against. A fully independent property-similarity
+  metric (e.g., domain-expert labels) would be stronger evidence.
 
-- **Force-directed implementation.** NetworkX `spring_layout` is pure Python and
-  slow. A C or GPU implementation (e.g., ForceAtlas2 in Gephi) would be faster,
-  narrowing the speed gap. Layout quality results would be similar.
-
-- **UMAP input representation.** UMAP was run with Jaccard metric on binary adjacency
-  rows. Graph-aware UMAP variants or node2vec embeddings might produce different
-  results.
+- **UMAP coverage.** UMAP was only run on Email-EU (1K nodes). On MITRE ATT&CK,
+  UMAP on node properties (rather than adjacency) might score higher on PropNbrP than
+  the adjacency-based UMAP tested here.
 
 - **Fixed smoothing passes.** BitZoom uses 5 topology smoothing passes. More passes
   would improve topology preservation, particularly on sparse graphs, at increased
   computation cost. This tradeoff was not explored.
 
-- **Small scale.** All datasets are under 5K nodes. At larger scales, force-directed
-  requires Barnes-Hut approximation or GPU acceleration, while BitZoom's O(n) pipeline
-  scales linearly. The relative performance characteristics may differ at 100K+ nodes.
+- **Small scale.** All datasets are under 5K nodes. At larger scales, ForceAtlas2
+  requires longer runtimes while BitZoom's O(n) pipeline scales linearly. The relative
+  characteristics may differ at 100K+ nodes.
 
-- **Single run.** Force-directed, UMAP, and t-SNE were run once per dataset with a
-  fixed seed. Variance across seeds was not measured.
+- **Single run.** ForceAtlas2, UMAP, and t-SNE were run once per dataset. Variance
+  across random seeds was not measured.
+
+- **PropNbrP sampling.** Property neighborhood preservation is computed on a sample
+  of 500 nodes for datasets larger than 500 nodes. Sampling introduces variance but
+  keeps computation tractable (each query node requires O(n) pairwise Jaccard).
