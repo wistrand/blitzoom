@@ -5,6 +5,7 @@ import {
     buildGaussianProjection, generateGroupColors, unifiedBlend, cellIdAtLevel,
 } from './bitzoom-algo.js';
 import { autoTuneWeights } from './bitzoom-utils.js';
+import { convertStixToSnap } from './stix2snap.js';
 
 import { BitZoomCanvas } from './bitzoom-canvas.js';
 import { computeNodeSig } from './bitzoom-pipeline.js';
@@ -28,6 +29,14 @@ const DATASETS = [
     { id: 'facebook',   name: 'Facebook',        edges: 'data/facebook.edges',                                                    desc: '4K nodes, social',
         settings: { weights: {}, initialLevel: 4, quantMode: 'rank', smoothAlpha: 1.0 } },
     { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',nodes: 'data/amazon-copurchase.nodes.gz',desc: '367K nodes' },
+    { id: 'mitre-ics',  name: 'ATT&CK ICS',
+        stix: 'data/ics-attack.json',
+        desc: 'STIX 2.1, ~1.8K objects',
+        settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
+    { id: 'mitre-mobile', name: 'ATT&CK Mobile',
+        stix: 'data/mobile-attack.json',
+        desc: 'STIX 2.1, ~2.5K objects',
+        settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
 ];
 
 class BitZoom {
@@ -911,10 +920,19 @@ class BitZoom {
         document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = true);
 
         try {
-            const edgesText = await this._fetchText(dataset.edges);
-            let nodesText = null;
-            if (dataset.nodes) {
-                nodesText = await this._fetchText(dataset.nodes).catch(() => null);
+            let edgesText, nodesText = null;
+            if (dataset.stix) {
+                status.textContent = `Fetching ${dataset.name} (STIX)...`;
+                const jsonText = await this._fetchText(dataset.stix);
+                status.textContent = `Converting ${dataset.name}...`;
+                const result = convertStixToSnap(jsonText);
+                edgesText = result.edgesText;
+                nodesText = result.nodesText;
+            } else {
+                edgesText = await this._fetchText(dataset.edges);
+                if (dataset.nodes) {
+                    nodesText = await this._fetchText(dataset.nodes).catch(() => null);
+                }
             }
             await this.loadGraph(edgesText, nodesText);
             this._currentDatasetId = dataset.id;
@@ -1289,7 +1307,10 @@ class BitZoom {
         // Load button + file inputs + drop zone
         document.getElementById('loadNewBtn').addEventListener('click', () => this.showLoaderScreen(), sig);
         document.getElementById('edgesFile').addEventListener('change', e => {
-            if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'edges');
+            const f = e.target.files[0];
+            if (!f) return;
+            if (f.name.toLowerCase().endsWith('.json')) this._handleStixFile(f);
+            else this._handleFileSelect(f, 'edges');
         }, sig);
         document.getElementById('nodesFile').addEventListener('change', e => {
             if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'labels');
@@ -1302,8 +1323,9 @@ class BitZoom {
             e.preventDefault();
             dropZone.classList.remove('dragover');
             for (const f of e.dataTransfer.files) {
-                const n = f.name;
-                if (n.endsWith('.edges') || n.endsWith('.edges.gz')) this._handleFileSelect(f, 'edges');
+                const n = f.name.toLowerCase();
+                if (n.endsWith('.json')) this._handleStixFile(f);
+                else if (n.endsWith('.edges') || n.endsWith('.edges.gz')) this._handleFileSelect(f, 'edges');
                 else if (n.endsWith('.nodes') || n.endsWith('.nodes.gz') || n.endsWith('.labels') || n.endsWith('.labels.gz')) this._handleFileSelect(f, 'labels');
             }
         }, sig);
@@ -1373,11 +1395,28 @@ class BitZoom {
         this._updateLoadStatus();
     }
 
+    async _handleStixFile(file) {
+        const status = document.getElementById('loadStatus');
+        status.textContent = 'Converting STIX 2.1 JSON...';
+        status.classList.remove('error');
+        try {
+            const jsonText = await file.text();
+            const result = convertStixToSnap(jsonText);
+            this.pendingEdgesText = result.edgesText;
+            this.pendingNodesText = result.nodesText;
+            status.textContent = `STIX: ${result.stats.nodes} nodes, ${result.stats.edges} edges — ready to load`;
+            document.getElementById('loadBtn').disabled = false;
+        } catch (err) {
+            status.textContent = 'Error: ' + err.message;
+            status.classList.add('error');
+        }
+    }
+
     _updateLoadStatus() {
         const status = document.getElementById('loadStatus');
         const parts = [];
         if (this.pendingEdgesText) parts.push('edges file ready');
-        if (this.pendingNodesText) parts.push('labels file ready');
+        if (this.pendingNodesText) parts.push('nodes file ready');
         status.textContent = parts.length > 0 ? parts.join(' · ') : '';
         status.classList.remove('error');
         document.getElementById('loadBtn').disabled = !this.pendingEdgesText;
