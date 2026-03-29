@@ -1,0 +1,12 @@
+# Dataset: /data/bitzoom-source.edges
+# Nodes: 433, Edges: 940
+# Token sets: 433 nodes
+#
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
+----------------------------------------------------------------------------------------
+BitZoom:bz-source-a000            0.001         0.4875        0.4671    0.0102    0.0502
+BitZoom:bz-source-a000-weighted    0.001         0.4197        0.3543    0.0188    0.1718
+BitZoom:bz-source-a050-weighted    0.002         0.2673        0.2233    0.0316    0.1785
+Force-Directed                   12.463         0.0307        0.0246    0.1269    0.2077
+UMAP                             13.134         0.1148        0.0280    0.0822    0.2437
+t-SNE                             2.960         0.2776        0.1852    0.0475    0.2039

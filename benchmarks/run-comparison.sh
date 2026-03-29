@@ -55,6 +55,38 @@ deno run --allow-read --allow-write benchmarks/export-layout.ts \
   --alpha 0.5 --quant rank --weight group=5 --weight platforms=6 --weight killchain=4 \
   --out "$LAYOUTS/mitre-a050-weighted.tsv"
 
+# Synth Packages (with properties)
+deno run --allow-read --allow-write benchmarks/export-layout.ts \
+  --edges docs/data/synth-packages.edges --nodes docs/data/synth-packages.nodes \
+  --alpha 0 --quant rank \
+  --out "$LAYOUTS/synth-pkg-a000.tsv"
+
+deno run --allow-read --allow-write benchmarks/export-layout.ts \
+  --edges docs/data/synth-packages.edges --nodes docs/data/synth-packages.nodes \
+  --alpha 0 --quant rank --weight group=5 --weight downloads=3 --weight license=2 \
+  --out "$LAYOUTS/synth-pkg-a000-weighted.tsv"
+
+deno run --allow-read --allow-write benchmarks/export-layout.ts \
+  --edges docs/data/synth-packages.edges --nodes docs/data/synth-packages.nodes \
+  --alpha 0.5 --quant rank --weight group=5 --weight downloads=3 --weight license=2 \
+  --out "$LAYOUTS/synth-pkg-a050-weighted.tsv"
+
+# BitZoom Source (with properties)
+deno run --allow-read --allow-write benchmarks/export-layout.ts \
+  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --alpha 0 --quant rank \
+  --out "$LAYOUTS/bz-source-a000.tsv"
+
+deno run --allow-read --allow-write benchmarks/export-layout.ts \
+  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --alpha 0 --quant rank --weight kind=8 --weight group=3 \
+  --out "$LAYOUTS/bz-source-a000-weighted.tsv"
+
+deno run --allow-read --allow-write benchmarks/export-layout.ts \
+  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --alpha 0.5 --quant rank --weight kind=8 --weight group=3 \
+  --out "$LAYOUTS/bz-source-a050-weighted.tsv"
+
 echo
 
 # ─── Step 2: Run Python comparison in Docker ─────────────────────────────────
@@ -123,6 +155,21 @@ run_compare "MITRE ATT&CK" \
   --tokens /bench/layouts/mitre.tokens \
   --skip-umap \
   --out /bench/results/mitre.txt
+
+# Synth Packages (skip UMAP — 2K×2K dense adjacency slow)
+run_compare "Synth Packages" \
+  --edges /data/synth-packages.edges \
+  --bitzoom $(docker_bz synth-pkg) \
+  --tokens /bench/layouts/synth-pkg.tokens \
+  --skip-umap \
+  --out /bench/results/synth-pkg.txt
+
+# BitZoom Source (small enough for UMAP)
+run_compare "BitZoom Source" \
+  --edges /data/bitzoom-source.edges \
+  --bitzoom $(docker_bz bz-source) \
+  --tokens /bench/layouts/bz-source.tokens \
+  --out /bench/results/bz-source.txt
 
 echo
 echo "=== Done. Results in $RESULTS/ ==="

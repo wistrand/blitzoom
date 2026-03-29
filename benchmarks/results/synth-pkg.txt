@@ -1,0 +1,11 @@
+# Dataset: /data/synth-packages.edges
+# Nodes: 1868, Edges: 4044
+# Token sets: 1868 nodes
+#
+Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
+----------------------------------------------------------------------------------------
+BitZoom:synth-pkg-a000            0.002         0.4695        0.4566    0.0028    0.0099
+BitZoom:synth-pkg-a000-weighted    0.002         0.3868        0.3454    0.0056    0.0494
+BitZoom:synth-pkg-a050-weighted    0.003         0.3064        0.2644    0.0106    0.0388
+Force-Directed                  150.533         0.0303        0.0271    0.0183    0.0082
+t-SNE                             8.653         0.2177        0.2089    0.0014    0.0119
