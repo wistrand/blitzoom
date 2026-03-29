@@ -22,6 +22,10 @@ const DATASETS = [
         settings: { weights: { group: 5, downloads: 3, license: 2 }, labelProps: ['label', 'group'] } },
     { id: 'mitre',      name: 'MITRE ATT&CK',  edges: 'data/mitre-attack.edges',   nodes: 'data/mitre-attack.nodes',   desc: '4.7K nodes, kill chains',
         settings: { weights: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] } },
+    { id: 'email-eu',   name: 'Email EU',        edges: 'data/email-eu.edges',                                                    desc: '1K nodes, communication',
+        settings: { weights: {}, quantMode: 'rank', smoothAlpha: 1.0 } },
+    { id: 'facebook',   name: 'Facebook',        edges: 'data/facebook.edges',                                                    desc: '4K nodes, social',
+        settings: { weights: {}, initialLevel: 4, quantMode: 'rank', smoothAlpha: 1.0 } },
     { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',nodes: 'data/amazon-copurchase.nodes.gz',desc: '367K nodes' },
 ];
 
@@ -126,6 +130,7 @@ class BitZoom {
     rebuildProjections() {
         const v = this.view;
         v._refreshPropCache();
+        v.levels = new Array(ZOOM_LEVELS.length).fill(null); // invalidate level cache
         unifiedBlend(v.nodes, v.groupNames, v.propWeights, v.smoothAlpha, v.adjList, v.nodeIndexFull, 5, v.quantMode, v._quantStats);
         v.layoutAll();
         v.render();
@@ -603,7 +608,9 @@ class BitZoom {
 
     _applyDatasetSettings(settings) {
         const v = this.view;
-        if (settings.weights) {
+        if ('weights' in settings) {
+            // Zero all weights first, then apply specified values
+            for (const g of v.groupNames) v.propWeights[g] = 0;
             for (const [prop, val] of Object.entries(settings.weights)) {
                 if (prop in v.propWeights) v.propWeights[prop] = val;
             }
@@ -614,11 +621,24 @@ class BitZoom {
                 if (v.groupNames.includes(prop)) v.labelProps.add(prop);
             }
         }
+        if (settings.quantMode) {
+            v.quantMode = settings.quantMode;
+            this._updateQuantBtn();
+        }
+        if (settings.smoothAlpha != null) {
+            v.smoothAlpha = settings.smoothAlpha;
+            document.getElementById('nudgeSlider').value = v.smoothAlpha;
+            document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
+        }
         this._syncWeightUI();
         this._syncLabelCheckboxes();
         v._quantStats = {}; // re-snapshot boundaries from dataset-tuned weights
         v._refreshPropCache();
         this.rebuildProjections();
+        if (settings.initialLevel != null) {
+            v.currentLevel = settings.initialLevel;
+            v.baseLevel = settings.initialLevel;
+        }
     }
 
     _syncLabelCheckboxes() {
@@ -859,12 +879,24 @@ class BitZoom {
 
         v.currentLevel = 3; // L4
         v.baseLevel = 3;
+        this._pendingSettings = null;
+    }
+
+    /** Apply settings + initial render in a single rAF after loadGraph */
+    _finalizeLoad(dataset) {
+        const v = this.view;
         requestAnimationFrame(() => {
+            if (dataset?.settings) this._applyDatasetSettings(dataset.settings);
+            const params = this._restoreFromHash();
+            if (params && params.d === dataset?.name) {
+                this._applyHashState(params);
+            }
             v.resize();
             v.zoomForLevel(v.currentLevel);
             this._updateStepperUI();
             this._updateOverview();
             this._updateAlgoInfo();
+            this._scheduleHashUpdate();
         });
     }
 
@@ -885,12 +917,7 @@ class BitZoom {
             }
             await this.loadGraph(edgesText, nodesText);
             this._currentDatasetId = dataset.id;
-            if (dataset.settings) this._applyDatasetSettings(dataset.settings);
-            const params = this._restoreFromHash();
-            if (params && params.d === dataset.name) {
-                this._applyHashState(params);
-            }
-            this._scheduleHashUpdate();
+            this._finalizeLoad(dataset);
         } catch (err) {
             status.textContent = 'Error: ' + err.message;
             status.classList.add('error');
@@ -1235,7 +1262,7 @@ class BitZoom {
             progressBar.style.display = 'block';
             progressBar.value = 0;
             document.getElementById('loadBtn').disabled = true;
-            try { await this.loadGraph(this.pendingEdgesText, this.pendingNodesText); }
+            try { await this.loadGraph(this.pendingEdgesText, this.pendingNodesText); this._finalizeLoad(null); }
             catch (_err) { /* shown by worker handler */ }
         }, sig);
     }
