@@ -364,8 +364,29 @@ function renderSupernodes(bz, pass) {
     }
 
     if (pass === 'labels') {
+      // Build neighbor set for highlighted nodes (once per frame, cached on level)
+      // Cap to top neighbors by edge weight to avoid clutter
+      if (!level._hlNeighbors || level._hlKey !== ('' + [...selIds] + '|' + hov)) {
+        const maxNbr = Math.max(5, Math.min(20, Math.floor(Math.min(bz.W, bz.H) / 40)));
+        const candidates = [];
+        if (hasSel || hov !== null) {
+          for (let j = 0; j < snEdges.length; j++) {
+            const e = snEdges[j];
+            if (selIds.has(e.a) || e.a === hov) candidates.push({ id: e.b, w: e.weight });
+            if (selIds.has(e.b) || e.b === hov) candidates.push({ id: e.a, w: e.weight });
+          }
+        }
+        candidates.sort((a, b) => b.w - a.w);
+        const ns = new Set();
+        for (let j = 0; j < Math.min(candidates.length, maxNbr); j++) ns.add(candidates[j].id);
+        level._hlNeighbors = ns;
+        level._hlKey = '' + [...selIds] + '|' + hov;
+      }
+      const isNeighbor = level._hlNeighbors.has(sn.bid);
+      const isMajorNeighbor = isNeighbor && importance > 0.5;
+
       // Count inside node
-      const showCount = isSelected || isHovered
+      const showCount = isSelected || isHovered || isMajorNeighbor
         || visibleCount <= 100
         || (visibleCount <= 200 && importance > 0.7);
       if (showCount && cellPx >= 10 && r >= 3) {
@@ -378,7 +399,7 @@ function renderSupernodes(bz, pass) {
       }
 
       // Label above node
-      const showLabel = isSelected || isHovered
+      const showLabel = isSelected || isHovered || isMajorNeighbor
         || (visibleCount <= 50 && cellPx >= 20)
         || (visibleCount <= 150 && importance > 0.7 && cellPx >= 20);
       if (showLabel) {
@@ -528,7 +549,26 @@ function renderNodes(bz, pass) {
     }
 
     if (pass === 'labels') {
-      if (isSelected || isHovered || cellPxRaw >= 14) {
+      // Build neighbor set for highlighted raw nodes (once per frame, capped)
+      if (!bz._rawHlNeighbors || bz._rawHlKey !== ('' + [...selIds] + '|' + hov)) {
+        const maxNbr = Math.max(5, Math.min(20, Math.floor(Math.min(bz.W, bz.H) / 40)));
+        const seen = {};
+        if (hasSel || hov !== null) {
+          for (let j = 0; j < bz.edges.length; j++) {
+            const e = bz.edges[j];
+            if (selIds.has(e.src) || e.src === hov) seen[e.dst] = (seen[e.dst] || 0) + 1;
+            if (selIds.has(e.dst) || e.dst === hov) seen[e.src] = (seen[e.src] || 0) + 1;
+          }
+        }
+        const sorted = Object.keys(seen).sort((a, b) => seen[b] - seen[a]);
+        const ns = new Set(sorted.slice(0, maxNbr));
+        bz._rawHlNeighbors = ns;
+        bz._rawHlKey = '' + [...selIds] + '|' + hov;
+      }
+      const isNeighbor = bz._rawHlNeighbors.has(n.id);
+      const isMajorNeighbor = isNeighbor && n.degree >= 3;
+
+      if (isSelected || isHovered || isMajorNeighbor || cellPxRaw >= 14) {
         const rawLabel = bz._nodeLabel(n);
         if (isSelected || isHovered) {
           const fs = Math.max(11, Math.min(12, cellPxRaw * 0.22)) | 0;
