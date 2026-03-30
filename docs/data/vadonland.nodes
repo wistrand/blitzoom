@@ -1,0 +1,550 @@
+# NodeId	Label	Group	State	Government	Religion	Type	Biome	Population	Capital	Port	Citadel	Walls
+Exeters	Exeters	Bethe	Tarland	Theocracy	Exetersism	Naval	Wetland	66787	yes	yes	yes	yes
+Dunskirk	Dunskirk	Hitch	Perster	Monarchy	Hitch Beliefs	Naval	Temperate rainforest	5314	yes	yes	yes	yes
+Shifnal	Shifnal	Altford	Guildia	Monarchy	Shersbury Church	Naval	Tropical rainforest	19538	yes	yes	yes	yes
+Sidley	Sidley	Wodbury	Albroland	Theocracy	Penildondonism	Naval	Temperate rainforest	8211	yes	yes	yes	yes
+Wiver	Wiver	Wodbury	Wiveria	Republic	Penildondonism	Naval	Temperate rainforest	3662	yes	yes	yes	yes
+Brascast	Brascast	Altford	Betfordia	Monarchy	Altford Ancestors	Naval	Wetland	18950	yes	yes	yes	yes
+Baford	Baford	Hitch	Gatnesbia	Monarchy	Shersbury Church	Naval	Tropical rainforest	43515	yes	yes	yes	yes
+Asingsto	Asingsto	Altford	Bretburia	Monarchy	Altford Ancestors	River	Temperate rainforest	24493	yes		yes	yes
+Bretbuton	Bretbuton	Blech	Northia	Monarchy	Satesfordism	River	Tropical rainforest	26780	yes		yes	yes
+Winexe	Winexe	Blech	Aland	Theocracy	Satesfordism	River	Tropical rainforest	24107	yes		yes	yes
+Chipsea	Chipsea	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical rainforest	15793	yes	yes	yes	yes
+Walborlow	Walborlow	Hitch	Altfordia	Monarchy	Hitch Beliefs	Naval	Tropical rainforest	16968	yes	yes	yes	yes
+Penter	Penter	Thetlema	Penteria	Monarchy	Bridgean Circle	Naval	Temperate rainforest	2838	yes	yes	yes	yes
+Newbury	Newbury	Thetlema	Macker	Monarchy	Thetlema Forefathers	Naval	Temperate rainforest	46200	yes	yes	yes	yes
+Redchambe	Redchambe	Altford	Tutle	Theocracy	Satesfordism	Naval	Temperate deciduous forest	2838	yes	yes	yes	yes
+Mitford	Mitford	Hitch	Monteria	Union	Hitch Beliefs	River	Temperate deciduous forest	26173	yes		yes	yes
+Bramburgh	Bramburgh	Hitch	Olnia	Monarchy	Hitch Beliefs	River	Temperate deciduous forest	13403	yes		yes	yes
+Dunster	Dunster	Wodbury	Dunster	Monarchy	Penildondonism	Naval	Temperate rainforest	7402	yes	yes	yes	yes
+Westes	Westes	Thetlema	Biganveria	Monarchy	Satesfordism	River	Tropical rainforest	17618	yes		yes	yes
+Boston	Boston	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	17325	yes		yes	yes
+Mongay	Mongay	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	6203				
+Caushore	Caushore	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	4428				
+Hertfordbu	Hertfordbu	Thetlema	Penteria	Monarchy	Bridgean Circle	Naval	Temperate rainforest	3820		yes		
+Carbuton	Carbuton	Hitch	Monteria	Union	Hitch Beliefs	River	Temperate rainforest	12533				
+Sasings	Sasings	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	6543				
+Lympston	Lympston	Altford	Betfordia	Monarchy	Altford Ancestors	River	Wetland	16389				yes
+Dudmanches	Dudmanches	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	7552				
+Seadetown	Seadetown	Thetlema	Betfordia	Monarchy	Bridgean Circle	Naval	Temperate rainforest	1763		yes	yes	
+Thatcke	Thatcke	Altford	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	10030			yes	yes
+Mitham	Mitham	Altford	Betfordia	Monarchy	Altford Ancestors	River	Temperate rainforest	5750				
+Wardeny	Wardeny	Guild	Bretburia	Monarchy	Guild Spirits	River	Temperate rainforest	2346				
+Chipton	Chipton	Wodbury	Albroland	Theocracy	Penildondonism	Naval	Temperate rainforest	1636		yes		yes
+Wigtondoke	Wigtondoke	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Tropical rainforest	8563				
+Ormsheadge	Ormsheadge	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	3267			yes	
+Bretfield	Bretfield	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	7318				
+Causfield	Causfield	Blech	Northia	Monarchy	Satesfordism	River	Tropical rainforest	13882				yes
+Boviltonzan	Boviltonzan	Altford	Aland	Theocracy	Satesfordism	Generic	Temperate deciduous forest	7936				
+Thaxnington	Thaxnington	Guild	Betfordia	Monarchy	Satesfordism	Highland	Temperate deciduous forest	3920				
+Stanstobury	Stanstobury	Altford	Betfordia	Monarchy	Bridgean Circle	River	Temperate deciduous forest	1462				
+Monzan	Monzan	Altford	Bretburia	Monarchy	Altford Ancestors	River	Temperate rainforest	1272				
+Cockingin	Cockingin	Thetlema	Betfordia	Monarchy	Bridgean Circle	Naval	Temperate deciduous forest	9680		yes	yes	
+Bingdon	Bingdon	Mangay	Coclifland	Monarchy	Mangay Beliefs	River	Tropical rainforest	8183				
+Kingtondon	Kingtondon	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1267				yes
+Durburymexe	Durburymexe	Wodbury	Wiveria	Republic	Penildondonism	River	Temperate rainforest	6953			yes	
+Frample	Frample	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1142				
+Winkburgh	Winkburgh	Mangay	Coclifland	Monarchy	Mangay Beliefs	Naval	Tropical rainforest	10348		yes		yes
+Retfordge	Retfordge	Wodbury	Albroland	Theocracy	Penildondonism	Naval	Temperate rainforest	4636		yes		
+Harbury	Harbury	Altford	Guildia	Monarchy	Shersbury Church	River	Tropical rainforest	1174				
+Charton	Charton	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical rainforest	5464		yes		
+Balseaford	Balseaford	Altford	Guildia	Monarchy	Shersbury Church	River	Tropical rainforest	10858				yes
+Picheapton	Picheapton	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	4327				yes
+Watesboli	Watesboli	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	1038				
+Chipton	Chipton	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	1627				
+Broneton	Broneton	Guild	Ormstover	Monarchy	Guild Spirits	Generic	Temperate deciduous forest	9461				
+Craftbuton	Craftbuton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	7965				
+Tarham	Tarham	Altford	Guildia	Monarchy	Shersbury Church	River	Tropical rainforest	7519				
+Padston	Padston	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	6297			yes	
+Chisham	Chisham	Mangay	Coclifland	Monarchy	Shersbury Church	River	Temperate deciduous forest	4153				
+Ormsterton	Ormsterton	Hitch	Olnia	Monarchy	Shersbury Church	River	Temperate rainforest	1344				
+Thatcham	Thatcham	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	3334				
+Maringley	Maringley	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	2211				
+Brasterton	Brasterton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4831				
+Taziondo	Taziondo	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	1128				
+Kirbotford	Kirbotford	Thetlema	Macker	Monarchy	Thetlema Forefathers	Generic	Temperate rainforest	2695				
+Chiple	Chiple	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	3494				yes
+Holmond	Holmond	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	8524				
+Skiplewich	Skiplewich	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Tropical rainforest	2429				yes
+Aylesbury	Aylesbury	Wodbury	Albroland	Theocracy	Penildondonism	Generic	Temperate rainforest	2128				
+Arington	Arington	Wodbury	Dunster	Monarchy	Penildondonism	Hunting	Temperate rainforest	1280				
+Colideroe	Colideroe	Altford	Tutle	Theocracy	Altford Ancestors	Generic	Temperate rainforest	2876				
+Stotbury	Stotbury	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4490				
+Lewester	Lewester	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	2776				
+Harton	Harton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1530				
+Uxbrigh	Uxbrigh	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	5777				
+Harmingmo	Harmingmo	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	5785				yes
+Salton	Salton	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Tropical rainforest	7732				
+Hornteford	Hornteford	Altford	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	5515				
+Meroeton	Meroeton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	9231				
+Hitchestab	Hitchestab	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate rainforest	909				
+Chilton	Chilton	Blech	Northia	Monarchy	Satesfordism	River	Tropical rainforest	6802				
+Preshead	Preshead	Guild	Ormstover	Monarchy	Guild Spirits	Highland	Temperate deciduous forest	9924				
+Chistover	Chistover	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4072				
+Blandge	Blandge	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	8514				
+Netontaren	Netontaren	Hitch	Perster	Monarchy	Penildondonism	River	Temperate deciduous forest	1182				
+Megole	Megole	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Naval	Temperate rainforest	21133		yes	yes	yes
+Craftham	Craftham	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	10744				
+Thetlewich	Thetlewich	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1386			yes	
+Wisfield	Wisfield	Hitch	Olnia	Monarchy	Hitch Beliefs	River	Temperate deciduous forest	9127				
+Calbovilton	Calbovilton	Bethe	Perster	Monarchy	Bethe Beliefs	Generic	Temperate rainforest	875			yes	
+Brasted	Brasted	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	5803				
+Garing	Garing	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	13200				
+Basingston	Basingston	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	9492				
+Alingford	Alingford	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4347				
+Wasalne	Wasalne	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	2062				
+Bramping	Bramping	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1277				
+Draxning	Draxning	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5176			yes	
+Thetham	Thetham	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Temperate deciduous forest	1463				
+Bramptonzan	Bramptonzan	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	3777				
+Soutford	Soutford	Altford	Tutle	Theocracy	Satesfordism	River	Temperate deciduous forest	4438				
+Floknethes	Floknethes	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Hunting	Temperate rainforest	11674				yes
+Calingmo	Calingmo	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5077				
+Botford	Botford	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	7642			yes	
+Ateshambe	Ateshambe	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5510				
+Bramplesey	Bramplesey	Guild	Ormstover	Monarchy	Guild Spirits	Generic	Temperate rainforest	5901			yes	
+Quathambe	Quathambe	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	7770				
+Botford	Botford	Guild	Ormstover	Monarchy	Satesfordism	River	Temperate rainforest	4977			yes	
+Wivermouth	Wivermouth	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	9380				
+Stanverham	Stanverham	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1018				
+Aptonceton	Aptonceton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5385				
+Shomermouth	Shomermouth	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	8578				
+Wodlingmo	Wodlingmo	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	8103				yes
+Avetersham	Avetersham	Bethe	Tarland	Theocracy	Exetersism	River	Temperate rainforest	22717			yes	yes
+Seasingsin	Seasingsin	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1741				
+Knutster	Knutster	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	1070			yes	
+Kirleyles	Kirleyles	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1206				
+Hatbury	Hatbury	Blech	Northia	Monarchy	Satesfordism	River	Tropical rainforest	1604				
+Warginy	Warginy	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	3775				
+Tetford	Tetford	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	5639				
+Penleymema	Penleymema	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	3993				
+Manchbury	Manchbury	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	9314				
+Carlisted	Carlisted	Mangay	Coclifland	Monarchy	Mangay Beliefs	Highland	Temperate deciduous forest	3417				
+Witford	Witford	Thetlema	Macker	Monarchy	Thetlema Forefathers	Generic	Temperate rainforest	4781				
+Padsterwick	Padsterwick	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	4667				
+Wickleigh	Wickleigh	Mangay	Ormstover	Monarchy	Mangay Beliefs	Highland	Temperate deciduous forest	15434				yes
+Shifton	Shifton	Wodbury	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	1275				
+Brambe	Brambe	Altford	Betfordia	Monarchy	Bridgean Circle	River	Temperate deciduous forest	1338				yes
+Farasings	Farasings	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	3383				
+Broney	Broney	Thetlema	Macker	Monarchy	Satesfordism	River	Temperate rainforest	1613				
+Holdon	Holdon	Altford	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	10077				yes
+Madingle	Madingle	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1469				
+Newbigham	Newbigham	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Tropical rainforest	4522				
+Ormscast	Ormscast	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	10990				
+Penksey	Penksey	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate rainforest	1364				
+Caushil	Caushil	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	6089				
+Perstowbig	Perstowbig	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Tropical rainforest	2022				yes
+Thetford	Thetford	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical seasonal forest	7743		yes		
+Kingham	Kingham	Altford	Betfordia	Monarchy	Satesfordism	Highland	Temperate deciduous forest	1026				
+Milbore	Milbore	Hitch	Perster	Monarchy	Penildondonism	River	Temperate rainforest	10027				yes
+Blechfield	Blechfield	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4244				
+Asalingley	Asalingley	Hitch	Altfordia	Monarchy	Penildondonism	Generic	Temperate rainforest	2316				
+Fenwich	Fenwich	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	6679				
+Burporham	Burporham	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	2863				
+Rocheapton	Rocheapton	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	3763				
+Monorling	Monorling	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Tropical rainforest	4479				
+Bramber	Bramber	Thetlema	Penteria	Monarchy	Bridgean Circle	Naval	Temperate rainforest	20359		yes	yes	yes
+Dunshead	Dunshead	Wodbury	Dunster	Monarchy	Wodbury Beliefs	Hunting	Temperate rainforest	936				
+Grantford	Grantford	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical rainforest	3092				
+Wisboke	Wisboke	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	2911				
+Marshleach	Marshleach	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1411				
+Apton	Apton	Altford	Betfordia	Monarchy	Altford Ancestors	Naval	Temperate rainforest	6825		yes		
+Frampton	Frampton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4695				
+Hatonbury	Hatonbury	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	1082				
+Biverley	Biverley	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5528			yes	
+Redckingin	Redckingin	Mangay	Guildia	Monarchy	Shersbury Church	Hunting	Tropical rainforest	8228				
+Leighwel	Leighwel	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	6924				
+Swaford	Swaford	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	4206				
+Chiptondal	Chiptondal	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	7562				yes
+Sorough	Sorough	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	3729				
+Chiple	Chiple	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	4825				
+Folide	Folide	Thetlema	Penteria	Monarchy	Bridgean Circle	Hunting	Temperate rainforest	4706				
+Skipsealere	Skipsealere	Guild	Ormstover	Monarchy	Satesfordism	Generic	Temperate deciduous forest	3444				
+Blandmouth	Blandmouth	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	10042				yes
+Thornmouth	Thornmouth	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5158				
+Waldon	Waldon	Mangay	Coclifland	Monarchy	Satesfordism	Generic	Temperate deciduous forest	1247				
+Norleigh	Norleigh	Altford	Bretburia	Monarchy	Chips Blasphemy	Highland	Temperate deciduous forest	11072				yes
+Cockertondo	Cockertondo	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	6428			yes	
+Searingin	Searingin	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	4445				
+Calmewiches	Calmewiches	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Tropical rainforest	10605			yes	yes
+Witbuse	Witbuse	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	5083				
+Chilton	Chilton	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical rainforest	17451		yes	yes	yes
+Castbute	Castbute	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	5957				
+Stanston	Stanston	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Tropical rainforest	6309				
+Carbury	Carbury	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	1645				
+Mackerming	Mackerming	Guild	Ormstover	Monarchy	Satesfordism	River	Temperate rainforest	5216				
+Sobumeso	Sobumeso	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	7151				
+Kingham	Kingham	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	1079				
+Betre	Betre	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	1247				
+Tarporming	Tarporming	Wodbury	Dunster	Monarchy	Wodbury Beliefs	Generic	Temperate rainforest	5224				
+Westbury	Westbury	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	11309				
+Carpormouth	Carpormouth	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1809				
+Stansfield	Stansfield	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1213				yes
+Louthwark	Louthwark	Mangay	Coclifland	Monarchy	Satesfordism	Highland	Temperate deciduous forest	1450				
+Wistedgewen	Wistedgewen	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	5676				
+Westham	Westham	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	6246				
+Thatcheap	Thatcheap	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5663				
+Dodbrid	Dodbrid	Mangay	Coclifland	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	9749				
+Cockingra	Cockingra	Altford	Betfordia	Monarchy	Satesfordism	River	Tropical seasonal forest	2110				
+Axbridmin	Axbridmin	Altford	Tutle	Theocracy	Satesfordism	River	Tropical rainforest	7506				
+Durlisin	Durlisin	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	5656				
+Thatcking	Thatcking	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1385				yes
+Bothowen	Bothowen	Altford	Aland	Theocracy	Satesfordism	Generic	Temperate rainforest	1351				
+Floksey	Floksey	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	1154				
+Dunscastnes	Dunscastnes	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	1030				yes
+Exningley	Exningley	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	8556				yes
+Botford	Botford	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	808				
+Piltonwich	Piltonwich	Hitch	Gatnesbia	Monarchy	Shersbury Church	Generic	Tropical rainforest	9521				
+Betham	Betham	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	5712				
+Newcesfield	Newcesfield	Guild	Betfordia	Monarchy	Guild Spirits	Generic	Temperate rainforest	1097				
+Winchfield	Winchfield	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	2498				
+Marlborough	Marlborough	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	3563			yes	
+Leford	Leford	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	960				
+Newbigham	Newbigham	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1212				
+Chipton	Chipton	Altford	Bretburia	Monarchy	Altford Ancestors	Highland	Temperate deciduous forest	12561				yes
+Shersmouth	Shersmouth	Mangay	Coclifland	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	1638				yes
+Harlowbig	Harlowbig	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	4077				
+Maford	Maford	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1019				
+Kirleigh	Kirleigh	Altford	Perster	Monarchy	Altford Ancestors	River	Wetland	1069				
+Calter	Calter	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4574				
+Newleighbu	Newleighbu	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	5576				
+Bramptonor	Bramptonor	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	6193				
+Hardenver	Hardenver	Wodbury	Wiveria	Republic	Penildondonism	Generic	Tropical rainforest	6979			yes	
+Wicksey	Wicksey	Wodbury	Wiveria	Republic	Penildondonism	River	Temperate rainforest	4227				
+Torkley	Torkley	Mangay	Coclifland	Monarchy	Mangay Beliefs	Hunting	Tropical rainforest	1024				yes
+Bretley	Bretley	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	2134				
+Kinton	Kinton	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical rainforest	7005				
+Mading	Mading	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	1179				
+Realeford	Realeford	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	3343				
+Retbury	Retbury	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1033				
+Oakham	Oakham	Wodbury	Wiveria	Republic	Penildondonism	Naval	Temperate rainforest	8283		yes		
+Maresham	Maresham	Blech	Northia	Monarchy	Satesfordism	River	Tropical rainforest	4368				
+Foreby	Foreby	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	5243				
+Soketerton	Soketerton	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1070				
+Nosbury	Nosbury	Wodbury	Wiveria	Republic	Wodbury Beliefs	Naval	Tropical rainforest	9852		yes		
+Uxbrigh	Uxbrigh	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4065				
+Totford	Totford	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	5094				
+Hatnested	Hatnested	Altford	Guildia	Monarchy	Shersbury Church	River	Temperate deciduous forest	6365				
+Magelton	Magelton	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Tropical seasonal forest	534				
+Hertford	Hertford	Altford	Guildia	Monarchy	Shersbury Church	Naval	Tropical rainforest	13986		yes	yes	yes
+Wiverton	Wiverton	Altford	Bretburia	Monarchy	Altford Ancestors	River	Temperate deciduous forest	1010				
+Leighingdon	Leighingdon	Hitch	Wiveria	Republic	Penildondonism	River	Temperate rainforest	9809				
+Westford	Westford	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	7285				yes
+Hornver	Hornver	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	4885				
+Heyfield	Heyfield	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Tropical rainforest	2048				
+Creley	Creley	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical rainforest	1803				
+Oltash	Oltash	Wodbury	Wiveria	Republic	Penildondonism	River	Temperate rainforest	1326				
+Thaxningley	Thaxningley	Hitch	Perster	Monarchy	Hitch Beliefs	Naval	Temperate rainforest	1279		yes		
+Wigletown	Wigletown	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical rainforest	14840		yes		
+Redclifton	Redclifton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4038				yes
+Chicheskirk	Chicheskirk	Altford	Guildia	Monarchy	Shersbury Church	River	Temperate deciduous forest	1023				
+Seabingley	Seabingley	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	9199				
+Grantford	Grantford	Wodbury	Albroland	Theocracy	Penildondonism	Generic	Temperate rainforest	5956				
+Hatester	Hatester	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	1305				
+Dalborough	Dalborough	Wodbury	Dunster	Monarchy	Penildondonism	Generic	Temperate rainforest	6819				
+Warmouth	Warmouth	Wodbury	Wiveria	Republic	Penildondonism	Naval	Temperate rainforest	1571		yes		yes
+Chilterton	Chilterton	Mangay	Coclifland	Monarchy	Mangay Beliefs	Highland	Temperate deciduous forest	3386				
+Causterwick	Causterwick	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical rainforest	1036				
+Merlow	Merlow	Altford	Betfordia	Monarchy	Satesfordism	Generic	Tropical seasonal forest	1514				
+Betrinch	Betrinch	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Naval	Temperate rainforest	1718		yes		
+Clifton	Clifton	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	5473				yes
+Penkwar	Penkwar	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Tropical rainforest	2337				yes
+Halbole	Halbole	Hitch	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	2596			yes	
+Botlexewes	Botlexewes	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	1001				
+Winchingin	Winchingin	Altford	Perster	Monarchy	Altford Ancestors	River	Wetland	7461				
+Dodble	Dodble	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	4493				
+Sabing	Sabing	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical seasonal forest	6013		yes		
+Salisbuton	Salisbuton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5615			yes	
+Birtonor	Birtonor	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	6499				
+Castford	Castford	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Tropical rainforest	1006				
+Rocketon	Rocketon	Altford	Aland	Theocracy	Altford Ancestors	Generic	Tropical rainforest	9153				
+Whitester	Whitester	Bethe	Tarland	Theocracy	Exetersism	Generic	Temperate rainforest	5832				yes
+Hertford	Hertford	Guild	Ormstover	Monarchy	Guild Spirits	Generic	Temperate rainforest	921				
+Stapton	Stapton	Mangay	Coclifland	Monarchy	Mangay Beliefs	Highland	Temperate rainforest	859				
+Knaveton	Knaveton	Wodbury	Albroland	Theocracy	Penildondonism	Generic	Temperate rainforest	3677				
+Yeoreham	Yeoreham	Hitch	Altfordia	Monarchy	Hitch Beliefs	Naval	Tropical rainforest	11436		yes		yes
+Sidfordge	Sidfordge	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	893			yes	
+Altashwark	Altashwark	Thetlema	Macker	Monarchy	Satesfordism	Generic	Temperate deciduous forest	7255				
+Tretoningt	Tretoningt	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	1093			yes	
+Cleomerden	Cleomerden	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	3195				yes
+Gaveroe	Gaveroe	Hitch	Altfordia	Monarchy	Penildondonism	Generic	Temperate deciduous forest	1004				
+Gadingham	Gadingham	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	9382				
+Southelmond	Southelmond	Altford	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	2486				
+Aringhambe	Aringhambe	Altford	Aland	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	2342			yes	
+Cambrover	Cambrover	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4278			yes	
+Modgewen	Modgewen	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	8794				
+Thaxning	Thaxning	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	4863				
+Kirkeham	Kirkeham	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	1049				
+Portshambe	Portshambe	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	5553				
+Warlishole	Warlishole	Altford	Aland	Theocracy	Satesfordism	Generic	Tropical seasonal forest	818				
+Gabingham	Gabingham	Bethe	Perster	Monarchy	Bethe Beliefs	Generic	Temperate rainforest	7528			yes	
+Thatchamber	Thatchamber	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	1374				yes
+Winchwark	Winchwark	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Tropical rainforest	6001				
+Thetham	Thetham	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	3297				
+Osbury	Osbury	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate rainforest	1166				
+Mitherling	Mitherling	Altford	Monteria	Union	Altford Ancestors	Generic	Temperate deciduous forest	1081				yes
+Osford	Osford	Guild	Ormstover	Monarchy	Satesfordism	Highland	Temperate deciduous forest	6646				
+Boshildock	Boshildock	Thetlema	Betfordia	Monarchy	Bridgean Circle	Naval	Temperate deciduous forest	7749		yes		
+Botford	Botford	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	12867				
+Bramping	Bramping	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	3032				
+Hatford	Hatford	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	2209				
+Romburgh	Romburgh	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	8855				
+Castleter	Castleter	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical seasonal forest	3801		yes		yes
+Westhering	Westhering	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	623				
+Ormsin	Ormsin	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	9738				
+Padsbuton	Padsbuton	Altford	Tutle	Theocracy	Satesfordism	River	Tropical seasonal forest	3438			yes	yes
+Knamerton	Knamerton	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	6652				
+Rocheapton	Rocheapton	Hitch	Monteria	Union	Hitch Beliefs	River	Temperate deciduous forest	15718				
+Portster	Portster	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical rainforest	4358				
+Baringdon	Baringdon	Wodbury	Albroland	Theocracy	Penildondonism	Generic	Temperate rainforest	914				
+Leighwark	Leighwark	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	2612			yes	
+Malmondling	Malmondling	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1710				
+Osbury	Osbury	Wodbury	Albroland	Theocracy	Penildondonism	Generic	Temperate rainforest	879				
+Aptondoli	Aptondoli	Altford	Aland	Theocracy	Altford Ancestors	Generic	Temperate deciduous forest	908			yes	
+Chartonor	Chartonor	Hitch	Monteria	Union	Hitch Beliefs	River	Temperate deciduous forest	10382				
+Fageldonley	Fageldonley	Guild	Ormstover	Monarchy	Guild Spirits	Generic	Temperate rainforest	884				
+Hertry	Hertry	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	7300				
+Shiford	Shiford	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	6908				
+Wigmonere	Wigmonere	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	10348				
+Watrinch	Watrinch	Hitch	Altfordia	Monarchy	Hitch Beliefs	Naval	Tropical rainforest	9492		yes		
+Searesbury	Searesbury	Hitch	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	6544				
+Tintefract	Tintefract	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1876				yes
+Salton	Salton	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	4961				
+Maclesford	Maclesford	Mangay	Guildia	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	1403				
+Clithersted	Clithersted	Altford	Betfordia	Monarchy	Altford Ancestors	Highland	Temperate deciduous forest	8453				
+Caustole	Caustole	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	1107				
+Maltondole	Maltondole	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	1363				yes
+Pilton	Pilton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	6469				yes
+Knaford	Knaford	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	5144			yes	
+Rethowen	Rethowen	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	2112				
+Mackingley	Mackingley	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	958				yes
+Chiptonley	Chiptonley	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Tropical rainforest	889				
+Marling	Marling	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	3376				
+Gatnes	Gatnes	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	4763				
+Hatford	Hatford	Altford	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	7332				
+Chisbury	Chisbury	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	5346				
+Portsford	Portsford	Hitch	Altfordia	Monarchy	Shersbury Church	River	Tropical rainforest	1013				
+Canvermouth	Canvermouth	Mangay	Guildia	Monarchy	Shersbury Church	Hunting	Tropical rainforest	9154				
+Wazion	Wazion	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	5194			yes	yes
+Bramptonce	Bramptonce	Altford	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	6036				
+Brastorough	Brastorough	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	5419				
+Westfordge	Westfordge	Hitch	Altfordia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	9104				
+Keterpor	Keterpor	Wodbury	Dunster	Monarchy	Penildondonism	Hunting	Temperate rainforest	969				
+Somyardge	Somyardge	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	3093				
+Marling	Marling	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	5036				
+Foneley	Foneley	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4289				
+Lympston	Lympston	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	1248		yes		
+Modencesbu	Modencesbu	Hitch	Altfordia	Monarchy	Penildondonism	Generic	Temperate rainforest	4793				
+Frampton	Frampton	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	839				
+Creham	Creham	Altford	Aland	Theocracy	Satesfordism	Generic	Temperate deciduous forest	9306				
+Towcestore	Towcestore	Wodbury	Albroland	Theocracy	Penildondonism	Naval	Temperate rainforest	1322		yes		
+Maringra	Maringra	Bethe	Perster	Monarchy	Bethe Beliefs	Generic	Temperate rainforest	5835				
+Brasham	Brasham	Guild	Bretburia	Monarchy	Guild Spirits	River	Temperate rainforest	7284				
+Knutsham	Knutsham	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Generic	Temperate rainforest	1823				
+Bageling	Bageling	Thetlema	Macker	Monarchy	Thetlema Forefathers	Generic	Temperate rainforest	11114				yes
+Malton	Malton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	2541				
+Dalmond	Dalmond	Blech	Northia	Monarchy	Satesfordism	River	Tropical seasonal forest	2085				
+Hatford	Hatford	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate rainforest	830				
+Paignces	Paignces	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	13094				yes
+Thaxted	Thaxted	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	4864				
+Malingle	Malingle	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Temperate deciduous forest	12799				
+Lurymouth	Lurymouth	Wodbury	Albroland	Theocracy	Penildondonism	Generic	Temperate rainforest	925				
+Halington	Halington	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	6663				
+Watchel	Watchel	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Tropical rainforest	3394				
+Mackingra	Mackingra	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate rainforest	960			yes	
+Nemarare	Nemarare	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	7636				
+Boslenilney	Boslenilney	Mangay	Bretburia	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	5016				
+Uxbrowen	Uxbrowen	Altford	Bretburia	Monarchy	Altford Ancestors	Highland	Temperate deciduous forest	1069				
+Bucham	Bucham	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	1275				
+Wihulseade	Wihulseade	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	7039				
+Montonces	Montonces	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	9678				
+Chistokere	Chistokere	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	3978				
+Newichel	Newichel	Altford	Guildia	Monarchy	Shersbury Church	River	Tropical rainforest	15368			yes	yes
+Hatfordford	Hatfordford	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	1007				
+Wistolive	Wistolive	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Tropical seasonal forest	675				yes
+Chilmond	Chilmond	Altford	Guildia	Monarchy	Shersbury Church	Generic	Tropical seasonal forest	2194				
+Bington	Bington	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Temperate rainforest	6909				
+Haytes	Haytes	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical rainforest	8137		yes		
+Balistore	Balistore	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	4810			yes	
+Bethore	Bethore	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1358				
+Harton	Harton	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	3827				
+Noscomber	Noscomber	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	12551			yes	yes
+Dodbrid	Dodbrid	Thetlema	Penteria	Monarchy	Bridgean Circle	Generic	Temperate rainforest	8505				
+Borough	Borough	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1031				
+Caston	Caston	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	7226				
+Seabington	Seabington	Hitch	Gatnesbia	Monarchy	Shersbury Church	Generic	Tropical rainforest	2180			yes	
+Dunskirkley	Dunskirkley	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1935				
+Maltonwich	Maltonwich	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	9064				
+Bretre	Bretre	Thetlema	Penteria	Monarchy	Bridgean Circle	Generic	Temperate rainforest	973				
+Stanslewes	Stanslewes	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	8565				yes
+Carnelisham	Carnelisham	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	964				
+Picheapton	Picheapton	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Tropical seasonal forest	6292				
+Chawbury	Chawbury	Hitch	Altfordia	Monarchy	Hitch Beliefs	Naval	Tropical rainforest	4192		yes		
+Chartonwich	Chartonwich	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Tropical rainforest	6726				
+Cliftonor	Cliftonor	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	2439				
+Mithorough	Mithorough	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	2721				
+Bihultondo	Bihultondo	Mangay	Coclifland	Monarchy	Mangay Beliefs	Hunting	Tropical rainforest	2010			yes	
+Henton	Henton	Blech	Northia	Monarchy	Satesfordism	River	Tropical seasonal forest	1407				
+Leighin	Leighin	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	6420		yes		
+Boverton	Boverton	Mangay	Coclifland	Monarchy	Mangay Beliefs	River	Tropical seasonal forest	5312				
+Atester	Atester	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	4088				
+Craftfordge	Craftfordge	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	7107				
+Ponley	Ponley	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Hunting	Temperate rainforest	963				
+Shomyardge	Shomyardge	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Naval	Temperate rainforest	4509		yes		
+Orleigh	Orleigh	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	1178				
+Berden	Berden	Altford	Tutle	Theocracy	Satesfordism	River	Tropical seasonal forest	5530				
+Trewentry	Trewentry	Mangay	Guildia	Monarchy	Shersbury Church	Hunting	Tropical rainforest	974				
+Yeorough	Yeorough	Mangay	Coclifland	Monarchy	Shersbury Church	Generic	Tropical seasonal forest	1433				
+Harton	Harton	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	595				
+Coclifton	Coclifton	Hitch	Altfordia	Monarchy	Shersbury Church	River	Tropical seasonal forest	514				
+Altford	Altford	Altford	Guildia	Monarchy	Shersbury Church	Naval	Tropical rainforest	8329		yes		
+Feldon	Feldon	Hitch	Monteria	Union	Hitch Beliefs	River	Temperate deciduous forest	1445				
+Chilbowey	Chilbowey	Hitch	Gatnesbia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	10081				yes
+Lympsbury	Lympsbury	Wodbury	Dunster	Monarchy	Penildondonism	Naval	Temperate rainforest	9349		yes		
+Nosholeven	Nosholeven	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	3264				
+Kilkneth	Kilkneth	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	2271				
+Paignsey	Paignsey	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	5329			yes	
+Retford	Retford	Altford	Monteria	Union	Altford Ancestors	River	Temperate deciduous forest	8820				
+Foverbot	Foverbot	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical seasonal forest	5488		yes		
+Tareshokedi	Tareshokedi	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Tropical rainforest	7504				
+Fasaltonces	Fasaltonces	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	4948				
+Balton	Balton	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	8192		yes		
+Daltashing	Daltashing	Guild	Ormstover	Monarchy	Guild Spirits	River	Wetland	7233				
+Warlington	Warlington	Blech	Northia	Monarchy	Satesfordism	Generic	Tropical seasonal forest	3839				
+Aringley	Aringley	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	980				
+Hitchbrid	Hitchbrid	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	7900			yes	
+Thethamber	Thethamber	Guild	Ormstover	Monarchy	Guild Spirits	River	Temperate rainforest	1346				
+Clitfield	Clitfield	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	14338				
+Helscom	Helscom	Mangay	Bretburia	Monarchy	Mangay Beliefs	Highland	Temperate deciduous forest	2100				
+Thetford	Thetford	Thetlema	Macker	Monarchy	Satesfordism	Generic	Temperate deciduous forest	3197				
+Wasalne	Wasalne	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Tropical rainforest	2598				
+Warton	Warton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4223				
+Winchel	Winchel	Mangay	Guildia	Monarchy	Shersbury Church	Naval	Tropical rainforest	3994		yes		
+Kiverleyles	Kiverleyles	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	11034			yes	
+Shiford	Shiford	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	8690				
+Mermington	Mermington	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Tropical seasonal forest	3937				
+Bidesokewes	Bidesokewes	Altford	Aland	Theocracy	Altford Ancestors	Generic	Tropical seasonal forest	1296				
+Merlowbig	Merlowbig	Altford	Guildia	Monarchy	Shersbury Church	Hunting	Tropical seasonal forest	2989			yes	
+Kideroeham	Kideroeham	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	3903				
+Lewent	Lewent	Altford	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	1223			yes	
+Soutfordbu	Soutfordbu	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	1210				
+Wiskirkley	Wiskirkley	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	974			yes	
+Pelishil	Pelishil	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Temperate rainforest	5608				
+Standoke	Standoke	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	7946			yes	
+Knadetondo	Knadetondo	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	5652				
+Dunsburytes	Dunsburytes	Thetlema	Macker	Monarchy	Satesfordism	Hunting	Tropical seasonal forest	493			yes	
+Manchtonton	Manchtonton	Altford	Bretburia	Monarchy	Altford Ancestors	River	Temperate rainforest	4806				
+Clifnal	Clifnal	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1009				
+Craftrinch	Craftrinch	Guild	Ormstover	Monarchy	Guild Spirits	Highland	Temperate deciduous forest	1518				
+Balney	Balney	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	9806				
+Westhambema	Westhambema	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	4523				
+Nehambe	Nehambe	Altford	Betfordia	Monarchy	Satesfordism	Generic	Temperate deciduous forest	962			yes	
+Haylestover	Haylestover	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical rainforest	3934		yes		
+Grantham	Grantham	Altford	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	7725				
+Marlme	Marlme	Altford	Betfordia	Monarchy	Satesfordism	River	Tropical seasonal forest	660				
+Gatham	Gatham	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Tropical seasonal forest	2530				
+Stansbury	Stansbury	Mangay	Coclifland	Monarchy	Shersbury Church	Generic	Tropical seasonal forest	3304				
+Botford	Botford	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Tropical seasonal forest	2653				
+Skipton	Skipton	Bethe	Perster	Monarchy	Bethe Beliefs	Generic	Temperate rainforest	5657				
+Brasfield	Brasfield	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	6454				
+Durlowleigh	Durlowleigh	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	3455				
+Thaxning	Thaxning	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	3948				
+Shobury	Shobury	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	1029				
+Uxbromer	Uxbromer	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	8046				yes
+Berwickneth	Berwickneth	Altford	Coclifland	Monarchy	Altford Ancestors	Naval	Tropical rainforest	4036		yes		
+Cambridbume	Cambridbume	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	5177				
+Paigndalter	Paigndalter	Mangay	Bretburia	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	4094				
+Wiston	Wiston	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	7422				
+Albrighwel	Albrighwel	Hitch	Altfordia	Monarchy	Hitch Beliefs	Naval	Tropical rainforest	1977		yes	yes	
+Cliford	Cliford	Altford	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	11552				yes
+Merneters	Merneters	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	13408		yes		yes
+Westcheaple	Westcheaple	Altford	Guildia	Monarchy	Shersbury Church	River	Wetland	3083				
+Chawces	Chawces	Altford	Betfordia	Monarchy	Satesfordism	Highland	Temperate deciduous forest	2533			yes	
+Searington	Searington	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	1963				
+Betre	Betre	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	10923				yes
+Framptonta	Framptonta	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	5392				
+Rothes	Rothes	Altford	Perster	Monarchy	Altford Ancestors	River	Wetland	4515			yes	
+Dalseasal	Dalseasal	Altford	Coclifland	Monarchy	Altford Ancestors	Generic	Tropical rainforest	3345				
+Halton	Halton	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Temperate deciduous forest	8461				yes
+Forough	Forough	Mangay	Guildia	Monarchy	Shersbury Church	River	Tropical rainforest	3251				
+Rockingham	Rockingham	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	1088			yes	
+Kingrasings	Kingrasings	Altford	Guildia	Monarchy	Shersbury Church	River	Wetland	838				yes
+Lympster	Lympster	Hitch	Perster	Monarchy	Penildondonism	River	Temperate rainforest	4837				yes
+Betfordbury	Betfordbury	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	7273				
+Draxtedling	Draxtedling	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	12710				yes
+Penterley	Penterley	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	13363		yes		
+Boswestbute	Boswestbute	Hitch	Perster	Monarchy	Penildondonism	River	Temperate rainforest	5932				
+Barmouth	Barmouth	Mangay	Coclifland	Monarchy	Chips Blasphemy	Hunting	Tropical rainforest	803				
+Craftley	Craftley	Thetlema	Macker	Monarchy	Thetlema Forefathers	Generic	Temperate rainforest	3326				
+Shersbury	Shersbury	Thetlema	Macker	Monarchy	Thetlema Forefathers	Generic	Temperate rainforest	10942				yes
+Corough	Corough	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	7598				
+Mondon	Mondon	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate deciduous forest	1074				
+Bosbury	Bosbury	Altford	Aland	Theocracy	Satesfordism	Generic	Tropical seasonal forest	670				
+Kendon	Kendon	Mangay	Coclifland	Monarchy	Mangay Beliefs	Generic	Tropical seasonal forest	905			yes	
+Heymouth	Heymouth	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	613			yes	
+Bosdon	Bosdon	Bethe	Tarland	Theocracy	Exetersism	Naval	Temperate deciduous forest	1618		yes		
+Athersbury	Athersbury	Hitch	Perster	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	7792				
+Hasalces	Hasalces	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	11441				
+Sonexeley	Sonexeley	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	1283				
+Frample	Frample	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	6697				
+Rothetham	Rothetham	Altford	Perster	Monarchy	Altford Ancestors	River	Wetland	7034				yes
+Asheltash	Asheltash	Mangay	Coclifland	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	7654				
+Altbury	Altbury	Altford	Aland	Theocracy	Altford Ancestors	Generic	Tropical rainforest	4540			yes	yes
+Hertford	Hertford	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	6257		yes		
+Tutherham	Tutherham	Altford	Bretburia	Monarchy	Altford Ancestors	Highland	Temperate rainforest	7037				
+Weston	Weston	Mangay	Guildia	Monarchy	Shersbury Church	River	Wetland	2114				
+Chichbury	Chichbury	Hitch	Altfordia	Monarchy	Hitch Beliefs	River	Temperate rainforest	2066				
+Retfordbury	Retfordbury	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	1045				
+Dodbrigh	Dodbrigh	Bethe	Tarland	Theocracy	Exetersism	Naval	Temperate rainforest	5205		yes	yes	
+Lympstowces	Lympstowces	Wodbury	Dunster	Monarchy	Wodbury Beliefs	Naval	Temperate rainforest	1504		yes		
+Searesmouth	Searesmouth	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate rainforest	5056				
+Stothe	Stothe	Wodbury	Dunster	Monarchy	Wodbury Beliefs	Generic	Temperate rainforest	8641				
+Dunsterpor	Dunsterpor	Mangay	Coclifland	Monarchy	Chips Blasphemy	Naval	Tropical seasonal forest	9258		yes		
+Malterford	Malterford	Mangay	Guildia	Monarchy	Shersbury Church	Generic	Tropical rainforest	10739				yes
+Mitfielden	Mitfielden	Hitch	Olnia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	14915			yes	yes
+Calney	Calney	Mangay	Coclifland	Monarchy	Chips Blasphemy	Generic	Tropical seasonal forest	10893				
+Forough	Forough	Altford	Aland	Theocracy	Satesfordism	Highland	Temperate deciduous forest	12433				
+Towbigton	Towbigton	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	842				
+Carmingrave	Carmingrave	Blech	Aland	Theocracy	Satesfordism	River	Tropical seasonal forest	1817				
+Camble	Camble	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	413			yes	
+Cockexeso	Cockexeso	Altford	Monteria	Union	Altford Ancestors	Generic	Temperate deciduous forest	1830				
+Wistabrigh	Wistabrigh	Thetlema	Macker	Monarchy	Bridgean Circle	Naval	Temperate rainforest	13013		yes		yes
+Westcke	Westcke	Thetlema	Betfordia	Monarchy	Bridgean Circle	Generic	Temperate deciduous forest	7411				
+Wigton	Wigton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	941				
+Caltonton	Caltonton	Hitch	Olnia	Monarchy	Hitch Beliefs	Generic	Temperate rainforest	6490				
+Stapton	Stapton	Wodbury	Wiveria	Republic	Penildondonism	Generic	Temperate rainforest	982				
+Malton	Malton	Altford	Bretburia	Monarchy	Altford Ancestors	Generic	Temperate deciduous forest	3544				
+Watholigan	Watholigan	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	1116				
+Kinedonta	Kinedonta	Altford	Bretburia	Monarchy	Altford Ancestors	Highland	Temperate deciduous forest	1161				
+Penkleigh	Penkleigh	Mangay	Guildia	Monarchy	Shersbury Church	Naval	Tropical seasonal forest	2214		yes		
+Crafthe	Crafthe	Altford	Guildia	Monarchy	Shersbury Church	River	Tropical seasonal forest	6807				
+Yeomerpor	Yeomerpor	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	3400				
+Chisfield	Chisfield	Altford	Bretburia	Monarchy	Altford Ancestors	River	Temperate deciduous forest	1176				
+Brusedide	Brusedide	Altford	Tutle	Theocracy	Satesfordism	Naval	Tropical rainforest	7293		yes		
+Daldock	Daldock	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	3120				
+Brampton	Brampton	Altford	Guildia	Monarchy	Shersbury Church	Generic	Temperate deciduous forest	1084				
+Exning	Exning	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	2547			yes	
+Southin	Southin	Altford	Betfordia	Monarchy	Altford Ancestors	Generic	Temperate rainforest	1110				yes
+Redcheapton	Redcheapton	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	1374				
+Kincestab	Kincestab	Blech	Aland	Theocracy	Satesfordism	River	Tropical seasonal forest	555				
+Dodbrobury	Dodbrobury	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	493				
+Beridbume	Beridbume	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	6327				
+Presford	Presford	Thetlema	Biganveria	Monarchy	Thetlema Forefathers	Naval	Temperate rainforest	15422		yes	yes	
+Canytesbu	Canytesbu	Altford	Tutle	Theocracy	Satesfordism	Generic	Temperate deciduous forest	5950				
+Kingdon	Kingdon	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical rainforest	2912				
+Castle	Castle	Hitch	Perster	Monarchy	Penildondonism	Generic	Temperate deciduous forest	1082				
+Rothetford	Rothetford	Hitch	Monteria	Union	Hitch Beliefs	Generic	Temperate deciduous forest	10229				
+Hartonbeck	Hartonbeck	Hitch	Altfordia	Monarchy	Hitch Beliefs	Generic	Tropical rainforest	842				
+Luryfield	Luryfield	Altford	Bretburia	Monarchy	Altford Ancestors	River	Temperate rainforest	9326				yes
+Dalingley	Dalingley	Guild	Ormstover	Monarchy	Guild Spirits	Highland	Temperate rainforest	6966			yes	
+Dodbridbury	Dodbridbury	Altford	Guildia	Monarchy	Shersbury Church	River	Tropical rainforest	4945				
+Mondalmond	Mondalmond	Altford	Bretburia	Monarchy	Altford Ancestors	Highland	Temperate deciduous forest	1735				
+Coroughes	Coroughes	Mangay	Coclifland	Monarchy	Mangay Beliefs	Hunting	Tropical rainforest	3168				
+Altrehambe	Altrehambe	Altford	Tutle	Theocracy	Satesfordism	Generic	Tropical seasonal forest	4064				
+Newbomerpor	Newbomerpor	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	960			yes	
+Heytes	Heytes	Altford	Tutle	Theocracy	Satesfordism	Hunting	Tropical seasonal forest	8305				
+Herthers	Herthers	Blech	Aland	Theocracy	Satesfordism	River	Tropical seasonal forest	1343			yes	
+Thatchambe	Thatchambe	Mangay	Coclifland	Monarchy	Chips Blasphemy	River	Tropical seasonal forest	3555				yes
+Retrinch	Retrinch	Altford	Betfordia	Monarchy	Altford Ancestors	River	Temperate deciduous forest	7310				
+Wargham	Wargham	Mangay	Coclifland	Monarchy	Shersbury Church	River	Temperate deciduous forest	5242				
+Osboverton	Osboverton	Hitch	Olnia	Monarchy	Shersbury Church	River	Temperate deciduous forest	11107			yes	yes
