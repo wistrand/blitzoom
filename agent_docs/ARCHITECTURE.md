@@ -12,6 +12,7 @@ docs/                    Web application (ES modules, served by Deno)
   viewer.html              Viewer HTML shell — header, loader, canvas, sidebar, detail panel
   about.html               How It Works — interactive explainer with embedded demos
   howto.html               Developer Guide — embedding API, data format, examples
+  example.html             Minimal example — two embedded graphs (SNAP + inline)
   bitzoom.css              Styles — dark theme, responsive, loader, detail panel overlay
   bitzoom-algo.js          Pure algorithm functions and constants (no DOM)
   bitzoom-pipeline.js      Shared parsers, graph building, tokenization, projection
@@ -88,7 +89,7 @@ Pure functions, no DOM. Single source of truth for MinHash/projection.
 - **Level building**: `buildLevelNodes` (phase 1: bucket nodes into supernodes, O(n)) + `buildLevelEdges` (phase 2: aggregate edges, O(|E|), numeric key packing for levels 1-13, string keys for level 14) + `buildLevel` (combined wrapper). Caches `cachedColor`/`cachedLabel` on supernodes.
 - **Helpers**: `maxCountKey` (O(k) max), `generateGroupColors` (golden-angle HSL → hex), `getNodePropValue`, `getSupernodeDominantValue`
 
-### [bitzoom-pipeline.js](../docs/bitzoom-pipeline.js) (348 lines)
+### [bitzoom-pipeline.js](../docs/bitzoom-pipeline.js) (369 lines)
 
 Shared parsing, graph building, tokenization. Imports from algo. No DOM.
 
@@ -131,7 +132,7 @@ draws layer 5):
 
 **Other**: cubic bezier edges, Gaussian splat heatmap (additive), KDE density heatmap (1/4 resolution, persistent buffers), hit testing.
 
-### [bitzoom-gl-renderer.js](../docs/bitzoom-gl-renderer.js) (~1202 lines)
+### [bitzoom-gl-renderer.js](../docs/bitzoom-gl-renderer.js) (~1235 lines)
 
 WebGL2 instanced renderer. 7 shader programs compiled at `initGL()`. Geometry only — text stays
 on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for full details.
@@ -147,7 +148,7 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
   `_instanceVBO` with `DYNAMIC_DRAW`.
 - **Exports**: `initGL(gl)`, `renderGL(gl, bz)`, `destroyGL(gl)`, `isWebGL2Available()`
 
-### [bitzoom-canvas.js](../docs/bitzoom-canvas.js) (977 lines)
+### [bitzoom-canvas.js](../docs/bitzoom-canvas.js) (1011 lines)
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
@@ -161,7 +162,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
 
-### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (1714 lines)
+### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (1750 lines)
 
 `BitZoom` class — composes `BitZoomCanvas` as `this.view`. Adds application UI and orchestration.
 

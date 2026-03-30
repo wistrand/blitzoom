@@ -133,8 +133,8 @@
   <a href="#pitfalls">Common Pitfalls</a>
   <a href="#similarity">Similarity Queries</a>
   <a href="#levels">Hierarchy Access</a>
-  <a href="#modules">Module Map</a>
   <a href="#webgl">WebGL Rendering</a>
+  <a href="#files">Required Files</a>
 </nav>
 
 <div class="site-nav">
@@ -155,7 +155,7 @@
 
 <h2 id="quick-start">Quick Start</h2>
 
-<p>The fastest way to get a BitZoom graph on screen: one import, one function call, done.</p>
+<p>The fastest way to get a BitZoom graph on screen: one import, one function call, done. See the <a href="example.html">minimal example</a> for a complete working page.</p>
 
 <pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom-canvas.js'</span>;
 
@@ -602,21 +602,6 @@ console.log(<span class="fn">jaccardEstimate</span>(sigA, sigA)); <span class="c
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-<h2 id="modules">Module Map</h2>
-
-<table>
-  <tr><th>Module</th><th>Role</th><th>DOM?</th></tr>
-  <tr><td><a href="bitzoom-algo.js"><code>bitzoom-algo.js</code></a></td><td>Pure algorithms: MinHash, projection, blend, quantization, levels</td><td>No</td></tr>
-  <tr><td><a href="bitzoom-pipeline.js"><code>bitzoom-pipeline.js</code></a></td><td>SNAP parsers, graph building, tokenization, full pipeline</td><td>No</td></tr>
-  <tr><td><a href="bitzoom-canvas.js"><code>bitzoom-canvas.js</code></a></td><td>Standalone canvas component + <code>createBitZoomView</code> factory</td><td>Canvas only</td></tr>
-  <tr><td><a href="bitzoom-renderer.js"><code>bitzoom-renderer.js</code></a></td><td>5-layer rendering, heatmaps, hit testing</td><td>Canvas only</td></tr>
-  <tr><td><a href="bitzoom-viewer.js"><code>bitzoom-viewer.js</code></a></td><td>Viewer app (composes BitZoomCanvas + UI + workers)</td><td>Yes</td></tr>
-</table>
-
-<p>The first two modules have zero DOM dependencies. Import them in Deno, Node, or a worker. The canvas modules need a <code>&lt;canvas&gt;</code> element but no other DOM.</p>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════ -->
-
 <h2 id="webgl">WebGL Rendering</h2>
 
 <p>Pass <code>webgl: true</code> to render geometry (circles, edges, heatmaps, grid) via WebGL2 instanced draw calls. Text (labels, counts, legend) stays on a Canvas 2D overlay. The two canvases are stacked automatically.</p>
@@ -654,6 +639,33 @@ viewGL.useWebGL = <span class="keyword">true</span>;   <span class="comment">// 
 <div class="note">
   WebGL rendering produces identical visual output to Canvas 2D. The benefit is reduced CPU load for large views &mdash; geometry draw calls are offloaded to the GPU via instanced rendering. See <a href="webgl.html">WebGL Rendering</a> for the full architecture: SDF circles, GPU-tessellated Bezier curves, two-pass density heatmap.
 </div>
+
+<h2 id="files">Required Files</h2>
+
+<p>BitZoom has no build step and no npm package. Copy the files you need into your project:</p>
+
+<h3>Offline / headless (Deno, Node, Web Worker)</h3>
+<p>For running the pipeline without a browser or canvas:</p>
+<table>
+  <tr><th>File</th><th>Role</th></tr>
+  <tr><td><code>bitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization, levels</td></tr>
+  <tr><td><code>bitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
+</table>
+<p>These two files have zero DOM dependencies. Import <code>runPipeline</code> from <code>bitzoom-pipeline.js</code>.</p>
+
+<h3>Browser (interactive canvas)</h3>
+<p>For embedding an interactive graph view in a web page:</p>
+<table>
+  <tr><th>File</th><th>Role</th></tr>
+  <tr><td><code>bitzoom-canvas.js</code></td><td>Entry point, <code>createBitZoomView()</code> factory</td></tr>
+  <tr><td><code>bitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization</td></tr>
+  <tr><td><code>bitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
+  <tr><td><code>bitzoom-renderer.js</code></td><td>Canvas 2D rendering, hit testing, layout</td></tr>
+  <tr><td><code>bitzoom-utils.js</code></td><td>Auto-tune optimizer</td></tr>
+  <tr><td><code>bitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering (optional feature, always imported)</td></tr>
+  <tr><td><code>bitzoom-gpu.js</code></td><td>WebGPU compute acceleration (optional feature, always imported)</td></tr>
+</table>
+<p>All seven files are ES modules. Place them in the same directory and import <code>bitzoom-canvas.js</code>. Your HTML page needs <code>&lt;script type="module"&gt;</code>. No bundler required.</p>
 
 <p style="margin-top:48px;color:var(--text-dim);font-size:13px;text-align:center;">
   <a href="about.html">How It Works</a> &middot; <a href="viewer.html">Viewer</a> &middot; <a href="https://github.com/wistrand/bitzoom">GitHub</a>
