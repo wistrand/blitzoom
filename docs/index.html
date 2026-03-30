@@ -246,7 +246,8 @@
   <div class="demo-bar">
     <span>Live demo. Scroll to zoom. Drag to pan. Click to select.</span>
     <div style="display:flex;gap:8px;align-items:center">
-      <select id="demo-dataset">
+      <label for="demo-dataset" class="sr-only">Dataset</label>
+      <select id="demo-dataset" aria-label="Dataset">
         <option value="epstein">Epstein</option>
         <option value="karate">Karate Club</option>
         <option value="bitzoom-source">BitZoom Source</option>
