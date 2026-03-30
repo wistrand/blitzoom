@@ -35,8 +35,8 @@
     header {
       flex-wrap: wrap;
       height: auto;
-      padding: 6px 10px;
-      gap: 5px;
+      padding: 6px 8px;
+      gap: 4px;
     }
     header h1 { font-size: 13px; }
     header .subtitle { display: none; }
@@ -44,10 +44,14 @@
       width: 100%;
       flex-wrap: wrap;
       margin-left: 0;
-      gap: 4px;
+      gap: 3px;
     }
-    .nudge-control { margin-left: auto; }
-    .nudge-control input[type=range] { width: 70px; }
+    .zoom-label { display: none; }
+    .nudge-control { margin-left: 0; flex: 1; min-width: 0; }
+    .nudge-control input[type=range] { flex: 1; min-width: 50px; width: auto; }
+    .nudge-control .zoom-label { display: inline; font-size: 9px; }
+    .reset-btn { padding: 0 5px; font-size: 9px; }
+    .reset-btn { min-width: 0; }
     .sidebar {
       position: fixed !important;
       bottom: 0; left: 0; right: 0;
@@ -203,6 +207,7 @@
     width: 100%;
     height: 100%;
     min-height: 0; /* critical for grid 1fr to work */
+    touch-action: none; /* prevent browser zoom/scroll on touch */
   }
   #canvas:active { cursor: grabbing; }
 
@@ -340,8 +345,7 @@
   }
 
   @media (max-width: 600px) {
-    .nudge-control { margin-left: 0; width: 100%; }
-    .nudge-control input[type=range] { width: 120px; }
+    .nudge-control { margin-left: 0; }
   }
     color: var(--text-dim);
     line-height: 1.6;
