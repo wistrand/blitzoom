@@ -4,7 +4,7 @@ A deterministic layout and hierarchical aggregation viewer for large property gr
 
 ![Datasets](https://img.shields.io/badge/datasets-9-blue) ![Tests](https://img.shields.io/badge/tests-48%20passing-green)
 
-**[Live Demo](https://wistrand.github.io/bitzoom/)** · [How It Works](https://wistrand.github.io/bitzoom/about.html) · [Developer Guide](https://wistrand.github.io/bitzoom/howto.html) · [Layout Comparison](https://wistrand.github.io/bitzoom/comparison.html)
+**[Viewer](https://wistrand.github.io/bitzoom/viewer.html)** · [Website](https://wistrand.github.io/bitzoom/) · [Developer Guide](https://wistrand.github.io/bitzoom/howto.html) · [Layout Comparison](https://wistrand.github.io/bitzoom/comparison.html)
 
 <p align="center">
   <img src="docs/images/bitzoom-1.png" width="48%" alt="BitZoom density heatmap with clustered supernodes">

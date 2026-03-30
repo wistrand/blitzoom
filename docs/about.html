@@ -214,6 +214,30 @@
     color: var(--text-dim);
   }
 
+  .tldr {
+    margin: 32px 0;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(124,106,247,0.06) 0%, rgba(106,247,200,0.04) 100%);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  .tldr-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  .tldr p {
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .tldr p:last-child { margin-bottom: 0; }
+
 
   table {
     width: 100%;
@@ -234,6 +258,7 @@
 
 <nav class="toc" id="toc">
   <a href="#problem">The Problem</a>
+  <a href="#tldr">TL;DR</a>
   <a href="#pipeline">Pipeline</a>
   <a href="#tokenize">1. Tokenize</a>
   <a href="#minhash">2. MinHash</a>
@@ -253,8 +278,9 @@
 <div class="site-nav">
   <a href="index.html">Home</a> &middot;
   <a href="viewer.html">Viewer</a> &middot;
-  <a href="howto.html">Developer Guide</a> &middot;
+  <a href="about.html">How It Works</a> &middot;
   <a href="comparison.html">Comparison</a> &middot;
+  <a href="howto.html">Developer Guide</a> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <a href="webgl.html">WebGL</a> &middot;
   <a href="https://github.com/wistrand/bitzoom">GitHub</a>
@@ -291,6 +317,13 @@
 <p>Classical graph layout (<a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing">force-directed</a>, <a href="https://en.wikipedia.org/wiki/Spectral_layout">spectral</a>) optimizes for <em>topological</em> fidelity: connected nodes should be near each other. For property graphs, this is often wrong. Semantically similar nodes frequently share no edge. Two ransomware samples may never connect, but they should be <em>near</em> each other.</p>
 
 <p>BitZoom inverts the priority: <strong>property similarity first, topology second</strong>. Proximity means "these nodes have similar properties," not "these nodes are connected."</p>
+
+<div class="tldr" id="tldr">
+  <div class="tldr-title">TL;DR — The Pipeline in 30 Seconds</div>
+  <p>Each node's properties (labels, categories, numeric fields) are broken into short string tokens. Those tokens are hashed through <strong>MinHash</strong> to produce a fixed-size signature per property group — a compact fingerprint where similar nodes naturally share more hash values. Each signature is then projected onto a 2D point using Gaussian random vectors, so similarity in property space becomes proximity on the canvas.</p>
+  <p>Multiple property groups (e.g., platform, kill chain, version) each produce their own 2D coordinate. A <strong>weighted blend</strong> merges them into a single position, with an optional topology term (alpha) that pulls connected nodes closer. The blended coordinates are quantized onto a 16-bit integer grid using Gaussian CDF normalization, which spreads nodes evenly while preserving relative distances.</p>
+  <p>Zoom levels come free: shifting grid coordinates right by one bit halves the resolution, collapsing nearby nodes into aggregate "supernodes." This gives you six stable, hierarchical zoom levels — from full overview down to individual nodes — with no re-layout at any step.</p>
+</div>
 
 <h2 id="pipeline">The Pipeline</h2>
 

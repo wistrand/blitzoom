@@ -121,6 +121,7 @@
 
 <nav class="toc" id="toc">
   <a href="#quick-start">Quick Start</a>
+  <a href="#data-format">Data Format</a>
   <a href="#embed">Embed a View</a>
   <a href="#from-js">From JS Objects</a>
   <a href="#options">Options</a>
@@ -128,9 +129,10 @@
   <a href="#weights">Weight Tuning</a>
   <a href="#autotune">Auto-Tune</a>
   <a href="#offline">Offline Pipeline</a>
+  <a href="#performance">Performance</a>
+  <a href="#pitfalls">Common Pitfalls</a>
   <a href="#similarity">Similarity Queries</a>
   <a href="#levels">Hierarchy Access</a>
-  <a href="#data-format">Data Format</a>
   <a href="#modules">Module Map</a>
   <a href="#webgl">WebGL Rendering</a>
 </nav>
@@ -140,6 +142,7 @@
   <a href="viewer.html">Viewer</a> &middot;
   <a href="about.html">How It Works</a> &middot;
   <a href="comparison.html">Comparison</a> &middot;
+  <strong>Developer Guide</strong> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <a href="webgl.html">WebGL</a> &middot;
   <a href="https://github.com/wistrand/bitzoom">GitHub</a>
@@ -169,6 +172,43 @@
   <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">Epstein network. Scroll to zoom. Drag to pan. Click to select.</div>
   <canvas id="demo-epstein" style="width:100%;height:340px;display:block;background:var(--bg)"></canvas>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<h2 id="data-format">Data Format (SNAP)</h2>
+
+<p>BitZoom uses a simple tab-delimited text format based on <a href="https://snap.stanford.edu/data/">SNAP</a>. A dataset consists of an <code>.edges</code> file (required) and an optional <code>.nodes</code> file.</p>
+
+<h3>.edges file (required)</h3>
+
+<p>Tab-delimited, one edge per line. Lines starting with <code>#</code> are comments. Each line is either <code>From&lt;tab&gt;To</code> (undirected) or <code>From&lt;tab&gt;To&lt;tab&gt;EdgeType</code> (typed).</p>
+
+<pre><span class="comment"># Social network edges</span>
+<span class="comment"># From	To	EdgeType</span>
+alice	bob	friend
+alice	carol	colleague
+bob	dave	friend
+carol	dave	colleague
+eve	alice	manager</pre>
+
+<h3>.nodes file (optional)</h3>
+
+<p>Tab-delimited, one node per line. The first comment line defines column names: <code># NodeId&lt;tab&gt;Label&lt;tab&gt;Group</code> followed by any number of extra columns. Extra columns become property groups used for MinHash similarity and layout positioning.</p>
+
+<pre><span class="comment"># NodeId	Label	Group	Role	Experience</span>
+alice	Alice	engineering	backend	8
+bob	Bob	engineering	frontend	5
+carol	Carol	design	ux	3
+dave	Dave	design	visual	7
+eve	Eve	management	director	12</pre>
+
+<h3>Column behavior</h3>
+
+<p><strong>Numeric columns</strong> are auto-detected when >=80% of values parse as numbers. They receive 3-level tokenization (coarse, medium, fine bins), so nodes with nearby numeric values cluster together while distant values separate.</p>
+
+<p><strong>Empty fields</strong> (missing or blank values) produce zero tokens, which results in a neutral <code>[0,0]</code> projection for that property group. This avoids false clustering: nodes with unknown values float to the center rather than being forced into a cluster.</p>
+
+<p>If no <code>.nodes</code> file is provided, the graph is edge-only. Layout relies entirely on topology (set <code>smoothAlpha</code> to <code>1.0</code> for best results).</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
@@ -256,7 +296,8 @@
   <tr><td><code>showResetBtn</code></td><td>boolean</td><td>false</td><td>Draw reset button in top-right corner</td></tr>
   <tr><td><code>skipEvents</code></td><td>boolean</td><td>false</td><td>Disable built-in mouse/touch/keyboard events</td></tr>
   <tr><td><code>webgl</code></td><td>boolean</td><td>false</td><td>Use WebGL2 instanced rendering for geometry (<a href="#webgl">details</a>)</td></tr>
-  <tr><td><code>useGPU</code></td><td>boolean</td><td>false</td><td>Use WebGPU compute for projection and blend (<a href="webgpu.html">details</a>)</td></tr>
+  <tr><td><code>useGPU</code></td><td>boolean</td><td>false</td><td>Force WebGPU compute for projection and blend (<a href="webgpu.html">details</a>)</td></tr>
+  <tr><td><code>autoGPU</code></td><td>boolean</td><td>true</td><td>Automatically enable WebGPU when dataset is large enough to benefit (N&times;G &gt; 2000). Set to <code>false</code> to disable.</td></tr>
 </table>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -451,6 +492,63 @@ console.log(biggest.cachedLabel, biggest.members.length, <span class="string">'m
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+<h2 id="performance">Performance Guide</h2>
+
+<p>BitZoom scales well because the pipeline is O(n) in node count (MinHash + projection) and rendering uses hierarchical aggregation (only visible supernodes are drawn). Here are typical timings on a modern desktop:</p>
+
+<table>
+  <tr><th>Scale</th><th>Pipeline</th><th>Render</th><th>Notes</th></tr>
+  <tr><td>~1K nodes</td><td>&lt;10ms</td><td>&lt;1ms</td><td>Instant, any mode</td></tr>
+  <tr><td>~5K nodes</td><td>&lt;50ms</td><td>&lt;5ms</td><td>Smooth at 60fps</td></tr>
+  <tr><td>~50K nodes</td><td>&lt;500ms</td><td>&lt;20ms</td><td>Consider disabling heatmap</td></tr>
+  <tr><td>~367K nodes (Amazon)</td><td>~4s (GPU)</td><td>~5ms (WebGL)</td><td>GPU pipeline + WebGL rendering recommended</td></tr>
+</table>
+
+<h3>Tips for large graphs</h3>
+
+<ul style="margin:12px 0 16px 20px;font-size:15px;line-height:1.7">
+  <li><strong>Disable heatmap</strong> for graphs over ~50K nodes: <code>heatmapMode: 'off'</code>. Density heatmap is the most expensive render pass.</li>
+  <li><strong>Use <code>edgeMode: 'none'</code></strong> to skip edge rendering entirely. Edge drawing is O(visible edges) and can dominate frame time at high zoom levels.</li>
+  <li><strong>Enable WebGL</strong> with <code>webgl: true</code> to offload circle, edge, and heatmap geometry to the GPU via instanced rendering.</li>
+  <li><strong>Enable GPU pipeline</strong> with <code>useGPU: true</code> to run projection and blend on the GPU via WebGPU compute shaders. This is the biggest win for pipeline time on very large graphs.</li>
+  <li><strong>Hierarchical aggregation</strong> does the heavy lifting: at lower zoom levels, thousands of nodes collapse into a few hundred supernodes. Frame time depends on visible supernodes, not total graph size.</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<h2 id="pitfalls">Common Pitfalls</h2>
+
+<table>
+  <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+  <tr>
+    <td>All nodes collapse to a single point</td>
+    <td>All property values are identical across nodes (zero variance)</td>
+    <td>Add distinguishing properties, increase <code>smoothAlpha</code> to use topology, or run auto-tune</td>
+  </tr>
+  <tr>
+    <td>Uniform random scatter, no clusters</td>
+    <td>No <code>.nodes</code> file (edge-only dataset)</td>
+    <td>Set <code>smoothAlpha: 1.0</code> to lay out purely by topology. Provide a <code>.nodes</code> file if properties are available</td>
+  </tr>
+  <tr>
+    <td>Slow pipeline on very large graphs</td>
+    <td>CPU-bound MinHash + projection at scale</td>
+    <td>Use <code>useGPU: true</code> for WebGPU compute. Disable heatmap with <code>heatmapMode: 'off'</code></td>
+  </tr>
+  <tr>
+    <td>Rank quantization falls back to CPU</td>
+    <td>Rank sort requires float64 precision not available in GPU compute</td>
+    <td>Use <code>quantMode: 'gaussian'</code> (the default) for GPU-compatible quantization</td>
+  </tr>
+  <tr>
+    <td>Slow rendering at high zoom</td>
+    <td>Many visible nodes/edges at detailed zoom levels</td>
+    <td>Enable <code>webgl: true</code>, use <code>edgeMode: 'none'</code> or <code>'lines'</code> instead of <code>'curves'</code></td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
 <h2 id="similarity">Similarity Queries</h2>
 
 <p>Use MinHash directly to estimate Jaccard similarity between token sets:</p>
@@ -501,35 +599,6 @@ console.log(<span class="fn">jaccardEstimate</span>(sigA, sigA)); <span class="c
 <div class="note">
   Bit-prefix containment is exact: a node's cell at level L is always a sub-cell of its cell at level L-1. This is guaranteed by the bit-shift construction, not by any heuristic.
 </div>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════ -->
-
-<h2 id="data-format">Data Format (SNAP)</h2>
-
-<h3>.edges (required)</h3>
-
-<p>Tab-delimited. Lines starting with <code>#</code> are comments. Two columns (undirected) or three (with edge type).</p>
-
-<pre>
-<span class="comment"># Epstein network edges</span>
-Jeffrey Epstein	Ghislaine Maxwell	ASSOCIATED_WITH
-Jeffrey Epstein	Les Wexner	CLIENT_OF
-Ghislaine Maxwell	Jean-Luc Brunel	RECRUITED
-</pre>
-
-<h3>.nodes (optional)</h3>
-
-<p>Tab-delimited. First comment line defines column names. Extra columns become property groups.</p>
-
-<pre>
-<span class="comment"># NodeId	Label	Group	Subtype</span>
-Jeffrey Epstein	Jeffrey Epstein	Person	Convicted
-Ghislaine Maxwell	Ghislaine Maxwell	Person	Convicted
-Les Wexner	Les Wexner	Person	Associate
-JP Morgan	JP Morgan	Organization	Bank
-</pre>
-
-<p>Numeric columns (>=80% parseable as numbers) get multi-resolution tokenization (coarse/medium/fine bins). Empty fields produce zero tokens and a neutral projection, avoiding false clustering.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 

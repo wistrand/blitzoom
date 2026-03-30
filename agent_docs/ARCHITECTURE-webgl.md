@@ -177,7 +177,7 @@ custom background. Fallback: `#0a0a0f`.
 3. Sets original canvas `background: transparent`, `border: none`
 4. `_destroyWebGL` unwraps: moves canvas back, removes wrapper, restores styles
 
-`resize()` measures the wrapper (or canvas if no GL) via `getBoundingClientRect`.
+`resize()` uses `canvas.clientWidth`/`clientHeight` (content box, excludes border).
 
 ## Fallback
 
@@ -214,6 +214,7 @@ with `webgl: true`).
 | Selection change | hilite pass only | glow + alpha | no |
 | Weight/blend change | rebuild | rebuild | rebuild |
 
-All instance data rebuilt per frame from node positions (already in screen
-coordinates from `layoutAll`). No persistent GPU buffers for instance data —
-`_instanceVBO` is overwritten each draw call with `DYNAMIC_DRAW`.
+Instance data uses persistent typed-array buffers that grow as needed (zero
+per-frame GC after warmup). `visibleCount` and `maxSizeVal` are cached to avoid
+recomputation. Heatmap weight computation is shared between Canvas 2D and WebGL
+paths. `_instanceVBO` is overwritten each draw call with `DYNAMIC_DRAW`.

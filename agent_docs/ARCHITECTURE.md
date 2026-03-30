@@ -105,6 +105,12 @@ When WebGL2 is active (`bz._gl` set), `render()` skips geometry drawing (grid, e
 circles) and only draws text (labels, counts, legend, reset button) on the transparent overlay.
 
 **GC caches**: `_rgbCache`, `_fontCache`, `_rgbaCache`, persistent density heatmap buffers.
+Persistent typed-array buffers for instance data (zero per-frame GC after warmup). Cached
+`visibleCount`/`maxSizeVal` avoid recomputation. Shared heatmap weight computation between
+Canvas 2D and WebGL paths.
+
+**FPS counter**: toggled with F key or click on top-left corner. Displays fps, frame time (ms),
+and rendering mode (CPU/GPU/Auto).
 
 **5-layer render order** (Canvas 2D draws all 5; WebGL2 draws layers 1-4, Canvas 2D overlay
 draws layer 5):
@@ -145,13 +151,13 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
-**`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propWeights, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Constructor accepts `skipEvents` (for composition), `onRender` callback, `showLegend`, `showResetBtn`, and `webgl` options.
+**`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propWeights, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Constructor accepts `skipEvents` (for composition), `onRender` callback, `showLegend`, `showResetBtn`, `webgl`, and `autoGPU` options.
 
-**WebGL2 integration**: `_initWebGL()` creates a wrapper div, inserts a GL canvas behind the original (transparent overlay), and calls `initGL()`. `_destroyWebGL()` unwraps and restores. `useWebGL` getter/setter toggles at runtime. `resize()` measures wrapper when GL is active.
+**WebGL2 integration**: `_initWebGL()` creates a wrapper div, inserts a GL canvas behind the original (transparent overlay), and calls `initGL()`. `_destroyWebGL()` unwraps and restores. `useWebGL` getter/setter toggles at runtime. `resize()` uses `canvas.clientWidth`/`clientHeight` (content box, excludes border) for measurement.
 
-**Dual canvas layout**: wrapper div (position: relative) → GL canvas (geometry, `pointer-events: none`) + original canvas (text, events, `background: transparent`). All mouse/touch events stay on the original canvas.
+**Dual canvas layout**: wrapper div (position: relative) → GL canvas (geometry, `pointer-events: none`) + original canvas (text, events, `background: transparent`). All mouse/touch events stay on the original canvas. Canvas has `touch-action: none` to prevent browser gesture interference on mobile.
 
-**`createBitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, blends, returns ready-to-use canvas view. Accepts `webgl: true` to enable WebGL2.
+**`createBitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
 
@@ -169,7 +175,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **URL hash**: `d=name&l=level&z=zoom&x=pan&y=pan&bl=base&s=selected`. Updates via `replaceState` on each render (via `onRender` callback).
 
-**UI**: dynamic weight sliders, preset buttons, label checkboxes, size-by toggle (members/edges), quantization mode toggle (gaussian/rank), heatmap mode cycle (off/splat/density), edge mode cycle (curves/lines/none), GL toggle button (WebGL2 on/off, shows "N/A" when unavailable), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation. Cancel button on load screen (visible when data already loaded) returns to current view. GL wrapper div hidden/shown with loader screen.
+**UI**: dynamic weight sliders, preset buttons, label checkboxes, size-by toggle (members/edges), quantization mode toggle (gaussian/rank), heatmap mode cycle (off/splat/density), edge mode cycle (curves/lines/none), GL toggle button (WebGL2 on/off, shows "N/A" when unavailable), GPU tri-state button (Auto → GPU → CPU, cycles on click), FPS counter (F key or click top-left), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation. Cancel button on load screen (visible when data already loaded) returns to current view. GL wrapper div hidden/shown with loader screen. Mobile: compact toolbar, hidden hint section.
 
 ### Workers (142 + 95 lines)
 
@@ -250,9 +256,13 @@ buffer management.
 
 ### Adaptive GPU/CPU selection
 
-| Operation  | GPU when                              | Reason                                        |
+GPU tri-state in viewer: **Auto** (default, adaptive thresholds) → **GPU** (always) → **CPU**
+(never). Button cycles on click. `autoGPU` option in `createBitZoomView` auto-enables WebGPU
+when N×G > 2000 (default true).
+
+| Operation  | Auto GPU when                         | Reason                                        |
 | ---------- | ------------------------------------- | --------------------------------------------- |
-| Projection | N x G > 2000 and quantMode != rank   | GPU crossover ~400 nodes; rank needs float64   |
+| Projection | N × G > 2000 and quantMode != rank   | GPU crossover ~400 nodes; rank needs float64   |
 | Blend      | N > 50,000                            | GPU has ~13ms fixed overhead; faster at scale  |
 | Auto-tune  | always CPU (via `blendFn` default)    | 50-80 blend evals faster on CPU except Amazon  |
 

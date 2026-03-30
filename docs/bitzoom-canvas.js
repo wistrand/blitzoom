@@ -86,11 +86,13 @@ export class BitZoomCanvas {
     this.showLegend = opts.showLegend || false;
     this.showResetBtn = opts.showResetBtn || false;
     this._progressText = null; // overlay text shown during auto-tune
+    this.showFps = opts.showFps || false;
     this._useGPU = false; // when true, blend uses GPU compute
     this._gl = null;       // WebGL2 context (null = Canvas 2D mode)
     this._glCanvas = null; // WebGL canvas element
     this._glWrapper = null; // wrapper div for GL canvas pair
     this._quantStats = {}; // fixed Gaussian boundaries — computed once, reused
+    this._blendGen = 0;   // incremented after each blend — used by heatmap cache
 
     // Initialize WebGL if requested
     if (opts.webgl) this._initWebGL(canvas);
@@ -294,10 +296,34 @@ export class BitZoomCanvas {
     this._renderPending = true;
     requestAnimationFrame(() => {
       this._renderPending = false;
+      const t0 = performance.now();
       if (this._gl) renderGL(this._gl, this);
       render(this);
+      this._lastFrameMs = performance.now() - t0;
+      this._frameCount = (this._frameCount || 0) + 1;
+      const now = performance.now();
+      if (!this._fpsTime) this._fpsTime = now;
+      if (now - this._fpsTime >= 1000) {
+        this._fps = this._frameCount;
+        this._frameCount = 0;
+        this._fpsTime = now;
+      }
+      if (this.showFps) this._drawFps();
       this._postRender();
     });
+  }
+
+  _drawFps() {
+    const ctx = this.ctx;
+    const fps = this._fps || 0;
+    const ms = this._lastFrameMs || 0;
+    const mode = this._gl ? 'GL' : '2D';
+    const text = `${fps} fps · ${ms.toFixed(1)}ms · ${mode}`;
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = 'rgba(200,200,220,0.6)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(text, 6, 6);
   }
 
   /** Hook for post-render actions (e.g., hash state updates). */
@@ -330,10 +356,9 @@ export class BitZoomCanvas {
   hitTest(sx, sy) { return hitTest(this, sx, sy); }
 
   resize() {
-    const el = this._glWrapper || this.canvas;
-    const rect = el.getBoundingClientRect();
-    this.W = Math.floor(rect.width) || this.canvas.offsetWidth || 300;
-    this.H = Math.floor(rect.height) || this.canvas.offsetHeight || 300;
+    // clientWidth/Height = content box (excludes border), matching the canvas drawing area
+    this.W = this.canvas.clientWidth || 300;
+    this.H = this.canvas.clientHeight || 300;
     this.canvas.width = this.W;
     this.canvas.height = this.H;
     if (this._glCanvas) {
@@ -407,7 +432,7 @@ export class BitZoomCanvas {
     const wrapper = document.createElement('div');
     // Copy canvas layout properties to wrapper so it fills the same grid/flex slot
     const cs = getComputedStyle(canvas);
-    wrapper.style.cssText = `position:relative;width:100%;height:100%;min-height:0;overflow:hidden;border:${cs.border};grid-column:${cs.gridColumn};grid-row:${cs.gridRow}`;
+    wrapper.style.cssText = `position:relative;width:${cs.width};height:${cs.height};min-height:0;overflow:hidden;grid-column:${cs.gridColumn};grid-row:${cs.gridRow}`;
     parent.insertBefore(wrapper, canvas);
     wrapper.appendChild(canvas);
     this._glWrapper = wrapper;
@@ -427,7 +452,6 @@ export class BitZoomCanvas {
     canvas.style.height = '100%';
     // Original canvas must be transparent so GL canvas shows through
     canvas.style.background = 'transparent';
-    canvas.style.border = 'none';
     // Insert GL canvas BEFORE the original so it's behind (lower z-order)
     wrapper.insertBefore(this._glCanvas, canvas);
 
@@ -441,7 +465,6 @@ export class BitZoomCanvas {
       canvas.style.left = '';
       canvas.style.width = '';
       canvas.style.height = '';
-      canvas.style.border = '';
       if (this._origCanvasBg !== undefined) {
         canvas.style.background = this._origCanvasBg;
         this._origCanvasBg = undefined;
@@ -479,7 +502,6 @@ export class BitZoomCanvas {
       this.canvas.style.left = '';
       this.canvas.style.width = '';
       this.canvas.style.height = '';
-      this.canvas.style.border = '';
       if (this._origCanvasBg !== undefined) {
         this.canvas.style.background = this._origCanvasBg;
         this._origCanvasBg = undefined;
@@ -493,12 +515,14 @@ export class BitZoomCanvas {
     if (this._useGPU && this.nodes.length > 50000) {
       try {
         await gpuUnifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5, this.quantMode, this._quantStats);
+        this._blendGen++;
         return;
       } catch (e) {
         console.warn('[GPU] Blend failed, falling back to CPU:', e.message);
       }
     }
     unifiedBlend(this.nodes, this.groupNames, this.propWeights, this.smoothAlpha, this.adjList, this.nodeIndexFull, 5, this.quantMode, this._quantStats);
+    this._blendGen++;
   }
 
   /** Update property weights and re-blend */
@@ -604,6 +628,12 @@ export class BitZoomCanvas {
           this.resetView();
           return;
         }
+        // FPS toggle: click in top-left 40×20 area
+        if (mx < 40 && my < 20) {
+          this.showFps = !this.showFps;
+          this.render();
+          return;
+        }
         const hit = this.hitTest(mx, my);
         const isMulti = e.ctrlKey || e.metaKey || e.shiftKey;
         if (hit) {
@@ -705,6 +735,7 @@ export class BitZoomCanvas {
       else if (e.key === 'ArrowRight' && this.currentLevel < LEVEL_LABELS.length - 1) { e.preventDefault(); this.switchLevel(this.currentLevel + 1); }
       else if (e.key === '+' || e.key === '=') { e.preventDefault(); this._zoomBy(1.15); }
       else if (e.key === '-' || e.key === '_') { e.preventDefault(); this._zoomBy(1/1.15); }
+      else if (e.key === 'f') { this.showFps = !this.showFps; this.render(); }
     }, sig);
 
     // Resize
@@ -820,15 +851,6 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
   let smoothAlpha = opts.smoothAlpha || 0;
   let quantMode = opts.quantMode;
 
-  // Skip initial blend if autoTune will redo it anyway
-  const deferBlend = opts.autoTune;
-  const quantStats = {};
-  if (!deferBlend) {
-    // Use GPU blend if GPU is already initialized (e.g., viewer bootstrap probed it)
-    // Otherwise CPU blend — GPU will be available for subsequent interactive changes
-    unifiedBlend(nodes, groupNames, propWeights, smoothAlpha, adjList, nodeIndexFull, 5, quantMode, quantStats);
-  }
-
   const view = new BitZoomCanvas(canvas, {
     nodes, edges, nodeIndexFull, adjList,
     groupNames, propWeights, propColors,
@@ -838,22 +860,31 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
     quantMode,
     ...opts,
   });
-  view._quantStats = quantStats;
 
-  // Auto-tune: run async in background, apply results and re-render when done.
-  // The view is returned immediately with default weights; auto-tune updates it.
-  if (opts.autoTune) {
-    view.showProgress('Auto-tuning...');
-    const tuneOpts = { ...opts.autoTune };
-    // Auto-tune always uses CPU blend (fast, no GPU buffer overhead per eval).
-    // The final rebuildProjections after auto-tune uses GPU blend if active.
-    tuneOpts.onProgress = (info) => {
-      const pct = Math.round(100 * info.step / Math.max(1, info.total));
-      const phase = info.phase === 'presets' ? 'scanning presets'
-        : info.phase === 'done' ? 'done' : 'refining';
-      view.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
-    };
-    autoTuneWeights(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, tuneOpts).then(async result => {
+  // Async init: probe GPU → blend → (optional auto-tune) → render.
+  // Factory returns immediately; view renders once blend completes.
+  const wantGPU = opts.useGPU || (opts.autoGPU !== false && nodes.length * groupNames.length > 2000);
+  (async () => {
+    // Probe GPU (fast no-op if unavailable or not wanted)
+    if (wantGPU) {
+      const ok = await initGPU().catch(() => false);
+      if (ok) {
+        view.useGPU = true;
+        console.log(`[GPU] GPU enabled (${nodes.length} nodes, ${groupNames.length} groups)`);
+      }
+    }
+
+    if (opts.autoTune) {
+      // Auto-tune: scan presets + refine, then blend with best params
+      view.showProgress('Auto-tuning...');
+      const tuneOpts = { ...opts.autoTune };
+      tuneOpts.onProgress = (info) => {
+        const pct = Math.round(100 * info.step / Math.max(1, info.total));
+        const phase = info.phase === 'presets' ? 'scanning presets'
+          : info.phase === 'done' ? 'done' : 'refining';
+        view.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
+      };
+      const result = await autoTuneWeights(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, tuneOpts);
       if (tuneOpts.weights !== false && !opts.weights) {
         for (const g of view.groupNames) view.propWeights[g] = result.weights[g] ?? 0;
       }
@@ -863,26 +894,16 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
         view.labelProps = new Set(result.labelProps.filter(p => view.groupNames.includes(p)));
       }
       view._quantStats = {};
-      view.levels = new Array(ZOOM_LEVELS.length).fill(null);
-      await view._blend();
-      view._progressText = null;
-      view._refreshPropCache();
-      view.layoutAll();
-      view.render();
-    });
-  }
+    }
 
-  // GPU mode for embedded views: init GPU async, enable GPU blend for interactive changes.
-  // Initial blend uses CPU (sync). GPU kicks in for subsequent weight/alpha changes.
-  // Viewer path handles this differently: GPU is pre-initialized at bootstrap.
-  if (opts.useGPU) {
-    initGPU().then(ok => {
-      if (ok) {
-        view.useGPU = true;
-        console.log('[GPU] GPU blend enabled for embedded view');
-      }
-    }).catch(() => {});
-  }
+    // Blend (GPU if enabled and large enough, else CPU)
+    view.levels = new Array(ZOOM_LEVELS.length).fill(null);
+    await view._blend();
+    view._progressText = null;
+    view._refreshPropCache();
+    view.layoutAll();
+    view.render();
+  })();
 
   return view;
 }

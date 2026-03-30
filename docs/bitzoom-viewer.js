@@ -1068,8 +1068,9 @@ class BitZoom {
                     nodesText = await this._fetchText(dataset.nodes).catch(() => null);
                 }
             }
-            console.log(`[Load] Dataset: ${dataset.name}, GPU: ${!!this.view.useGPU}`);
-            if (this.view.useGPU) {
+            const useGPUPath = this._gpuMode === 'gpu' || (this._gpuMode === 'auto' && !this._gpuUnavailable);
+            console.log(`[Load] Dataset: ${dataset.name}, gpuMode: ${this._gpuMode}, gpuPath: ${useGPUPath}`);
+            if (useGPUPath) {
                 await this.loadGraphGPU(edgesText, nodesText, dataset);
             } else {
                 await this.loadGraph(edgesText, nodesText);
@@ -1247,42 +1248,66 @@ class BitZoom {
             console.log(`Auto-tune: ${result.blends} blends, ${result.quants} quants in ${result.timeMs}ms, score=${result.score.toFixed(3)}`);
         }, sig);
 
-        // GPU toggle: re-project using WebGPU compute. When active, new data loads also use GPU.
+        // GPU tri-state: auto (adaptive thresholds) → gpu (always) → cpu (never) → auto
         const gpuBtn = document.getElementById('gpuBtn');
+        if (!this._gpuMode) this._gpuMode = 'auto';
+        const GPU_LABELS = { auto: 'Auto', gpu: 'GPU', cpu: 'CPU' };
         const updateGpuBtn = () => {
-            gpuBtn.style.background = v.useGPU ? 'var(--accent)' : '';
-            gpuBtn.style.color = v.useGPU ? '#fff' : '';
-            gpuBtn.textContent = this._gpuUnavailable ? 'N/A' : 'GPU';
+            if (this._gpuUnavailable) {
+                gpuBtn.textContent = 'N/A';
+                gpuBtn.style.background = '';
+                gpuBtn.style.color = '';
+                return;
+            }
+            gpuBtn.textContent = GPU_LABELS[this._gpuMode];
+            const active = this._gpuMode === 'gpu' || (this._gpuMode === 'auto' && v.useGPU);
+            gpuBtn.style.background = active ? 'var(--accent)' : '';
+            gpuBtn.style.color = active ? '#fff' : '';
         };
+        gpuBtn.title = 'GPU compute: Auto (adaptive) / GPU (always) / CPU (never)';
         gpuBtn.addEventListener('click', async () => {
             if (this._gpuUnavailable) return;
+            // Cycle: auto → gpu → cpu → auto
+            const next = { auto: 'gpu', gpu: 'cpu', cpu: 'auto' };
+            this._gpuMode = next[this._gpuMode];
 
-            // Toggle off: reload with CPU pipeline
-            if (v.useGPU) {
+            if (this._gpuMode === 'cpu') {
                 v.useGPU = false;
                 updateGpuBtn();
                 await this._reloadCPU();
-                return;
-            }
-
-            // Toggle on: init GPU, then re-project current data
-            gpuBtn.disabled = true;
-            gpuBtn.textContent = '...';
-            v.showProgress('Initializing GPU...');
-
-            const ok = await initGPU();
-            if (!ok) {
-                v.showProgress(null);
-                this._gpuUnavailable = true;
-                updateGpuBtn();
+            } else if (this._gpuMode === 'gpu') {
                 gpuBtn.disabled = true;
-                return;
+                gpuBtn.textContent = '...';
+                v.showProgress('Initializing GPU...');
+                const ok = await initGPU();
+                if (!ok) {
+                    v.showProgress(null);
+                    this._gpuUnavailable = true;
+                    updateGpuBtn();
+                    gpuBtn.disabled = true;
+                    return;
+                }
+                v.useGPU = true;
+                await this._applyGPUToCurrentData();
+                updateGpuBtn();
+                gpuBtn.disabled = false;
+            } else {
+                // auto: apply adaptive logic based on current dataset size
+                const N = v.nodes ? v.nodes.length : 0;
+                const G = v.groupNames ? v.groupNames.length : 0;
+                const shouldUseGPU = N * G > 2000;
+                if (shouldUseGPU && !v.useGPU) {
+                    const ok = await initGPU().catch(() => false);
+                    if (ok) {
+                        v.useGPU = true;
+                        await this._applyGPUToCurrentData();
+                    }
+                } else if (!shouldUseGPU && v.useGPU) {
+                    v.useGPU = false;
+                    await this._reloadCPU();
+                }
+                updateGpuBtn();
             }
-
-            v.useGPU = true;
-            await this._applyGPUToCurrentData();
-            updateGpuBtn();
-            gpuBtn.disabled = false;
         }, sig);
 
         // GL toggle: switch between Canvas 2D and WebGL2 rendering
@@ -1341,6 +1366,12 @@ class BitZoom {
                 if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; return; }
                 const r = canvas.getBoundingClientRect();
                 const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+                // FPS toggle: click in top-left 40×20 area
+                if (p.x < 40 && p.y < 20) {
+                    v.showFps = !v.showFps;
+                    v.render();
+                    return;
+                }
                 const isMulti = e.ctrlKey || e.metaKey || e.shiftKey;
                 clickTimer = setTimeout(() => {
                     clickTimer = null;
@@ -1487,6 +1518,9 @@ class BitZoom {
                 v.pan.x = v.W/2 - (v.W/2 - v.pan.x) * f;
                 v.pan.y = v.H/2 - (v.H/2 - v.pan.y) * f;
                 v.render();
+            } else if (e.key === 'f') {
+                v.showFps = !v.showFps;
+                v.render();
             }
         }, sig);
 
@@ -1551,7 +1585,8 @@ class BitZoom {
             progressBar.value = 0;
             document.getElementById('loadBtn').disabled = true;
             try {
-                if (v.useGPU) await this.loadGraphGPU(this.pendingEdgesText, this.pendingNodesText, null);
+                const gpuPath = this._gpuMode === 'gpu' || (this._gpuMode === 'auto' && !this._gpuUnavailable);
+                if (gpuPath) await this.loadGraphGPU(this.pendingEdgesText, this.pendingNodesText, null);
                 else await this.loadGraph(this.pendingEdgesText, this.pendingNodesText);
                 this._finalizeLoad(null);
             }
@@ -1680,15 +1715,16 @@ window.bz = bz;
 
 // Probe WebGPU, then load initial dataset
 (async () => {
+  bz._gpuMode = 'auto';
   try {
     const gpuOk = await initGPU();
     const gpuBtn = document.getElementById('gpuBtn');
     if (gpuOk) {
       bz.view.useGPU = true;
-      console.log('[GPU] WebGPU available — GPU mode enabled');
-      if (gpuBtn) { gpuBtn.style.background = 'var(--accent)'; gpuBtn.style.color = '#fff'; }
+      console.log('[GPU] WebGPU available — auto mode');
+      if (gpuBtn) { gpuBtn.textContent = 'Auto'; gpuBtn.style.background = 'var(--accent)'; gpuBtn.style.color = '#fff'; }
     } else {
-      console.log('[GPU] WebGPU not available — using CPU pipeline');
+      console.log('[GPU] WebGPU not available — CPU only');
       if (gpuBtn) { gpuBtn.textContent = 'N/A'; gpuBtn.disabled = true; bz._gpuUnavailable = true; }
     }
   } catch (err) {

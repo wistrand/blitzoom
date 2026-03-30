@@ -30,9 +30,10 @@ await initGPU()
 If any step fails, `_gpuUnavailable = true`, GPU button shows "N/A", all
 operations use CPU. The probe completes before the first dataset load.
 
-For embedded views (`createBitZoomView` with `useGPU: true`), GPU init is
-async and non-blocking. The initial render uses CPU; GPU kicks in for
-subsequent interactive changes once initialization completes.
+For embedded views, `createBitZoomView` accepts `autoGPU: true` (default) to
+auto-enable WebGPU when N×G > 2000. The factory returns synchronously; initial
+blend kicks off async (GPU probe → blend → render). GPU kicks in for the
+initial blend and subsequent interactive changes once initialization completes.
 
 ## Projection: GPU vs CPU selection
 
@@ -142,21 +143,26 @@ loadDataset → loadGraphGPU:
 ### Path C: Embedded (createBitZoomView)
 
 ```
-runPipeline (CPU) → _finalize:
-  CPU blend + quantize → create view → return immediately
-  async: initGPU() → set view._useGPU = true
-  (subsequent interactive changes use GPU blend)
+runPipeline (CPU) → create view → return immediately (sync)
+  async: initGPU() → GPU probe → blend → quantize → render
+  (autoGPU: true by default, enables GPU when N×G > 2000)
 ```
 
-## GPU toggle (viewer)
+## GPU tri-state (viewer)
 
-**On → Off:**
+The GPU button cycles through three states: **Auto** (default) → **GPU** → **CPU**.
+
+- **Auto**: adaptive thresholds — GPU projection when N×G > 2000, GPU blend when N > 50K.
+- **GPU**: forces all operations to GPU (projection + blend).
+- **CPU**: forces all operations to CPU (Web Workers + synchronous blend).
+
+**GPU/Auto → CPU:**
 ```
 _useGPU = false, v._useGPU = false
 → _reloadCPU() → loadGraph (workers) → _finalizeLoad (CPU blend)
 ```
 
-**Off → On:**
+**CPU → Auto/GPU:**
 ```
 await initGPU()
 → _useGPU = true, v._useGPU = true
@@ -194,12 +200,13 @@ is essential — CPU auto-tune exceeds the 20s timeout. An adaptive threshold
 
 ### Adaptive GPU/CPU selection
 
-Implemented in `_blend()` (bitzoom-canvas.js) and `loadGraphGPU()` (bitzoom-viewer.js):
+Implemented in `_blend()` (bitzoom-canvas.js) and `loadGraphGPU()` (bitzoom-viewer.js).
+Viewer GPU button cycles Auto → GPU → CPU. Auto uses adaptive thresholds:
 
-| Operation | GPU when | Reason |
-| --- | --- | --- |
-| Projection | N×G > 2000 and quantMode ≠ rank | GPU crossover ~400 nodes; rank quant needs float64 precision |
-| Blend | N > 50,000 | GPU has ~13ms fixed overhead; only faster at large scale |
+| Operation  | Auto GPU when                           | Reason                                              |
+| ---------- | --------------------------------------- | --------------------------------------------------- |
+| Projection | N×G > 2000 and quantMode ≠ rank        | GPU crossover ~400 nodes; rank quant needs float64   |
+| Blend      | N > 50,000                              | GPU has ~13ms fixed overhead; only faster at scale   |
 
 Auto-tune always uses CPU blend (synchronous `blendAndScore`). The `blendFn`
 option is available for future async GPU auto-tune but not wired up — CPU is

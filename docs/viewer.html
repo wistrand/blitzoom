@@ -21,7 +21,7 @@
 <header>
   <div>
     <h1><a href="index.html" style="color:inherit;text-decoration:none" title="Home">BITZOOM</a></h1>
-    <div class="subtitle"><a href="about.html" style="color:var(--text-dim);font-size:10px">How It Works</a> &middot; <a href="howto.html" style="color:var(--text-dim);font-size:10px">Developer Guide</a> &middot; <a href="comparison.html" style="color:var(--text-dim);font-size:10px">Comparison</a></div>
+    <div class="subtitle"><a href="about.html" style="color:var(--text-dim);font-size:10px">How It Works</a> &middot; <a href="comparison.html" style="color:var(--text-dim);font-size:10px">Comparison</a> &middot; <a href="howto.html" style="color:var(--text-dim);font-size:10px">Developer Guide</a></div>
   </div>
   <div class="zoom-controls">
     <button class="reset-btn" id="loadNewBtn" style="display:none">Load</button>
@@ -49,7 +49,7 @@
     <button class="reset-btn" id="edgeModeBtn" title="Edge mode: curves/lines/none">E</button>
     <button class="reset-btn" id="heatmapBtn" title="Toggle heatmap">H</button>
     <button class="reset-btn" id="autoTuneBtn" title="Auto-tune weights, alpha, and quantization">Auto</button>
-    <button class="reset-btn" id="gpuBtn" title="Re-project using WebGPU compute">GPU</button>
+    <button class="reset-btn" id="gpuBtn" title="GPU compute: Auto / GPU / CPU" style="width:42px;text-align:center">Auto</button>
     <button class="reset-btn" id="glBtn" title="Toggle WebGL2 rendering">GL</button>
   </div>
 </header>
@@ -91,8 +91,7 @@
       Click a node or supernode to inspect it. Zoom levels L0–L3 show increasingly fine MinHash bucket partitions.
     </div>
   </div>
-  <div>
-    <div class="panel-title">Hint</div>
+  <div class="hint-section">
     <div class="hint">Drag to pan · Scroll to zoom canvas · Click node to inspect</div>
   </div>
 </div>

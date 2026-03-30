@@ -165,6 +165,7 @@
 
 <nav class="toc" id="toc">
   <a href="#why">Why compare?</a>
+  <a href="#guide">Decision guide</a>
   <a href="#metrics">What we measured</a>
   <a href="#summary">The short version</a>
   <a href="#datasets">Dataset by dataset</a>
@@ -177,6 +178,7 @@
   <a href="index.html">Home</a> &middot;
   <a href="viewer.html">Viewer</a> &middot;
   <a href="about.html">How It Works</a> &middot;
+  <a href="comparison.html">Comparison</a> &middot;
   <a href="howto.html">Developer Guide</a> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <a href="webgl.html">WebGL</a> &middot;
@@ -201,6 +203,36 @@ both <strong>topology preservation</strong> (do connected nodes end up nearby?) 
 up nearby?). Topology metrics favor force-directed methods; property metrics evaluate
 BitZoom's core design goal.</p>
 
+<h2 id="guide">Which method should I use?</h2>
+
+<table>
+<tr>
+  <th style="text-align:left">Method</th>
+  <th style="text-align:left">Best when</th>
+  <th style="text-align:left">Tradeoff</th>
+</tr>
+<tr>
+  <td>BitZoom</td>
+  <td class="note">Property similarity matters more than connectivity. Interactive exploration, zoom levels, millisecond speed.</td>
+  <td class="note">Weaker on sparse chain topologies.</td>
+</tr>
+<tr>
+  <td>ForceAtlas2</td>
+  <td class="note">Topology IS the signal. Social networks, connectivity analysis, chain-like graphs.</td>
+  <td class="note">Slower (minutes). No property awareness.</td>
+</tr>
+<tr>
+  <td>UMAP</td>
+  <td class="note">Dimensionality reduction with interpretable embeddings. High-dimensional feature data.</td>
+  <td class="note">Seconds, not milliseconds. Seed-dependent.</td>
+</tr>
+<tr>
+  <td>t-SNE</td>
+  <td class="note">Revealing fine-grained local clusters. Best local topology preservation.</td>
+  <td class="note">Requires perplexity tuning. Slow.</td>
+</tr>
+</table>
+
 <h2 id="metrics">What we measured</h2>
 
 <ul>
@@ -209,6 +241,8 @@ BitZoom's core design goal.</p>
 <li><strong>PropNbrP:</strong> Do a node's most property-similar nodes end up as its layout neighbors? Jaccard overlap at k=10. Higher = better property grouping. Measured using per-node token sets (the same tokens BitZoom's MinHash operates on).</li>
 <li><strong>Silhouette:</strong> Do known communities form visible clusters? Score vs ground-truth labels, -1 to +1. Only available for Email-EU (42 departments).</li>
 </ul>
+
+<p>We use k=10 neighbors as a balance between local structure fidelity and global layout quality.</p>
 
 <h2 id="summary">The short version</h2>
 

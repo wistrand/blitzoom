@@ -28,8 +28,11 @@ export function initGL(glCanvas) {
   if (!gl) { console.log('[GL] WebGL2 context creation failed'); return null; }
   console.log('[GL] WebGL2 context created');
 
-  // Enable float/half-float rendering for heatmap FBO
+  // Enable float/half-float rendering + blending + filtering for heatmap FBO
   gl.getExtension('EXT_color_buffer_half_float');
+  gl.getExtension('EXT_color_buffer_float');
+  gl.getExtension('EXT_float_blend');
+  gl._hasFloatLinear = !!gl.getExtension('OES_texture_float_linear');
   gl.getExtension('EXT_color_buffer_float');
 
   // Compile shaders and programs
@@ -91,6 +94,7 @@ export function initGL(glCanvas) {
   gl._heatMaxW = 0;
   gl._heatMaxWTarget = 0;
   gl._heatMaxWKey = '';
+  gl._heatFBOBroken = false;
   gl._heatMaxWTime = 0;
 
   // VAOs
@@ -500,7 +504,6 @@ function _ensureHeatFBO(gl, w, h) {
 
   gl._heatTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, gl._heatTex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, fw, fh, 0, gl.RGBA, gl.HALF_FLOAT, null);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -508,19 +511,28 @@ function _ensureHeatFBO(gl, w, h) {
 
   gl._heatFBO = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, gl._heatFBO);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, gl._heatTex, 0);
 
-  let fbStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-  if (fbStatus !== gl.FRAMEBUFFER_COMPLETE) {
-    console.warn('[GL] Heatmap FBO incomplete:', fbStatus, '— falling back to RGBA8');
-    gl.bindTexture(gl.TEXTURE_2D, gl._heatTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, fw, fh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  // Try formats: RGBA16F (filterable in WebGL2) → RGBA32F (if linear supported) → RGBA8
+  const formats = [
+    { internal: gl.RGBA16F, type: gl.HALF_FLOAT, name: 'RGBA16F' },
+  ];
+  if (gl._hasFloatLinear) {
+    formats.unshift({ internal: gl.RGBA32F, type: gl.FLOAT, name: 'RGBA32F' });
+  }
+  formats.push({ internal: gl.RGBA8, type: gl.UNSIGNED_BYTE, name: 'RGBA8' });
+  let fboOk = false;
+  for (const fmt of formats) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, fmt.internal, fw, fh, 0, gl.RGBA, fmt.type, null);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, gl._heatTex, 0);
-    fbStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (fbStatus !== gl.FRAMEBUFFER_COMPLETE) {
-      console.error('[GL] Heatmap FBO still incomplete after RGBA8 fallback');
-      gl._heatFBOBroken = true;
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
+      if (fmt.name !== 'RGBA32F') console.log(`[GL] Heatmap FBO using ${fmt.name}`);
+      fboOk = true;
+      break;
     }
+  }
+  if (!fboOk) {
+    console.error('[GL] Heatmap FBO: no format works');
+    gl._heatFBOBroken = true;
   }
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -628,6 +640,19 @@ function scaleSize(val, bz) {
   return bz.sizeLog ? Math.log2(val + 1) : val;
 }
 
+// ─── Persistent typed-array buffers (reused across frames, never shrunk) ──────
+
+let _edgeBuf = new Float32Array(0);
+let _hiliteBuf = new Float32Array(0);
+let _circleBuf = new Float32Array(0);
+let _glowBuf = new Float32Array(0);
+let _heatBuf = new Float32Array(0);
+
+function _ensureBuf(buf, minFloats) {
+  if (buf.length >= minFloats) return buf;
+  return new Float32Array(Math.max(minFloats, buf.length * 2));
+}
+
 // ─── Edge hash (deterministic sampling, matches Canvas 2D renderer) ───────────
 
 function edgeHash(i) {
@@ -685,7 +710,8 @@ function _buildEdgeInstances(bz) {
   const maxEdges = maxEdgesToDraw(nodeCount);
   const sampleRate = edges.length > maxEdges ? maxEdges / edges.length : 1;
   // 8 floats per edge instance: startX, startY, endX, endY, r, g, b, a
-  const normalEdges = new Float32Array(Math.min(edges.length, maxEdges) * 8);
+  _edgeBuf = _ensureBuf(_edgeBuf, Math.min(edges.length, maxEdges) * 8);
+  const normalEdges = _edgeBuf;
   let normalCount = 0;
   let drawn = 0;
 
@@ -727,7 +753,8 @@ function _buildEdgeInstances(bz) {
 
   // Highlighted edges for selected/hovered
   if (hasSel || hov !== null) {
-    const hBuf = new Float32Array(edges.length * 8);
+    _hiliteBuf = _ensureBuf(_hiliteBuf, edges.length * 8);
+    const hBuf = _hiliteBuf;
     let hCount = 0;
     for (let i = 0; i < edges.length; i++) {
       const e = edges[i];
@@ -794,24 +821,34 @@ function _buildCircleInstances(bz) {
   const rMin = isRaw ? 1 : 1.5;
   const rScale = isRaw ? 1.0 : 1.2;
 
-  // Count visible nodes + compute maxSizeVal for importance
-  let visibleCount = 0, maxSizeVal = 1;
-  const margin = cellPx * 0.5;
-  for (let i = 0; i < allNodes.length; i++) {
-    const n = allNodes[i];
-    const sx = n.x * rz + bz.pan.x, sy = n.y * rz + bz.pan.y;
-    if (sx >= -margin && sx <= W + margin && sy >= -margin && sy <= H + margin) {
-      visibleCount++;
-      const sv = scaleSize(getSizeVal(n), bz);
-      if (sv > maxSizeVal) maxSizeVal = sv;
+  // Count visible nodes + compute maxSizeVal for importance (cached per frame)
+  const visKey = bz.pan.x + '|' + bz.pan.y + '|' + rz + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.currentLevel;
+  if (bz._glVisKey !== visKey) {
+    let vc = 0, ms = 1;
+    const margin = cellPx * 0.5;
+    for (let i = 0; i < allNodes.length; i++) {
+      const n = allNodes[i];
+      const sx = n.x * rz + bz.pan.x, sy = n.y * rz + bz.pan.y;
+      if (sx >= -margin && sx <= W + margin && sy >= -margin && sy <= H + margin) {
+        vc++;
+        const sv = scaleSize(getSizeVal(n), bz);
+        if (sv > ms) ms = sv;
+      }
     }
+    bz._glVisKey = visKey;
+    bz._glVisCount = vc;
+    bz._glMaxSize = ms;
   }
+  const visibleCount = bz._glVisCount;
+  const maxSizeVal = bz._glMaxSize;
 
-  // Build circle + glow instances
-  // 11 floats per instance
-  const circles = new Float32Array(allNodes.length * 11);
-  const glows = [];
-  let circleCount = 0;
+  // Build circle + glow instances — persistent buffers, 11 floats per instance
+  _circleBuf = _ensureBuf(_circleBuf, allNodes.length * 11);
+  const circles = _circleBuf;
+  const maxGlows = selIds.size + (hov !== null ? 1 : 0);
+  _glowBuf = _ensureBuf(_glowBuf, Math.max(1, maxGlows) * 11);
+  const glows = _glowBuf;
+  let circleCount = 0, glowCount = 0;
 
   for (let i = 0; i < allNodes.length; i++) {
     const n = allNodes[i];
@@ -857,11 +894,16 @@ function _buildCircleInstances(bz) {
     // Glow for selected/hovered
     if (isSelected || isHovered) {
       const glowR = r * (isRaw ? 3 : 2.5);
-      glows.push(px, py, glowR, rgb[0], rgb[1], rgb[2], isSelected ? 0.27 : 0.2, 0, 0, 0, 0);
+      const gOff = glowCount * 11;
+      glows[gOff] = px; glows[gOff+1] = py; glows[gOff+2] = glowR;
+      glows[gOff+3] = rgb[0]; glows[gOff+4] = rgb[1]; glows[gOff+5] = rgb[2];
+      glows[gOff+6] = isSelected ? 0.27 : 0.2;
+      glows[gOff+7] = 0; glows[gOff+8] = 0; glows[gOff+9] = 0; glows[gOff+10] = 0;
+      glowCount++;
     }
   }
 
-  return { circles: circles.subarray(0, circleCount * 11), circleCount, glows: new Float32Array(glows), glowCount: glows.length / 11 };
+  return { circles: circles.subarray(0, circleCount * 11), circleCount, glows: glows.subarray(0, glowCount * 11), glowCount };
 }
 
 // ─── Build heatmap splat instances ────────────────────────────────────────────
@@ -880,7 +922,8 @@ function _buildHeatInstances(bz) {
 
   // 11 floats per instance (same layout as circle VAO)
   // Positions and radius in FBO grid coordinates (screen / scale)
-  const data = new Float32Array(allNodes.length * 11);
+  _heatBuf = _ensureBuf(_heatBuf, allNodes.length * 11);
+  const data = _heatBuf;
   let count = 0;
 
   for (let i = 0; i < allNodes.length; i++) {
@@ -916,12 +959,47 @@ function _buildHeatInstances(bz) {
     count++;
   }
 
-  return { data: data.subarray(0, count * 11), count, gw, gh };
+  return { data: data.subarray(0, count * 11), count, gw, gh, kernelR };
+}
+
+let _heatWGrid = null; // persistent weight grid for maxW computation
+
+/** Compute CPU-side maxW using kernel accumulation (expensive, called only when cache key changes) */
+function _computeHeatMaxW(data, count, gw, gh, kernelR) {
+  const kernelRSq = kernelR * kernelR;
+  const totalCells = gw * gh;
+  if (!_heatWGrid || _heatWGrid.length < totalCells) {
+    _heatWGrid = new Float32Array(Math.max(totalCells, 1));
+  }
+  _heatWGrid.fill(0, 0, totalCells);
+
+  for (let i = 0; i < count; i++) {
+    const off = i * 11;
+    const ngx = data[off], ngy = data[off + 1], nw = data[off + 6];
+    const x0 = Math.max(0, ngx - kernelR | 0);
+    const x1 = Math.min(gw - 1, ngx + kernelR + 1 | 0);
+    const y0 = Math.max(0, ngy - kernelR | 0);
+    const y1 = Math.min(gh - 1, ngy + kernelR + 1 | 0);
+    for (let cy = y0; cy <= y1; cy++) {
+      const dy = cy - ngy, dySq = dy * dy;
+      const rowOff = cy * gw;
+      for (let cx = x0; cx <= x1; cx++) {
+        const dx = cx - ngx;
+        const distSq = dx * dx + dySq;
+        if (distSq > kernelRSq) continue;
+        const t = 1 - distSq / kernelRSq;
+        _heatWGrid[rowOff + cx] += t * t * nw;
+      }
+    }
+  }
+  let maxW = 0;
+  for (let i = 0; i < totalCells; i++) if (_heatWGrid[i] > maxW) maxW = _heatWGrid[i];
+  return maxW;
 }
 
 // Compute maxW from FBO by reading back a small portion (expensive, so cached)
 function _heatmapCacheKey(bz) {
-  return bz.currentLevel + '|' + bz.renderZoom.toFixed(1) + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.W + '|' + bz.H;
+  return bz.currentLevel + '|' + bz.renderZoom.toFixed(1) + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.W + '|' + bz.H + '|' + (bz._blendGen || 0);
 }
 
 function _renderHeatmapDensity(gl, bz) {
@@ -930,11 +1008,10 @@ function _renderHeatmapDensity(gl, bz) {
   if (gl._heatFBOBroken) return;
   const fw = gl._heatW, fh = gl._heatH;
 
-  const { data, count, gw, gh } = _buildHeatInstances(bz);
+  const { data, count, gw, gh, kernelR } = _buildHeatInstances(bz);
   if (count === 0) return;
 
   // Pass 1: splat to FBO with additive blending
-  // Positions are in FBO grid coordinates (screen / 4)
   gl.bindFramebuffer(gl.FRAMEBUFFER, gl._heatFBO);
   gl.viewport(0, 0, fw, fh);
   gl.clearColor(0, 0, 0, 0);
@@ -946,68 +1023,17 @@ function _renderHeatmapDensity(gl, bz) {
   gl.useProgram(gl._heatSplatProg);
   gl.uniform2f(gl._heatSplatProg.u_resolution, gw, gh);
 
-  gl.bindVertexArray(gl._circleVAO); // reuse circle VAO (same instance layout)
+  gl.bindVertexArray(gl._circleVAO);
   gl.bindBuffer(gl.ARRAY_BUFFER, gl._instanceVBO);
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
   gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, count);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  // Compute maxW on CPU using same kernel as Canvas 2D (quarter-res grid, weight-only)
+  // Recompute maxW only when blend/level/zoom/size changes (expensive for large datasets)
   const cacheKey = _heatmapCacheKey(bz);
   if (cacheKey !== gl._heatMaxWKey) {
-    const scale = 4;
-    const gw = Math.ceil(W / scale);
-    const gh = Math.ceil(H / scale);
-    const kernelR = Math.max(8, Math.min(40, Math.min(gw, gh) / 8));
-    const kernelRSq = kernelR * kernelR;
-    const totalCells = gw * gh;
-
-    // Allocate/reuse weight buffer
-    if (!gl._heatWBuf || gl._heatWBuf.length < totalCells) {
-      gl._heatWBuf = new Float32Array(totalCells);
-    }
-    gl._heatWBuf.fill(0);
-
-    const rz = bz.renderZoom;
-    const isRaw = bz.currentLevel === RAW_LEVEL;
-    const allNodes = isRaw ? bz.nodes : bz.getLevel(bz.currentLevel).supernodes;
-
-    for (let i = 0; i < allNodes.length; i++) {
-      const n = allNodes[i];
-      const gx = (n.x * rz + bz.pan.x) / scale;
-      const gy = (n.y * rz + bz.pan.y) / scale;
-      if (gx < -kernelR || gx > gw + kernelR || gy < -kernelR || gy > gh + kernelR) continue;
-
-      let weight;
-      if (isRaw) {
-        weight = scaleSize(bz.sizeBy === 'edges' ? (n.degree + 1) : 1, bz);
-      } else {
-        weight = scaleSize(bz.sizeBy === 'edges' ? (n.totalDegree + 1) : n.members.length, bz);
-      }
-
-      const x0 = Math.max(0, gx - kernelR | 0);
-      const x1 = Math.min(gw - 1, gx + kernelR + 1 | 0);
-      const y0 = Math.max(0, gy - kernelR | 0);
-      const y1 = Math.min(gh - 1, gy + kernelR + 1 | 0);
-
-      for (let cy = y0; cy <= y1; cy++) {
-        const dy = cy - gy;
-        const dySq = dy * dy;
-        const rowOff = cy * gw;
-        for (let cx = x0; cx <= x1; cx++) {
-          const dx = cx - gx;
-          const distSq = dx * dx + dySq;
-          if (distSq > kernelRSq) continue;
-          const t = 1 - distSq / kernelRSq;
-          gl._heatWBuf[rowOff + cx] += t * t * weight;
-        }
-      }
-    }
-
-    let maxW = 0;
-    for (let i = 0; i < totalCells; i++) if (gl._heatWBuf[i] > maxW) maxW = gl._heatWBuf[i];
-
+    const maxW = _computeHeatMaxW(data, count, gw, gh, kernelR);
     gl._heatMaxWTarget = maxW || 1;
     gl._heatMaxWKey = cacheKey;
     gl._heatMaxWTime = performance.now();
@@ -1050,7 +1076,8 @@ function _buildSplatInstances(bz) {
   const isRaw = bz.currentLevel === RAW_LEVEL;
   const allNodes = isRaw ? bz.nodes : bz.getLevel(bz.currentLevel).supernodes;
 
-  const data = new Float32Array(allNodes.length * 11);
+  _heatBuf = _ensureBuf(_heatBuf, allNodes.length * 11);
+  const data = _heatBuf;
   let count = 0;
 
   for (let i = 0; i < allNodes.length; i++) {
