@@ -324,7 +324,7 @@
   <div class="tldr-title">TL;DR — The Pipeline in 30 Seconds</div>
   <p>Each node's properties (labels, categories, numeric fields) are broken into short string tokens. Those tokens are hashed through <strong>MinHash</strong> to produce a fixed-size signature per property group — a compact fingerprint where similar nodes naturally share more hash values. Each signature is then projected onto a 2D point using Gaussian random vectors, so similarity in property space becomes proximity on the canvas.</p>
   <p>Multiple property groups (e.g., platform, kill chain, version) each produce their own 2D coordinate. A <strong>weighted blend</strong> merges them into a single position, with an optional topology term (alpha) that pulls connected nodes closer. The blended coordinates are quantized onto a 16-bit integer grid using Gaussian CDF normalization, which spreads nodes evenly while preserving relative distances.</p>
-  <p>Zoom levels come free: shifting grid coordinates right by one bit halves the resolution, collapsing nearby nodes into aggregate "supernodes." This gives you six stable, hierarchical zoom levels — from full overview down to individual nodes — with no re-layout at any step.</p>
+  <p>Zoom levels come free: shifting grid coordinates right by one bit halves the resolution, collapsing nearby nodes into aggregate "supernodes." This gives you 14 stable, hierarchical zoom levels — from full overview down to individual nodes — with no re-layout at any step.</p>
 </div>
 
 <h2 id="pipeline">The Pipeline</h2>
