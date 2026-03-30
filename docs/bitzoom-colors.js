@@ -85,6 +85,16 @@ const GRAYSCALE = [
 
 // ─── Scheme registry ──────────────────────────────────────────────────────────
 
+export const SCHEME_VIVID     = 0;
+export const SCHEME_VIRIDIS   = 1;
+export const SCHEME_PLASMA    = 2;
+export const SCHEME_INFERNO   = 3;
+export const SCHEME_THERMAL   = 4;
+export const SCHEME_GRAYSCALE = 5;
+export const SCHEME_DIVERGING = 6;
+export const SCHEME_GREENS    = 7;
+export const SCHEME_REDS      = 8;
+
 export const COLOR_SCHEME_NAMES = [
   'vivid', 'viridis', 'plasma', 'inferno', 'thermal',
   'grayscale', 'diverging', 'greens', 'reds',

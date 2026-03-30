@@ -3,6 +3,45 @@
 
 import { RAW_LEVEL, ZOOM_LEVELS, GRID_SIZE, GRID_BITS, cellIdAtLevel } from './bitzoom-algo.js';
 
+// Theme-aware colors — dark vs light mode
+const THEME = {
+  dark: {
+    grid: 'rgba(60,60,100,0.6)',
+    labelBright: '#fff',
+    labelHover: 'rgba(230,230,255,0.95)',
+    labelNeighbor: 'rgba(210,210,245,0.8)',
+    labelDim: 'rgba(220,220,255,0.85)',
+    labelRawDim: 'rgba(200,200,220,0.75)',
+    countFill: '#ffffffcc',
+    shadowColor: 'rgba(0,0,0,0.9)',
+    shadowNeighbor: 'rgba(0,0,0,0.85)',
+    legendBg: 'rgba(10, 10, 15, 0.75)',
+    legendText: '#c8c8d8',
+    legendOverflow: '#8888a0',
+    resetBg: 'rgba(10, 10, 15, 0.65)',
+    resetText: '#8888a0',
+    fpsFill: 'rgba(200,200,220,0.6)',
+  },
+  light: {
+    grid: 'rgba(100,100,140,0.25)',
+    labelBright: '#111',
+    labelHover: 'rgba(30,30,60,0.9)',
+    labelNeighbor: 'rgba(40,40,80,0.75)',
+    labelDim: 'rgba(50,50,80,0.8)',
+    labelRawDim: 'rgba(60,60,90,0.7)',
+    countFill: 'rgba(20,20,40,0.85)',
+    shadowColor: 'rgba(255,255,255,0.9)',
+    shadowNeighbor: 'rgba(255,255,255,0.85)',
+    legendBg: 'rgba(255, 255, 255, 0.85)',
+    legendText: '#333340',
+    legendOverflow: '#6a6a80',
+    resetBg: 'rgba(255, 255, 255, 0.75)',
+    resetText: '#6a6a80',
+    fpsFill: 'rgba(60,60,80,0.6)',
+  },
+};
+function _t(bz) { return bz._lightMode ? THEME.light : THEME.dark; }
+
 // Adaptive edge cap: scales with visible node count to avoid clutter on dense graphs
 function maxEdgesToDraw(nodeCount) {
   return Math.min(5000, Math.max(200, nodeCount * 3));
@@ -176,7 +215,7 @@ export function render(bz) {
 
   if (!glActive) {
     // Background grid
-    ctx.strokeStyle = 'rgba(60,60,100,0.6)';
+    ctx.strokeStyle = _t(bz).grid;
     ctx.lineWidth = 0.5;
     const gridSize = 40 * bz.renderZoom;
     if (gridSize >= 4) {
@@ -389,7 +428,7 @@ function renderSupernodes(bz, pass) {
       const showCount = isSelected || isHovered;
       if (showCount && cellPx >= 10 && r >= 3) {
         const fs = Math.max(7, Math.min(13, r * 1.0)) | 0;
-        ctx.fillStyle = '#ffffffcc';
+        ctx.fillStyle = _t(bz).countFill;
         ctx.font = fontStr(fs, true);
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -408,9 +447,9 @@ function renderSupernodes(bz, pass) {
           const fs = Math.max(11, Math.min(12, cellPx * 0.18)) | 0;
           ctx.font = fontStr(fs, true);
           ctx.textAlign = 'center';
-          ctx.shadowColor = 'rgba(0,0,0,0.95)';
+          ctx.shadowColor = _t(bz).shadowColor;
           ctx.shadowBlur = 10;
-          ctx.fillStyle = isSelected ? '#fff' : 'rgba(230,230,255,0.95)';
+          ctx.fillStyle = isSelected ? _t(bz).labelBright : _t(bz).labelHover;
           if (hasMulti) {
             ctx.textBaseline = 'bottom';
             ctx.fillText(labelParts[0], px, py - r - 3);
@@ -426,9 +465,9 @@ function renderSupernodes(bz, pass) {
           const maxChars = 20;
           ctx.font = fontStr(fs, false);
           ctx.textAlign = 'center';
-          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowColor = _t(bz).shadowNeighbor;
           ctx.shadowBlur = 10;
-          ctx.fillStyle = 'rgba(230,230,255,0.95)';
+          ctx.fillStyle = _t(bz).labelNeighbor;
           if (hasMulti) {
             const name = labelParts[0].length > maxChars ? labelParts[0].slice(0, maxChars - 1) + '…' : labelParts[0];
             ctx.textBaseline = 'bottom';
@@ -447,7 +486,7 @@ function renderSupernodes(bz, pass) {
           const fs = Math.max(10, Math.min(13, cellPx * 0.18)) | 0;
           const charW = fs * 0.6;
           const maxChars = Math.max(3, (cellPx / charW) | 0);
-          ctx.fillStyle = 'rgba(220,220,255,0.85)';
+          ctx.fillStyle = _t(bz).labelDim;
           ctx.font = fontStr(fs, false);
           ctx.textAlign = 'center';
           if (hasMulti) {
@@ -624,7 +663,7 @@ function renderNodes(bz, pass) {
           const charW = fs * 0.6;
           const maxChars = Math.max(4, ((cellPxRaw * 0.8) / charW) | 0);
           const text = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
-          ctx.fillStyle = 'rgba(200,200,220,0.75)';
+          ctx.fillStyle = _t(bz).labelRawDim;
           ctx.font = fontStr(fs, false);
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
@@ -872,7 +911,7 @@ function renderLegend(bz) {
   const y = (pos === 3 || pos === 4) ? margin : bz.H - boxH - margin;
 
   // Background
-  ctx.fillStyle = 'rgba(10, 10, 15, 0.75)';
+  ctx.fillStyle = _t(bz).legendBg;
   ctx.beginPath();
   ctx.roundRect(x, y, boxW, boxH, 4);
   ctx.fill();
@@ -887,7 +926,7 @@ function renderLegend(bz) {
     ctx.arc(x + pad + dotR, ey, dotR, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#c8c8d8';
+    ctx.fillStyle = _t(bz).legendText;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     const truncated = label.length > 14 ? label.slice(0, 13) + '…' : label;
@@ -897,7 +936,7 @@ function renderLegend(bz) {
   // Overflow indicator
   if (overflow > 0) {
     const ey = y + pad + entries.length * lineH + lineH / 2;
-    ctx.fillStyle = '#8888a0';
+    ctx.fillStyle = _t(bz).legendOverflow;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(`+${overflow} more`, x + pad, ey);
@@ -910,11 +949,11 @@ function renderResetBtn(bz) {
   const rb = bz._resetBtnRect();
   if (!rb) return;
   const ctx = bz.ctx;
-  ctx.fillStyle = 'rgba(10, 10, 15, 0.65)';
+  ctx.fillStyle = _t(bz).resetBg;
   ctx.beginPath();
   ctx.roundRect(rb.x, rb.y, rb.w, rb.h, 4);
   ctx.fill();
-  ctx.fillStyle = '#8888a0';
+  ctx.fillStyle = _t(bz).resetText;
   ctx.font = '14px JetBrains Mono, monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

@@ -298,7 +298,38 @@ eve	Eve	management	director	12</pre>
   <tr><td><code>webgl</code></td><td>boolean</td><td>false</td><td>Use WebGL2 instanced rendering for geometry (<a href="#webgl">details</a>)</td></tr>
   <tr><td><code>useGPU</code></td><td>boolean</td><td>false</td><td>Force WebGPU compute for projection and blend (<a href="webgpu.html">details</a>)</td></tr>
   <tr><td><code>autoGPU</code></td><td>boolean</td><td>true</td><td>Automatically enable WebGPU when dataset is large enough to benefit (N&times;G &gt; 2000). Set to <code>false</code> to disable.</td></tr>
+  <tr><td><code>colorScheme</code></td><td>number</td><td>0</td><td>Color scheme index: 0=vivid, 1=viridis, 2=plasma, 3=inferno, 4=thermal, 5=grayscale, 6=diverging, 7=greens, 8=reds</td></tr>
+  <tr><td><code>lightMode</code></td><td>boolean</td><td>false</td><td>Light theme for labels, legend, and grid. Press <kbd>C</kbd> to cycle color schemes, set <code>view.lightMode = true</code> at runtime.</td></tr>
 </table>
+
+<p>Color scheme and theme can also be changed at runtime:</p>
+
+<pre><span class="keyword">import</span> { SCHEME_VIRIDIS, SCHEME_DIVERGING } <span class="keyword">from</span> <span class="string">'./bitzoom-colors.js'</span>;
+
+<span class="comment">// Light mode with viridis colors</span>
+<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
+  colorScheme: SCHEME_VIRIDIS,
+  lightMode: <span class="keyword">true</span>,
+});
+
+<span class="comment">// Change at runtime</span>
+view.colorScheme = SCHEME_DIVERGING; <span class="comment">// switch to diverging</span>
+view.lightMode = <span class="keyword">false</span>;              <span class="comment">// back to dark</span>
+view.cycleColorScheme();             <span class="comment">// next scheme</span>
+console.log(view.colorSchemeName);   <span class="comment">// "thermal"</span></pre>
+
+<p>Available constants: <code>SCHEME_VIVID</code> (0, default), <code>SCHEME_VIRIDIS</code>, <code>SCHEME_PLASMA</code>, <code>SCHEME_INFERNO</code>, <code>SCHEME_THERMAL</code>, <code>SCHEME_GRAYSCALE</code>, <code>SCHEME_DIVERGING</code>, <code>SCHEME_GREENS</code>, <code>SCHEME_REDS</code>.</p>
+
+<div style="display:flex;gap:12px;margin:24px 0;flex-wrap:wrap">
+  <div style="flex:1;min-width:280px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">colorScheme: 6 (diverging) · Press C to cycle</div>
+    <canvas id="demo-colorscheme" style="width:100%;height:240px;display:block;background:var(--bg)"></canvas>
+  </div>
+  <div style="flex:1;min-width:280px;border:1px solid #c0c0d0;border-radius:8px;overflow:hidden;background:#ffffff">
+    <div style="padding:8px 12px;border-bottom:1px solid #d0d0dd;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6a6a80">lightMode: true · grayscale</div>
+    <canvas id="demo-lightmode" style="width:100%;height:240px;display:block;background:#e8e8f0"></canvas>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
@@ -743,6 +774,14 @@ fetch('data/epstein.edges').then(r => r.text()).then(edges => {
     };
     createBitZoomView(document.getElementById('demo-gl-canvas2d'), edges, nodes, shared);
     createBitZoomView(document.getElementById('demo-gl-webgl'), edges, nodes, { ...shared, webgl: true });
+
+    // Color scheme + light mode demos
+    createBitZoomView(document.getElementById('demo-colorscheme'), edges, nodes, {
+      ...shared, colorScheme: 6,
+    });
+    createBitZoomView(document.getElementById('demo-lightmode'), edges, nodes, {
+      ...shared, colorScheme: 5, lightMode: true,
+    });
   });
 });
 

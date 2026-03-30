@@ -89,6 +89,7 @@ export class BitZoomCanvas {
     this._progressText = null; // overlay text shown during auto-tune
     this.showFps = opts.showFps || false;
     this._colorScheme = opts.colorScheme || 0;
+    this._lightMode = opts.lightMode || false;
     this._useGPU = false; // when true, blend uses GPU compute
     this._gl = null;       // WebGL2 context (null = Canvas 2D mode)
     this._glCanvas = null; // WebGL canvas element
@@ -102,6 +103,7 @@ export class BitZoomCanvas {
 
     // Store initial state for reset
     this._initLevel = this.currentLevel;
+    this._initColorScheme = this._colorScheme;
 
     // Selection
     this.selectedIds = new Set();
@@ -191,7 +193,33 @@ export class BitZoomCanvas {
     this.render();
   }
 
+  get colorScheme() { return this._colorScheme; }
+  set colorScheme(idx) {
+    this._colorScheme = idx % COLOR_SCHEMES.length;
+    for (const g of this.groupNames) {
+      const values = [...new Set(this.nodes.map(n => getNodePropValue(n, g, this.adjList)))].sort();
+      this.propColors[g] = generateGroupColors(values, this._colorScheme);
+    }
+    this._refreshPropCache();
+    this.layoutAll();
+    this.render();
+  }
   get colorSchemeName() { return COLOR_SCHEME_NAMES[this._colorScheme]; }
+
+  get lightMode() { return this._lightMode; }
+  set lightMode(val) {
+    this._lightMode = !!val;
+    // Update GL clear color if active
+    if (this._gl && this.canvas) {
+      const root = this.canvas.ownerDocument?.documentElement;
+      if (root) {
+        const bg = getComputedStyle(root).getPropertyValue('--canvas-bg').trim();
+        const m = bg && bg.match(/#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i);
+        if (m) { this._gl._clearR = parseInt(m[1],16)/255; this._gl._clearG = parseInt(m[2],16)/255; this._gl._clearB = parseInt(m[3],16)/255; }
+      }
+    }
+    this.render();
+  }
 
   // ─── Node property accessors (used by renderer) ───────────────────────────
 
@@ -337,7 +365,7 @@ export class BitZoomCanvas {
     const mode = this._gl ? 'GL' : '2D';
     const text = `${fps} fps · ${ms.toFixed(1)}ms · ${mode}`;
     ctx.font = '10px JetBrains Mono';
-    ctx.fillStyle = 'rgba(200,200,220,0.6)';
+    ctx.fillStyle = this._lightMode ? 'rgba(60,60,80,0.6)' : 'rgba(200,200,220,0.6)';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText(text, 6, 6);
@@ -577,6 +605,9 @@ export class BitZoomCanvas {
     this.pan = { x: 0, y: 0 };
     this.selectedId = null;
     this.hoveredId = null;
+    if (this._colorScheme !== this._initColorScheme) {
+      this.colorScheme = this._initColorScheme;
+    }
     this.resize(); // recomputes layout + renders, same as constructor
   }
 
@@ -864,7 +895,7 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
     }
   }
   for (const g of groupNames) {
-    propColors[g] = generateGroupColors([...propValues[g]].sort());
+    propColors[g] = generateGroupColors([...propValues[g]].sort(), opts.colorScheme || 0);
   }
 
   let smoothAlpha = opts.smoothAlpha || 0;

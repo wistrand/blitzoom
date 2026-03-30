@@ -1315,6 +1315,21 @@ class BitZoom {
             updateGlBtn();
         }
 
+        // Theme toggle (light/dark)
+        // Restore saved theme
+        if (localStorage.getItem('bz-theme') === 'light') {
+            document.body.classList.add('light');
+            document.getElementById('themeBtn').textContent = '\u263E';
+            v.lightMode = true;
+        }
+        document.getElementById('themeBtn').addEventListener('click', () => {
+            document.body.classList.toggle('light');
+            const isLight = document.body.classList.contains('light');
+            localStorage.setItem('bz-theme', isLight ? 'light' : 'dark');
+            document.getElementById('themeBtn').textContent = isLight ? '\u263E' : '\u2606';
+            v.lightMode = isLight;
+        }, sig);
+
         // Sidebar
         document.getElementById('sidebarToggle').addEventListener('click', () => this._toggleSidebar(), sig);
         document.getElementById('sidebarBackdrop')?.addEventListener('click', () => this._toggleSidebar(false), sig);

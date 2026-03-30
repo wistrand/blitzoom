@@ -12,7 +12,23 @@
     --text: #c8c8d8;
     --text-dim: #8888a0;
     --text-bright: #eeeef8;
+    --canvas-bg: #12122a;
+    --canvas-border: #2a2a4a;
     --node-r: 6;
+  }
+
+  body.light {
+    --bg: #f0f0f5;
+    --surface: #ffffff;
+    --border: #d0d0dd;
+    --accent: #5b4bd5;
+    --accent2: #d44a6a;
+    --accent3: #2aab8a;
+    --text: #333340;
+    --text-dim: #6a6a80;
+    --text-bright: #111118;
+    --canvas-bg: #e8e8f0;
+    --canvas-border: #c0c0d0;
   }
 
   body {
@@ -203,8 +219,8 @@
   #canvas {
     display: block;
     cursor: grab;
-    background: #12122a;
-    border: 1px solid #2a2a4a;
+    background: var(--canvas-bg);
+    border: 1px solid var(--canvas-border);
     width: 100%;
     height: 100%;
     min-height: 0; /* critical for grid 1fr to work */
