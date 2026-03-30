@@ -385,10 +385,8 @@ function renderSupernodes(bz, pass) {
       const isNeighbor = level._hlNeighbors.has(sn.bid);
       const isMajorNeighbor = isNeighbor && importance > 0.5;
 
-      // Count inside node
-      const showCount = isSelected || isHovered || isMajorNeighbor
-        || visibleCount <= 100
-        || (visibleCount <= 200 && importance > 0.7);
+      // Count inside node — only for highlighted nodes
+      const showCount = isSelected || isHovered;
       if (showCount && cellPx >= 10 && r >= 3) {
         const fs = Math.max(7, Math.min(13, r * 1.0)) | 0;
         ctx.fillStyle = '#ffffffcc';
@@ -404,23 +402,67 @@ function renderSupernodes(bz, pass) {
         || (visibleCount <= 150 && importance > 0.7 && cellPx >= 20);
       if (showLabel) {
         const rawLabel = sn.cachedLabel;
+        const labelParts = rawLabel.split(' · ');
+        const hasMulti = labelParts.length > 1 && bz.labelProps.has('label');
         if (isSelected || isHovered) {
           const fs = Math.max(11, Math.min(12, cellPx * 0.18)) | 0;
-          ctx.fillStyle = isSelected ? '#fff' : 'rgba(230,230,255,0.95)';
           ctx.font = fontStr(fs, true);
           ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
-          ctx.fillText(rawLabel, px, py - r - 3);
+          ctx.shadowColor = 'rgba(0,0,0,0.95)';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = isSelected ? '#fff' : 'rgba(230,230,255,0.95)';
+          if (hasMulti) {
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(labelParts[0], px, py - r - 3);
+            ctx.textBaseline = 'top';
+            ctx.fillText(labelParts.slice(1).join(' · '), px, py + r + 3);
+          } else {
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(rawLabel, px, py - r - 3);
+          }
+          ctx.shadowBlur = 0;
+        } else if (isMajorNeighbor) {
+          const fs = Math.max(10, Math.min(12, cellPx * 0.18)) | 0;
+          const maxChars = 20;
+          ctx.font = fontStr(fs, false);
+          ctx.textAlign = 'center';
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = 'rgba(230,230,255,0.95)';
+          if (hasMulti) {
+            const name = labelParts[0].length > maxChars ? labelParts[0].slice(0, maxChars - 1) + '…' : labelParts[0];
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(name, px, py - r - 3);
+            const rest = labelParts.slice(1).join(' · ');
+            const restTrunc = rest.length > maxChars ? rest.slice(0, maxChars - 1) + '…' : rest;
+            ctx.textBaseline = 'top';
+            ctx.fillText(restTrunc, px, py + r + 3);
+          } else {
+            const label = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(label, px, py - r - 3);
+          }
+          ctx.shadowBlur = 0;
         } else {
           const fs = Math.max(10, Math.min(13, cellPx * 0.18)) | 0;
           const charW = fs * 0.6;
           const maxChars = Math.max(3, (cellPx / charW) | 0);
-          const label = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
           ctx.fillStyle = 'rgba(220,220,255,0.85)';
           ctx.font = fontStr(fs, false);
           ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
-          ctx.fillText(label, px, py - r - 3);
+          if (hasMulti) {
+            const name = labelParts[0].length > maxChars ? labelParts[0].slice(0, maxChars - 1) + '…' : labelParts[0];
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(name, px, py - r - 3);
+            const rest = labelParts.slice(1).join(' · ');
+            const restTrunc = rest.length > maxChars ? rest.slice(0, maxChars - 1) + '…' : rest;
+            ctx.textBaseline = 'top';
+            ctx.fillText(restTrunc, px, py + r + 3);
+          } else {
+            const label = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(label, px, py - r - 3);
+          }
         }
       }
     }
@@ -824,8 +866,10 @@ function renderLegend(bz) {
   const lines = entries.length + (overflow > 0 ? 1 : 0);
   const boxW = dotR * 2 + 6 + maxW + pad * 2;
   const boxH = lines * lineH + pad * 2;
-  const x = bz.W - boxW - 8;
-  const y = bz.H - boxH - 8;
+  const margin = 8;
+  const pos = bz.showLegend || 1; // 1=BR, 2=BL, 3=TL, 4=TR
+  const x = (pos === 2 || pos === 3) ? margin : bz.W - boxW - margin;
+  const y = (pos === 3 || pos === 4) ? margin : bz.H - boxH - margin;
 
   // Background
   ctx.fillStyle = 'rgba(10, 10, 15, 0.75)';

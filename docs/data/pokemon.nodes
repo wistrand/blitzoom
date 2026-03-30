@@ -1,0 +1,960 @@
+# NodeId	Label	Group	Type1	Type2	Generation	Rarity	HP	Attack	Defense	SpAtk	SpDef	Speed	Total
+Bulbasaur	Bulbasaur	Grass	Grass	Poison	1	Common	45	49	49	65	65	45	318
+Ivysaur	Ivysaur	Grass	Grass	Poison	1	Common	60	62	63	80	80	60	405
+Venusaur	Venusaur	Grass	Grass	Poison	1	Common	80	82	83	100	100	80	525
+Mega Venusaur	Mega Venusaur	Grass	Grass	Poison	6	Common	80	100	123	122	120	80	625
+Venusaur Gigantamax	Venusaur Gigantamax	Grass	Grass	Poison	8								
+Charmander	Charmander	Fire	Fire		1	Common	39	52	43	60	50	65	309
+Charmeleon	Charmeleon	Fire	Fire		1	Common	58	64	58	80	65	80	405
+Mega Charizard Y	Mega Charizard Y	Fire	Fire	Flying	6	Common	78	104	78	159	115	100	634
+Charizard Gigantamax	Charizard Gigantamax	Fire	Fire	Flying	8								
+Mega Charizard X	Mega Charizard X	Fire	Fire	Dragon	6	Common	78	130	111	130	85	100	634
+Charizard	Charizard	Fire	Fire	Flying	1	Common	78	84	78	109	85	100	534
+Squirtle	Squirtle	Water	Water		1	Common	44	48	65	50	64	43	314
+Wartortle	Wartortle	Water	Water		1	Common	59	63	80	65	80	58	405
+Blastoise Gigantamax	Blastoise Gigantamax	Water	Water		8								
+Blastoise	Blastoise	Water	Water		1	Common	79	83	100	85	105	78	530
+Mega Blastoise	Mega Blastoise	Water	Water		6	Common	79	103	120	135	115	78	630
+Caterpie	Caterpie	Bug	Bug		1	Common	45	30	35	20	20	45	195
+Metapod	Metapod	Bug	Bug		1	Common	50	20	55	25	25	30	205
+Butterfree Gigantamax	Butterfree Gigantamax	Bug	Bug	Flying	8								
+Butterfree	Butterfree	Bug	Bug	Flying	1	Common	60	45	50	90	80	70	395
+Weedle	Weedle	Bug	Bug	Poison	1	Common	40	35	30	20	20	50	195
+Kakuna	Kakuna	Bug	Bug	Poison	1	Common	45	25	50	25	25	35	205
+Beedrill	Beedrill	Bug	Bug	Poison	1	Common	65	90	40	45	80	75	395
+Mega Beedrill	Mega Beedrill	Bug	Bug	Poison	6	Common	65	150	40	15	80	145	495
+Pidgey	Pidgey	Normal	Normal	Flying	1	Common	40	45	40	35	35	56	251
+Pidgeotto	Pidgeotto	Normal	Normal	Flying	1	Common	63	60	55	50	50	71	349
+Pidgeot	Pidgeot	Normal	Normal	Flying	1	Common	83	80	75	70	70	101	479
+Mega Pidgeot	Mega Pidgeot	Normal	Normal	Flying	6	Common	83	80	80	135	80	121	579
+Rattata	Rattata	Normal	Normal		1	Common	30	56	35	25	35	72	253
+Raticate	Raticate	Normal	Normal		1	Common	55	81	60	50	70	97	413
+Alolan Raticate	Alolan Raticate	Dark	Dark	Normal	7	Common	75	71	70	40	80	77	413
+Spearow	Spearow	Normal	Normal	Flying	1	Common	40	60	30	31	31	70	262
+Fearow	Fearow	Normal	Normal	Flying	1	Common	65	90	65	61	61	100	442
+Ekans	Ekans	Poison	Poison		1	Common	35	60	44	40	54	55	288
+Arbok	Arbok	Poison	Poison		1	Common	60	95	69	65	79	80	448
+Pikachu Gigantamax	Pikachu Gigantamax	Electric	Electric		8								
+Pikachu	Pikachu	Electric	Electric		1	Common	35	55	40	50	50	90	320
+Partner Pikachu	Partner Pikachu	Electric	Electric		1	Common	45	80	50	75	60	120	430
+Alolan Raichu	Alolan Raichu	Electric	Electric	Psychic	7	Common	60	85	50	95	85	110	485
+Raichu	Raichu	Electric	Electric		1	Common	60	90	55	90	80	110	485
+Sandshrew	Sandshrew	Ground	Ground		1	Common	50	75	85	20	30	40	300
+Sandslash	Sandslash	Ground	Ground		1	Common	75	100	110	45	55	65	450
+Alolan Sandslash	Alolan Sandslash	Ice	Ice	Steel	7	Common	75	100	120	25	65	65	450
+Nidorina	Nidorina	Poison	Poison		1	Common	70	62	67	55	55	56	365
+Nidoqueen	Nidoqueen	Poison	Poison	Ground	1	Common	90	92	87	75	85	76	505
+Nidorino	Nidorino	Poison	Poison		1	Common	61	72	57	55	55	65	365
+Nidoking	Nidoking	Poison	Poison	Ground	1	Common	81	102	77	85	75	85	505
+Clefairy	Clefairy	Fairy	Fairy		1	Common	70	45	48	60	65	35	323
+Clefable	Clefable	Fairy	Fairy		1	Common	95	70	73	95	90	60	483
+Vulpix	Vulpix	Fire	Fire		1	Common	38	41	40	50	65	65	299
+Ninetales	Ninetales	Fire	Fire		1	Common	73	76	75	81	100	100	505
+Alolan Ninetales	Alolan Ninetales	Ice	Ice	Fairy	7	Common	73	67	75	81	100	109	505
+Jigglypuff	Jigglypuff	Normal	Normal	Fairy	1	Common	115	45	20	45	25	20	270
+Wigglytuff	Wigglytuff	Normal	Normal	Fairy	1	Common	140	70	45	85	50	45	435
+Zubat	Zubat	Poison	Poison	Flying	1	Common	40	45	35	30	40	55	245
+Golbat	Golbat	Poison	Poison	Flying	1	Common	75	80	70	65	75	90	455
+Oddish	Oddish	Grass	Grass	Poison	1	Common	45	50	55	75	65	30	320
+Gloom	Gloom	Grass	Grass	Poison	1	Common	60	65	70	85	75	40	395
+Vileplume	Vileplume	Grass	Grass	Poison	1	Common	75	80	85	110	90	50	490
+Paras	Paras	Bug	Bug	Grass	1	Common	35	70	55	45	55	25	285
+Parasect	Parasect	Bug	Bug	Grass	1	Common	60	95	80	60	80	30	405
+Venonat	Venonat	Bug	Bug	Poison	1	Common	60	55	50	40	55	45	305
+Venomoth	Venomoth	Bug	Bug	Poison	1	Common	70	65	60	90	75	90	450
+Diglett	Diglett	Ground	Ground		1	Common	10	55	25	35	45	95	265
+Alolan Dugtrio	Alolan Dugtrio	Ground	Ground	Steel	7	Common	35	100	60	50	70	110	425
+Dugtrio	Dugtrio	Ground	Ground		1	Common	35	100	50	50	70	120	425
+Meowth	Meowth	Normal	Normal		1	Common	40	45	35	40	40	90	290
+Meowth Gigantamax	Meowth Gigantamax	Normal	Normal		8								
+Persian	Persian	Normal	Normal		1	Common	65	70	60	65	65	115	440
+Alolan Persian	Alolan Persian	Dark	Dark		7	Common	65	60	60	75	65	115	440
+Psyduck	Psyduck	Water	Water		1	Common	50	52	48	65	50	55	320
+Golduck	Golduck	Water	Water		1	Common	80	82	78	95	80	85	500
+Mankey	Mankey	Fighting	Fighting		1	Common	40	80	35	35	45	70	305
+Primeape	Primeape	Fighting	Fighting		1	Common	65	105	60	60	70	95	455
+Growlithe	Growlithe	Fire	Fire		1	Common	55	70	45	70	50	60	350
+Hisuian Arcanine	Hisuian Arcanine	Fire	Fire	Rock	1	Common	95	115	80	95	80	90	555
+Arcanine	Arcanine	Fire	Fire		1	Common	90	110	80	100	80	95	555
+Poliwag	Poliwag	Water	Water		1	Common	40	50	40	40	40	90	300
+Poliwhirl	Poliwhirl	Water	Water		1	Common	65	65	65	50	50	90	385
+Poliwrath	Poliwrath	Water	Water	Fighting	1	Common	90	95	95	70	90	70	510
+Abra	Abra	Psychic	Psychic		1	Common	25	20	15	105	55	90	310
+Kadabra	Kadabra	Psychic	Psychic		1	Common	40	35	30	120	70	105	400
+Alakazam	Alakazam	Psychic	Psychic		1	Common	55	50	45	135	95	120	500
+Mega Alakazam	Mega Alakazam	Psychic	Psychic		6	Common	55	50	65	175	105	150	600
+Machop	Machop	Fighting	Fighting		1	Common	70	80	50	35	35	35	305
+Machoke	Machoke	Fighting	Fighting		1	Common	80	100	70	50	60	45	405
+Machamp Gigantamax	Machamp Gigantamax	Fighting	Fighting		8								
+Machamp	Machamp	Fighting	Fighting		1	Common	90	130	80	65	85	55	505
+Bellsprout	Bellsprout	Grass	Grass	Poison	1	Common	50	75	35	70	30	40	300
+Weepinbell	Weepinbell	Grass	Grass	Poison	1	Common	65	90	50	85	45	55	390
+Victreebel	Victreebel	Grass	Grass	Poison	1	Common	80	105	65	100	70	70	490
+Tentacool	Tentacool	Water	Water	Poison	1	Common	40	40	35	50	100	70	335
+Tentacruel	Tentacruel	Water	Water	Poison	1	Common	80	70	65	80	120	100	515
+Geodude	Geodude	Rock	Rock	Ground	1	Common	40	80	100	30	30	20	300
+Graveler	Graveler	Rock	Rock	Ground	1	Common	55	95	115	45	45	35	390
+Alolan Graveler	Alolan Graveler	Rock	Rock	Electric	7	Common	55	95	115	45	45	35	390
+Golem	Golem	Rock	Rock	Ground	1	Common	80	120	130	55	65	45	495
+Alolan Golem	Alolan Golem	Rock	Rock	Electric	7	Common	80	120	130	55	65	45	495
+Ponyta	Ponyta	Fire	Fire		1	Common	50	85	55	65	65	90	410
+Rapidash	Rapidash	Fire	Fire		1	Common	65	100	70	80	80	105	500
+Galarian Rapidash	Galarian Rapidash	Psychic	Psychic	Fairy	8	Common	65	100	70	80	80	105	500
+Slowpoke	Slowpoke	Water	Water	Psychic	1	Common	90	65	65	40	40	15	315
+Mega Slowbro	Mega Slowbro	Water	Water	Psychic	6	Common	95	75	180	130	80	30	590
+Galarian Slowbro	Galarian Slowbro	Poison	Poison	Psychic	8	Common	95	100	95	100	70	30	490
+Slowbro	Slowbro	Water	Water	Psychic	1	Common	95	75	110	100	80	30	490
+Magnemite	Magnemite	Electric	Electric	Steel	1	Common	25	35	70	95	55	45	325
+Magneton	Magneton	Electric	Electric	Steel	1	Common	50	60	95	120	70	70	465
+Doduo	Doduo	Normal	Normal	Flying	1	Common	35	85	45	35	35	75	310
+Dodrio	Dodrio	Normal	Normal	Flying	1	Common	60	110	70	60	60	110	470
+Seel	Seel	Water	Water		1	Common	65	45	55	45	70	45	325
+Dewgong	Dewgong	Water	Water	Ice	1	Common	90	70	80	70	95	70	475
+Grimer	Grimer	Poison	Poison		1	Common	80	80	50	40	50	25	325
+Alolan Muk	Alolan Muk	Poison	Poison	Dark	7	Common	105	105	75	65	100	50	500
+Muk	Muk	Poison	Poison		1	Common	105	105	75	65	100	50	500
+Shellder	Shellder	Water	Water		1	Common	30	65	100	45	25	40	305
+Cloyster	Cloyster	Water	Water	Ice	1	Common	50	95	180	85	45	70	525
+Gastly	Gastly	Ghost	Ghost	Poison	1	Common	30	35	30	100	35	80	310
+Haunter	Haunter	Ghost	Ghost	Poison	1	Common	45	50	45	115	55	95	405
+Gengar	Gengar	Ghost	Ghost	Poison	1	Common	60	65	60	130	75	110	500
+Gengar Gigantamax	Gengar Gigantamax	Ghost	Ghost	Poison	8								
+Mega Gengar	Mega Gengar	Ghost	Ghost	Poison	6	Common	60	65	80	170	95	130	600
+Onix	Onix	Rock	Rock	Ground	1	Common	35	45	160	30	45	70	385
+Drowzee	Drowzee	Psychic	Psychic		1	Common	60	48	45	43	90	42	328
+Hypno	Hypno	Psychic	Psychic		1	Common	85	73	70	73	115	67	483
+Krabby	Krabby	Water	Water		1	Common	30	105	90	25	25	50	325
+Kingler Gigantamax	Kingler Gigantamax	Water	Water		8								
+Kingler	Kingler	Water	Water		1	Common	55	130	115	50	50	75	475
+Voltorb	Voltorb	Electric	Electric		1	Common	40	30	50	55	55	100	330
+Hisuian Electrode	Hisuian Electrode	Electric	Electric	Grass	1	Common	60	50	70	80	80	150	490
+Electrode	Electrode	Electric	Electric		1	Common	60	50	70	80	80	150	490
+Exeggcute	Exeggcute	Grass	Grass	Psychic	1	Common	60	40	80	60	45	40	325
+Alolan Exeggutor	Alolan Exeggutor	Grass	Grass	Dragon	7	Common	95	105	85	125	75	45	530
+Exeggutor	Exeggutor	Grass	Grass	Psychic	1	Common	95	95	85	125	75	55	530
+Cubone	Cubone	Ground	Ground		1	Common	50	50	95	40	50	35	320
+Alolan Marowak	Alolan Marowak	Fire	Fire	Ghost	7	Common	60	80	110	50	80	45	425
+Marowak	Marowak	Ground	Ground		1	Common	60	80	110	50	80	45	425
+Hitmonlee	Hitmonlee	Fighting	Fighting		1	Common	50	120	53	35	110	87	455
+Hitmonchan	Hitmonchan	Fighting	Fighting		1	Common	50	105	79	35	110	76	455
+Lickitung	Lickitung	Normal	Normal		1	Common	90	55	75	60	75	30	385
+Koffing	Koffing	Poison	Poison		1	Common	40	65	95	60	45	35	340
+Weezing	Weezing	Poison	Poison		1	Common	65	90	120	85	70	60	490
+Galarian Weezing	Galarian Weezing	Poison	Poison	Fairy	8	Common	65	90	120	85	70	60	490
+Rhyhorn	Rhyhorn	Ground	Ground	Rock	1	Common	80	85	95	30	30	25	345
+Rhydon	Rhydon	Ground	Ground	Rock	1	Common	105	130	120	45	45	40	485
+Chansey	Chansey	Normal	Normal		1	Common	250	5	5	35	105	50	450
+Tangela	Tangela	Grass	Grass		1	Common	65	55	115	100	40	60	435
+Kangaskhan	Kangaskhan	Normal	Normal		1	Common	105	95	80	40	80	90	490
+Mega Kangaskhan	Mega Kangaskhan	Normal	Normal		6	Common	105	125	100	60	100	100	590
+Horsea	Horsea	Water	Water		1	Common	30	40	70	70	25	60	295
+Seadra	Seadra	Water	Water		1	Common	55	65	95	95	45	85	440
+Goldeen	Goldeen	Water	Water		1	Common	45	67	60	35	50	63	320
+Seaking	Seaking	Water	Water		1	Common	80	92	65	65	80	68	450
+Staryu	Staryu	Water	Water		1	Common	30	45	55	70	55	85	340
+Starmie	Starmie	Water	Water	Psychic	1	Common	60	75	85	100	85	115	520
+Mime Galarian Mr. Mime	Mime Galarian Mr. Mime	Ice	Ice	Psychic	8	Common	50	65	65	90	90	100	460
+Mr. Mime	Mr. Mime	Psychic	Psychic	Fairy	1	Common	40	45	65	100	120	90	460
+Scyther	Scyther	Bug	Bug	Flying	1	Common	70	110	80	55	80	105	500
+Jynx	Jynx	Ice	Ice	Psychic	1	Common	65	50	35	115	95	95	455
+Electabuzz	Electabuzz	Electric	Electric		1	Common	65	83	57	95	85	105	490
+Magmar	Magmar	Fire	Fire		1	Common	65	95	57	100	85	93	495
+Mega Pinsir	Mega Pinsir	Bug	Bug	Flying	6	Common	65	155	120	65	90	105	600
+Pinsir	Pinsir	Bug	Bug		1	Common	65	125	100	55	70	85	500
+Tauros	Tauros	Normal	Normal		1	Common	75	100	95	40	70	110	490
+Magikarp	Magikarp	Water	Water		1	Common	20	10	55	15	20	80	200
+Mega Gyarados	Mega Gyarados	Water	Water	Dark	6	Common	95	155	109	70	130	81	640
+Gyarados	Gyarados	Water	Water	Flying	1	Common	95	125	79	60	100	81	540
+Lapras Gigantamax	Lapras Gigantamax	Water	Water	Ice	8								
+Lapras	Lapras	Water	Water	Ice	1	Common	130	85	80	85	95	60	535
+Ditto	Ditto	Normal	Normal		1	Common	48	48	48	48	48	48	288
+Eevee Gigantamax	Eevee Gigantamax	Normal	Normal		8								
+Eevee	Eevee	Normal	Normal		1	Common	55	55	50	45	65	55	325
+Vaporeon	Vaporeon	Water	Water		1	Common	130	65	60	110	95	65	525
+Jolteon	Jolteon	Electric	Electric		1	Common	65	65	60	110	95	130	525
+Flareon	Flareon	Fire	Fire		1	Common	65	130	60	95	110	65	525
+Porygon	Porygon	Normal	Normal		1	Common	65	60	70	85	75	40	395
+Omanyte	Omanyte	Rock	Rock	Water	1	Common	35	40	100	90	55	35	355
+Omastar	Omastar	Rock	Rock	Water	1	Common	70	60	125	115	70	55	495
+Kabuto	Kabuto	Rock	Rock	Water	1	Common	30	80	90	55	45	55	355
+Kabutops	Kabutops	Rock	Rock	Water	1	Common	60	115	105	65	70	80	495
+Aerodactyl	Aerodactyl	Rock	Rock	Flying	1	Common	80	105	65	60	75	130	515
+Mega Aerodactyl	Mega Aerodactyl	Rock	Rock	Flying	6	Common	80	135	85	70	95	150	615
+Snorlax Gigantamax	Snorlax Gigantamax	Normal	Normal		8								
+Snorlax	Snorlax	Normal	Normal		1	Common	160	110	65	65	110	30	540
+Galarian Articuno	Galarian Articuno	Psychic	Psychic	Flying	8	Legendary	90	85	85	125	100	95	580
+Articuno	Articuno	Ice	Ice	Flying	1	Legendary	90	85	100	95	125	85	580
+Galarian Zapdos	Galarian Zapdos	Fighting	Fighting	Flying	8	Legendary	90	125	90	85	90	100	580
+Zapdos	Zapdos	Electric	Electric	Flying	1	Legendary	90	90	85	125	90	100	580
+Galarian Moltres	Galarian Moltres	Dark	Dark	Flying	8	Legendary	90	85	90	100	125	90	580
+Moltres	Moltres	Fire	Fire	Flying	1	Legendary	90	100	90	125	85	90	580
+Dratini	Dratini	Dragon	Dragon		1	Common	41	64	45	50	50	50	300
+Dragonair	Dragonair	Dragon	Dragon		1	Common	61	84	65	70	70	70	420
+Dragonite	Dragonite	Dragon	Dragon	Flying	1	Common	91	134	95	100	100	80	600
+Mega Mewtwo Y	Mega Mewtwo Y	Psychic	Psychic		6	Legendary	106	150	70	194	120	140	780
+Mega Mewtwo X	Mega Mewtwo X	Psychic	Psychic	Fighting	6	Legendary	106	190	100	154	100	130	780
+Mewtwo	Mewtwo	Psychic	Psychic		1	Legendary	106	110	90	154	90	130	680
+Chikorita	Chikorita	Grass	Grass		2	Common	45	49	65	49	65	45	318
+Bayleef	Bayleef	Grass	Grass		2	Common	60	62	80	63	80	60	405
+Meganium	Meganium	Grass	Grass		2	Common	80	82	100	83	100	80	525
+Cyndaquil	Cyndaquil	Fire	Fire		2	Common	39	52	43	60	50	65	309
+Quilava	Quilava	Fire	Fire		2	Common	58	64	58	80	65	80	405
+Hisuian Typhlosion	Hisuian Typhlosion	Fire	Fire	Ghost	2	Common	73	84	78	119	85	95	534
+Typhlosion	Typhlosion	Fire	Fire		2	Common	78	84	78	109	85	100	534
+Totodile	Totodile	Water	Water		2	Common	50	65	64	44	48	43	314
+Croconaw	Croconaw	Water	Water		2	Common	65	80	80	59	63	58	405
+Feraligatr	Feraligatr	Water	Water		2	Common	85	105	100	79	83	78	530
+Sentret	Sentret	Normal	Normal		2	Common	35	46	34	35	45	20	215
+Furret	Furret	Normal	Normal		2	Common	85	76	64	45	55	90	415
+Hoothoot	Hoothoot	Normal	Normal	Flying	2	Common	60	30	30	36	56	50	262
+Noctowl	Noctowl	Normal	Normal	Flying	2	Common	100	50	50	86	96	70	452
+Ledyba	Ledyba	Bug	Bug	Flying	2	Common	40	20	30	40	80	55	265
+Ledian	Ledian	Bug	Bug	Flying	2	Common	55	35	50	55	110	85	390
+Spinarak	Spinarak	Bug	Bug	Poison	2	Common	40	60	40	40	40	30	250
+Ariados	Ariados	Bug	Bug	Poison	2	Common	70	90	70	60	70	40	400
+Crobat	Crobat	Poison	Poison	Flying	2	Common	85	90	80	70	80	130	535
+Chinchou	Chinchou	Water	Water	Electric	2	Common	75	38	38	56	56	67	330
+Lanturn	Lanturn	Water	Water	Electric	2	Common	125	58	58	76	76	67	460
+Pichu	Pichu	Electric	Electric		2	Baby	20	40	15	35	35	60	205
+Cleffa	Cleffa	Fairy	Fairy		2	Baby	50	25	28	45	55	15	218
+Igglybuff	Igglybuff	Normal	Normal	Fairy	2	Baby	90	30	15	40	20	15	210
+Togepi	Togepi	Fairy	Fairy		2	Baby	35	20	65	40	65	20	245
+Togetic	Togetic	Fairy	Fairy	Flying	2	Common	55	40	85	80	105	40	405
+Natu	Natu	Psychic	Psychic	Flying	2	Common	40	50	45	70	45	70	320
+Xatu	Xatu	Psychic	Psychic	Flying	2	Common	65	75	70	95	70	95	470
+Mareep	Mareep	Electric	Electric		2	Common	55	40	40	65	45	35	280
+Flaaffy	Flaaffy	Electric	Electric		2	Common	70	55	55	80	60	45	365
+Ampharos	Ampharos	Electric	Electric		2	Common	90	75	85	115	90	55	510
+Mega Ampharos	Mega Ampharos	Electric	Electric	Dragon	6	Common	90	95	105	165	110	45	610
+Bellossom	Bellossom	Grass	Grass		2	Common	75	80	95	90	100	50	490
+Marill	Marill	Water	Water	Fairy	2	Common	70	20	50	20	50	40	250
+Azumarill	Azumarill	Water	Water	Fairy	2	Common	100	50	80	60	80	50	420
+Sudowoodo	Sudowoodo	Rock	Rock		2	Common	70	100	115	30	65	30	410
+Politoed	Politoed	Water	Water		2	Common	90	75	75	90	100	70	500
+Hoppip	Hoppip	Grass	Grass	Flying	2	Common	35	35	40	35	55	50	250
+Skiploom	Skiploom	Grass	Grass	Flying	2	Common	55	45	50	45	65	80	340
+Jumpluff	Jumpluff	Grass	Grass	Flying	2	Common	75	55	70	55	95	110	460
+Aipom	Aipom	Normal	Normal		2	Common	55	70	55	40	55	85	360
+Sunkern	Sunkern	Grass	Grass		2	Common	30	30	30	30	30	30	180
+Sunflora	Sunflora	Grass	Grass		2	Common	75	75	55	105	85	30	425
+Yanma	Yanma	Bug	Bug	Flying	2	Common	65	65	45	75	45	95	390
+Wooper	Wooper	Water	Water	Ground	2	Common	55	45	45	25	25	15	210
+Quagsire	Quagsire	Water	Water	Ground	2	Common	95	85	85	65	65	35	430
+Espeon	Espeon	Psychic	Psychic		2	Common	65	65	60	130	95	110	525
+Umbreon	Umbreon	Dark	Dark		2	Common	95	65	110	60	130	65	525
+Murkrow	Murkrow	Dark	Dark	Flying	2	Common	60	85	42	85	42	91	405
+Slowking	Slowking	Water	Water	Psychic	2	Common	95	75	80	100	110	30	490
+Galarian Slowking	Galarian Slowking	Poison	Poison	Psychic	8	Common	95	65	80	110	110	30	490
+Misdreavus	Misdreavus	Ghost	Ghost		2	Common	60	60	60	85	85	85	435
+Wobbuffet	Wobbuffet	Psychic	Psychic		2	Common	190	33	58	33	58	33	405
+Pineco	Pineco	Bug	Bug		2	Common	50	65	90	35	35	15	290
+Forretress	Forretress	Bug	Bug	Steel	2	Common	75	90	140	60	60	40	465
+Dunsparce	Dunsparce	Normal	Normal		2	Common	100	70	70	65	65	45	415
+Gligar	Gligar	Ground	Ground	Flying	2	Common	65	75	105	35	65	85	430
+Steelix	Steelix	Steel	Steel	Ground	2	Common	75	85	200	55	65	30	510
+Mega Steelix	Mega Steelix	Steel	Steel	Ground	6	Common	75	125	230	55	95	30	610
+Snubbull	Snubbull	Fairy	Fairy		2	Common	60	80	50	40	40	30	300
+Granbull	Granbull	Fairy	Fairy		2	Common	90	120	75	60	60	45	450
+Qwilfish	Qwilfish	Water	Water	Poison	2	Common	65	95	85	55	55	85	440
+Mega Scizor	Mega Scizor	Bug	Bug	Steel	6	Common	70	150	140	65	100	75	600
+Scizor	Scizor	Bug	Bug	Steel	2	Common	70	130	100	55	80	65	500
+Shuckle	Shuckle	Bug	Bug	Rock	2	Common	20	10	230	10	230	5	505
+Heracross	Heracross	Bug	Bug	Fighting	2	Common	80	125	75	40	95	85	500
+Mega Heracross	Mega Heracross	Bug	Bug	Fighting	6	Common	80	185	115	40	105	75	600
+Sneasel	Sneasel	Dark	Dark	Ice	2	Common	55	95	55	35	75	115	430
+Teddiursa	Teddiursa	Normal	Normal		2	Common	60	80	50	50	50	40	330
+Ursaring	Ursaring	Normal	Normal		2	Common	90	130	75	75	75	55	500
+Slugma	Slugma	Fire	Fire		2	Common	40	40	40	70	40	20	250
+Magcargo	Magcargo	Fire	Fire	Rock	2	Common	60	50	120	90	80	30	430
+Swinub	Swinub	Ice	Ice	Ground	2	Common	50	50	40	30	30	50	250
+Piloswine	Piloswine	Ice	Ice	Ground	2	Common	100	100	80	60	60	50	450
+Corsola	Corsola	Water	Water	Rock	2	Common	65	55	95	65	95	35	410
+Galarian Corsola	Galarian Corsola	Ghost	Ghost		8	Common	60	55	100	65	100	30	410
+Remoraid	Remoraid	Water	Water		2	Common	35	65	35	65	35	65	300
+Octillery	Octillery	Water	Water		2	Common	75	105	75	105	75	45	480
+Mantine	Mantine	Water	Water	Flying	2	Common	85	40	70	80	140	70	485
+Houndour	Houndour	Dark	Dark	Fire	2	Common	45	60	30	80	50	65	330
+Houndoom	Houndoom	Dark	Dark	Fire	2	Common	75	90	50	110	80	95	500
+Mega Houndoom	Mega Houndoom	Dark	Dark	Fire	6	Common	75	90	90	140	90	115	600
+Kingdra	Kingdra	Water	Water	Dragon	2	Common	75	95	95	95	95	85	540
+Phanpy	Phanpy	Ground	Ground		2	Common	90	60	60	40	40	40	330
+Donphan	Donphan	Ground	Ground		2	Common	90	120	120	60	60	50	500
+Porygon2	Porygon2	Normal	Normal		2	Common	85	80	90	105	95	60	515
+Tyrogue	Tyrogue	Fighting	Fighting		2	Baby	35	35	35	35	35	35	210
+Hitmontop	Hitmontop	Fighting	Fighting		2	Common	50	95	95	35	110	70	455
+Smoochum	Smoochum	Ice	Ice	Psychic	2	Baby	45	30	15	85	65	65	305
+Elekid	Elekid	Electric	Electric		2	Baby	45	63	37	65	55	95	360
+Magby	Magby	Fire	Fire		2	Baby	45	75	37	70	55	83	365
+Miltank	Miltank	Normal	Normal		2	Common	95	80	105	40	70	100	490
+Blissey	Blissey	Normal	Normal		2	Common	255	10	10	75	135	55	540
+Raikou	Raikou	Electric	Electric		2	Legendary	90	85	75	115	100	115	580
+Entei	Entei	Fire	Fire		2	Legendary	115	115	85	90	75	100	580
+Suicune	Suicune	Water	Water		2	Legendary	100	75	115	90	115	85	580
+Larvitar	Larvitar	Rock	Rock	Ground	2	Common	50	64	50	45	50	41	300
+Pupitar	Pupitar	Rock	Rock	Ground	2	Common	70	84	70	65	70	51	410
+Mega Tyranitar	Mega Tyranitar	Rock	Rock	Dark	6	Common	100	164	150	95	120	71	700
+Tyranitar	Tyranitar	Rock	Rock	Dark	2	Common	100	134	110	95	100	61	600
+Lugia	Lugia	Psychic	Psychic	Flying	2	Legendary	106	90	130	90	154	110	680
+Ho-oh	Ho-oh	Fire	Fire	Flying	2	Legendary	106	130	90	110	154	90	680
+Treecko	Treecko	Grass	Grass		3	Common	40	45	35	65	55	70	310
+Grovyle	Grovyle	Grass	Grass		3	Common	50	65	45	85	65	95	405
+Mega Sceptile	Mega Sceptile	Grass	Grass	Dragon	6	Common	70	110	75	145	85	145	630
+Sceptile	Sceptile	Grass	Grass		3	Common	70	85	65	105	85	120	530
+Torchic	Torchic	Fire	Fire		3	Common	45	60	40	70	50	45	310
+Combusken	Combusken	Fire	Fire	Fighting	3	Common	60	85	60	85	60	55	405
+Blaziken	Blaziken	Fire	Fire	Fighting	3	Common	80	120	70	110	70	80	530
+Mega Blaziken	Mega Blaziken	Fire	Fire	Fighting	6	Common	80	160	80	130	80	100	630
+Mudkip	Mudkip	Water	Water		3	Common	50	70	50	50	50	40	310
+Marshtomp	Marshtomp	Water	Water	Ground	3	Common	70	85	70	60	70	50	405
+Mega Swampert	Mega Swampert	Water	Water	Ground	6	Common	100	150	110	95	110	70	635
+Swampert	Swampert	Water	Water	Ground	3	Common	100	110	90	85	90	60	535
+Poochyena	Poochyena	Dark	Dark		3	Common	35	55	35	30	30	35	220
+Mightyena	Mightyena	Dark	Dark		3	Common	70	90	70	60	60	70	420
+Zigzagoon	Zigzagoon	Normal	Normal		3	Common	38	30	41	30	41	60	240
+Linoone	Linoone	Normal	Normal		3	Common	78	70	61	50	61	100	420
+Galarian Linoone	Galarian Linoone	Dark	Dark	Normal	8	Common	78	70	61	50	61	100	420
+Wurmple	Wurmple	Bug	Bug		3	Common	45	45	35	20	30	20	195
+Silcoon	Silcoon	Bug	Bug		3	Common	50	35	55	25	25	15	205
+Beautifly	Beautifly	Bug	Bug	Flying	3	Common	60	70	50	100	50	65	395
+Cascoon	Cascoon	Bug	Bug		3	Common	50	35	55	25	25	15	205
+Dustox	Dustox	Bug	Bug	Poison	3	Common	60	50	70	50	90	65	385
+Lotad	Lotad	Water	Water	Grass	3	Common	40	30	30	40	50	30	220
+Lombre	Lombre	Water	Water	Grass	3	Common	60	50	50	60	70	50	340
+Ludicolo	Ludicolo	Water	Water	Grass	3	Common	80	70	70	90	100	70	480
+Seedot	Seedot	Grass	Grass		3	Common	40	40	50	30	30	30	220
+Nuzleaf	Nuzleaf	Grass	Grass	Dark	3	Common	70	70	40	60	40	60	340
+Shiftry	Shiftry	Grass	Grass	Dark	3	Common	90	100	60	90	60	80	480
+Taillow	Taillow	Normal	Normal	Flying	3	Common	40	55	30	30	30	85	270
+Swellow	Swellow	Normal	Normal	Flying	3	Common	60	85	60	75	50	125	455
+Wingull	Wingull	Water	Water	Flying	3	Common	40	30	30	55	30	85	270
+Pelipper	Pelipper	Water	Water	Flying	3	Common	60	50	100	95	70	65	440
+Ralts	Ralts	Psychic	Psychic	Fairy	3	Common	28	25	25	45	35	40	198
+Kirlia	Kirlia	Psychic	Psychic	Fairy	3	Common	38	35	35	65	55	50	278
+Gardevoir	Gardevoir	Psychic	Psychic	Fairy	3	Common	68	65	65	125	115	80	518
+Mega Gardevoir	Mega Gardevoir	Psychic	Psychic	Fairy	6	Common	68	85	65	165	135	100	618
+Surskit	Surskit	Bug	Bug	Water	3	Common	40	30	32	50	52	65	269
+Masquerain	Masquerain	Bug	Bug	Flying	3	Common	70	60	62	100	82	80	454
+Shroomish	Shroomish	Grass	Grass		3	Common	60	40	60	40	60	35	295
+Breloom	Breloom	Grass	Grass	Fighting	3	Common	60	130	80	60	60	70	460
+Slakoth	Slakoth	Normal	Normal		3	Common	60	60	60	35	35	30	280
+Vigoroth	Vigoroth	Normal	Normal		3	Common	80	80	80	55	55	90	440
+Slaking	Slaking	Normal	Normal		3	Common	150	160	100	95	65	100	670
+Nincada	Nincada	Bug	Bug	Ground	3	Common	31	45	90	30	30	40	266
+Ninjask	Ninjask	Bug	Bug	Flying	3	Common	61	90	45	50	50	160	456
+Shedinja	Shedinja	Bug	Bug	Ghost	3	Common	1	90	45	30	30	40	236
+Whismur	Whismur	Normal	Normal		3	Common	64	51	23	51	23	28	240
+Loudred	Loudred	Normal	Normal		3	Common	84	71	43	71	43	48	360
+Exploud	Exploud	Normal	Normal		3	Common	104	91	63	91	73	68	490
+Makuhita	Makuhita	Fighting	Fighting		3	Common	72	60	30	20	30	25	237
+Hariyama	Hariyama	Fighting	Fighting		3	Common	144	120	60	40	60	50	474
+Azurill	Azurill	Normal	Normal	Fairy	3	Baby	50	20	40	20	40	20	190
+Nosepass	Nosepass	Rock	Rock		3	Common	30	45	135	45	90	30	375
+Skitty	Skitty	Normal	Normal		3	Common	50	45	45	35	35	50	260
+Delcatty	Delcatty	Normal	Normal		3	Common	70	65	65	55	55	90	400
+Mega Sableye	Mega Sableye	Dark	Dark	Ghost	6	Common	50	85	125	85	115	20	480
+Sableye	Sableye	Dark	Dark	Ghost	3	Common	50	75	75	65	65	50	380
+Mawile	Mawile	Steel	Steel	Fairy	3	Common	50	85	85	55	55	50	380
+Mega Mawile	Mega Mawile	Steel	Steel	Fairy	6	Common	50	105	125	55	95	50	480
+Aron	Aron	Steel	Steel	Rock	3	Common	50	70	100	40	40	30	330
+Lairon	Lairon	Steel	Steel	Rock	3	Common	60	90	140	50	50	40	430
+Aggron	Aggron	Steel	Steel	Rock	3	Common	70	110	180	60	60	50	530
+Mega Aggron	Mega Aggron	Steel	Steel		6	Common	70	140	230	60	80	50	630
+Meditite	Meditite	Fighting	Fighting	Psychic	3	Common	30	40	55	40	55	60	280
+Medicham	Medicham	Fighting	Fighting	Psychic	3	Common	60	60	75	60	75	80	410
+Mega Medicham	Mega Medicham	Fighting	Fighting	Psychic	6	Common	60	100	85	80	85	100	510
+Electrike	Electrike	Electric	Electric		3	Common	40	45	40	65	40	65	295
+Manectric	Manectric	Electric	Electric		3	Common	70	75	60	105	60	105	475
+Mega Manectric	Mega Manectric	Electric	Electric		6	Common	70	75	80	135	80	135	575
+Roselia	Roselia	Grass	Grass	Poison	3	Common	50	60	45	100	80	65	400
+Gulpin	Gulpin	Poison	Poison		3	Common	70	43	53	43	53	40	302
+Swalot	Swalot	Poison	Poison		3	Common	100	73	83	73	83	55	467
+Carvanha	Carvanha	Water	Water	Dark	3	Common	45	90	20	65	20	65	305
+Mega Sharpedo	Mega Sharpedo	Water	Water	Dark	6	Common	70	140	70	110	65	105	560
+Sharpedo	Sharpedo	Water	Water	Dark	3	Common	70	120	40	95	40	95	460
+Wailmer	Wailmer	Water	Water		3	Common	130	70	35	70	35	60	400
+Wailord	Wailord	Water	Water		3	Common	170	90	45	90	45	60	500
+Numel	Numel	Fire	Fire	Ground	3	Common	60	60	40	65	45	35	305
+Camerupt	Camerupt	Fire	Fire	Ground	3	Common	70	100	70	105	75	40	460
+Mega Camerupt	Mega Camerupt	Fire	Fire	Ground	6	Common	70	120	100	145	105	20	560
+Torkoal	Torkoal	Fire	Fire		3	Common	70	85	140	85	70	20	470
+Spoink	Spoink	Psychic	Psychic		3	Common	60	25	35	70	80	60	330
+Grumpig	Grumpig	Psychic	Psychic		3	Common	80	45	65	90	110	80	470
+Trapinch	Trapinch	Ground	Ground		3	Common	45	100	45	45	45	10	290
+Vibrava	Vibrava	Ground	Ground	Dragon	3	Common	50	70	50	50	50	70	340
+Flygon	Flygon	Ground	Ground	Dragon	3	Common	80	100	80	80	80	100	520
+Cacnea	Cacnea	Grass	Grass		3	Common	50	85	40	85	40	35	335
+Cacturne	Cacturne	Grass	Grass	Dark	3	Common	70	115	60	115	60	55	475
+Swablu	Swablu	Normal	Normal	Flying	3	Common	45	40	60	40	75	50	310
+Altaria	Altaria	Dragon	Dragon	Flying	3	Common	75	70	90	70	105	80	490
+Mega Altaria	Mega Altaria	Dragon	Dragon	Fairy	6	Common	75	110	110	110	105	80	590
+Barboach	Barboach	Water	Water	Ground	3	Common	50	48	43	46	41	60	288
+Whiscash	Whiscash	Water	Water	Ground	3	Common	110	78	73	76	71	60	468
+Corphish	Corphish	Water	Water		3	Common	43	80	65	50	35	35	308
+Crawdaunt	Crawdaunt	Water	Water	Dark	3	Common	63	120	85	90	55	55	468
+Baltoy	Baltoy	Ground	Ground	Psychic	3	Common	40	40	55	40	70	55	300
+Claydol	Claydol	Ground	Ground	Psychic	3	Common	60	70	105	70	120	75	500
+Lileep	Lileep	Rock	Rock	Grass	3	Common	66	41	77	61	87	23	355
+Cradily	Cradily	Rock	Rock	Grass	3	Common	86	81	97	81	107	43	495
+Anorith	Anorith	Rock	Rock	Bug	3	Common	45	95	50	40	50	75	355
+Armaldo	Armaldo	Rock	Rock	Bug	3	Common	75	125	100	70	80	45	495
+Feebas	Feebas	Water	Water		3	Common	20	15	20	10	55	80	200
+Milotic	Milotic	Water	Water		3	Common	95	60	79	100	125	81	540
+Shuppet	Shuppet	Ghost	Ghost		3	Common	44	75	35	63	33	45	295
+Mega Banette	Mega Banette	Ghost	Ghost		6	Common	64	165	75	93	83	75	555
+Banette	Banette	Ghost	Ghost		3	Common	64	115	65	83	63	65	455
+Duskull	Duskull	Ghost	Ghost		3	Common	20	40	90	30	90	25	295
+Dusclops	Dusclops	Ghost	Ghost		3	Common	40	70	130	60	130	25	455
+Chimecho	Chimecho	Psychic	Psychic		3	Common	75	50	80	95	90	65	455
+Absol	Absol	Dark	Dark		3	Common	65	130	60	75	60	75	465
+Mega Absol	Mega Absol	Dark	Dark		6	Common	65	150	60	115	60	115	565
+Wynaut	Wynaut	Psychic	Psychic		3	Baby	95	23	48	23	48	23	260
+Snorunt	Snorunt	Ice	Ice		3	Common	50	50	50	50	50	50	300
+Mega Glalie	Mega Glalie	Ice	Ice		6	Common	80	120	80	120	80	100	580
+Glalie	Glalie	Ice	Ice		3	Common	80	80	80	80	80	80	480
+Spheal	Spheal	Ice	Ice	Water	3	Common	70	40	50	55	50	25	290
+Sealeo	Sealeo	Ice	Ice	Water	3	Common	90	60	70	75	70	45	410
+Walrein	Walrein	Ice	Ice	Water	3	Common	110	80	90	95	90	65	530
+Clamperl	Clamperl	Water	Water		3	Common	35	64	85	74	55	32	345
+Huntail	Huntail	Water	Water		3	Common	55	104	105	94	75	52	485
+Gorebyss	Gorebyss	Water	Water		3	Common	55	84	105	114	75	52	485
+Bagon	Bagon	Dragon	Dragon		3	Common	45	75	60	40	30	50	300
+Shelgon	Shelgon	Dragon	Dragon		3	Common	65	95	100	60	50	50	420
+Mega Salamence	Mega Salamence	Dragon	Dragon	Flying	6	Common	95	145	130	120	90	120	700
+Salamence	Salamence	Dragon	Dragon	Flying	3	Common	95	135	80	110	80	100	600
+Beldum	Beldum	Steel	Steel	Psychic	3	Common	40	55	80	35	60	30	300
+Metang	Metang	Steel	Steel	Psychic	3	Common	60	75	100	55	80	50	420
+Mega Metagross	Mega Metagross	Steel	Steel	Psychic	6	Common	80	145	150	105	110	110	700
+Metagross	Metagross	Steel	Steel	Psychic	3	Common	80	135	130	95	90	70	600
+Registeel	Registeel	Steel	Steel		3	Legendary	80	75	150	75	150	50	580
+Mega Latias	Mega Latias	Dragon	Dragon	Psychic	6	Legendary	80	100	120	140	150	110	700
+Latias	Latias	Dragon	Dragon	Psychic	3	Legendary	80	80	90	110	130	110	600
+Latios	Latios	Dragon	Dragon	Psychic	3	Legendary	80	90	80	130	110	110	600
+Mega Latios	Mega Latios	Dragon	Dragon	Psychic	6	Legendary	80	130	100	160	120	110	700
+Primal Kyogre	Primal Kyogre	Water	Water		6	Legendary	100	150	90	180	160	90	770
+Kyogre	Kyogre	Water	Water		3	Legendary	100	100	90	150	140	90	670
+Primal Groudon	Primal Groudon	Ground	Ground	Fire	6	Legendary	100	180	160	150	90	90	770
+Groudon	Groudon	Ground	Ground		3	Legendary	100	150	140	100	90	90	670
+Mega Rayquaza	Mega Rayquaza	Dragon	Dragon	Flying	6	Legendary	105	180	100	180	100	115	780
+Rayquaza	Rayquaza	Dragon	Dragon	Flying	3	Legendary	105	150	90	150	90	95	680
+Turtwig	Turtwig	Grass	Grass		4	Common	55	68	64	45	55	31	318
+Grotle	Grotle	Grass	Grass		4	Common	75	89	85	55	65	36	405
+Torterra	Torterra	Grass	Grass	Ground	4	Common	95	109	105	75	85	56	525
+Chimchar	Chimchar	Fire	Fire		4	Common	44	58	44	58	44	61	309
+Monferno	Monferno	Fire	Fire	Fighting	4	Common	64	78	52	78	52	81	405
+Infernape	Infernape	Fire	Fire	Fighting	4	Common	76	104	71	104	71	108	534
+Piplup	Piplup	Water	Water		4	Common	53	51	53	61	56	40	314
+Prinplup	Prinplup	Water	Water		4	Common	64	66	68	81	76	50	405
+Empoleon	Empoleon	Water	Water	Steel	4	Common	84	86	88	111	101	60	530
+Starly	Starly	Normal	Normal	Flying	4	Common	40	55	30	30	30	60	245
+Staravia	Staravia	Normal	Normal	Flying	4	Common	55	75	50	40	40	80	340
+Staraptor	Staraptor	Normal	Normal	Flying	4	Common	85	120	70	50	60	100	485
+Bidoof	Bidoof	Normal	Normal		4	Common	59	45	40	35	40	31	250
+Bibarel	Bibarel	Normal	Normal	Water	4	Common	79	85	60	55	60	71	410
+Kricketot	Kricketot	Bug	Bug		4	Common	37	25	41	25	41	25	194
+Kricketune	Kricketune	Bug	Bug		4	Common	77	85	51	55	51	65	384
+Shinx	Shinx	Electric	Electric		4	Common	45	65	34	40	34	45	263
+Luxio	Luxio	Electric	Electric		4	Common	60	85	49	60	49	60	363
+Luxray	Luxray	Electric	Electric		4	Common	80	120	79	95	79	70	523
+Budew	Budew	Grass	Grass	Poison	4	Baby	40	30	35	50	70	55	280
+Roserade	Roserade	Grass	Grass	Poison	4	Common	60	70	65	125	105	90	515
+Cranidos	Cranidos	Rock	Rock		4	Common	67	125	40	30	30	58	350
+Rampardos	Rampardos	Rock	Rock		4	Common	97	165	60	65	50	58	495
+Shieldon	Shieldon	Rock	Rock	Steel	4	Common	30	42	118	42	88	30	350
+Bastiodon	Bastiodon	Rock	Rock	Steel	4	Common	60	52	168	47	138	30	495
+Combee	Combee	Bug	Bug	Flying	4	Common	30	30	42	30	42	70	244
+Vespiquen	Vespiquen	Bug	Bug	Flying	4	Common	70	80	102	80	102	40	474
+Buizel	Buizel	Water	Water		4	Common	55	65	35	60	30	85	330
+Floatzel	Floatzel	Water	Water		4	Common	85	105	55	85	50	115	495
+Cherubi	Cherubi	Grass	Grass		4	Common	45	35	45	62	53	35	275
+Cherrim	Cherrim	Grass	Grass		4	Common	70	60	70	87	78	85	450
+Shellos	Shellos	Water	Water		4	Common	76	48	48	57	62	34	325
+Gastrodon	Gastrodon	Water	Water	Ground	4	Common	111	83	68	92	82	39	475
+Ambipom	Ambipom	Normal	Normal		4	Common	75	100	66	60	66	115	482
+Drifloon	Drifloon	Ghost	Ghost	Flying	4	Common	90	50	34	60	44	70	348
+Drifblim	Drifblim	Ghost	Ghost	Flying	4	Common	150	80	44	90	54	80	498
+Buneary	Buneary	Normal	Normal		4	Common	55	66	44	44	56	85	350
+Mega Lopunny	Mega Lopunny	Normal	Normal	Fighting	6	Common	65	136	94	54	96	135	580
+Lopunny	Lopunny	Normal	Normal		4	Common	65	76	84	54	96	105	480
+Mismagius	Mismagius	Ghost	Ghost		4	Common	60	60	60	105	105	105	495
+Honchkrow	Honchkrow	Dark	Dark	Flying	4	Common	100	125	52	105	52	71	505
+Glameow	Glameow	Normal	Normal		4	Common	49	55	42	42	37	85	310
+Purugly	Purugly	Normal	Normal		4	Common	71	82	64	64	59	112	452
+Chingling	Chingling	Psychic	Psychic		4	Baby	45	30	50	65	50	45	285
+Stunky	Stunky	Poison	Poison	Dark	4	Common	63	63	47	41	41	74	329
+Skuntank	Skuntank	Poison	Poison	Dark	4	Common	103	93	67	71	61	84	479
+Bronzor	Bronzor	Steel	Steel	Psychic	4	Common	57	24	86	24	86	23	300
+Bronzong	Bronzong	Steel	Steel	Psychic	4	Common	67	89	116	79	116	33	500
+Bonsly	Bonsly	Rock	Rock		4	Baby	50	80	95	10	45	10	290
+Mime Jr.	Mime Jr.	Psychic	Psychic	Fairy	4	Baby	20	25	45	70	90	60	310
+Happiny	Happiny	Normal	Normal		4	Baby	100	5	5	15	65	30	220
+Gible	Gible	Dragon	Dragon	Ground	4	Common	58	70	45	40	45	42	300
+Gabite	Gabite	Dragon	Dragon	Ground	4	Common	68	90	65	50	55	82	410
+Garchomp	Garchomp	Dragon	Dragon	Ground	4	Common	108	130	95	80	85	102	600
+Mega Garchomp	Mega Garchomp	Dragon	Dragon	Ground	6	Common	108	170	115	120	95	92	700
+Munchlax	Munchlax	Normal	Normal		4	Baby	135	85	40	40	85	5	390
+Riolu	Riolu	Fighting	Fighting		4	Baby	40	70	40	35	40	60	285
+Mega Lucario	Mega Lucario	Fighting	Fighting	Steel	6	Common	70	145	88	140	70	112	625
+Lucario	Lucario	Fighting	Fighting	Steel	4	Common	70	110	70	115	70	90	525
+Hippopotas	Hippopotas	Ground	Ground		4	Common	68	72	78	38	42	32	330
+Hippowdon	Hippowdon	Ground	Ground		4	Common	108	112	118	68	72	47	525
+Skorupi	Skorupi	Poison	Poison	Bug	4	Common	40	50	90	30	55	65	330
+Drapion	Drapion	Poison	Poison	Dark	4	Common	70	90	110	60	75	95	500
+Croagunk	Croagunk	Poison	Poison	Fighting	4	Common	48	61	40	61	40	50	300
+Toxicroak	Toxicroak	Poison	Poison	Fighting	4	Common	83	106	65	86	65	85	490
+Finneon	Finneon	Water	Water		4	Common	49	49	56	49	61	66	330
+Lumineon	Lumineon	Water	Water		4	Common	69	69	76	69	86	91	460
+Mantyke	Mantyke	Water	Water	Flying	4	Baby	45	20	50	60	120	50	345
+Snover	Snover	Grass	Grass	Ice	4	Common	60	62	50	62	60	40	334
+Abomasnow	Abomasnow	Grass	Grass	Ice	4	Common	90	92	75	92	85	60	494
+Mega Abomasnow	Mega Abomasnow	Grass	Grass	Ice	6	Common	90	132	105	132	105	30	594
+Weavile	Weavile	Dark	Dark	Ice	4	Common	70	120	65	45	85	125	510
+Magnezone	Magnezone	Electric	Electric	Steel	4	Common	70	70	115	130	90	60	535
+Lickilicky	Lickilicky	Normal	Normal		4	Common	110	85	95	80	95	50	515
+Rhyperior	Rhyperior	Ground	Ground	Rock	4	Common	115	140	130	55	55	40	535
+Tangrowth	Tangrowth	Grass	Grass		4	Common	100	100	125	110	50	50	535
+Electivire	Electivire	Electric	Electric		4	Common	75	123	67	95	85	95	540
+Magmortar	Magmortar	Fire	Fire		4	Common	75	95	67	125	95	83	540
+Togekiss	Togekiss	Fairy	Fairy	Flying	4	Common	85	50	95	120	115	80	545
+Yanmega	Yanmega	Bug	Bug	Flying	4	Common	86	76	86	116	56	95	515
+Leafeon	Leafeon	Grass	Grass		4	Common	65	110	130	60	65	95	525
+Glaceon	Glaceon	Ice	Ice		4	Common	65	60	110	130	95	65	525
+Gliscor	Gliscor	Ground	Ground	Flying	4	Common	75	95	125	45	75	95	510
+Mamoswine	Mamoswine	Ice	Ice	Ground	4	Common	110	130	80	70	60	80	530
+Porygon-Z	Porygon-Z	Normal	Normal		4	Common	85	80	70	135	75	90	535
+Gallade	Gallade	Psychic	Psychic	Fighting	4	Common	68	125	65	65	115	80	518
+Mega Gallade	Mega Gallade	Psychic	Psychic	Fighting	6	Common	68	165	95	65	115	110	618
+Probopass	Probopass	Rock	Rock	Steel	4	Common	60	55	145	75	150	40	525
+Dusknoir	Dusknoir	Ghost	Ghost		4	Common	45	100	135	65	135	45	525
+Froslass	Froslass	Ice	Ice	Ghost	4	Common	70	80	70	80	70	110	480
+Fan Rotom	Fan Rotom	Electric	Electric	Flying	4	Common	50	65	107	105	107	86	520
+Frost Rotom	Frost Rotom	Electric	Electric	Ice	4	Common	50	65	107	105	107	86	520
+Wash Rotom	Wash Rotom	Electric	Electric	Water	4	Common	50	65	107	105	107	86	520
+Heat Rotom	Heat Rotom	Electric	Electric	Fire	4	Common	50	65	107	105	107	86	520
+Mow Rotom	Mow Rotom	Electric	Electric	Grass	4	Common	50	65	107	105	107	86	520
+Dialga	Dialga	Steel	Steel	Dragon	4	Legendary	100	120	120	150	100	90	680
+Palkia	Palkia	Water	Water	Dragon	4	Legendary	90	120	100	150	120	100	680
+Heatran	Heatran	Fire	Fire	Steel	4	Legendary	91	90	106	130	106	77	600
+Regigigas	Regigigas	Normal	Normal		4	Legendary	110	160	110	80	110	100	670
+Giratina Origin Forme	Giratina Origin Forme	Ghost	Ghost	Dragon	4	Legendary	150	120	100	120	100	90	680
+Giratina Altered Forme	Giratina Altered Forme	Ghost	Ghost	Dragon	4	Legendary	150	100	120	100	120	90	680
+Cresselia	Cresselia	Psychic	Psychic		4	Legendary	120	70	120	75	130	85	600
+Snivy	Snivy	Grass	Grass		5	Common	45	45	55	45	55	63	308
+Servine	Servine	Grass	Grass		5	Common	60	60	75	60	75	83	413
+Serperior	Serperior	Grass	Grass		5	Common	75	75	95	75	95	113	528
+Tepig	Tepig	Fire	Fire		5	Common	65	63	45	45	45	45	308
+Pignite	Pignite	Fire	Fire	Fighting	5	Common	90	93	55	70	55	55	418
+Emboar	Emboar	Fire	Fire	Fighting	5	Common	110	123	65	100	65	65	528
+Oshawott	Oshawott	Water	Water		5	Common	55	55	45	63	45	45	308
+Dewott	Dewott	Water	Water		5	Common	75	75	60	83	60	60	413
+Samurott	Samurott	Water	Water		5	Common	95	100	85	108	70	70	528
+Hisuian Samurott	Hisuian Samurott	Water	Water	Dark	5	Common	90	108	80	100	65	85	528
+Patrat	Patrat	Normal	Normal		5	Common	45	55	39	35	39	42	255
+Watchog	Watchog	Normal	Normal		5	Common	60	85	69	60	69	77	420
+Lillipup	Lillipup	Normal	Normal		5	Common	45	60	45	25	45	55	275
+Herdier	Herdier	Normal	Normal		5	Common	65	80	65	35	65	60	370
+Stoutland	Stoutland	Normal	Normal		5	Common	85	110	90	45	90	80	500
+Purrloin	Purrloin	Dark	Dark		5	Common	41	50	37	50	37	66	281
+Liepard	Liepard	Dark	Dark		5	Common	64	88	50	88	50	106	446
+Pansage	Pansage	Grass	Grass		5	Common	50	53	48	53	48	64	316
+Simisage	Simisage	Grass	Grass		5	Common	75	98	63	98	63	101	498
+Pansear	Pansear	Fire	Fire		5	Common	50	53	48	53	48	64	316
+Simisear	Simisear	Fire	Fire		5	Common	75	98	63	98	63	101	498
+Panpour	Panpour	Water	Water		5	Common	50	53	48	53	48	64	316
+Simipour	Simipour	Water	Water		5	Common	75	98	63	98	63	101	498
+Munna	Munna	Psychic	Psychic		5	Common	76	25	45	67	55	24	292
+Musharna	Musharna	Psychic	Psychic		5	Common	116	55	85	107	95	29	487
+Pidove	Pidove	Normal	Normal	Flying	5	Common	50	55	50	36	30	43	264
+Tranquill	Tranquill	Normal	Normal	Flying	5	Common	62	77	62	50	42	65	358
+Unfezant	Unfezant	Normal	Normal	Flying	5	Common	80	115	80	65	55	93	488
+Blitzle	Blitzle	Electric	Electric		5	Common	45	60	32	50	32	76	295
+Zebstrika	Zebstrika	Electric	Electric		5	Common	75	100	63	80	63	116	497
+Roggenrola	Roggenrola	Rock	Rock		5	Common	55	75	85	25	25	15	280
+Boldore	Boldore	Rock	Rock		5	Common	70	105	105	50	40	20	390
+Gigalith	Gigalith	Rock	Rock		5	Common	85	135	130	60	80	25	515
+Woobat	Woobat	Psychic	Psychic	Flying	5	Common	65	45	43	55	43	72	323
+Swoobat	Swoobat	Psychic	Psychic	Flying	5	Common	67	57	55	77	55	114	425
+Drilbur	Drilbur	Ground	Ground		5	Common	60	85	40	30	45	68	328
+Excadrill	Excadrill	Ground	Ground	Steel	5	Common	110	135	60	50	65	88	508
+Mega Audino	Mega Audino	Normal	Normal	Fairy	6	Common	103	60	126	80	126	50	545
+Audino	Audino	Normal	Normal		5	Common	103	60	86	60	86	50	445
+Timburr	Timburr	Fighting	Fighting		5	Common	75	80	55	25	35	35	305
+Gurdurr	Gurdurr	Fighting	Fighting		5	Common	85	105	85	40	50	40	405
+Conkeldurr	Conkeldurr	Fighting	Fighting		5	Common	105	140	95	55	65	45	505
+Tympole	Tympole	Water	Water		5	Common	50	50	40	50	40	64	294
+Palpitoad	Palpitoad	Water	Water	Ground	5	Common	75	65	55	65	55	69	384
+Seismitoad	Seismitoad	Water	Water	Ground	5	Common	105	95	75	85	75	74	509
+Sewaddle	Sewaddle	Bug	Bug	Grass	5	Common	45	53	70	40	60	42	310
+Swadloon	Swadloon	Bug	Bug	Grass	5	Common	55	63	90	50	80	42	380
+Leavanny	Leavanny	Bug	Bug	Grass	5	Common	75	103	80	70	80	92	500
+Venipede	Venipede	Bug	Bug	Poison	5	Common	30	45	59	30	39	57	260
+Whirlipede	Whirlipede	Bug	Bug	Poison	5	Common	40	55	99	40	79	47	360
+Scolipede	Scolipede	Bug	Bug	Poison	5	Common	60	100	89	55	69	112	485
+Cottonee	Cottonee	Grass	Grass	Fairy	5	Common	40	27	60	37	50	66	280
+Whimsicott	Whimsicott	Grass	Grass	Fairy	5	Common	60	67	85	77	75	116	480
+Petilil	Petilil	Grass	Grass		5	Common	45	35	50	70	50	30	280
+Hisuian Lilligant	Hisuian Lilligant	Grass	Grass	Fighting	5	Common	70	105	75	50	75	105	480
+Lilligant	Lilligant	Grass	Grass		5	Common	70	60	75	110	75	90	480
+Sandile	Sandile	Ground	Ground	Dark	5	Common	50	72	35	35	35	65	292
+Krokorok	Krokorok	Ground	Ground	Dark	5	Common	60	82	45	45	45	74	351
+Krookodile	Krookodile	Ground	Ground	Dark	5	Common	95	117	80	65	70	92	519
+Darumaka	Darumaka	Fire	Fire		5	Common	70	90	45	15	45	50	315
+Darmanitan Standard Mode	Darmanitan Standard Mode	Fire	Fire		5	Common	105	140	55	30	55	95	480
+Darmanitan Galarian Zen Mode	Darmanitan Galarian Zen Mode	Ice	Ice	Fire	8	Common	105	160	55	30	55	135	540
+Darmanitan Galarian Standard Mode	Darmanitan Galarian Standard Mode	Ice	Ice		8	Common	105	140	55	30	55	95	480
+Darmanitan Zen Mode	Darmanitan Zen Mode	Fire	Fire	Psychic	5	Common	105	30	105	140	105	55	540
+Maractus	Maractus	Grass	Grass		5	Common	75	86	67	106	67	60	461
+Dwebble	Dwebble	Bug	Bug	Rock	5	Common	50	65	85	35	35	55	325
+Crustle	Crustle	Bug	Bug	Rock	5	Common	70	105	125	65	75	45	485
+Scraggy	Scraggy	Dark	Dark	Fighting	5	Common	50	75	70	35	70	48	348
+Scrafty	Scrafty	Dark	Dark	Fighting	5	Common	65	90	115	45	115	58	488
+Sigilyph	Sigilyph	Psychic	Psychic	Flying	5	Common	72	58	80	103	80	97	490
+Yamask	Yamask	Ghost	Ghost		5	Common	38	30	85	55	65	30	303
+Cofagrigus	Cofagrigus	Ghost	Ghost		5	Common	58	50	145	95	105	30	483
+Tirtouga	Tirtouga	Water	Water	Rock	5	Common	54	78	103	53	45	22	355
+Carracosta	Carracosta	Water	Water	Rock	5	Common	74	108	133	83	65	32	495
+Archen	Archen	Rock	Rock	Flying	5	Common	55	112	45	74	45	70	401
+Archeops	Archeops	Rock	Rock	Flying	5	Common	75	140	65	112	65	110	567
+Trubbish	Trubbish	Poison	Poison		5	Common	50	50	62	40	62	65	329
+Garbodor Gigantamax	Garbodor Gigantamax	Poison	Poison		8								
+Garbodor	Garbodor	Poison	Poison		5	Common	80	95	82	60	82	75	474
+Zorua	Zorua	Dark	Dark		5	Common	40	65	40	80	40	65	330
+Zoroark	Zoroark	Dark	Dark		5	Common	60	105	60	120	60	105	510
+Hisuian Zoroark	Hisuian Zoroark	Normal	Normal	Ghost	5	Common	55	100	60	125	60	110	510
+Minccino	Minccino	Normal	Normal		5	Common	55	50	40	40	40	75	300
+Cinccino	Cinccino	Normal	Normal		5	Common	75	95	60	65	60	115	470
+Gothita	Gothita	Psychic	Psychic		5	Common	45	30	50	55	65	45	290
+Gothorita	Gothorita	Psychic	Psychic		5	Common	60	45	70	75	85	55	390
+Gothitelle	Gothitelle	Psychic	Psychic		5	Common	70	55	95	95	110	65	490
+Solosis	Solosis	Psychic	Psychic		5	Common	45	30	40	105	50	20	290
+Duosion	Duosion	Psychic	Psychic		5	Common	65	40	50	125	60	30	370
+Reuniclus	Reuniclus	Psychic	Psychic		5	Common	110	65	75	125	85	30	490
+Ducklett	Ducklett	Water	Water	Flying	5	Common	62	44	50	44	50	55	305
+Swanna	Swanna	Water	Water	Flying	5	Common	75	87	63	87	63	98	473
+Vanillite	Vanillite	Ice	Ice		5	Common	36	50	50	65	60	44	305
+Vanillish	Vanillish	Ice	Ice		5	Common	51	65	65	80	75	59	395
+Vanilluxe	Vanilluxe	Ice	Ice		5	Common	71	95	85	110	95	79	535
+Deerling	Deerling	Normal	Normal	Grass	5	Common	60	60	50	40	50	75	335
+Sawsbuck	Sawsbuck	Normal	Normal	Grass	5	Common	80	100	70	60	70	95	475
+Emolga	Emolga	Electric	Electric	Flying	5	Common	55	75	60	75	60	103	428
+Karrablast	Karrablast	Bug	Bug		5	Common	50	75	45	40	45	60	315
+Escavalier	Escavalier	Bug	Bug	Steel	5	Common	70	135	105	60	105	20	495
+Foongus	Foongus	Grass	Grass	Poison	5	Common	69	55	45	55	55	15	294
+Amoonguss	Amoonguss	Grass	Grass	Poison	5	Common	114	85	70	85	80	30	464
+Frillish	Frillish	Water	Water	Ghost	5	Common	55	40	50	65	85	40	335
+Jellicent	Jellicent	Water	Water	Ghost	5	Common	100	60	70	85	105	60	480
+Joltik	Joltik	Bug	Bug	Electric	5	Common	50	47	50	57	50	65	319
+Galvantula	Galvantula	Bug	Bug	Electric	5	Common	70	77	60	97	60	108	472
+Ferroseed	Ferroseed	Grass	Grass	Steel	5	Common	44	50	91	24	86	10	305
+Ferrothorn	Ferrothorn	Grass	Grass	Steel	5	Common	74	94	131	54	116	20	489
+Klink	Klink	Steel	Steel		5	Common	40	55	70	45	60	30	300
+Klang	Klang	Steel	Steel		5	Common	60	80	95	70	85	50	440
+Klinklang	Klinklang	Steel	Steel		5	Common	60	100	115	70	85	90	520
+Tynamo	Tynamo	Electric	Electric		5	Common	35	55	40	45	40	60	275
+Eelektrik	Eelektrik	Electric	Electric		5	Common	65	85	70	75	70	40	405
+Eelektross	Eelektross	Electric	Electric		5	Common	85	115	80	105	80	50	515
+Elgyem	Elgyem	Psychic	Psychic		5	Common	55	55	55	85	55	30	335
+Beheeyem	Beheeyem	Psychic	Psychic		5	Common	75	75	75	125	95	40	485
+Litwick	Litwick	Ghost	Ghost	Fire	5	Common	50	30	55	65	55	20	275
+Lampent	Lampent	Ghost	Ghost	Fire	5	Common	60	40	60	95	60	55	370
+Chandelure	Chandelure	Ghost	Ghost	Fire	5	Common	60	55	90	145	90	80	520
+Axew	Axew	Dragon	Dragon		5	Common	46	87	60	30	40	57	320
+Fraxure	Fraxure	Dragon	Dragon		5	Common	66	117	70	40	50	67	410
+Haxorus	Haxorus	Dragon	Dragon		5	Common	76	147	90	60	70	97	540
+Cubchoo	Cubchoo	Ice	Ice		5	Common	55	70	40	60	40	40	305
+Beartic	Beartic	Ice	Ice		5	Common	95	130	80	70	80	50	505
+Shelmet	Shelmet	Bug	Bug		5	Common	50	40	85	40	65	25	305
+Accelgor	Accelgor	Bug	Bug		5	Common	80	70	40	100	60	145	495
+Mienfoo	Mienfoo	Fighting	Fighting		5	Common	45	85	50	55	50	65	350
+Mienshao	Mienshao	Fighting	Fighting		5	Common	65	125	60	95	60	105	510
+Druddigon	Druddigon	Dragon	Dragon		5	Common	77	120	90	60	90	48	485
+Golett	Golett	Ground	Ground	Ghost	5	Common	59	74	50	35	50	35	303
+Golurk	Golurk	Ground	Ground	Ghost	5	Common	89	124	80	55	80	55	483
+Pawniard	Pawniard	Dark	Dark	Steel	5	Common	45	85	70	40	40	60	340
+Bisharp	Bisharp	Dark	Dark	Steel	5	Common	65	125	100	60	70	70	490
+Bouffalant	Bouffalant	Normal	Normal		5	Common	95	110	95	40	95	55	490
+Rufflet	Rufflet	Normal	Normal	Flying	5	Common	70	83	50	37	50	60	350
+Hisuian Braviary	Hisuian Braviary	Psychic	Psychic	Flying	5	Common	110	83	70	112	70	65	510
+Braviary	Braviary	Normal	Normal	Flying	5	Common	100	123	75	57	75	80	510
+Vullaby	Vullaby	Dark	Dark	Flying	5	Common	70	55	75	45	65	60	370
+Mandibuzz	Mandibuzz	Dark	Dark	Flying	5	Common	110	65	105	55	95	80	510
+Durant	Durant	Bug	Bug	Steel	5	Common	58	109	112	48	48	109	484
+Deino	Deino	Dark	Dark	Dragon	5	Common	52	65	50	45	50	38	300
+Zweilous	Zweilous	Dark	Dark	Dragon	5	Common	72	85	70	65	70	58	420
+Hydreigon	Hydreigon	Dark	Dark	Dragon	5	Common	92	105	90	125	90	98	600
+Larvesta	Larvesta	Bug	Bug	Fire	5	Common	55	85	55	50	55	60	360
+Volcarona	Volcarona	Bug	Bug	Fire	5	Common	85	60	65	135	105	100	550
+Cobalion	Cobalion	Steel	Steel	Fighting	5	Legendary	91	90	129	90	72	108	580
+Terrakion	Terrakion	Rock	Rock	Fighting	5	Legendary	91	129	90	72	90	108	580
+Virizion	Virizion	Grass	Grass	Fighting	5	Legendary	91	90	72	90	129	108	580
+Tornadus Incarnate Forme	Tornadus Incarnate Forme	Flying	Flying		5	Legendary	79	115	70	125	80	111	580
+Thundurus Therian Forme	Thundurus Therian Forme	Electric	Electric	Flying	5	Legendary	79	105	70	145	80	101	580
+Thundurus Incarnate Forme	Thundurus Incarnate Forme	Electric	Electric	Flying	5	Legendary	79	115	70	125	80	111	580
+Reshiram	Reshiram	Dragon	Dragon	Fire	5	Legendary	100	120	100	150	120	90	680
+Zekrom	Zekrom	Dragon	Dragon	Electric	5	Legendary	100	150	120	120	100	90	680
+Landorus Incarnate Forme	Landorus Incarnate Forme	Ground	Ground	Flying	5	Legendary	89	125	90	115	80	101	600
+Landorus Therian Forme	Landorus Therian Forme	Ground	Ground	Flying	5	Legendary	89	145	90	105	80	91	600
+Black Kyurem	Black Kyurem	Dragon	Dragon	Ice	5	Legendary	125	170	100	120	90	95	700
+White Kyurem	White Kyurem	Dragon	Dragon	Ice	5	Legendary	125	120	90	170	100	95	700
+Chespin	Chespin	Grass	Grass		6	Common	56	61	65	48	45	38	313
+Quilladin	Quilladin	Grass	Grass		6	Common	61	78	95	56	58	57	405
+Chesnaught	Chesnaught	Grass	Grass	Fighting	6	Common	88	107	122	74	75	64	530
+Fennekin	Fennekin	Fire	Fire		6	Common	40	45	40	62	60	60	307
+Braixen	Braixen	Fire	Fire		6	Common	59	59	58	90	70	73	409
+Delphox	Delphox	Fire	Fire	Psychic	6	Common	75	69	72	114	100	104	534
+Froakie	Froakie	Water	Water		6	Common	41	56	40	62	44	71	314
+Frogadier	Frogadier	Water	Water		6	Common	54	63	52	83	56	97	405
+Greninja	Greninja	Water	Water	Dark	6	Common	72	95	67	103	71	122	530
+Ash-Greninja	Ash-Greninja	Water	Water	Dark	6	Common	72	145	67	153	71	132	640
+Bunnelby	Bunnelby	Normal	Normal		6	Common	38	36	38	32	36	57	237
+Diggersby	Diggersby	Normal	Normal	Ground	6	Common	85	56	77	50	77	78	423
+Fletchling	Fletchling	Normal	Normal	Flying	6	Common	45	50	43	40	38	62	278
+Fletchinder	Fletchinder	Fire	Fire	Flying	6	Common	62	73	55	56	52	84	382
+Talonflame	Talonflame	Fire	Fire	Flying	6	Common	78	81	71	74	69	126	499
+Scatterbug	Scatterbug	Bug	Bug		6	Common	38	35	40	27	25	35	200
+Spewpa	Spewpa	Bug	Bug		6	Common	45	22	60	27	30	29	213
+Vivillon	Vivillon	Bug	Bug	Flying	6	Common	80	52	50	90	50	89	411
+Litleo	Litleo	Fire	Fire	Normal	6	Common	62	50	58	73	54	72	369
+Pyroar	Pyroar	Fire	Fire	Normal	6	Common	86	68	72	109	66	106	507
+Floette	Floette	Fairy	Fairy		6	Common	54	45	47	75	98	52	371
+Florges	Florges	Fairy	Fairy		6	Common	78	65	68	112	154	75	552
+Skiddo	Skiddo	Grass	Grass		6	Common	66	65	48	62	57	52	350
+Gogoat	Gogoat	Grass	Grass		6	Common	123	100	62	97	81	68	531
+Pancham	Pancham	Fighting	Fighting		6	Common	67	82	62	46	48	43	348
+Pangoro	Pangoro	Fighting	Fighting	Dark	6	Common	95	124	78	69	71	58	495
+Espurr	Espurr	Psychic	Psychic		6	Common	62	48	54	63	60	68	355
+Meowstic Female	Meowstic Female	Psychic	Psychic		6	Common	74	48	76	83	81	104	466
+Meowstic Male	Meowstic Male	Psychic	Psychic		6	Common	74	48	76	83	81	104	466
+Honedge	Honedge	Steel	Steel	Ghost	6	Common	45	80	100	35	37	28	325
+Doublade	Doublade	Steel	Steel	Ghost	6	Common	59	110	150	45	49	35	448
+Aegislash Blade Forme	Aegislash Blade Forme	Steel	Steel	Ghost	6	Common	60	140	50	140	50	60	500
+Aegislash Shield Forme	Aegislash Shield Forme	Steel	Steel	Ghost	6	Common	60	50	140	50	140	60	500
+Spritzee	Spritzee	Fairy	Fairy		6	Common	78	52	60	63	65	23	341
+Aromatisse	Aromatisse	Fairy	Fairy		6	Common	101	72	72	99	89	29	462
+Swirlix	Swirlix	Fairy	Fairy		6	Common	62	48	66	59	57	49	341
+Slurpuff	Slurpuff	Fairy	Fairy		6	Common	82	80	86	85	75	72	480
+Inkay	Inkay	Dark	Dark	Psychic	6	Common	53	54	53	37	46	45	288
+Malamar	Malamar	Dark	Dark	Psychic	6	Common	86	92	88	68	75	73	482
+Binacle	Binacle	Rock	Rock	Water	6	Common	42	52	67	39	56	50	306
+Barbaracle	Barbaracle	Rock	Rock	Water	6	Common	72	105	115	54	86	68	500
+Skrelp	Skrelp	Poison	Poison	Water	6	Common	50	60	60	60	60	30	320
+Dragalge	Dragalge	Poison	Poison	Dragon	6	Common	65	75	90	97	123	44	494
+Clauncher	Clauncher	Water	Water		6	Common	50	53	62	58	63	44	330
+Clawitzer	Clawitzer	Water	Water		6	Common	71	73	88	120	89	59	500
+Helioptile	Helioptile	Electric	Electric	Normal	6	Common	44	38	33	61	43	70	289
+Heliolisk	Heliolisk	Electric	Electric	Normal	6	Common	62	55	52	109	94	109	481
+Tyrunt	Tyrunt	Rock	Rock	Dragon	6	Common	58	89	77	45	45	48	362
+Tyrantrum	Tyrantrum	Rock	Rock	Dragon	6	Common	82	121	119	69	59	71	521
+Amaura	Amaura	Rock	Rock	Ice	6	Common	77	59	50	67	63	46	362
+Aurorus	Aurorus	Rock	Rock	Ice	6	Common	123	77	72	99	92	58	521
+Sylveon	Sylveon	Fairy	Fairy		6	Common	95	65	65	110	130	60	525
+Hawlucha	Hawlucha	Fighting	Fighting	Flying	6	Common	78	92	75	74	63	118	500
+Dedenne	Dedenne	Electric	Electric	Fairy	6	Common	67	58	57	81	67	101	431
+Goomy	Goomy	Dragon	Dragon		6	Common	45	50	35	55	75	40	300
+Hisuian Sliggoo	Hisuian Sliggoo	Dragon	Dragon	Steel	6	Common	58	75	83	83	113	40	452
+Sliggoo	Sliggoo	Dragon	Dragon		6	Common	68	75	53	83	113	60	452
+Goodra	Goodra	Dragon	Dragon		6	Common	90	100	70	110	150	80	600
+Hisuian Goodra	Hisuian Goodra	Dragon	Dragon	Steel	6	Common	80	100	100	110	150	60	600
+Klefki	Klefki	Steel	Steel	Fairy	6	Common	57	80	91	80	87	75	470
+Phantump	Phantump	Ghost	Ghost	Grass	6	Common	43	70	48	50	60	38	309
+Trevenant	Trevenant	Ghost	Ghost	Grass	6	Common	85	110	76	65	82	56	474
+Gourgeist Super Size	Gourgeist Super Size	Ghost	Ghost	Grass	6	Common	85	100	122	58	75	54	494
+Gourgeist Large Size	Gourgeist Large Size	Ghost	Ghost	Grass	6	Common	75	95	122	58	75	69	494
+Gourgeist Small Size	Gourgeist Small Size	Ghost	Ghost	Grass	6	Common	55	85	122	58	75	99	494
+Bergmite	Bergmite	Ice	Ice		6	Common	55	69	85	32	35	28	304
+Hisuian Avalugg	Hisuian Avalugg	Ice	Ice	Rock	6	Common	95	127	184	34	36	38	514
+Avalugg	Avalugg	Ice	Ice		6	Common	95	117	184	44	46	28	514
+Noibat	Noibat	Flying	Flying	Dragon	6	Common	40	30	35	45	40	55	245
+Noivern	Noivern	Flying	Flying	Dragon	6	Common	85	70	80	97	80	123	535
+Xerneas	Xerneas	Fairy	Fairy		6	Legendary	126	131	95	131	98	99	680
+Yveltal	Yveltal	Dark	Dark	Flying	6	Legendary	126	131	95	131	98	99	680
+Zygarde Complete Forme	Zygarde Complete Forme	Dragon	Dragon	Ground	6	Legendary	216	100	121	91	95	85	708
+Mega Diancie	Mega Diancie	Rock	Rock	Fairy	6	Mythical	50	160	110	160	110	110	700
+Diancie	Diancie	Rock	Rock	Fairy	6	Mythical	50	100	150	100	150	50	600
+Rowlet	Rowlet	Grass	Grass	Flying	7	Common	68	55	55	50	50	42	320
+Dartrix	Dartrix	Grass	Grass	Flying	7	Common	78	75	75	70	70	52	420
+Hisuian Decidueye	Hisuian Decidueye	Grass	Grass	Fighting	7	Common	88	112	80	95	95	60	530
+Decidueye	Decidueye	Grass	Grass	Ghost	7	Common	78	107	75	100	100	70	530
+Litten	Litten	Fire	Fire		7	Common	45	65	40	60	40	70	320
+Torracat	Torracat	Fire	Fire		7	Common	65	85	50	80	50	90	420
+Incineroar	Incineroar	Fire	Fire	Dark	7	Common	95	115	90	80	90	60	530
+Popplio	Popplio	Water	Water		7	Common	50	54	54	66	56	40	320
+Brionne	Brionne	Water	Water		7	Common	60	69	69	91	81	50	420
+Primarina	Primarina	Water	Water	Fairy	7	Common	80	74	74	126	116	60	530
+Pikipek	Pikipek	Normal	Normal	Flying	7	Common	35	75	30	30	30	65	265
+Trumbeak	Trumbeak	Normal	Normal	Flying	7	Common	55	85	50	40	50	75	355
+Toucannon	Toucannon	Normal	Normal	Flying	7	Common	80	120	75	75	75	60	485
+Yungoos	Yungoos	Normal	Normal		7	Common	48	70	30	30	30	45	253
+Gumshoos	Gumshoos	Normal	Normal		7	Common	88	110	60	55	60	45	418
+Grubbin	Grubbin	Bug	Bug		7	Common	47	62	45	55	45	46	300
+Charjabug	Charjabug	Bug	Bug	Electric	7	Common	57	82	95	55	75	36	400
+Vikavolt	Vikavolt	Bug	Bug	Electric	7	Common	77	70	90	145	75	43	500
+Crabrawler	Crabrawler	Fighting	Fighting		7	Common	47	82	57	42	47	63	338
+Crabominable	Crabominable	Fighting	Fighting	Ice	7	Common	97	132	77	62	67	43	478
+Cutiefly	Cutiefly	Bug	Bug	Fairy	7	Common	40	45	40	55	40	84	304
+Ribombee	Ribombee	Bug	Bug	Fairy	7	Common	60	55	60	95	70	124	464
+Rockruff	Rockruff	Rock	Rock		7	Common	45	65	40	30	40	60	280
+Lycanroc Midday Form	Lycanroc Midday Form	Rock	Rock		7	Common	75	115	65	55	65	112	487
+Lycanroc Midnight Form	Lycanroc Midnight Form	Rock	Rock		7	Common	85	115	75	55	75	82	487
+Lycanroc Dusk Form	Lycanroc Dusk Form	Rock	Rock		7	Common	75	117	65	55	65	110	487
+Wishiwashi Solo Form	Wishiwashi Solo Form	Water	Water		7	Common	45	20	20	25	25	40	175
+Mareanie	Mareanie	Poison	Poison	Water	7	Common	50	53	62	43	52	45	305
+Toxapex	Toxapex	Poison	Poison	Water	7	Common	50	63	152	53	142	35	495
+Mudbray	Mudbray	Ground	Ground		7	Common	70	100	70	45	55	45	385
+Mudsdale	Mudsdale	Ground	Ground		7	Common	100	125	100	55	85	35	500
+Dewpider	Dewpider	Water	Water	Bug	7	Common	38	40	52	40	72	27	269
+Araquanid	Araquanid	Water	Water	Bug	7	Common	68	70	92	50	132	42	454
+Fomantis	Fomantis	Grass	Grass		7	Common	40	55	35	50	35	35	250
+Lurantis	Lurantis	Grass	Grass		7	Common	70	105	90	80	90	45	480
+Morelull	Morelull	Grass	Grass	Fairy	7	Common	40	35	55	65	75	15	285
+Shiinotic	Shiinotic	Grass	Grass	Fairy	7	Common	60	45	80	90	100	30	405
+Salandit	Salandit	Poison	Poison	Fire	7	Common	48	44	40	71	40	77	320
+Salazzle	Salazzle	Poison	Poison	Fire	7	Common	68	64	60	111	60	117	480
+Stufful	Stufful	Normal	Normal	Fighting	7	Common	70	75	50	45	50	50	340
+Bewear	Bewear	Normal	Normal	Fighting	7	Common	120	125	80	55	60	60	500
+Bounsweet	Bounsweet	Grass	Grass		7	Common	42	30	38	30	38	32	210
+Steenee	Steenee	Grass	Grass		7	Common	52	40	48	40	48	62	290
+Tsareena	Tsareena	Grass	Grass		7	Common	72	120	98	50	98	72	510
+Comfey	Comfey	Fairy	Fairy		7	Common	51	52	90	82	110	100	485
+Oranguru	Oranguru	Normal	Normal	Psychic	7	Common	90	60	80	90	110	60	490
+Passimian	Passimian	Fighting	Fighting		7	Common	100	120	90	40	60	80	490
+Wimpod	Wimpod	Bug	Bug	Water	7	Common	25	35	40	20	30	80	230
+Golisopod	Golisopod	Bug	Bug	Water	7	Common	75	125	140	60	90	40	530
+Sandygast	Sandygast	Ghost	Ghost	Ground	7	Common	55	55	80	70	45	15	320
+Palossand	Palossand	Ghost	Ghost	Ground	7	Common	85	75	110	100	75	35	480
+Silvally	Silvally	Normal	Normal		7	Common	95	95	95	95	95	95	570
+Turtonator	Turtonator	Fire	Fire	Dragon	7	Common	60	78	135	91	85	36	485
+Togedemaru	Togedemaru	Electric	Electric	Steel	7	Common	65	98	63	40	73	96	435
+Mimikyu	Mimikyu	Ghost	Ghost	Fairy	7	Common	55	90	80	50	105	96	476
+Drampa	Drampa	Normal	Normal	Dragon	7	Common	78	60	85	135	91	36	485
+Dhelmise	Dhelmise	Ghost	Ghost	Grass	7	Common	70	131	100	86	90	40	517
+Jangmo-o	Jangmo-o	Dragon	Dragon		7	Common	45	55	65	45	45	45	300
+Hakamo-o	Hakamo-o	Dragon	Dragon	Fighting	7	Common	55	75	90	65	70	65	420
+Kommo-o	Kommo-o	Dragon	Dragon	Fighting	7	Common	75	110	125	100	105	85	600
+Tapu Koko	Tapu Koko	Electric	Electric	Fairy	7	Legendary	70	115	85	95	75	130	570
+Tapu Lele	Tapu Lele	Psychic	Psychic	Fairy	7	Legendary	70	85	75	130	115	95	570
+Tapu Bulu	Tapu Bulu	Grass	Grass	Fairy	7	Legendary	70	130	115	85	95	75	570
+Tapu Fini	Tapu Fini	Water	Water	Fairy	7	Legendary	70	75	115	95	130	85	570
+Cosmog	Cosmog	Psychic	Psychic		7	Legendary	43	29	31	29	31	37	200
+Cosmoem	Cosmoem	Psychic	Psychic		7	Legendary	43	29	131	29	131	37	400
+Solgaleo	Solgaleo	Psychic	Psychic	Steel	7	Legendary	137	137	107	113	89	97	680
+Lunala	Lunala	Psychic	Psychic	Ghost	7	Legendary	137	113	89	137	107	97	680
+Nihilego	Nihilego	Rock	Rock	Poison	7	Common	109	53	47	127	131	103	570
+Pheromosa	Pheromosa	Bug	Bug	Fighting	7	Common	71	137	37	137	37	151	570
+Xurkitree	Xurkitree	Electric	Electric		7	Common	83	89	71	173	71	83	570
+Celesteela	Celesteela	Steel	Steel	Flying	7	Common	97	101	103	107	101	61	570
+Kartana	Kartana	Grass	Grass	Steel	7	Common	59	181	131	59	31	109	570
+Dusk Mane Necrozma	Dusk Mane Necrozma	Psychic	Psychic	Steel	7	Legendary	97	157	127	113	109	77	680
+Dawn Wings Necrozma	Dawn Wings Necrozma	Psychic	Psychic	Ghost	7	Legendary	97	113	109	157	127	77	680
+Poipole	Poipole	Poison	Poison		7	Common	67	73	67	73	67	73	420
+Naganadel	Naganadel	Poison	Poison	Dragon	7	Common	73	73	73	127	73	121	540
+Stakataka	Stakataka	Rock	Rock	Steel	7	Common	61	131	211	53	101	13	570
+Blacephalon	Blacephalon	Fire	Fire	Ghost	7	Common	53	127	53	151	79	107	570
+Melmetal Gigantamax	Melmetal Gigantamax	Steel	Steel		8								
+Melmetal	Melmetal	Steel	Steel		7	Mythical	135	143	143	80	65	34	600
+Grookey	Grookey	Grass	Grass		8	Common	50	65	50	40	40	65	310
+Thwackey	Thwackey	Grass	Grass		8	Common	70	85	70	55	60	80	420
+Rillaboom Gigantamax	Rillaboom Gigantamax	Grass	Grass		8								
+Rillaboom	Rillaboom	Grass	Grass		8	Common	100	125	90	60	70	85	530
+Scorbunny	Scorbunny	Fire	Fire		8	Common	50	71	40	40	40	69	310
+Raboot	Raboot	Fire	Fire		8	Common	65	86	60	55	60	94	420
+Cinderace Gigantamax	Cinderace Gigantamax	Fire	Fire		8								
+Cinderace	Cinderace	Fire	Fire		8	Common	80	116	75	65	75	119	530
+Sobble	Sobble	Water	Water		8	Common	50	40	40	70	40	70	310
+Drizzile	Drizzile	Water	Water		8	Common	65	60	55	95	55	90	420
+Inteleon Gigantamax	Inteleon Gigantamax	Water	Water		8								
+Inteleon	Inteleon	Water	Water		8	Common	70	85	65	125	65	120	530
+Skwovet	Skwovet	Normal	Normal		8	Common	70	55	55	35	35	25	275
+Greedent	Greedent	Normal	Normal		8	Common	120	95	95	55	75	20	460
+Rookidee	Rookidee	Flying	Flying		8	Common	38	47	35	33	35	57	245
+Corvisquire	Corvisquire	Flying	Flying		8	Common	68	67	55	43	55	77	365
+Corviknight	Corviknight	Flying	Flying	Steel	8	Common	98	87	105	53	85	67	495
+Corviknight Gigantamax	Corviknight Gigantamax	Flying	Flying	Steel	8								
+Blipbug	Blipbug	Bug	Bug		8	Common	25	20	20	25	45	45	180
+Dottler	Dottler	Bug	Bug	Psychic	8	Common	50	35	80	50	90	30	335
+Orbeetle	Orbeetle	Bug	Bug	Psychic	8	Common	60	45	110	80	120	90	505
+Orbeetle Gigantamax	Orbeetle Gigantamax	Bug	Bug	Psychic	8								
+Nickit	Nickit	Dark	Dark		8	Common	40	28	28	47	52	50	245
+Thievul	Thievul	Dark	Dark		8	Common	70	58	58	87	92	90	455
+Gossifleur	Gossifleur	Grass	Grass		8	Common	40	40	60	40	60	10	250
+Eldegoss	Eldegoss	Grass	Grass		8	Common	60	50	90	80	120	60	460
+Wooloo	Wooloo	Normal	Normal		8	Common	42	40	55	40	45	48	270
+Dubwool	Dubwool	Normal	Normal		8	Common	72	80	100	60	90	88	490
+Chewtle	Chewtle	Water	Water		8	Common	50	64	50	38	38	44	284
+Drednaw Gigantamax	Drednaw Gigantamax	Water	Water	Rock	8								
+Drednaw	Drednaw	Water	Water	Rock	8	Common	90	115	90	48	68	74	485
+Yamper	Yamper	Electric	Electric		8	Common	59	45	50	40	50	26	270
+Boltund	Boltund	Electric	Electric		8	Common	69	90	60	90	60	121	490
+Rolycoly	Rolycoly	Rock	Rock		8	Common	30	40	50	40	50	30	240
+Carkol	Carkol	Rock	Rock	Fire	8	Common	80	60	90	60	70	50	410
+Coalossal Gigantamax	Coalossal Gigantamax	Rock	Rock	Fire	8								
+Coalossal	Coalossal	Rock	Rock	Fire	8	Common	110	80	120	80	90	30	510
+Applin	Applin	Grass	Grass	Dragon	8	Common	40	40	80	40	40	20	260
+Flapple	Flapple	Grass	Grass	Dragon	8	Common	70	110	80	95	60	70	485
+Flapple Gigantamax	Flapple Gigantamax	Grass	Grass	Dragon	8								
+Appletun	Appletun	Grass	Grass	Dragon	8	Common	110	85	80	100	80	30	485
+Appletun Gigantamax	Appletun Gigantamax	Grass	Grass	Dragon	8								
+Silicobra	Silicobra	Ground	Ground		8	Common	52	57	75	35	50	46	315
+Sandaconda Gigantamax	Sandaconda Gigantamax	Ground	Ground		8								
+Sandaconda	Sandaconda	Ground	Ground		8	Common	72	107	125	65	70	71	510
+Arrokuda	Arrokuda	Water	Water		8	Common	41	63	40	40	30	66	280
+Barraskewda	Barraskewda	Water	Water		8	Common	61	123	60	60	50	136	490
+Toxel	Toxel	Electric	Electric	Poison	8	Baby	40	38	35	54	35	40	242
+Toxtricity Amped Form	Toxtricity Amped Form	Electric	Electric	Poison	8	Common	75	98	70	114	70	75	502
+Toxtricity Low Key Form	Toxtricity Low Key Form	Electric	Electric	Poison	8	Common	75	98	70	114	70	75	502
+Sizzlipede	Sizzlipede	Fire	Fire	Bug	8	Common	50	65	45	50	50	45	305
+Centiskorch Gigantamax	Centiskorch Gigantamax	Fire	Fire	Bug	8								
+Centiskorch	Centiskorch	Fire	Fire	Bug	8	Common	100	115	65	90	90	65	525
+Clobbopus	Clobbopus	Fighting	Fighting		8	Common	50	68	60	50	50	32	310
+Grapploct	Grapploct	Fighting	Fighting		8	Common	80	118	90	70	80	42	480
+Sinistea	Sinistea	Ghost	Ghost		8	Common	40	45	45	74	54	50	308
+Polteageist	Polteageist	Ghost	Ghost		8	Common	60	65	65	134	114	70	508
+Hatenna	Hatenna	Psychic	Psychic		8	Common	42	30	45	56	53	39	265
+Hattrem	Hattrem	Psychic	Psychic		8	Common	57	40	65	86	73	49	370
+Hatterene	Hatterene	Psychic	Psychic	Fairy	8	Common	57	90	95	136	103	29	510
+Hatterene Gigantamax	Hatterene Gigantamax	Psychic	Psychic	Fairy	8								
+Impidimp	Impidimp	Dark	Dark	Fairy	8	Common	45	45	30	55	40	50	265
+Morgrem	Morgrem	Dark	Dark	Fairy	8	Common	65	60	45	75	55	70	370
+Grimmsnarl Gigantamax	Grimmsnarl Gigantamax	Dark	Dark	Fairy	8								
+Grimmsnarl	Grimmsnarl	Dark	Dark	Fairy	8	Common	95	120	65	95	75	60	510
+Obstagoon	Obstagoon	Dark	Dark	Normal	8	Common	93	90	101	60	81	95	520
+Perrserker	Perrserker	Steel	Steel		8	Common	70	110	100	50	60	50	440
+Cursola	Cursola	Ghost	Ghost		8	Common	60	95	50	145	130	30	510
+Sirfetch'd	Sirfetch'd	Fighting	Fighting		8	Common	62	135	95	68	82	65	507
+Mr. Rime	Mr. Rime	Ice	Ice	Psychic	8	Common	80	85	75	110	100	70	520
+Runerigus	Runerigus	Ground	Ground	Ghost	8	Common	58	95	145	50	105	30	483
+Milcery	Milcery	Fairy	Fairy		8	Common	45	40	40	50	61	34	270
+Alcremie	Alcremie	Fairy	Fairy		8	Common	65	60	75	110	121	64	495
+Alcremie Gigantamax	Alcremie Gigantamax	Fairy	Fairy		8								
+Falinks	Falinks	Fighting	Fighting		8	Common	65	100	100	70	60	75	470
+Pincurchin	Pincurchin	Electric	Electric		8	Common	48	101	95	91	85	15	435
+Snom	Snom	Ice	Ice	Bug	8	Common	30	25	35	45	30	20	185
+Frosmoth	Frosmoth	Ice	Ice	Bug	8	Common	70	65	60	125	90	65	475
+Stonjourner	Stonjourner	Rock	Rock		8	Common	100	125	135	20	20	70	470
+Eiscue Ice Face	Eiscue Ice Face	Ice	Ice		8	Common	75	80	110	65	90	50	470
+Indeedee Female	Indeedee Female	Psychic	Psychic	Normal	8	Common	70	55	65	95	105	85	475
+Indeedee Male	Indeedee Male	Psychic	Psychic	Normal	8	Common	60	65	55	105	95	95	475
+Morpeko Full Belly Mode	Morpeko Full Belly Mode	Electric	Electric	Dark	8	Common	58	95	58	70	58	97	436
+Cufant	Cufant	Steel	Steel		8	Common	72	80	49	40	49	40	330
+Copperajah Gigantamax	Copperajah Gigantamax	Steel	Steel		8								
+Copperajah	Copperajah	Steel	Steel		8	Common	122	130	69	80	69	30	500
+Dracozolt	Dracozolt	Electric	Electric	Dragon	8	Common	90	100	90	80	70	75	505
+Arctozolt	Arctozolt	Electric	Electric	Ice	8	Common	90	100	90	90	80	55	505
+Dracovish	Dracovish	Water	Water	Dragon	8	Common	90	90	100	70	80	75	505
+Arctovish	Arctovish	Water	Water	Ice	8	Common	90	90	100	80	90	55	505
+Duraludon	Duraludon	Steel	Steel	Dragon	8	Common	70	95	115	120	50	85	535
+Duraludon Gigantamax	Duraludon Gigantamax	Steel	Steel	Dragon	8								
+Dreepy	Dreepy	Dragon	Dragon	Ghost	8	Common	28	60	30	40	30	82	270
+Drakloak	Drakloak	Dragon	Dragon	Ghost	8	Common	68	80	50	60	50	102	410
+Dragapult	Dragapult	Dragon	Dragon	Ghost	8	Common	88	120	75	100	75	142	600
+Zacian Crowned Sword	Zacian Crowned Sword	Fairy	Fairy	Steel	8	Legendary	92	170	115	80	115	148	720
+Zamazenta Crowned Shield	Zamazenta Crowned Shield	Fighting	Fighting	Steel	8	Legendary	92	130	145	80	145	128	720
+Eternatus	Eternatus	Poison	Poison	Dragon	8	Legendary	140	85	95	145	95	130	690
+Kubfu	Kubfu	Fighting	Fighting		8	Legendary	60	90	60	53	50	72	385
+Urshifu Single Strike Style	Urshifu Single Strike Style	Fighting	Fighting	Dark	8	Legendary	100	130	100	63	60	97	550
+Urshifu Rapid Strike Style	Urshifu Rapid Strike Style	Fighting	Fighting	Water	8	Legendary	100	130	100	63	60	97	550
+Regieleki	Regieleki	Electric	Electric		8	Legendary	80	100	50	100	50	200	580
+Regidrago	Regidrago	Dragon	Dragon		8	Legendary	200	100	50	100	50	80	580
+Glastrier	Glastrier	Ice	Ice		8	Legendary	100	145	130	65	110	30	580
+Spectrier	Spectrier	Ghost	Ghost		8	Legendary	100	65	60	145	80	130	580
+Calyrex Shadow Rider	Calyrex Shadow Rider	Psychic	Psychic	Ghost	8	Legendary	100	85	80	165	100	150	680
+Calyrex Ice Rider	Calyrex Ice Rider	Psychic	Psychic	Ice	8	Legendary	100	165	150	85	130	50	680

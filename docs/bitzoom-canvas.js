@@ -83,7 +83,7 @@ export class BitZoomCanvas {
     this.edgeMode = opts.edgeMode || 'curves';
     this.heatmapMode = opts.heatmapMode || 'off';
     this.quantMode = opts.quantMode || 'gaussian'; // 'gaussian' or 'rank'
-    this.showLegend = opts.showLegend || false;
+    this.showLegend = opts.showLegend ? 1 : 0; // 0=hidden, 1=BR, 2=BL, 3=TL, 4=TR
     this.showResetBtn = opts.showResetBtn || false;
     this._progressText = null; // overlay text shown during auto-tune
     this.showFps = opts.showFps || false;
@@ -736,6 +736,7 @@ export class BitZoomCanvas {
       else if (e.key === '+' || e.key === '=') { e.preventDefault(); this._zoomBy(1.15); }
       else if (e.key === '-' || e.key === '_') { e.preventDefault(); this._zoomBy(1/1.15); }
       else if (e.key === 'f') { this.showFps = !this.showFps; this.render(); }
+      else if (e.key === 'l') { this.showLegend = (this.showLegend + 1) % 5; this.render(); }
     }, sig);
 
     // Resize

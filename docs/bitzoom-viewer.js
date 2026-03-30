@@ -30,7 +30,11 @@ const DATASETS = [
         settings: { weights: {}, quantMode: 'rank', smoothAlpha: 1.0 } },
     { id: 'facebook',   name: 'Facebook',        edges: 'data/facebook.edges',                                                    desc: '4K nodes, social',
         settings: { weights: {}, initialLevel: 4, quantMode: 'rank', smoothAlpha: 1.0 } },
-    { id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',nodes: 'data/amazon-copurchase.nodes.gz',desc: '367K nodes' },
+    { id: 'marvel',     name: 'Marvel Comics',   edges: 'data/marvel.edges',             nodes: 'data/marvel.nodes',             desc: '327 characters',
+        settings: { weights: { group: 2, alignment: 5, sex: 2 }, labelProps: ['label', 'alignment'] } },
+    { id: 'pokemon',    name: 'Pokemon',         edges: 'data/pokemon.edges',            nodes: 'data/pokemon.nodes',            desc: '959 Pokemon',
+        settings: { weights: { type1: 8, type2: 4, generation: 3, rarity: 2 }, labelProps: ['label', 'type1'] } },
+{ id: 'amazon',     name: 'Amazon',          edges: 'data/amazon-copurchase.edges.gz',nodes: 'data/amazon-copurchase.nodes.gz',desc: '367K nodes' },
     { id: 'mitre-ics',  name: 'ATT&CK ICS',
         stix: 'data/ics-attack.json.gz',
         desc: 'STIX 2.1, ~1.8K objects',
@@ -49,6 +53,7 @@ class BitZoom {
         this.view = new BitZoomCanvas(canvas, {
             skipEvents: true,
             heatmapMode: 'density',
+            showLegend: true,
             initialLevel: 0,
             onRender: () => this._scheduleHashUpdate(),
         });
@@ -96,7 +101,7 @@ class BitZoom {
     }
 
     _scheduleHashUpdate() {
-        if (this._hashUpdateTimer) return;
+        if (this._hashUpdateTimer || this._finalizing || !this._currentDatasetId) return;
         this._hashUpdateTimer = requestAnimationFrame(() => {
             this._hashUpdateTimer = null;
             const hash = this._serializeHash();
@@ -979,6 +984,7 @@ class BitZoom {
     /** Apply settings + initial render in a single rAF after loadGraph */
     _finalizeLoad(dataset) {
         const v = this.view;
+        this._finalizing = true;
         requestAnimationFrame(async () => {
             // _applyDatasetSettings calls rebuildProjections which blends.
             // If no settings, we need an explicit blend (especially for GPU mode
@@ -988,12 +994,16 @@ class BitZoom {
             } else {
                 await v._blend();
             }
-            const params = this._restoreFromHash();
-            if (params && params.d === dataset?.id) {
-                this._applyHashState(params);
-            }
             v.resize();
             v.zoomForLevel(v.currentLevel);
+            // Restore hash state: use saved initial params on first load, live hash after
+            const params = this._initialHashParams || this._restoreFromHash();
+            this._initialHashParams = null; // consumed
+            if (params && params.d === dataset?.id) {
+                this._applyHashState(params);
+                v.render();
+            }
+            this._finalizing = false;
             this._updateStepperUI();
             this._updateOverview();
             this._updateAlgoInfo();
@@ -1076,6 +1086,8 @@ class BitZoom {
                 await this.loadGraph(edgesText, nodesText);
             }
             this._currentDatasetId = dataset.id;
+            const nameEl = document.getElementById('datasetName');
+            if (nameEl) nameEl.textContent = dataset.name;
             this._finalizeLoad(dataset);
         } catch (err) {
             status.textContent = 'Error: ' + err.message;
@@ -1341,6 +1353,7 @@ class BitZoom {
 
         // Mouse
         canvas.addEventListener('mousedown', e => {
+            if (e.button !== 0) return; // left-click only
             this.mouseDown = true; this.mouseMoved = false;
             this.mouseStart = { x: e.clientX, y: e.clientY };
         }, sig);
@@ -1362,6 +1375,7 @@ class BitZoom {
         let clickTimer = null;
         canvas.addEventListener('mouseup', e => {
             this.mouseDown = false;
+            if (e.button !== 0) return; // ignore right-click and middle-click
             if (!this.mouseMoved) {
                 if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; return; }
                 const r = canvas.getBoundingClientRect();
@@ -1521,6 +1535,9 @@ class BitZoom {
             } else if (e.key === 'f') {
                 v.showFps = !v.showFps;
                 v.render();
+            } else if (e.key === 'l') {
+                v.showLegend = (v.showLegend + 1) % 5;
+                v.render();
             }
         }, sig);
 
@@ -1588,6 +1605,8 @@ class BitZoom {
                 const gpuPath = this._gpuMode === 'gpu' || (this._gpuMode === 'auto' && !this._gpuUnavailable);
                 if (gpuPath) await this.loadGraphGPU(this.pendingEdgesText, this.pendingNodesText, null);
                 else await this.loadGraph(this.pendingEdgesText, this.pendingNodesText);
+                const nameEl = document.getElementById('datasetName');
+                if (nameEl) nameEl.textContent = this._pendingFileName || 'Custom';
                 this._finalizeLoad(null);
             }
             catch (_err) { /* shown by worker handler */ }
@@ -1644,8 +1663,12 @@ class BitZoom {
         } else {
             text = await file.text();
         }
-        if (type === 'edges') this.pendingEdgesText = text;
-        else this.pendingNodesText = text;
+        if (type === 'edges') {
+            this.pendingEdgesText = text;
+            this._pendingFileName = file.name.replace(/\.(edges|gz|txt|tsv)$/g, '');
+        } else {
+            this.pendingNodesText = text;
+        }
         this._updateLoadStatus();
     }
 
@@ -1733,13 +1756,16 @@ window.bz = bz;
     if (gpuBtn) { gpuBtn.textContent = 'N/A'; gpuBtn.disabled = true; bz._gpuUnavailable = true; }
   }
 
+  // Save hash params before anything can overwrite them
   const hashParams = bz._restoreFromHash();
   const hashDataset = hashParams?.d ? DATASETS.find(d => d.id === hashParams.d) : null;
   const startDataset = hashDataset || DATASETS.find(d => d.id === 'epstein');
+  bz._initialHashParams = hashParams; // preserved for _finalizeLoad
   if (startDataset) bz.loadDataset(startDataset);
 })();
 
 window.addEventListener('hashchange', () => {
+    if (!bz.dataLoaded || bz._finalizing) return; // ignore hash changes during loading/finalization
     const params = bz._restoreFromHash();
     if (params && params.d === bz._currentDatasetId) {
         bz._applyHashState(params);

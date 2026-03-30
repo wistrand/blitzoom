@@ -1,0 +1,3787 @@
+# Pokemon competitive team co-usage and evolution network
+# Nodes: 959 Edges: 3784
+# FromId	ToId	EdgeType
+Incineroar	Zacian Crowned Sword	teammate
+Incineroar	Kyogre	teammate
+Grimmsnarl	Incineroar	teammate
+Incineroar	Regieleki	teammate
+Incineroar	Rillaboom	teammate
+Groudon	Incineroar	teammate
+Calyrex Shadow Rider	Incineroar	teammate
+Incineroar	Thundurus Incarnate Forme	teammate
+Incineroar	Landorus Therian Forme	teammate
+Gastrodon	Incineroar	teammate
+Charizard	Incineroar	teammate
+Amoonguss	Incineroar	teammate
+Incineroar	Indeedee Female	teammate
+Incineroar	Whimsicott	teammate
+Incineroar	Yveltal	teammate
+Calyrex Ice Rider	Incineroar	teammate
+Incineroar	Palkia	teammate
+Incineroar	Porygon2	teammate
+Incineroar	Tornadus Incarnate Forme	teammate
+Incineroar	Zapdos	teammate
+Incineroar	Kartana	teammate
+Blastoise	Incineroar	teammate
+Incineroar	Venusaur	teammate
+Ferrothorn	Incineroar	teammate
+Ditto	Incineroar	teammate
+Incineroar	Urshifu Single Strike Style	teammate
+Incineroar	Xerneas	teammate
+Dialga	Incineroar	teammate
+Incineroar	Shedinja	teammate
+Incineroar	Solgaleo	teammate
+Dusclops	Incineroar	teammate
+Incineroar	Torkoal	teammate
+Incineroar	Kingdra	teammate
+Incineroar	Raichu	teammate
+Incineroar	Weezing	teammate
+Incineroar	Lunala	teammate
+Incineroar	White Kyurem	teammate
+Incineroar	Tapu Fini	teammate
+Incineroar	Sableye	teammate
+Incineroar	Urshifu Rapid Strike Style	teammate
+Incineroar	Mimikyu	teammate
+Gothitelle	Incineroar	teammate
+Incineroar	Seismitoad	teammate
+Ho-oh	Incineroar	teammate
+Heat Rotom	Incineroar	teammate
+Eternatus	Incineroar	teammate
+Bronzong	Incineroar	teammate
+Incineroar	Togekiss	teammate
+Coalossal	Incineroar	teammate
+Dragapult	Incineroar	teammate
+Incineroar	Umbreon	teammate
+Comfey	Incineroar	teammate
+Incineroar	Lapras	teammate
+Incineroar	Rayquaza	teammate
+Incineroar	Spectrier	teammate
+Incineroar	Reshiram	teammate
+Incineroar	Zygarde Complete Forme	teammate
+Incineroar	Mamoswine	teammate
+Incineroar	Metagross	teammate
+Araquanid	Incineroar	teammate
+Incineroar	Pheromosa	teammate
+Incineroar	Zamazenta Crowned Shield	teammate
+Clefairy	Incineroar	teammate
+Incineroar	Mienshao	teammate
+Incineroar	Lugia	teammate
+Chansey	Incineroar	teammate
+Incineroar	Suicune	teammate
+Incineroar	Landorus Incarnate Forme	teammate
+Dusk Mane Necrozma	Incineroar	teammate
+Alcremie	Incineroar	teammate
+Incineroar	Tapu Koko	teammate
+Incineroar	Tsareena	teammate
+Glastrier	Incineroar	teammate
+Incineroar	Regidrago	teammate
+Incineroar	Zekrom	teammate
+Incineroar	Shuckle	teammate
+Galarian Zapdos	Incineroar	teammate
+Incineroar	Meowstic Male	teammate
+Incineroar	Snorlax	teammate
+Incineroar	Stakataka	teammate
+Incineroar	Thundurus Therian Forme	teammate
+Galarian Moltres	Incineroar	teammate
+Incineroar	Milotic	teammate
+Incineroar	Mewtwo	teammate
+Incineroar	Salamence	teammate
+Hatterene	Incineroar	teammate
+Incineroar	Sneasel	teammate
+Escavalier	Incineroar	teammate
+Incineroar	Wash Rotom	teammate
+Incineroar	Politoed	teammate
+Incineroar	Ludicolo	teammate
+Incineroar	Slowking	teammate
+Incineroar	Swampert	teammate
+Azumarill	Incineroar	teammate
+Incineroar	Scizor	teammate
+Galarian Articuno	Incineroar	teammate
+Incineroar	Pikachu	teammate
+Alolan Ninetales	Incineroar	teammate
+Giratina Origin Forme	Incineroar	teammate
+Incineroar	Toxapex	teammate
+Incineroar	Raikou	teammate
+Incineroar	Pelipper	teammate
+Galarian Weezing	Incineroar	teammate
+Incineroar	Kingler	teammate
+Incineroar	Oranguru	teammate
+Incineroar	Nihilego	teammate
+Garchomp	Incineroar	teammate
+Incineroar	Tapu Bulu	teammate
+Incineroar	Kangaskhan	teammate
+Drifblim	Incineroar	teammate
+Incineroar	Primarina	teammate
+Incineroar	Sceptile	teammate
+Incineroar	Pincurchin	teammate
+Aegislash Shield Forme	Incineroar	teammate
+Incineroar	Porygon-Z	teammate
+Butterfree	Incineroar	teammate
+Incineroar	Mudsdale	teammate
+Cherrim	Incineroar	teammate
+Exeggutor	Incineroar	teammate
+Altaria	Incineroar	teammate
+Incineroar	Klefki	teammate
+Incineroar	Jellicent	teammate
+Incineroar	Riolu	teammate
+Alolan Exeggutor	Incineroar	teammate
+Dragonite	Incineroar	teammate
+Cradily	Incineroar	teammate
+Incineroar	Obstagoon	teammate
+Incineroar	Kabutops	teammate
+Clefable	Incineroar	teammate
+Appletun	Incineroar	teammate
+Bisharp	Incineroar	teammate
+Incineroar	Stonjourner	teammate
+Diggersby	Incineroar	teammate
+Giratina Altered Forme	Incineroar	teammate
+Corviknight	Incineroar	teammate
+Cresselia	Incineroar	teammate
+Incineroar	Wishiwashi Solo Form	teammate
+Conkeldurr	Incineroar	teammate
+Boltund	Incineroar	teammate
+Incineroar	Terrakion	teammate
+Black Kyurem	Incineroar	teammate
+Incineroar	Mantine	teammate
+Incineroar	Machamp	teammate
+Goodra	Incineroar	teammate
+Incineroar	Silvally	teammate
+Incineroar	Xurkitree	teammate
+Garbodor	Incineroar	teammate
+Dugtrio	Incineroar	teammate
+Incineroar	Mow Rotom	teammate
+Glaceon	Incineroar	teammate
+Incineroar	Manectric	teammate
+Crobat	Incineroar	teammate
+Incineroar	Tyrantrum	teammate
+Cinccino	Incineroar	teammate
+Incineroar	Kommo-o	teammate
+Blissey	Incineroar	teammate
+Cloyster	Incineroar	teammate
+Drampa	Incineroar	teammate
+Hawlucha	Incineroar	teammate
+Incineroar	Mime Galarian Mr. Mime	teammate
+Clawitzer	Incineroar	teammate
+Incineroar	Qwilfish	teammate
+Haxorus	Incineroar	teammate
+Dhelmise	Incineroar	teammate
+Incineroar	Runerigus	teammate
+Braviary	Incineroar	teammate
+Incineroar	Virizion	teammate
+Alolan Raichu	Incineroar	teammate
+Copperajah	Incineroar	teammate
+Incineroar	Sylveon	teammate
+Incineroar	Slurpuff	teammate
+Hippowdon	Incineroar	teammate
+Alakazam	Incineroar	teammate
+Incineroar	Thievul	teammate
+Cofagrigus	Incineroar	teammate
+Incineroar	Starmie	teammate
+Incineroar	Ribombee	teammate
+Incineroar	Toxtricity Low Key Form	teammate
+Incineroar	Magnezone	teammate
+Gallade	Incineroar	teammate
+Gourgeist Small Size	Incineroar	teammate
+Incineroar	Shiinotic	teammate
+Incineroar	Lycanroc Dusk Form	teammate
+Galarian Slowbro	Incineroar	teammate
+Incineroar	Roserade	teammate
+Incineroar	Tangrowth	teammate
+Incineroar	Sandaconda	teammate
+Incineroar	Polteageist	teammate
+Incineroar	Tangela	teammate
+Crawdaunt	Incineroar	teammate
+Heracross	Incineroar	teammate
+Incineroar	Stoutland	teammate
+Incineroar	Jolteon	teammate
+Cursola	Incineroar	teammate
+Dedenne	Incineroar	teammate
+Incineroar	Reuniclus	teammate
+Dusknoir	Incineroar	teammate
+Gardevoir	Incineroar	teammate
+Galvantula	Incineroar	teammate
+Incineroar	Passimian	teammate
+Incineroar	Lycanroc Midday Form	teammate
+Incineroar	Tentacruel	teammate
+Dragalge	Incineroar	teammate
+Incineroar	Scyther	teammate
+Alolan Sandslash	Incineroar	teammate
+Incineroar	Lycanroc Midnight Form	teammate
+Golurk	Incineroar	teammate
+Fan Rotom	Incineroar	teammate
+Incineroar	Steelix	teammate
+Corsola	Incineroar	teammate
+Kyogre	Zacian Crowned Sword	teammate
+Grimmsnarl	Kyogre	teammate
+Kyogre	Regieleki	teammate
+Kyogre	Rillaboom	teammate
+Calyrex Shadow Rider	Kyogre	teammate
+Kyogre	Thundurus Incarnate Forme	teammate
+Kyogre	Landorus Therian Forme	teammate
+Amoonguss	Kyogre	teammate
+Indeedee Female	Kyogre	teammate
+Kyogre	Whimsicott	teammate
+Calyrex Ice Rider	Kyogre	teammate
+Kyogre	Porygon2	teammate
+Kyogre	Tornadus Incarnate Forme	teammate
+Kyogre	Zapdos	teammate
+Kartana	Kyogre	teammate
+Kyogre	Venusaur	teammate
+Ferrothorn	Kyogre	teammate
+Ditto	Kyogre	teammate
+Kyogre	Urshifu Single Strike Style	teammate
+Dialga	Kyogre	teammate
+Kyogre	Shedinja	teammate
+Kyogre	Solgaleo	teammate
+Dusclops	Kyogre	teammate
+Kyogre	Torkoal	teammate
+Kingdra	Kyogre	teammate
+Kyogre	Raichu	teammate
+Kyogre	Weezing	teammate
+Entei	Kyogre	teammate
+Kyogre	Sableye	teammate
+Kyogre	Tapu Lele	teammate
+Kyogre	Mimikyu	teammate
+Gothitelle	Kyogre	teammate
+Kyogre	Seismitoad	teammate
+Heat Rotom	Kyogre	teammate
+Kyogre	Regigigas	teammate
+Cinderace	Kyogre	teammate
+Kyogre	Togekiss	teammate
+Dragapult	Kyogre	teammate
+Kyogre	Umbreon	teammate
+Indeedee Male	Kyogre	teammate
+Comfey	Kyogre	teammate
+Kyogre	Spectrier	teammate
+Barraskewda	Kyogre	teammate
+Kyogre	Metagross	teammate
+Kyogre	Pheromosa	teammate
+Arcanine	Kyogre	teammate
+Kyogre	Mienshao	teammate
+Kyogre	Landorus Incarnate Forme	teammate
+Dusk Mane Necrozma	Kyogre	teammate
+Kyogre	Tapu Koko	teammate
+Hydreigon	Kyogre	teammate
+Kyogre	Weavile	teammate
+Kyogre	Tsareena	teammate
+Glastrier	Kyogre	teammate
+Dracovish	Kyogre	teammate
+Kyogre	Regidrago	teammate
+Hitmontop	Kyogre	teammate
+Darmanitan Galarian Standard Mode	Kyogre	teammate
+Kyogre	Zekrom	teammate
+Galarian Zapdos	Kyogre	teammate
+Kyogre	Volcarona	teammate
+Kyogre	Meowstic Male	teammate
+Alolan Persian	Kyogre	teammate
+Kyogre	Snorlax	teammate
+Kyogre	Stakataka	teammate
+Kyogre	Thundurus Therian Forme	teammate
+Galarian Moltres	Kyogre	teammate
+Kyogre	Talonflame	teammate
+Klinklang	Kyogre	teammate
+Inteleon	Kyogre	teammate
+Kyogre	Salamence	teammate
+Hatterene	Kyogre	teammate
+Escavalier	Kyogre	teammate
+Kyogre	Ludicolo	teammate
+Kyogre	Slowking	teammate
+Kyogre	Swampert	teammate
+Kyogre	Scizor	teammate
+Galarian Articuno	Kyogre	teammate
+Kyogre	Tyranitar	teammate
+Kyogre	Pikachu	teammate
+Alolan Marowak	Kyogre	teammate
+Kyogre	Raikou	teammate
+Galarian Weezing	Kyogre	teammate
+Kyogre	Oranguru	teammate
+Garchomp	Kyogre	teammate
+Heliolisk	Kyogre	teammate
+Kyogre	Moltres	teammate
+Drifblim	Kyogre	teammate
+Kyogre	Primarina	teammate
+Kyogre	Toxicroak	teammate
+Dracozolt	Kyogre	teammate
+Kyogre	Sceptile	teammate
+Kyogre	Pincurchin	teammate
+Aegislash Shield Forme	Kyogre	teammate
+Kyogre	Porygon-Z	teammate
+Butterfree	Kyogre	teammate
+Kyogre	Lucario	teammate
+Kyogre	Mudsdale	teammate
+Klefki	Kyogre	teammate
+Gigalith	Kyogre	teammate
+Jellicent	Kyogre	teammate
+Kyogre	Riolu	teammate
+Kyogre	Mandibuzz	teammate
+Kyogre	Lurantis	teammate
+Alolan Exeggutor	Kyogre	teammate
+Dragonite	Kyogre	teammate
+Darmanitan Standard Mode	Kyogre	teammate
+Cradily	Kyogre	teammate
+Kabutops	Kyogre	teammate
+Articuno	Kyogre	teammate
+Blacephalon	Kyogre	teammate
+Drednaw	Kyogre	teammate
+Clefable	Kyogre	teammate
+Appletun	Kyogre	teammate
+Kyogre	Registeel	teammate
+Kyogre	Rhyperior	teammate
+Electivire	Kyogre	teammate
+Abomasnow	Kyogre	teammate
+Diggersby	Kyogre	teammate
+Giratina Altered Forme	Kyogre	teammate
+Corviknight	Kyogre	teammate
+Kyogre	Vikavolt	teammate
+Durant	Kyogre	teammate
+Cresselia	Kyogre	teammate
+Kyogre	Mr. Rime	teammate
+Cobalion	Kyogre	teammate
+Black Kyurem	Kyogre	teammate
+Kyogre	Mantine	teammate
+Goodra	Kyogre	teammate
+Kyogre	Tauros	teammate
+Kyogre	Luxray	teammate
+Kyogre	Mow Rotom	teammate
+Gengar	Kyogre	teammate
+Kyogre	Manectric	teammate
+Crobat	Kyogre	teammate
+Kyogre	Tyrantrum	teammate
+Blissey	Kyogre	teammate
+Blaziken	Kyogre	teammate
+Hawlucha	Kyogre	teammate
+Kyogre	Mime Galarian Mr. Mime	teammate
+Grimmsnarl	Zacian Crowned Sword	teammate
+Grimmsnarl	Regieleki	teammate
+Grimmsnarl	Rillaboom	teammate
+Grimmsnarl	Groudon	teammate
+Grimmsnarl	Thundurus Incarnate Forme	teammate
+Grimmsnarl	Landorus Therian Forme	teammate
+Gastrodon	Grimmsnarl	teammate
+Charizard	Grimmsnarl	teammate
+Grimmsnarl	Yveltal	teammate
+Grimmsnarl	Zapdos	teammate
+Blastoise	Grimmsnarl	teammate
+Grimmsnarl	Venusaur	teammate
+Ferrothorn	Grimmsnarl	teammate
+Ditto	Grimmsnarl	teammate
+Grimmsnarl	Xerneas	teammate
+Dialga	Grimmsnarl	teammate
+Grimmsnarl	Solgaleo	teammate
+Entei	Grimmsnarl	teammate
+Grimmsnarl	Lunala	teammate
+Grimmsnarl	White Kyurem	teammate
+Grimmsnarl	Seismitoad	teammate
+Grimmsnarl	Ho-oh	teammate
+Grimmsnarl	Heat Rotom	teammate
+Eternatus	Grimmsnarl	teammate
+Cinderace	Grimmsnarl	teammate
+Grimmsnarl	Togekiss	teammate
+Dragapult	Grimmsnarl	teammate
+Comfey	Grimmsnarl	teammate
+Grimmsnarl	Rayquaza	teammate
+Grimmsnarl	Reshiram	teammate
+Grimmsnarl	Zygarde Complete Forme	teammate
+Grimmsnarl	Mamoswine	teammate
+Grimmsnarl	Metagross	teammate
+Araquanid	Grimmsnarl	teammate
+Arcanine	Grimmsnarl	teammate
+Grimmsnarl	Zamazenta Crowned Shield	teammate
+Grimmsnarl	Lugia	teammate
+Grimmsnarl	Suicune	teammate
+Grimmsnarl	Landorus Incarnate Forme	teammate
+Alcremie	Grimmsnarl	teammate
+Grimmsnarl	Hydreigon	teammate
+Grimmsnarl	Tsareena	teammate
+Darmanitan Galarian Standard Mode	Grimmsnarl	teammate
+Grimmsnarl	Zekrom	teammate
+Grimmsnarl	Thundurus Therian Forme	teammate
+Grimmsnarl	Milotic	teammate
+Grimmsnarl	Salamence	teammate
+Grimmsnarl	Wash Rotom	teammate
+Grimmsnarl	Slowking	teammate
+Grimmsnarl	Swampert	teammate
+Galarian Articuno	Grimmsnarl	teammate
+Grimmsnarl	Toxapex	teammate
+Grimmsnarl	Kingler	teammate
+Grimmsnarl	Nihilego	teammate
+Butterfree	Grimmsnarl	teammate
+Grimmsnarl	Lucario	teammate
+Grimmsnarl	Mudsdale	teammate
+Cherrim	Grimmsnarl	teammate
+Exeggutor	Grimmsnarl	teammate
+Froslass	Grimmsnarl	teammate
+Grimmsnarl	Mandibuzz	teammate
+Duraludon	Grimmsnarl	teammate
+Grimmsnarl	Trevenant	teammate
+Bisharp	Grimmsnarl	teammate
+Grimmsnarl	Registeel	teammate
+Diggersby	Grimmsnarl	teammate
+Grimmsnarl	Vikavolt	teammate
+Boltund	Grimmsnarl	teammate
+Black Kyurem	Grimmsnarl	teammate
+Grimmsnarl	Tauros	teammate
+Grimmsnarl	Mow Rotom	teammate
+Crobat	Grimmsnarl	teammate
+Cinccino	Grimmsnarl	teammate
+Cloyster	Grimmsnarl	teammate
+Grimmsnarl	Hawlucha	teammate
+Grimmsnarl	Qwilfish	teammate
+Grimmsnarl	Togetic	teammate
+Grimmsnarl	Torracat	teammate
+Grimmsnarl	Salazzle	teammate
+Grimmsnarl	Shiinotic	teammate
+Grimmsnarl	Tangrowth	teammate
+Grimmsnarl	Sandaconda	teammate
+Grimmsnarl	Heracross	teammate
+Drapion	Grimmsnarl	teammate
+Grimmsnarl	Lycanroc Midday Form	teammate
+Bewear	Grimmsnarl	teammate
+Grimmsnarl	Lycanroc Midnight Form	teammate
+Grimmsnarl	Lickilicky	teammate
+Rillaboom	Zacian Crowned Sword	teammate
+Groudon	Rillaboom	teammate
+Calyrex Shadow Rider	Rillaboom	teammate
+Rillaboom	Thundurus Incarnate Forme	teammate
+Landorus Therian Forme	Rillaboom	teammate
+Gastrodon	Rillaboom	teammate
+Charizard	Rillaboom	teammate
+Rillaboom	Yveltal	teammate
+Calyrex Ice Rider	Rillaboom	teammate
+Palkia	Rillaboom	teammate
+Rillaboom	Tornadus Incarnate Forme	teammate
+Rillaboom	Zapdos	teammate
+Blastoise	Rillaboom	teammate
+Ditto	Rillaboom	teammate
+Rillaboom	Xerneas	teammate
+Dialga	Rillaboom	teammate
+Rillaboom	Solgaleo	teammate
+Kingdra	Rillaboom	teammate
+Raichu	Rillaboom	teammate
+Rillaboom	Weezing	teammate
+Entei	Rillaboom	teammate
+Lunala	Rillaboom	teammate
+Rillaboom	Sableye	teammate
+Rillaboom	Urshifu Rapid Strike Style	teammate
+Gothitelle	Rillaboom	teammate
+Rillaboom	Seismitoad	teammate
+Ho-oh	Rillaboom	teammate
+Heat Rotom	Rillaboom	teammate
+Eternatus	Rillaboom	teammate
+Regigigas	Rillaboom	teammate
+Cinderace	Rillaboom	teammate
+Rillaboom	Togekiss	teammate
+Coalossal	Rillaboom	teammate
+Dragapult	Rillaboom	teammate
+Comfey	Rillaboom	teammate
+Lapras	Rillaboom	teammate
+Rayquaza	Rillaboom	teammate
+Rillaboom	Spectrier	teammate
+Reshiram	Rillaboom	teammate
+Rillaboom	Zygarde Complete Forme	teammate
+Mamoswine	Rillaboom	teammate
+Barraskewda	Rillaboom	teammate
+Araquanid	Rillaboom	teammate
+Arcanine	Rillaboom	teammate
+Rillaboom	Zamazenta Crowned Shield	teammate
+Clefairy	Rillaboom	teammate
+Lugia	Rillaboom	teammate
+Chansey	Rillaboom	teammate
+Rillaboom	Suicune	teammate
+Landorus Incarnate Forme	Rillaboom	teammate
+Dusk Mane Necrozma	Rillaboom	teammate
+Dracovish	Rillaboom	teammate
+Regidrago	Rillaboom	teammate
+Rillaboom	Zekrom	teammate
+Rillaboom	Volcarona	teammate
+Meowstic Male	Rillaboom	teammate
+Rillaboom	Stakataka	teammate
+Rillaboom	Thundurus Therian Forme	teammate
+Galarian Moltres	Rillaboom	teammate
+Rillaboom	Talonflame	teammate
+Escavalier	Rillaboom	teammate
+Rillaboom	Wash Rotom	teammate
+Politoed	Rillaboom	teammate
+Rillaboom	Swampert	teammate
+Galarian Articuno	Rillaboom	teammate
+Rillaboom	Slowbro	teammate
+Raikou	Rillaboom	teammate
+Rillaboom	Togedemaru	teammate
+Gyarados	Rillaboom	teammate
+Heliolisk	Rillaboom	teammate
+Rillaboom	Toxicroak	teammate
+Greedent	Rillaboom	teammate
+Porygon-Z	Rillaboom	teammate
+Butterfree	Rillaboom	teammate
+Lucario	Rillaboom	teammate
+Mudsdale	Rillaboom	teammate
+Altaria	Rillaboom	teammate
+Gigalith	Rillaboom	teammate
+Rillaboom	Riolu	teammate
+Mandibuzz	Rillaboom	teammate
+Dragonite	Rillaboom	teammate
+Rillaboom	Scrafty	teammate
+Blacephalon	Rillaboom	teammate
+Duraludon	Rillaboom	teammate
+Heatran	Rillaboom	teammate
+Bisharp	Rillaboom	teammate
+Rhyperior	Rillaboom	teammate
+Electivire	Rillaboom	teammate
+Abomasnow	Rillaboom	teammate
+Diggersby	Rillaboom	teammate
+Rillaboom	Swoobat	teammate
+Durant	Rillaboom	teammate
+Cresselia	Rillaboom	teammate
+Conkeldurr	Rillaboom	teammate
+Boltund	Rillaboom	teammate
+Rillaboom	Terrakion	teammate
+Cobalion	Rillaboom	teammate
+Mantine	Rillaboom	teammate
+Dugtrio	Rillaboom	teammate
+Crobat	Rillaboom	teammate
+Cinccino	Rillaboom	teammate
+Cloyster	Rillaboom	teammate
+Drampa	Rillaboom	teammate
+Rillaboom	Zoroark	teammate
+Clawitzer	Rillaboom	teammate
+Qwilfish	Rillaboom	teammate
+Dhelmise	Rillaboom	teammate
+Rillaboom	Runerigus	teammate
+Braviary	Rillaboom	teammate
+Beartic	Rillaboom	teammate
+Copperajah	Rillaboom	teammate
+Flapple	Rillaboom	teammate
+Rillaboom	Sylveon	teammate
+Rillaboom	Slurpuff	teammate
+Hippowdon	Rillaboom	teammate
+Alakazam	Rillaboom	teammate
+Rillaboom	Torracat	teammate
+Rillaboom	Thievul	teammate
+Arctozolt	Rillaboom	teammate
+Cofagrigus	Rillaboom	teammate
+Rillaboom	Starmie	teammate
+Rillaboom	Salazzle	teammate
+Emolga	Rillaboom	teammate
+Charjabug	Rillaboom	teammate
+Rillaboom	Toxtricity Low Key Form	teammate
+Magnezone	Rillaboom	teammate
+Lopunny	Rillaboom	teammate
+Gourgeist Small Size	Rillaboom	teammate
+Malamar	Rillaboom	teammate
+Golisopod	Rillaboom	teammate
+Lycanroc Dusk Form	Rillaboom	teammate
+Rillaboom	Unfezant	teammate
+Perrserker	Rillaboom	teammate
+Galarian Slowbro	Rillaboom	teammate
+Frost Rotom	Rillaboom	teammate
+Rillaboom	Sandaconda	teammate
+Morpeko Full Belly Mode	Rillaboom	teammate
+Miltank	Rillaboom	teammate
+Crawdaunt	Rillaboom	teammate
+Heracross	Rillaboom	teammate
+Magneton	Rillaboom	teammate
+Rillaboom	Stoutland	teammate
+Noivern	Rillaboom	teammate
+Claydol	Rillaboom	teammate
+Falinks	Rillaboom	teammate
+Reuniclus	Rillaboom	teammate
+Dusknoir	Rillaboom	teammate
+Drapion	Rillaboom	teammate
+Rillaboom	Vanilluxe	teammate
+Rillaboom	Sigilyph	teammate
+Galvantula	Rillaboom	teammate
+Orbeetle	Rillaboom	teammate
+Passimian	Rillaboom	teammate
+Ninjask	Rillaboom	teammate
+Druddigon	Rillaboom	teammate
+Marowak	Rillaboom	teammate
+Rillaboom	Tentacruel	teammate
+Dragalge	Rillaboom	teammate
+Bewear	Rillaboom	teammate
+Alolan Sandslash	Rillaboom	teammate
+Poliwrath	Rillaboom	teammate
+Lycanroc Midnight Form	Rillaboom	teammate
+Lickilicky	Rillaboom	teammate
+Fan Rotom	Rillaboom	teammate
+Hitmonlee	Rillaboom	teammate
+Rillaboom	Scolipede	teammate
+Rillaboom	Sandslash	teammate
+Rillaboom	Steelix	teammate
+Noctowl	Rillaboom	teammate
+Gastrodon	Zacian Crowned Sword	teammate
+Gastrodon	Groudon	teammate
+Calyrex Shadow Rider	Gastrodon	teammate
+Gastrodon	Thundurus Incarnate Forme	teammate
+Charizard	Gastrodon	teammate
+Gastrodon	Yveltal	teammate
+Gastrodon	Ho-oh	teammate
+Gastrodon	Heat Rotom	teammate
+Dragapult	Gastrodon	teammate
+Gastrodon	Umbreon	teammate
+Gastrodon	Rayquaza	teammate
+Gastrodon	Spectrier	teammate
+Gastrodon	Reshiram	teammate
+Celesteela	Gastrodon	teammate
+Gastrodon	Pheromosa	teammate
+Gastrodon	Lugia	teammate
+Gastrodon	Tapu Koko	teammate
+Gastrodon	Weavile	teammate
+Gastrodon	Sneasel	teammate
+Gastrodon	Tyranitar	teammate
+Gastrodon	Pikachu	teammate
+Gastrodon	Nihilego	teammate
+Garchomp	Gastrodon	teammate
+Gastrodon	Heliolisk	teammate
+Gastrodon	Tapu Bulu	teammate
+Excadrill	Gastrodon	teammate
+Gastrodon	Toxicroak	teammate
+Centiskorch	Gastrodon	teammate
+Gastrodon	Gigalith	teammate
+Cradily	Gastrodon	teammate
+Gastrodon	Obstagoon	teammate
+Gastrodon	Scrafty	teammate
+Gastrodon	Trevenant	teammate
+Appletun	Gastrodon	teammate
+Gastrodon	Leafeon	teammate
+Gastrodon	Vikavolt	teammate
+Cresselia	Gastrodon	teammate
+Gastrodon	Mr. Rime	teammate
+Boltund	Gastrodon	teammate
+Gastrodon	Terrakion	teammate
+Gastrodon	Machamp	teammate
+Gastrodon	Goodra	teammate
+Gastrodon	Kommo-o	teammate
+Gastrodon	Sirfetch'd	teammate
+Aromatisse	Gastrodon	teammate
+Thundurus Incarnate Forme	Zacian Crowned Sword	teammate
+Groudon	Thundurus Incarnate Forme	teammate
+Calyrex Shadow Rider	Thundurus Incarnate Forme	teammate
+Charizard	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Whimsicott	teammate
+Palkia	Thundurus Incarnate Forme	teammate
+Blastoise	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Venusaur	teammate
+Ferrothorn	Thundurus Incarnate Forme	teammate
+Ditto	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Xerneas	teammate
+Dialga	Thundurus Incarnate Forme	teammate
+Shedinja	Thundurus Incarnate Forme	teammate
+Solgaleo	Thundurus Incarnate Forme	teammate
+Kingdra	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Weezing	teammate
+Entei	Thundurus Incarnate Forme	teammate
+Lunala	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	White Kyurem	teammate
+Tapu Fini	Thundurus Incarnate Forme	teammate
+Sableye	Thundurus Incarnate Forme	teammate
+Gothitelle	Thundurus Incarnate Forme	teammate
+Ho-oh	Thundurus Incarnate Forme	teammate
+Eternatus	Thundurus Incarnate Forme	teammate
+Regigigas	Thundurus Incarnate Forme	teammate
+Bronzong	Thundurus Incarnate Forme	teammate
+Coalossal	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Umbreon	teammate
+Lapras	Thundurus Incarnate Forme	teammate
+Reshiram	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Zygarde Complete Forme	teammate
+Mamoswine	Thundurus Incarnate Forme	teammate
+Dawn Wings Necrozma	Thundurus Incarnate Forme	teammate
+Metagross	Thundurus Incarnate Forme	teammate
+Arcanine	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Zamazenta Crowned Shield	teammate
+Clefairy	Thundurus Incarnate Forme	teammate
+Suicune	Thundurus Incarnate Forme	teammate
+Dusk Mane Necrozma	Thundurus Incarnate Forme	teammate
+Alcremie	Thundurus Incarnate Forme	teammate
+Hitmontop	Thundurus Incarnate Forme	teammate
+Darmanitan Galarian Standard Mode	Thundurus Incarnate Forme	teammate
+Snorlax	Thundurus Incarnate Forme	teammate
+Mewtwo	Thundurus Incarnate Forme	teammate
+Politoed	Thundurus Incarnate Forme	teammate
+Ludicolo	Thundurus Incarnate Forme	teammate
+Slowking	Thundurus Incarnate Forme	teammate
+Swampert	Thundurus Incarnate Forme	teammate
+Scizor	Thundurus Incarnate Forme	teammate
+Giratina Origin Forme	Thundurus Incarnate Forme	teammate
+Thundurus Incarnate Forme	Toxapex	teammate
+Pelipper	Thundurus Incarnate Forme	teammate
+Nihilego	Thundurus Incarnate Forme	teammate
+Gyarados	Thundurus Incarnate Forme	teammate
+Garchomp	Thundurus Incarnate Forme	teammate
+Tapu Bulu	Thundurus Incarnate Forme	teammate
+Primarina	Thundurus Incarnate Forme	teammate
+Shiftry	Thundurus Incarnate Forme	teammate
+Centiskorch	Thundurus Incarnate Forme	teammate
+Cherrim	Thundurus Incarnate Forme	teammate
+Altaria	Thundurus Incarnate Forme	teammate
+Riolu	Thundurus Incarnate Forme	teammate
+Darmanitan Standard Mode	Thundurus Incarnate Forme	teammate
+Kabutops	Thundurus Incarnate Forme	teammate
+Drednaw	Thundurus Incarnate Forme	teammate
+Appletun	Thundurus Incarnate Forme	teammate
+Stonjourner	Thundurus Incarnate Forme	teammate
+Giratina Altered Forme	Thundurus Incarnate Forme	teammate
+Durant	Thundurus Incarnate Forme	teammate
+Mr. Rime	Thundurus Incarnate Forme	teammate
+Mantine	Thundurus Incarnate Forme	teammate
+Garbodor	Thundurus Incarnate Forme	teammate
+Luxray	Thundurus Incarnate Forme	teammate
+Espeon	Thundurus Incarnate Forme	teammate
+Hawlucha	Thundurus Incarnate Forme	teammate
+Landorus Therian Forme	Zacian Crowned Sword	teammate
+Landorus Therian Forme	Regieleki	teammate
+Gastrodon	Landorus Therian Forme	teammate
+Amoonguss	Landorus Therian Forme	teammate
+Indeedee Female	Landorus Therian Forme	teammate
+Landorus Therian Forme	Whimsicott	teammate
+Landorus Therian Forme	Yveltal	teammate
+Landorus Therian Forme	Tornadus Incarnate Forme	teammate
+Landorus Therian Forme	Zapdos	teammate
+Kartana	Landorus Therian Forme	teammate
+Blastoise	Landorus Therian Forme	teammate
+Ferrothorn	Landorus Therian Forme	teammate
+Landorus Therian Forme	Urshifu Single Strike Style	teammate
+Dialga	Landorus Therian Forme	teammate
+Landorus Therian Forme	Shedinja	teammate
+Landorus Therian Forme	Solgaleo	teammate
+Kingdra	Landorus Therian Forme	teammate
+Landorus Therian Forme	Raichu	teammate
+Landorus Therian Forme	Sableye	teammate
+Ho-oh	Landorus Therian Forme	teammate
+Heat Rotom	Landorus Therian Forme	teammate
+Bronzong	Landorus Therian Forme	teammate
+Landorus Therian Forme	Lapras	teammate
+Landorus Therian Forme	Reshiram	teammate
+Barraskewda	Landorus Therian Forme	teammate
+Clefairy	Landorus Therian Forme	teammate
+Landorus Therian Forme	Lugia	teammate
+Landorus Therian Forme	Suicune	teammate
+Landorus Therian Forme	Weavile	teammate
+Landorus Therian Forme	Tsareena	teammate
+Dracovish	Landorus Therian Forme	teammate
+Landorus Therian Forme	Meowstic Male	teammate
+Alolan Persian	Landorus Therian Forme	teammate
+Landorus Therian Forme	Milotic	teammate
+Landorus Therian Forme	Mewtwo	teammate
+Landorus Therian Forme	Wash Rotom	teammate
+Landorus Therian Forme	Ludicolo	teammate
+Landorus Therian Forme	Tyranitar	teammate
+Alolan Marowak	Landorus Therian Forme	teammate
+Giratina Origin Forme	Landorus Therian Forme	teammate
+Landorus Therian Forme	Toxapex	teammate
+Landorus Therian Forme	Pelipper	teammate
+Gyarados	Landorus Therian Forme	teammate
+Landorus Therian Forme	Primarina	teammate
+Landorus Therian Forme	Shiftry	teammate
+Landorus Therian Forme	Toxicroak	teammate
+Landorus Therian Forme	Sceptile	teammate
+Aegislash Shield Forme	Landorus Therian Forme	teammate
+Butterfree	Landorus Therian Forme	teammate
+Altaria	Landorus Therian Forme	teammate
+Froslass	Landorus Therian Forme	teammate
+Jellicent	Landorus Therian Forme	teammate
+Alolan Exeggutor	Landorus Therian Forme	teammate
+Landorus Therian Forme	Obstagoon	teammate
+Aerodactyl	Landorus Therian Forme	teammate
+Drednaw	Landorus Therian Forme	teammate
+Heatran	Landorus Therian Forme	teammate
+Landorus Therian Forme	Registeel	teammate
+Conkeldurr	Landorus Therian Forme	teammate
+Cobalion	Landorus Therian Forme	teammate
+Black Kyurem	Landorus Therian Forme	teammate
+Landorus Therian Forme	Mantine	teammate
+Accelgor	Landorus Therian Forme	teammate
+Garbodor	Landorus Therian Forme	teammate
+Landorus Therian Forme	Palossand	teammate
+Blissey	Landorus Therian Forme	teammate
+Blaziken	Landorus Therian Forme	teammate
+Landorus Therian Forme	Mime Galarian Mr. Mime	teammate
+Regieleki	Zacian Crowned Sword	teammate
+Regieleki	Rillaboom	teammate
+Groudon	Regieleki	teammate
+Calyrex Shadow Rider	Regieleki	teammate
+Charizard	Regieleki	teammate
+Amoonguss	Regieleki	teammate
+Indeedee Female	Regieleki	teammate
+Regieleki	Whimsicott	teammate
+Regieleki	Yveltal	teammate
+Calyrex Ice Rider	Regieleki	teammate
+Palkia	Regieleki	teammate
+Porygon2	Regieleki	teammate
+Regieleki	Tornadus Incarnate Forme	teammate
+Blastoise	Regieleki	teammate
+Ferrothorn	Regieleki	teammate
+Ditto	Regieleki	teammate
+Regieleki	Urshifu Single Strike Style	teammate
+Regieleki	Xerneas	teammate
+Dialga	Regieleki	teammate
+Regieleki	Solgaleo	teammate
+Dusclops	Regieleki	teammate
+Regieleki	Weezing	teammate
+Lunala	Regieleki	teammate
+Regieleki	White Kyurem	teammate
+Regieleki	Urshifu Rapid Strike Style	teammate
+Regieleki	Tapu Lele	teammate
+Mimikyu	Regieleki	teammate
+Gothitelle	Regieleki	teammate
+Ho-oh	Regieleki	teammate
+Eternatus	Regieleki	teammate
+Regieleki	Regigigas	teammate
+Cinderace	Regieleki	teammate
+Bronzong	Regieleki	teammate
+Regieleki	Togekiss	teammate
+Indeedee Male	Regieleki	teammate
+Comfey	Regieleki	teammate
+Lapras	Regieleki	teammate
+Rayquaza	Regieleki	teammate
+Regieleki	Spectrier	teammate
+Mamoswine	Regieleki	teammate
+Arcanine	Regieleki	teammate
+Clefairy	Regieleki	teammate
+Mienshao	Regieleki	teammate
+Landorus Incarnate Forme	Regieleki	teammate
+Dusk Mane Necrozma	Regieleki	teammate
+Hydreigon	Regieleki	teammate
+Regieleki	Weavile	teammate
+Regieleki	Tsareena	teammate
+Regidrago	Regieleki	teammate
+Hitmontop	Regieleki	teammate
+Regieleki	Zekrom	teammate
+Galarian Zapdos	Regieleki	teammate
+Regieleki	Volcarona	teammate
+Meowstic Male	Regieleki	teammate
+Alolan Persian	Regieleki	teammate
+Regieleki	Snorlax	teammate
+Galarian Moltres	Regieleki	teammate
+Regieleki	Talonflame	teammate
+Mewtwo	Regieleki	teammate
+Inteleon	Regieleki	teammate
+Regieleki	Wash Rotom	teammate
+Regieleki	Swampert	teammate
+Galarian Articuno	Regieleki	teammate
+Regieleki	Tyranitar	teammate
+Galarian Weezing	Regieleki	teammate
+Moltres	Regieleki	teammate
+Primarina	Regieleki	teammate
+Regieleki	Shiftry	teammate
+Chandelure	Regieleki	teammate
+Greedent	Regieleki	teammate
+Cherrim	Regieleki	teammate
+Exeggutor	Regieleki	teammate
+Froslass	Regieleki	teammate
+Lurantis	Regieleki	teammate
+Latias	Regieleki	teammate
+Alolan Exeggutor	Regieleki	teammate
+Regieleki	Scrafty	teammate
+Kabutops	Regieleki	teammate
+Blacephalon	Regieleki	teammate
+Duraludon	Regieleki	teammate
+Regieleki	Trevenant	teammate
+Drednaw	Regieleki	teammate
+Bisharp	Regieleki	teammate
+Regieleki	Registeel	teammate
+Regieleki	Stonjourner	teammate
+Abomasnow	Regieleki	teammate
+Giratina Altered Forme	Regieleki	teammate
+Durant	Regieleki	teammate
+Regieleki	Wishiwashi Solo Form	teammate
+Conkeldurr	Regieleki	teammate
+Mantine	Regieleki	teammate
+Machamp	Regieleki	teammate
+Regieleki	Silvally	teammate
+Regieleki	Tauros	teammate
+Dugtrio	Regieleki	teammate
+Glaceon	Regieleki	teammate
+Cinccino	Regieleki	teammate
+Blissey	Regieleki	teammate
+Mime Galarian Mr. Mime	Regieleki	teammate
+Calyrex Shadow Rider	Zacian Crowned Sword	teammate
+Calyrex Shadow Rider	Landorus Therian Forme	teammate
+Calyrex Shadow Rider	Indeedee Female	teammate
+Calyrex Shadow Rider	Whimsicott	teammate
+Calyrex Shadow Rider	Zapdos	teammate
+Blastoise	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Ditto	teammate
+Calyrex Shadow Rider	Weezing	teammate
+Calyrex Shadow Rider	White Kyurem	teammate
+Calyrex Shadow Rider	Urshifu Rapid Strike Style	teammate
+Calyrex Shadow Rider	Tapu Lele	teammate
+Calyrex Shadow Rider	Regigigas	teammate
+Calyrex Shadow Rider	Cinderace	teammate
+Calyrex Shadow Rider	Togekiss	teammate
+Calyrex Shadow Rider	Coalossal	teammate
+Calyrex Shadow Rider	Indeedee Male	teammate
+Calyrex Shadow Rider	Comfey	teammate
+Calyrex Shadow Rider	Lapras	teammate
+Calyrex Shadow Rider	Mamoswine	teammate
+Barraskewda	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Celesteela	teammate
+Calyrex Shadow Rider	Metagross	teammate
+Araquanid	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Clefairy	teammate
+Calyrex Shadow Rider	Mienshao	teammate
+Calyrex Shadow Rider	Suicune	teammate
+Calyrex Shadow Rider	Tsareena	teammate
+Calyrex Shadow Rider	Glastrier	teammate
+Calyrex Shadow Rider	Dracovish	teammate
+Calyrex Shadow Rider	Regidrago	teammate
+Calyrex Shadow Rider	Hitmontop	teammate
+Calyrex Shadow Rider	Darmanitan Galarian Standard Mode	teammate
+Calyrex Shadow Rider	Shuckle	teammate
+Calyrex Shadow Rider	Galarian Zapdos	teammate
+Calyrex Shadow Rider	Volcarona	teammate
+Calyrex Shadow Rider	Meowstic Male	teammate
+Alolan Persian	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Snorlax	teammate
+Calyrex Shadow Rider	Stakataka	teammate
+Calyrex Shadow Rider	Galarian Moltres	teammate
+Calyrex Shadow Rider	Milotic	teammate
+Calyrex Shadow Rider	Klinklang	teammate
+Calyrex Shadow Rider	Inteleon	teammate
+Calyrex Shadow Rider	Salamence	teammate
+Calyrex Shadow Rider	Hatterene	teammate
+Calyrex Shadow Rider	Escavalier	teammate
+Calyrex Shadow Rider	Politoed	teammate
+Calyrex Shadow Rider	Swampert	teammate
+Alolan Ninetales	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Pelipper	teammate
+Calyrex Shadow Rider	Galarian Weezing	teammate
+Calyrex Shadow Rider	Kingler	teammate
+Calyrex Shadow Rider	Gyarados	teammate
+Calyrex Shadow Rider	Garchomp	teammate
+Calyrex Shadow Rider	Heliolisk	teammate
+Calyrex Shadow Rider	Tapu Bulu	teammate
+Calyrex Shadow Rider	Drifblim	teammate
+Calyrex Shadow Rider	Toxicroak	teammate
+Calyrex Shadow Rider	Dracozolt	teammate
+Calyrex Shadow Rider	Greedent	teammate
+Calyrex Shadow Rider	Exeggutor	teammate
+Calyrex Shadow Rider	Froslass	teammate
+Calyrex Shadow Rider	Mandibuzz	teammate
+Calyrex Shadow Rider	Darmanitan Standard Mode	teammate
+Calyrex Shadow Rider	Obstagoon	teammate
+Aerodactyl	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Duraludon	teammate
+Bisharp	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Stonjourner	teammate
+Calyrex Shadow Rider	Electivire	teammate
+Calyrex Shadow Rider	Diggersby	teammate
+Calyrex Shadow Rider	Swoobat	teammate
+Calyrex Shadow Rider	Durant	teammate
+Calyrex Shadow Rider	Terrakion	teammate
+Calyrex Shadow Rider	Machamp	teammate
+Calyrex Shadow Rider	Silvally	teammate
+Calyrex Shadow Rider	Xurkitree	teammate
+Calyrex Shadow Rider	Tauros	teammate
+Calyrex Shadow Rider	Garbodor	teammate
+Calyrex Shadow Rider	Dugtrio	teammate
+Calyrex Shadow Rider	Crobat	teammate
+Blissey	Calyrex Shadow Rider	teammate
+Calyrex Shadow Rider	Drampa	teammate
+Groudon	Zacian Crowned Sword	teammate
+Charizard	Groudon	teammate
+Groudon	Yveltal	teammate
+Groudon	Porygon2	teammate
+Groudon	Venusaur	teammate
+Groudon	Xerneas	teammate
+Groudon	Solgaleo	teammate
+Dusclops	Groudon	teammate
+Groudon	Lunala	teammate
+Groudon	Tapu Fini	teammate
+Groudon	Sableye	teammate
+Groudon	Mimikyu	teammate
+Groudon	Ho-oh	teammate
+Bronzong	Groudon	teammate
+Dragapult	Groudon	teammate
+Groudon	Umbreon	teammate
+Groudon	Lapras	teammate
+Groudon	Spectrier	teammate
+Groudon	Reshiram	teammate
+Dawn Wings Necrozma	Groudon	teammate
+Groudon	Metagross	teammate
+Clefairy	Groudon	teammate
+Groudon	Suicune	teammate
+Groudon	Tapu Koko	teammate
+Groudon	Hydreigon	teammate
+Groudon	Weavile	teammate
+Glastrier	Groudon	teammate
+Darmanitan Galarian Standard Mode	Groudon	teammate
+Alolan Persian	Groudon	teammate
+Groudon	Thundurus Therian Forme	teammate
+Groudon	Milotic	teammate
+Groudon	Mewtwo	teammate
+Groudon	Sneasel	teammate
+Azumarill	Groudon	teammate
+Groudon	Scizor	teammate
+Groudon	Tyranitar	teammate
+Groudon	Pikachu	teammate
+Alolan Ninetales	Groudon	teammate
+Alolan Marowak	Groudon	teammate
+Groudon	Pelipper	teammate
+Groudon	Togedemaru	teammate
+Groudon	Heliolisk	teammate
+Groudon	Primarina	teammate
+Groudon	Shiftry	teammate
+Chandelure	Groudon	teammate
+Groudon	Sceptile	teammate
+Centiskorch	Groudon	teammate
+Greedent	Groudon	teammate
+Cherrim	Groudon	teammate
+Exeggutor	Groudon	teammate
+Groudon	Klefki	teammate
+Groudon	Riolu	teammate
+Groudon	Lurantis	teammate
+Groudon	Latias	teammate
+Alolan Exeggutor	Groudon	teammate
+Groudon	Obstagoon	teammate
+Groudon	Scrafty	teammate
+Aerodactyl	Groudon	teammate
+Articuno	Groudon	teammate
+Blacephalon	Groudon	teammate
+Duraludon	Groudon	teammate
+Groudon	Trevenant	teammate
+Groudon	Stonjourner	teammate
+Groudon	Leafeon	teammate
+Groudon	Swoobat	teammate
+Corviknight	Groudon	teammate
+Groudon	Vikavolt	teammate
+Cresselia	Groudon	teammate
+Groudon	Mr. Rime	teammate
+Boltund	Groudon	teammate
+Groudon	Terrakion	teammate
+Goodra	Groudon	teammate
+Glaceon	Groudon	teammate
+Espeon	Groudon	teammate
+Crobat	Groudon	teammate
+Cinccino	Groudon	teammate
+Groudon	Kommo-o	teammate
+Charizard	Zacian Crowned Sword	teammate
+Amoonguss	Zacian Crowned Sword	teammate
+Indeedee Female	Zacian Crowned Sword	teammate
+Whimsicott	Zacian Crowned Sword	teammate
+Yveltal	Zacian Crowned Sword	teammate
+Palkia	Zacian Crowned Sword	teammate
+Porygon2	Zacian Crowned Sword	teammate
+Tornadus Incarnate Forme	Zacian Crowned Sword	teammate
+Zacian Crowned Sword	Zapdos	teammate
+Kartana	Zacian Crowned Sword	teammate
+Blastoise	Zacian Crowned Sword	teammate
+Venusaur	Zacian Crowned Sword	teammate
+Ferrothorn	Zacian Crowned Sword	teammate
+Ditto	Zacian Crowned Sword	teammate
+Urshifu Single Strike Style	Zacian Crowned Sword	teammate
+Shedinja	Zacian Crowned Sword	teammate
+Dusclops	Zacian Crowned Sword	teammate
+Torkoal	Zacian Crowned Sword	teammate
+Kingdra	Zacian Crowned Sword	teammate
+Raichu	Zacian Crowned Sword	teammate
+Weezing	Zacian Crowned Sword	teammate
+Entei	Zacian Crowned Sword	teammate
+Lunala	Zacian Crowned Sword	teammate
+White Kyurem	Zacian Crowned Sword	teammate
+Sableye	Zacian Crowned Sword	teammate
+Urshifu Rapid Strike Style	Zacian Crowned Sword	teammate
+Tapu Lele	Zacian Crowned Sword	teammate
+Gothitelle	Zacian Crowned Sword	teammate
+Seismitoad	Zacian Crowned Sword	teammate
+Ho-oh	Zacian Crowned Sword	teammate
+Heat Rotom	Zacian Crowned Sword	teammate
+Eternatus	Zacian Crowned Sword	teammate
+Regigigas	Zacian Crowned Sword	teammate
+Cinderace	Zacian Crowned Sword	teammate
+Coalossal	Zacian Crowned Sword	teammate
+Dragapult	Zacian Crowned Sword	teammate
+Umbreon	Zacian Crowned Sword	teammate
+Indeedee Male	Zacian Crowned Sword	teammate
+Comfey	Zacian Crowned Sword	teammate
+Lapras	Zacian Crowned Sword	teammate
+Rayquaza	Zacian Crowned Sword	teammate
+Spectrier	Zacian Crowned Sword	teammate
+Reshiram	Zacian Crowned Sword	teammate
+Zacian Crowned Sword	Zygarde Complete Forme	teammate
+Mamoswine	Zacian Crowned Sword	teammate
+Barraskewda	Zacian Crowned Sword	teammate
+Araquanid	Zacian Crowned Sword	teammate
+Clefairy	Zacian Crowned Sword	teammate
+Mienshao	Zacian Crowned Sword	teammate
+Lugia	Zacian Crowned Sword	teammate
+Chansey	Zacian Crowned Sword	teammate
+Suicune	Zacian Crowned Sword	teammate
+Landorus Incarnate Forme	Zacian Crowned Sword	teammate
+Liepard	Zacian Crowned Sword	teammate
+Hydreigon	Zacian Crowned Sword	teammate
+Weavile	Zacian Crowned Sword	teammate
+Tsareena	Zacian Crowned Sword	teammate
+Dracovish	Zacian Crowned Sword	teammate
+Regidrago	Zacian Crowned Sword	teammate
+Hitmontop	Zacian Crowned Sword	teammate
+Darmanitan Galarian Standard Mode	Zacian Crowned Sword	teammate
+Shuckle	Zacian Crowned Sword	teammate
+Galarian Zapdos	Zacian Crowned Sword	teammate
+Volcarona	Zacian Crowned Sword	teammate
+Meowstic Male	Zacian Crowned Sword	teammate
+Alolan Persian	Zacian Crowned Sword	teammate
+Snorlax	Zacian Crowned Sword	teammate
+Thundurus Therian Forme	Zacian Crowned Sword	teammate
+Galarian Moltres	Zacian Crowned Sword	teammate
+Talonflame	Zacian Crowned Sword	teammate
+Milotic	Zacian Crowned Sword	teammate
+Mewtwo	Zacian Crowned Sword	teammate
+Inteleon	Zacian Crowned Sword	teammate
+Salamence	Zacian Crowned Sword	teammate
+Sneasel	Zacian Crowned Sword	teammate
+Wash Rotom	Zacian Crowned Sword	teammate
+Politoed	Zacian Crowned Sword	teammate
+Ludicolo	Zacian Crowned Sword	teammate
+Swampert	Zacian Crowned Sword	teammate
+Tyranitar	Zacian Crowned Sword	teammate
+Pikachu	Zacian Crowned Sword	teammate
+Alolan Ninetales	Zacian Crowned Sword	teammate
+Slowbro	Zacian Crowned Sword	teammate
+Pelipper	Zacian Crowned Sword	teammate
+Galarian Weezing	Zacian Crowned Sword	teammate
+Kingler	Zacian Crowned Sword	teammate
+Nihilego	Zacian Crowned Sword	teammate
+Gyarados	Zacian Crowned Sword	teammate
+Garchomp	Zacian Crowned Sword	teammate
+Heliolisk	Zacian Crowned Sword	teammate
+Tapu Bulu	Zacian Crowned Sword	teammate
+Kangaskhan	Zacian Crowned Sword	teammate
+Moltres	Zacian Crowned Sword	teammate
+Excadrill	Zacian Crowned Sword	teammate
+Primarina	Zacian Crowned Sword	teammate
+Shiftry	Zacian Crowned Sword	teammate
+Chandelure	Zacian Crowned Sword	teammate
+Toxicroak	Zacian Crowned Sword	teammate
+Dracozolt	Zacian Crowned Sword	teammate
+Sceptile	Zacian Crowned Sword	teammate
+Aegislash Shield Forme	Zacian Crowned Sword	teammate
+Centiskorch	Zacian Crowned Sword	teammate
+Greedent	Zacian Crowned Sword	teammate
+Porygon-Z	Zacian Crowned Sword	teammate
+Butterfree	Zacian Crowned Sword	teammate
+Mudsdale	Zacian Crowned Sword	teammate
+Cherrim	Zacian Crowned Sword	teammate
+Altaria	Zacian Crowned Sword	teammate
+Klefki	Zacian Crowned Sword	teammate
+Froslass	Zacian Crowned Sword	teammate
+Gigalith	Zacian Crowned Sword	teammate
+Jellicent	Zacian Crowned Sword	teammate
+Mandibuzz	Zacian Crowned Sword	teammate
+Latias	Zacian Crowned Sword	teammate
+Dragonite	Zacian Crowned Sword	teammate
+Darmanitan Standard Mode	Zacian Crowned Sword	teammate
+Cradily	Zacian Crowned Sword	teammate
+Obstagoon	Zacian Crowned Sword	teammate
+Scrafty	Zacian Crowned Sword	teammate
+Kabutops	Zacian Crowned Sword	teammate
+Duraludon	Zacian Crowned Sword	teammate
+Heatran	Zacian Crowned Sword	teammate
+Appletun	Zacian Crowned Sword	teammate
+Bisharp	Zacian Crowned Sword	teammate
+Rhyperior	Zacian Crowned Sword	teammate
+Stonjourner	Zacian Crowned Sword	teammate
+Electivire	Zacian Crowned Sword	teammate
+Leafeon	Zacian Crowned Sword	teammate
+Diggersby	Zacian Crowned Sword	teammate
+Giratina Altered Forme	Zacian Crowned Sword	teammate
+Corviknight	Zacian Crowned Sword	teammate
+Durant	Zacian Crowned Sword	teammate
+Cresselia	Zacian Crowned Sword	teammate
+Wishiwashi Solo Form	Zacian Crowned Sword	teammate
+Boltund	Zacian Crowned Sword	teammate
+Cobalion	Zacian Crowned Sword	teammate
+Mantine	Zacian Crowned Sword	teammate
+Machamp	Zacian Crowned Sword	teammate
+Accelgor	Zacian Crowned Sword	teammate
+Xurkitree	Zacian Crowned Sword	teammate
+Tauros	Zacian Crowned Sword	teammate
+Luxray	Zacian Crowned Sword	teammate
+Palossand	Zacian Crowned Sword	teammate
+Crobat	Zacian Crowned Sword	teammate
+Tyrantrum	Zacian Crowned Sword	teammate
+Cinccino	Zacian Crowned Sword	teammate
+Kommo-o	Zacian Crowned Sword	teammate
+Blissey	Zacian Crowned Sword	teammate
+Cloyster	Zacian Crowned Sword	teammate
+Drampa	Zacian Crowned Sword	teammate
+Hawlucha	Zacian Crowned Sword	teammate
+Mime Galarian Mr. Mime	Zacian Crowned Sword	teammate
+Charizard	Whimsicott	teammate
+Charizard	Venusaur	teammate
+Charizard	Xerneas	teammate
+Charizard	Lunala	teammate
+Charizard	Tapu Fini	teammate
+Charizard	Sableye	teammate
+Bronzong	Charizard	teammate
+Charizard	Dragapult	teammate
+Charizard	Umbreon	teammate
+Charizard	Spectrier	teammate
+Charizard	Dawn Wings Necrozma	teammate
+Charizard	Suicune	teammate
+Charizard	Weavile	teammate
+Charizard	Mewtwo	teammate
+Charizard	Sneasel	teammate
+Charizard	Garchomp	teammate
+Chandelure	Charizard	teammate
+Charizard	Exeggutor	teammate
+Charizard	Klefki	teammate
+Charizard	Lurantis	teammate
+Aerodactyl	Charizard	teammate
+Bisharp	Charizard	teammate
+Charizard	Rhyperior	teammate
+Charizard	Stonjourner	teammate
+Charizard	Cresselia	teammate
+Boltund	Charizard	teammate
+Charizard	Terrakion	teammate
+Charizard	Goodra	teammate
+Charizard	Mime Galarian Mr. Mime	teammate
+Charizard	Ninetales	teammate
+Charizard	Malamar	teammate
+Charizard	Vileplume	teammate
+Arctovish	Charizard	teammate
+Charizard	Maractus	teammate
+Amoonguss	Yveltal	teammate
+Amoonguss	Calyrex Ice Rider	teammate
+Amoonguss	Palkia	teammate
+Amoonguss	Porygon2	teammate
+Amoonguss	Tornadus Incarnate Forme	teammate
+Amoonguss	Zapdos	teammate
+Amoonguss	Kartana	teammate
+Amoonguss	Urshifu Single Strike Style	teammate
+Amoonguss	Xerneas	teammate
+Amoonguss	Dusclops	teammate
+Amoonguss	Torkoal	teammate
+Amoonguss	Raichu	teammate
+Amoonguss	Lunala	teammate
+Amoonguss	White Kyurem	teammate
+Amoonguss	Tapu Fini	teammate
+Amoonguss	Tapu Lele	teammate
+Amoonguss	Mimikyu	teammate
+Amoonguss	Heat Rotom	teammate
+Amoonguss	Lapras	teammate
+Amoonguss	Rayquaza	teammate
+Amoonguss	Barraskewda	teammate
+Amoonguss	Metagross	teammate
+Amoonguss	Pheromosa	teammate
+Amoonguss	Landorus Incarnate Forme	teammate
+Amoonguss	Dusk Mane Necrozma	teammate
+Alcremie	Amoonguss	teammate
+Amoonguss	Tapu Koko	teammate
+Amoonguss	Liepard	teammate
+Amoonguss	Meowstic Male	teammate
+Alolan Persian	Amoonguss	teammate
+Amoonguss	Stakataka	teammate
+Amoonguss	Galarian Moltres	teammate
+Amoonguss	Milotic	teammate
+Amoonguss	Escavalier	teammate
+Amoonguss	Wash Rotom	teammate
+Amoonguss	Scizor	teammate
+Alolan Marowak	Amoonguss	teammate
+Amoonguss	Pelipper	teammate
+Amoonguss	Oranguru	teammate
+Amoonguss	Kangaskhan	teammate
+Amoonguss	Pincurchin	teammate
+Amoonguss	Latias	teammate
+Amoonguss	Articuno	teammate
+Amoonguss	Trevenant	teammate
+Amoonguss	Heatran	teammate
+Amoonguss	Clefable	teammate
+Amoonguss	Registeel	teammate
+Amoonguss	Wishiwashi Solo Form	teammate
+Amoonguss	Mantine	teammate
+Amoonguss	Machamp	teammate
+Amoonguss	Tyrantrum	teammate
+Amoonguss	Kommo-o	teammate
+Amoonguss	Blaziken	teammate
+Amoonguss	Hawlucha	teammate
+Amoonguss	Zoroark	teammate
+Amoonguss	Haxorus	teammate
+Amoonguss	Runerigus	teammate
+Amoonguss	Braviary	teammate
+Alakazam	Amoonguss	teammate
+Amoonguss	Torracat	teammate
+Amoonguss	Cofagrigus	teammate
+Amoonguss	Sharpedo	teammate
+Amoonguss	Mr. Mime	teammate
+Amoonguss	Magnezone	teammate
+Amoonguss	Unfezant	teammate
+Amoonguss	Perrserker	teammate
+Amoonguss	Heracross	teammate
+Amoonguss	Cursola	teammate
+Amoonguss	Falinks	teammate
+Amoonguss	Galarian Corsola	teammate
+Amoonguss	Orbeetle	teammate
+Amoonguss	Scyther	teammate
+Amoonguss	Poliwrath	teammate
+Amoonguss	Lycanroc Midnight Form	teammate
+Amoonguss	Golurk	teammate
+Indeedee Female	Whimsicott	teammate
+Calyrex Ice Rider	Indeedee Female	teammate
+Indeedee Female	Palkia	teammate
+Indeedee Female	Porygon2	teammate
+Indeedee Female	Kartana	teammate
+Ditto	Indeedee Female	teammate
+Indeedee Female	Urshifu Single Strike Style	teammate
+Indeedee Female	Xerneas	teammate
+Indeedee Female	Shedinja	teammate
+Dusclops	Indeedee Female	teammate
+Indeedee Female	Torkoal	teammate
+Indeedee Female	Kingdra	teammate
+Entei	Indeedee Female	teammate
+Indeedee Female	White Kyurem	teammate
+Indeedee Female	Urshifu Rapid Strike Style	teammate
+Indeedee Female	Mimikyu	teammate
+Cinderace	Indeedee Female	teammate
+Indeedee Female	Togekiss	teammate
+Dragapult	Indeedee Female	teammate
+Dawn Wings Necrozma	Indeedee Female	teammate
+Barraskewda	Indeedee Female	teammate
+Araquanid	Indeedee Female	teammate
+Indeedee Female	Pheromosa	teammate
+Indeedee Female	Mienshao	teammate
+Indeedee Female	Lugia	teammate
+Chansey	Indeedee Female	teammate
+Dusk Mane Necrozma	Indeedee Female	teammate
+Indeedee Female	Liepard	teammate
+Hydreigon	Indeedee Female	teammate
+Dracovish	Indeedee Female	teammate
+Indeedee Female	Regidrago	teammate
+Hitmontop	Indeedee Female	teammate
+Indeedee Female	Shuckle	teammate
+Indeedee Female	Snorlax	teammate
+Indeedee Female	Stakataka	teammate
+Indeedee Female	Thundurus Therian Forme	teammate
+Indeedee Female	Talonflame	teammate
+Indeedee Female	Mewtwo	teammate
+Indeedee Female	Klinklang	teammate
+Indeedee Female	Inteleon	teammate
+Hatterene	Indeedee Female	teammate
+Galarian Articuno	Indeedee Female	teammate
+Alolan Ninetales	Indeedee Female	teammate
+Alolan Marowak	Indeedee Female	teammate
+Indeedee Female	Slowbro	teammate
+Indeedee Female	Kingler	teammate
+Indeedee Female	Oranguru	teammate
+Garchomp	Indeedee Female	teammate
+Indeedee Female	Moltres	teammate
+Drifblim	Indeedee Female	teammate
+Dracozolt	Indeedee Female	teammate
+Aegislash Shield Forme	Indeedee Female	teammate
+Greedent	Indeedee Female	teammate
+Indeedee Female	Riolu	teammate
+Indeedee Female	Mandibuzz	teammate
+Indeedee Female	Lurantis	teammate
+Alolan Exeggutor	Indeedee Female	teammate
+Dragonite	Indeedee Female	teammate
+Aerodactyl	Indeedee Female	teammate
+Indeedee Female	Trevenant	teammate
+Drednaw	Indeedee Female	teammate
+Clefable	Indeedee Female	teammate
+Indeedee Female	Rhyperior	teammate
+Indeedee Female	Stonjourner	teammate
+Electivire	Indeedee Female	teammate
+Indeedee Female	Vikavolt	teammate
+Durant	Indeedee Female	teammate
+Indeedee Female	Wishiwashi Solo Form	teammate
+Cobalion	Indeedee Female	teammate
+Indeedee Female	Silvally	teammate
+Indeedee Female	Xurkitree	teammate
+Indeedee Female	Mow Rotom	teammate
+Espeon	Indeedee Female	teammate
+Indeedee Female	Kommo-o	teammate
+Blaziken	Indeedee Female	teammate
+Hawlucha	Indeedee Female	teammate
+Indeedee Female	Lilligant	teammate
+Clawitzer	Indeedee Female	teammate
+Indeedee Female	Qwilfish	teammate
+Haxorus	Indeedee Female	teammate
+Dhelmise	Indeedee Female	teammate
+Braviary	Indeedee Female	teammate
+Indeedee Female	Virizion	teammate
+Alolan Raichu	Indeedee Female	teammate
+Beartic	Indeedee Female	teammate
+Copperajah	Indeedee Female	teammate
+Flapple	Indeedee Female	teammate
+Indeedee Female	Sylveon	teammate
+Indeedee Female	Slurpuff	teammate
+Eiscue Ice Face	Indeedee Female	teammate
+Hippowdon	Indeedee Female	teammate
+Alakazam	Indeedee Female	teammate
+Indeedee Female	Thievul	teammate
+Cofagrigus	Indeedee Female	teammate
+Indeedee Female	Starmie	teammate
+Indeedee Female	Turtonator	teammate
+Indeedee Female	Ribombee	teammate
+Charjabug	Indeedee Female	teammate
+Indeedee Female	Mr. Mime	teammate
+Gallade	Indeedee Female	teammate
+Indeedee Female	Malamar	teammate
+Golduck	Indeedee Female	teammate
+Indeedee Female	Unfezant	teammate
+Indeedee Female	Perrserker	teammate
+Galarian Slowbro	Indeedee Female	teammate
+Indeedee Female	Roserade	teammate
+Indeedee Female	Tangrowth	teammate
+Eldegoss	Indeedee Female	teammate
+Aromatisse	Indeedee Female	teammate
+Indeedee Female	Vileplume	teammate
+Cursola	Indeedee Female	teammate
+Falinks	Indeedee Female	teammate
+Flygon	Indeedee Female	teammate
+Crustle	Indeedee Female	teammate
+Indeedee Female	Reuniclus	teammate
+Dusknoir	Indeedee Female	teammate
+Exploud	Indeedee Female	teammate
+Indeedee Female	Wigglytuff	teammate
+Gardevoir	Indeedee Female	teammate
+Indeedee Female	Vanilluxe	teammate
+Indeedee Female	Orbeetle	teammate
+Indeedee Female	Lycanroc Midday Form	teammate
+Beheeyem	Indeedee Female	teammate
+Indeedee Female	Marowak	teammate
+Indeedee Female	Tentacruel	teammate
+Dragalge	Indeedee Female	teammate
+Bewear	Indeedee Female	teammate
+Indeedee Female	Scyther	teammate
+Alolan Sandslash	Indeedee Female	teammate
+Indeedee Female	Poliwrath	teammate
+Fan Rotom	Indeedee Female	teammate
+Indeedee Female	Scolipede	teammate
+Dunsparce	Indeedee Female	teammate
+Indeedee Female	Sandslash	teammate
+Indeedee Female	Noctowl	teammate
+Corsola	Indeedee Female	teammate
+Indeedee Female	Mime Jr.	teammate
+Whimsicott	Zapdos	teammate
+Kartana	Whimsicott	teammate
+Ferrothorn	Whimsicott	teammate
+Ditto	Whimsicott	teammate
+Urshifu Single Strike Style	Whimsicott	teammate
+Dialga	Whimsicott	teammate
+Weezing	Whimsicott	teammate
+Entei	Whimsicott	teammate
+Whimsicott	White Kyurem	teammate
+Urshifu Rapid Strike Style	Whimsicott	teammate
+Tapu Lele	Whimsicott	teammate
+Regigigas	Whimsicott	teammate
+Cinderace	Whimsicott	teammate
+Togekiss	Whimsicott	teammate
+Umbreon	Whimsicott	teammate
+Indeedee Male	Whimsicott	teammate
+Rayquaza	Whimsicott	teammate
+Mamoswine	Whimsicott	teammate
+Barraskewda	Whimsicott	teammate
+Celesteela	Whimsicott	teammate
+Pheromosa	Whimsicott	teammate
+Arcanine	Whimsicott	teammate
+Clefairy	Whimsicott	teammate
+Mienshao	Whimsicott	teammate
+Lugia	Whimsicott	teammate
+Hydreigon	Whimsicott	teammate
+Tsareena	Whimsicott	teammate
+Dracovish	Whimsicott	teammate
+Regidrago	Whimsicott	teammate
+Hitmontop	Whimsicott	teammate
+Darmanitan Galarian Standard Mode	Whimsicott	teammate
+Galarian Zapdos	Whimsicott	teammate
+Snorlax	Whimsicott	teammate
+Thundurus Therian Forme	Whimsicott	teammate
+Galarian Moltres	Whimsicott	teammate
+Mewtwo	Whimsicott	teammate
+Klinklang	Whimsicott	teammate
+Inteleon	Whimsicott	teammate
+Politoed	Whimsicott	teammate
+Scizor	Whimsicott	teammate
+Tyranitar	Whimsicott	teammate
+Pikachu	Whimsicott	teammate
+Alolan Ninetales	Whimsicott	teammate
+Raikou	Whimsicott	teammate
+Pelipper	Whimsicott	teammate
+Galarian Weezing	Whimsicott	teammate
+Nihilego	Whimsicott	teammate
+Gyarados	Whimsicott	teammate
+Garchomp	Whimsicott	teammate
+Moltres	Whimsicott	teammate
+Excadrill	Whimsicott	teammate
+Chandelure	Whimsicott	teammate
+Dracozolt	Whimsicott	teammate
+Pincurchin	Whimsicott	teammate
+Aegislash Shield Forme	Whimsicott	teammate
+Centiskorch	Whimsicott	teammate
+Porygon-Z	Whimsicott	teammate
+Butterfree	Whimsicott	teammate
+Lucario	Whimsicott	teammate
+Exeggutor	Whimsicott	teammate
+Riolu	Whimsicott	teammate
+Dragonite	Whimsicott	teammate
+Scrafty	Whimsicott	teammate
+Kabutops	Whimsicott	teammate
+Blacephalon	Whimsicott	teammate
+Duraludon	Whimsicott	teammate
+Clefable	Whimsicott	teammate
+Stonjourner	Whimsicott	teammate
+Electivire	Whimsicott	teammate
+Durant	Whimsicott	teammate
+Terrakion	Whimsicott	teammate
+Cobalion	Whimsicott	teammate
+Whimsicott	Xurkitree	teammate
+Tauros	Whimsicott	teammate
+Luxray	Whimsicott	teammate
+Manectric	Whimsicott	teammate
+Cloyster	Whimsicott	teammate
+Mime Galarian Mr. Mime	Whimsicott	teammate
+Haxorus	Whimsicott	teammate
+Virizion	Whimsicott	teammate
+Flapple	Whimsicott	teammate
+Sylveon	Whimsicott	teammate
+Arctozolt	Whimsicott	teammate
+Turtonator	Whimsicott	teammate
+Salazzle	Whimsicott	teammate
+Toxtricity Low Key Form	Whimsicott	teammate
+Mr. Mime	Whimsicott	teammate
+Gallade	Whimsicott	teammate
+Malamar	Whimsicott	teammate
+Golisopod	Whimsicott	teammate
+Shiinotic	Whimsicott	teammate
+Polteageist	Whimsicott	teammate
+Eldegoss	Whimsicott	teammate
+Aromatisse	Whimsicott	teammate
+Gourgeist Super Size	Whimsicott	teammate
+Gardevoir	Whimsicott	teammate
+Galarian Corsola	Whimsicott	teammate
+Vanilluxe	Whimsicott	teammate
+Passimian	Whimsicott	teammate
+Druddigon	Whimsicott	teammate
+Scyther	Whimsicott	teammate
+Golurk	Whimsicott	teammate
+Gourgeist Large Size	Whimsicott	teammate
+Kartana	Tornadus Incarnate Forme	teammate
+Solgaleo	Tornadus Incarnate Forme	teammate
+Raichu	Tornadus Incarnate Forme	teammate
+Tapu Lele	Tornadus Incarnate Forme	teammate
+Bronzong	Tornadus Incarnate Forme	teammate
+Coalossal	Tornadus Incarnate Forme	teammate
+Spectrier	Tornadus Incarnate Forme	teammate
+Tornadus Incarnate Forme	Tsareena	teammate
+Tornadus Incarnate Forme	Volcarona	teammate
+Thundurus Therian Forme	Tornadus Incarnate Forme	teammate
+Inteleon	Tornadus Incarnate Forme	teammate
+Ludicolo	Tornadus Incarnate Forme	teammate
+Giratina Origin Forme	Tornadus Incarnate Forme	teammate
+Raikou	Tornadus Incarnate Forme	teammate
+Galarian Weezing	Tornadus Incarnate Forme	teammate
+Heliolisk	Tornadus Incarnate Forme	teammate
+Tapu Bulu	Tornadus Incarnate Forme	teammate
+Tornadus Incarnate Forme	Toxicroak	teammate
+Lucario	Tornadus Incarnate Forme	teammate
+Gigalith	Tornadus Incarnate Forme	teammate
+Lurantis	Tornadus Incarnate Forme	teammate
+Darmanitan Standard Mode	Tornadus Incarnate Forme	teammate
+Blacephalon	Tornadus Incarnate Forme	teammate
+Drednaw	Tornadus Incarnate Forme	teammate
+Heatran	Tornadus Incarnate Forme	teammate
+Diggersby	Tornadus Incarnate Forme	teammate
+Boltund	Tornadus Incarnate Forme	teammate
+Tornadus Incarnate Forme	Xurkitree	teammate
+Manectric	Tornadus Incarnate Forme	teammate
+Blaziken	Tornadus Incarnate Forme	teammate
+Mime Galarian Mr. Mime	Tornadus Incarnate Forme	teammate
+Kartana	Shedinja	teammate
+Kartana	Raichu	teammate
+Kartana	Tapu Lele	teammate
+Kartana	Seismitoad	teammate
+Barraskewda	Kartana	teammate
+Dracovish	Kartana	teammate
+Kartana	Thundurus Therian Forme	teammate
+Inteleon	Kartana	teammate
+Kartana	Politoed	teammate
+Kartana	Mudsdale	teammate
+Drednaw	Kartana	teammate
+Kartana	Tauros	teammate
+Kartana	Mime Galarian Mr. Mime	teammate
+Blastoise	Yveltal	teammate
+Venusaur	Yveltal	teammate
+Dusclops	Yveltal	teammate
+Torkoal	Yveltal	teammate
+Raichu	Yveltal	teammate
+Urshifu Rapid Strike Style	Yveltal	teammate
+Tapu Lele	Yveltal	teammate
+Heat Rotom	Yveltal	teammate
+Bronzong	Yveltal	teammate
+Coalossal	Yveltal	teammate
+Dragapult	Yveltal	teammate
+Lapras	Yveltal	teammate
+Celesteela	Yveltal	teammate
+Pheromosa	Yveltal	teammate
+Landorus Incarnate Forme	Yveltal	teammate
+Glastrier	Yveltal	teammate
+Meowstic Male	Yveltal	teammate
+Snorlax	Yveltal	teammate
+Galarian Moltres	Yveltal	teammate
+Milotic	Yveltal	teammate
+Escavalier	Yveltal	teammate
+Politoed	Yveltal	teammate
+Swampert	Yveltal	teammate
+Alolan Marowak	Yveltal	teammate
+Slowbro	Yveltal	teammate
+Toxapex	Yveltal	teammate
+Togedemaru	Yveltal	teammate
+Tapu Bulu	Yveltal	teammate
+Krookodile	Yveltal	teammate
+Excadrill	Yveltal	teammate
+Centiskorch	Yveltal	teammate
+Klefki	Yveltal	teammate
+Kabutops	Yveltal	teammate
+Bisharp	Yveltal	teammate
+Cresselia	Yveltal	teammate
+Conkeldurr	Yveltal	teammate
+Cobalion	Yveltal	teammate
+Black Kyurem	Yveltal	teammate
+Silvally	Yveltal	teammate
+Accelgor	Yveltal	teammate
+Dugtrio	Yveltal	teammate
+Palossand	Yveltal	teammate
+Kommo-o	Yveltal	teammate
+Blastoise	Eternatus	teammate
+Blastoise	Regigigas	teammate
+Blastoise	Comfey	teammate
+Blastoise	Reshiram	teammate
+Blastoise	Dawn Wings Necrozma	teammate
+Blastoise	Chansey	teammate
+Blastoise	Darmanitan Galarian Standard Mode	teammate
+Blastoise	Volcarona	teammate
+Blastoise	Giratina Origin Forme	teammate
+Blastoise	Galarian Weezing	teammate
+Blastoise	Excadrill	teammate
+Blastoise	Sceptile	teammate
+Blastoise	Butterfree	teammate
+Altaria	Blastoise	teammate
+Blastoise	Klefki	teammate
+Blastoise	Jellicent	teammate
+Blastoise	Xurkitree	teammate
+Blastoise	Drampa	teammate
+Blastoise	Virizion	teammate
+Blastoise	Marowak	teammate
+Porygon2	Venusaur	teammate
+Venusaur	Xerneas	teammate
+Torkoal	Venusaur	teammate
+Lunala	Venusaur	teammate
+Tapu Fini	Venusaur	teammate
+Ho-oh	Venusaur	teammate
+Bronzong	Venusaur	teammate
+Mamoswine	Venusaur	teammate
+Metagross	Venusaur	teammate
+Suicune	Venusaur	teammate
+Tapu Koko	Venusaur	teammate
+Glastrier	Venusaur	teammate
+Venusaur	Zekrom	teammate
+Milotic	Venusaur	teammate
+Salamence	Venusaur	teammate
+Azumarill	Venusaur	teammate
+Scizor	Venusaur	teammate
+Alolan Ninetales	Venusaur	teammate
+Togedemaru	Venusaur	teammate
+Krookodile	Venusaur	teammate
+Chandelure	Venusaur	teammate
+Latias	Venusaur	teammate
+Articuno	Venusaur	teammate
+Trevenant	Venusaur	teammate
+Registeel	Venusaur	teammate
+Corviknight	Venusaur	teammate
+Mr. Rime	Venusaur	teammate
+Dugtrio	Venusaur	teammate
+Venusaur	Zoroark	teammate
+Lilligant	Venusaur	teammate
+Braviary	Venusaur	teammate
+Copperajah	Venusaur	teammate
+Sharpedo	Venusaur	teammate
+Ninetales	Venusaur	teammate
+Lycanroc Dusk Form	Venusaur	teammate
+Galarian Slowbro	Venusaur	teammate
+Aromatisse	Venusaur	teammate
+Miltank	Venusaur	teammate
+Magneton	Venusaur	teammate
+Exploud	Venusaur	teammate
+Gardevoir	Venusaur	teammate
+Galarian Corsola	Venusaur	teammate
+Maractus	Venusaur	teammate
+Corsola	Venusaur	teammate
+Bronzong	Xerneas	teammate
+Landorus Incarnate Forme	Xerneas	teammate
+Klinklang	Xerneas	teammate
+Tyranitar	Xerneas	teammate
+Kingler	Xerneas	teammate
+Kangaskhan	Xerneas	teammate
+Krookodile	Xerneas	teammate
+Excadrill	Xerneas	teammate
+Chandelure	Xerneas	teammate
+Dracozolt	Xerneas	teammate
+Aegislash Shield Forme	Xerneas	teammate
+Gigalith	Xerneas	teammate
+Aerodactyl	Xerneas	teammate
+Kommo-o	Xerneas	teammate
+Hawlucha	Xerneas	teammate
+Calyrex Ice Rider	Palkia	teammate
+Palkia	Porygon2	teammate
+Ferrothorn	Palkia	teammate
+Dusclops	Palkia	teammate
+Palkia	Torkoal	teammate
+Entei	Palkia	teammate
+Palkia	Tapu Fini	teammate
+Mimikyu	Palkia	teammate
+Gothitelle	Palkia	teammate
+Palkia	Pheromosa	teammate
+Clefairy	Palkia	teammate
+Chansey	Palkia	teammate
+Dusk Mane Necrozma	Palkia	teammate
+Alcremie	Palkia	teammate
+Palkia	Tapu Koko	teammate
+Liepard	Palkia	teammate
+Glastrier	Palkia	teammate
+Palkia	Shuckle	teammate
+Palkia	Stakataka	teammate
+Galarian Moltres	Palkia	teammate
+Hatterene	Palkia	teammate
+Escavalier	Palkia	teammate
+Palkia	Slowking	teammate
+Azumarill	Palkia	teammate
+Alolan Marowak	Palkia	teammate
+Oranguru	Palkia	teammate
+Kangaskhan	Palkia	teammate
+Krookodile	Palkia	teammate
+Palkia	Shiftry	teammate
+Palkia	Pincurchin	teammate
+Butterfree	Palkia	teammate
+Altaria	Palkia	teammate
+Klefki	Palkia	teammate
+Froslass	Palkia	teammate
+Jellicent	Palkia	teammate
+Dragonite	Palkia	teammate
+Darmanitan Standard Mode	Palkia	teammate
+Cradily	Palkia	teammate
+Articuno	Palkia	teammate
+Leafeon	Palkia	teammate
+Abomasnow	Palkia	teammate
+Palkia	Wishiwashi Solo Form	teammate
+Goodra	Palkia	teammate
+Garbodor	Palkia	teammate
+Glaceon	Palkia	teammate
+Manectric	Palkia	teammate
+Espeon	Palkia	teammate
+Cinccino	Palkia	teammate
+Cloyster	Palkia	teammate
+Drampa	Palkia	teammate
+Calyrex Ice Rider	Porygon2	teammate
+Calyrex Ice Rider	Urshifu Single Strike Style	teammate
+Calyrex Ice Rider	Dialga	teammate
+Calyrex Ice Rider	Dusclops	teammate
+Calyrex Ice Rider	Torkoal	teammate
+Calyrex Ice Rider	Tapu Fini	teammate
+Calyrex Ice Rider	Sableye	teammate
+Calyrex Ice Rider	Mimikyu	teammate
+Calyrex Ice Rider	Seismitoad	teammate
+Calyrex Ice Rider	Cinderace	teammate
+Calyrex Ice Rider	Togekiss	teammate
+Calyrex Ice Rider	Indeedee Male	teammate
+Calyrex Ice Rider	Dawn Wings Necrozma	teammate
+Calyrex Ice Rider	Pheromosa	teammate
+Calyrex Ice Rider	Landorus Incarnate Forme	teammate
+Alcremie	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Tapu Koko	teammate
+Calyrex Ice Rider	Liepard	teammate
+Calyrex Ice Rider	Zekrom	teammate
+Calyrex Ice Rider	Stakataka	teammate
+Calyrex Ice Rider	Klinklang	teammate
+Calyrex Ice Rider	Hatterene	teammate
+Calyrex Ice Rider	Escavalier	teammate
+Calyrex Ice Rider	Slowking	teammate
+Calyrex Ice Rider	Scizor	teammate
+Calyrex Ice Rider	Galarian Articuno	teammate
+Alolan Marowak	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Raikou	teammate
+Calyrex Ice Rider	Oranguru	teammate
+Calyrex Ice Rider	Nihilego	teammate
+Calyrex Ice Rider	Kangaskhan	teammate
+Calyrex Ice Rider	Moltres	teammate
+Calyrex Ice Rider	Drifblim	teammate
+Calyrex Ice Rider	Excadrill	teammate
+Calyrex Ice Rider	Primarina	teammate
+Calyrex Ice Rider	Shiftry	teammate
+Calyrex Ice Rider	Sceptile	teammate
+Calyrex Ice Rider	Pincurchin	teammate
+Aegislash Shield Forme	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Greedent	teammate
+Calyrex Ice Rider	Porygon-Z	teammate
+Calyrex Ice Rider	Exeggutor	teammate
+Altaria	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Jellicent	teammate
+Calyrex Ice Rider	Riolu	teammate
+Alolan Exeggutor	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Dragonite	teammate
+Blacephalon	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Trevenant	teammate
+Calyrex Ice Rider	Clefable	teammate
+Abomasnow	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Cresselia	teammate
+Calyrex Ice Rider	Mr. Rime	teammate
+Calyrex Ice Rider	Wishiwashi Solo Form	teammate
+Calyrex Ice Rider	Conkeldurr	teammate
+Calyrex Ice Rider	Machamp	teammate
+Calyrex Ice Rider	Silvally	teammate
+Accelgor	Calyrex Ice Rider	teammate
+Calyrex Ice Rider	Mow Rotom	teammate
+Calyrex Ice Rider	Palossand	teammate
+Calyrex Ice Rider	Espeon	teammate
+Calyrex Ice Rider	Tyrantrum	teammate
+Calyrex Ice Rider	Drampa	teammate
+Porygon2	Shedinja	teammate
+Porygon2	Torkoal	teammate
+Kingdra	Porygon2	teammate
+Porygon2	Tapu Fini	teammate
+Porygon2	Reshiram	teammate
+Dawn Wings Necrozma	Porygon2	teammate
+Araquanid	Porygon2	teammate
+Mienshao	Porygon2	teammate
+Porygon2	Tapu Koko	teammate
+Alolan Marowak	Porygon2	teammate
+Gyarados	Porygon2	teammate
+Kangaskhan	Porygon2	teammate
+Drifblim	Porygon2	teammate
+Dragonite	Porygon2	teammate
+Porygon2	Registeel	teammate
+Porygon2	Vikavolt	teammate
+Black Kyurem	Porygon2	teammate
+Accelgor	Porygon2	teammate
+Palossand	Porygon2	teammate
+Porygon2	Zoroark	teammate
+Clawitzer	Porygon2	teammate
+Dhelmise	Porygon2	teammate
+Braviary	Porygon2	teammate
+Porygon2	Virizion	teammate
+Copperajah	Porygon2	teammate
+Porygon2	Slurpuff	teammate
+Alakazam	Porygon2	teammate
+Porygon2	Sharpedo	teammate
+Gourgeist Small Size	Porygon2	teammate
+Golisopod	Porygon2	teammate
+Lycanroc Dusk Form	Porygon2	teammate
+Perrserker	Porygon2	teammate
+Porygon2	Tangrowth	teammate
+Noivern	Porygon2	teammate
+Drapion	Porygon2	teammate
+Marowak	Porygon2	teammate
+Dragalge	Porygon2	teammate
+Golurk	Porygon2	teammate
+Porygon2	Scolipede	teammate
+Dunsparce	Porygon2	teammate
+Kingdra	Shedinja	teammate
+Raichu	Shedinja	teammate
+Inteleon	Shedinja	teammate
+Dusclops	Glastrier	teammate
+Dusclops	Escavalier	teammate
+Dusclops	Kingler	teammate
+Dusclops	Kangaskhan	teammate
+Dusclops	Greedent	teammate
+Dusclops	Lurantis	teammate
+Dusclops	Wishiwashi Solo Form	teammate
+Conkeldurr	Dusclops	teammate
+Black Kyurem	Dusclops	teammate
+Dusclops	Mow Rotom	teammate
+Drampa	Dusclops	teammate
+Dusclops	Lilligant	teammate
+Dusclops	Haxorus	teammate
+Dusclops	Runerigus	teammate
+Copperajah	Dusclops	teammate
+Arctozolt	Dusclops	teammate
+Dusclops	Lycanroc Dusk Form	teammate
+Dusclops	Roserade	teammate
+Dusclops	Stoutland	teammate
+Dusclops	Vileplume	teammate
+Dusclops	Flygon	teammate
+Dusclops	Exploud	teammate
+Dusclops	Wigglytuff	teammate
+Arctovish	Dusclops	teammate
+Dusclops	Maractus	teammate
+Dusclops	Tentacruel	teammate
+Dragalge	Dusclops	teammate
+Alolan Sandslash	Dusclops	teammate
+Dusclops	Poliwrath	teammate
+Dusclops	Fan Rotom	teammate
+Dusclops	Steelix	teammate
+Corsola	Dusclops	teammate
+Dialga	Urshifu Single Strike Style	teammate
+Tapu Lele	Urshifu Single Strike Style	teammate
+Celesteela	Urshifu Single Strike Style	teammate
+Talonflame	Urshifu Single Strike Style	teammate
+Azumarill	Urshifu Single Strike Style	teammate
+Kingler	Urshifu Single Strike Style	teammate
+Nihilego	Urshifu Single Strike Style	teammate
+Krookodile	Urshifu Single Strike Style	teammate
+Latias	Urshifu Single Strike Style	teammate
+Articuno	Urshifu Single Strike Style	teammate
+Heatran	Urshifu Single Strike Style	teammate
+Rhyperior	Urshifu Single Strike Style	teammate
+Accelgor	Urshifu Single Strike Style	teammate
+Garbodor	Urshifu Single Strike Style	teammate
+Palossand	Urshifu Single Strike Style	teammate
+Clawitzer	Urshifu Single Strike Style	teammate
+Beartic	Urshifu Single Strike Style	teammate
+Hippowdon	Urshifu Single Strike Style	teammate
+Ninetales	Urshifu Single Strike Style	teammate
+Emolga	Urshifu Single Strike Style	teammate
+Toxtricity Low Key Form	Urshifu Single Strike Style	teammate
+Magnezone	Urshifu Single Strike Style	teammate
+Gourgeist Small Size	Urshifu Single Strike Style	teammate
+Galarian Slowbro	Urshifu Single Strike Style	teammate
+Frost Rotom	Urshifu Single Strike Style	teammate
+Aromatisse	Urshifu Single Strike Style	teammate
+Flygon	Urshifu Single Strike Style	teammate
+Drapion	Urshifu Single Strike Style	teammate
+Exploud	Urshifu Single Strike Style	teammate
+Gardevoir	Urshifu Single Strike Style	teammate
+Seaking	Urshifu Single Strike Style	teammate
+Galvantula	Urshifu Single Strike Style	teammate
+Steelix	Urshifu Single Strike Style	teammate
+Glastrier	Raichu	teammate
+Escavalier	Raichu	teammate
+Krookodile	Raichu	teammate
+Mudsdale	Raichu	teammate
+Articuno	Raichu	teammate
+Leafeon	Raichu	teammate
+Abomasnow	Raichu	teammate
+Garbodor	Raichu	teammate
+Gengar	Raichu	teammate
+Raichu	Sigilyph	teammate
+Poliwrath	Raichu	teammate
+Celesteela	Tapu Lele	teammate
+Pheromosa	Tapu Lele	teammate
+Hitmontop	Tapu Lele	teammate
+Obstagoon	Tapu Lele	teammate
+Scrafty	Tapu Lele	teammate
+Duraludon	Tapu Lele	teammate
+Ferrothorn	Zapdos	teammate
+Entei	Ferrothorn	teammate
+Ferrothorn	Gothitelle	teammate
+Dawn Wings Necrozma	Ferrothorn	teammate
+Ferrothorn	Lugia	teammate
+Ferrothorn	Hydreigon	teammate
+Ferrothorn	Weavile	teammate
+Darmanitan Galarian Standard Mode	Ferrothorn	teammate
+Alolan Persian	Ferrothorn	teammate
+Ferrothorn	Salamence	teammate
+Ferrothorn	Ludicolo	teammate
+Ferrothorn	Slowbro	teammate
+Ferrothorn	Giratina Origin Forme	teammate
+Ferrothorn	Moltres	teammate
+Ferrothorn	Krookodile	teammate
+Drifblim	Ferrothorn	teammate
+Cherrim	Ferrothorn	teammate
+Darmanitan Standard Mode	Ferrothorn	teammate
+Ferrothorn	Wishiwashi Solo Form	teammate
+Ferrothorn	Terrakion	teammate
+Ferrothorn	Garbodor	teammate
+Ferrothorn	Tyrantrum	teammate
+Ferrothorn	Qwilfish	teammate
+Ferrothorn	Reuniclus	teammate
+Blastoise	Ditto	teammate
+Ditto	White Kyurem	teammate
+Ditto	Gothitelle	teammate
+Ditto	Lugia	teammate
+Ditto	Talonflame	teammate
+Ditto	Toxapex	teammate
+Ditto	Kingler	teammate
+Ditto	Tyrantrum	teammate
+Ditto	Drapion	teammate
+Ditto	Lickilicky	teammate
+Mamoswine	Torkoal	teammate
+Dawn Wings Necrozma	Torkoal	teammate
+Torkoal	Zekrom	teammate
+Stakataka	Torkoal	teammate
+Oranguru	Torkoal	teammate
+Krookodile	Torkoal	teammate
+Torkoal	Trevenant	teammate
+Registeel	Torkoal	teammate
+Leafeon	Torkoal	teammate
+Mr. Rime	Torkoal	teammate
+Silvally	Torkoal	teammate
+Lilligant	Torkoal	teammate
+Runerigus	Torkoal	teammate
+Braviary	Torkoal	teammate
+Copperajah	Torkoal	teammate
+Slurpuff	Torkoal	teammate
+Alakazam	Torkoal	teammate
+Thievul	Torkoal	teammate
+Cofagrigus	Torkoal	teammate
+Sharpedo	Torkoal	teammate
+Ninetales	Torkoal	teammate
+Malamar	Torkoal	teammate
+Shiinotic	Torkoal	teammate
+Lycanroc Dusk Form	Torkoal	teammate
+Galarian Slowbro	Torkoal	teammate
+Tangrowth	Torkoal	teammate
+Morpeko Full Belly Mode	Torkoal	teammate
+Aromatisse	Torkoal	teammate
+Torkoal	Vileplume	teammate
+Cursola	Torkoal	teammate
+Flygon	Torkoal	teammate
+Torkoal	Wigglytuff	teammate
+Gardevoir	Torkoal	teammate
+Galarian Corsola	Torkoal	teammate
+Arctovish	Torkoal	teammate
+Maractus	Torkoal	teammate
+Marowak	Torkoal	teammate
+Dragalge	Torkoal	teammate
+Flareon	Torkoal	teammate
+Lickilicky	Torkoal	teammate
+Corsola	Torkoal	teammate
+Shedinja	Zapdos	teammate
+Solgaleo	Zapdos	teammate
+Seismitoad	Zapdos	teammate
+Araquanid	Zapdos	teammate
+Mienshao	Zapdos	teammate
+Dusk Mane Necrozma	Zapdos	teammate
+Weavile	Zapdos	teammate
+Darmanitan Galarian Standard Mode	Zapdos	teammate
+Alolan Persian	Zapdos	teammate
+Inteleon	Zapdos	teammate
+Ludicolo	Zapdos	teammate
+Centiskorch	Zapdos	teammate
+Lucario	Zapdos	teammate
+Froslass	Zapdos	teammate
+Mandibuzz	Zapdos	teammate
+Alolan Exeggutor	Zapdos	teammate
+Heatran	Zapdos	teammate
+Rhyperior	Zapdos	teammate
+Diggersby	Zapdos	teammate
+Giratina Altered Forme	Zapdos	teammate
+Tauros	Zapdos	teammate
+Dugtrio	Zapdos	teammate
+Dialga	Sableye	teammate
+Dialga	Urshifu Rapid Strike Style	teammate
+Dialga	Seismitoad	teammate
+Dialga	Togekiss	teammate
+Dialga	Indeedee Male	teammate
+Chansey	Dialga	teammate
+Dialga	Tapu Koko	teammate
+Dialga	Liepard	teammate
+Dialga	Dracovish	teammate
+Dialga	Shuckle	teammate
+Alolan Persian	Dialga	teammate
+Dialga	Talonflame	teammate
+Dialga	Wash Rotom	teammate
+Azumarill	Dialga	teammate
+Dialga	Galarian Articuno	teammate
+Dialga	Giratina Origin Forme	teammate
+Dialga	Raikou	teammate
+Dialga	Oranguru	teammate
+Dialga	Froslass	teammate
+Dialga	Latias	teammate
+Alolan Exeggutor	Dialga	teammate
+Cradily	Dialga	teammate
+Dialga	Scrafty	teammate
+Cresselia	Dialga	teammate
+Dialga	Tauros	teammate
+Dialga	Garbodor	teammate
+Dialga	Luxray	teammate
+Kingdra	Weezing	teammate
+Dhelmise	Kingdra	teammate
+Flapple	Kingdra	teammate
+Kingdra	Perrserker	teammate
+Kingdra	Orbeetle	teammate
+Kingdra	Noctowl	teammate
+Regigigas	Weezing	teammate
+Regidrago	Weezing	teammate
+Volcarona	Weezing	teammate
+Pikachu	Weezing	teammate
+Appletun	Weezing	teammate
+Accelgor	Weezing	teammate
+Palossand	Weezing	teammate
+Ribombee	Weezing	teammate
+Mime Jr.	Weezing	teammate
+Regigigas	Volcarona	teammate
+Galarian Weezing	Regigigas	teammate
+Accelgor	Regigigas	teammate
+Palossand	Regigigas	teammate
+Hawlucha	Regigigas	teammate
+Entei	Gothitelle	teammate
+Gothitelle	Shiftry	teammate
+Gothitelle	Grapploct	teammate
+Beartic	Gothitelle	teammate
+Gothitelle	Sandaconda	teammate
+Gothitelle	Jolteon	teammate
+Cursola	Gothitelle	teammate
+Dawn Wings Necrozma	Tapu Fini	teammate
+Coalossal	Urshifu Rapid Strike Style	teammate
+Coalossal	Rayquaza	teammate
+Blacephalon	Coalossal	teammate
+Clawitzer	Coalossal	teammate
+Coalossal	Qwilfish	teammate
+Coalossal	Golduck	teammate
+Coalossal	Magneton	teammate
+Mimikyu	Solgaleo	teammate
+Eternatus	Solgaleo	teammate
+Solgaleo	Spectrier	teammate
+Arcanine	Solgaleo	teammate
+Alcremie	Solgaleo	teammate
+Solgaleo	Tsareena	teammate
+Hitmontop	Solgaleo	teammate
+Solgaleo	Volcarona	teammate
+Salamence	Solgaleo	teammate
+Slowking	Solgaleo	teammate
+Alolan Ninetales	Solgaleo	teammate
+Solgaleo	Toxapex	teammate
+Raikou	Solgaleo	teammate
+Gyarados	Solgaleo	teammate
+Solgaleo	Tapu Bulu	teammate
+Drifblim	Solgaleo	teammate
+Lucario	Solgaleo	teammate
+Altaria	Solgaleo	teammate
+Riolu	Solgaleo	teammate
+Lurantis	Solgaleo	teammate
+Articuno	Solgaleo	teammate
+Abomasnow	Solgaleo	teammate
+Corviknight	Solgaleo	teammate
+Conkeldurr	Solgaleo	teammate
+Solgaleo	Terrakion	teammate
+Dugtrio	Solgaleo	teammate
+Manectric	Solgaleo	teammate
+Solgaleo	Tyrantrum	teammate
+Blaziken	Solgaleo	teammate
+Mimikyu	Seismitoad	teammate
+Pincurchin	Seismitoad	teammate
+Registeel	Seismitoad	teammate
+Hawlucha	Seismitoad	teammate
+Entei	Shiftry	teammate
+Entei	Riolu	teammate
+Bisharp	Entei	teammate
+Entei	Kommo-o	teammate
+Dusk Mane Necrozma	Mimikyu	teammate
+Alcremie	Mimikyu	teammate
+Aegislash Shield Forme	Mimikyu	teammate
+Mimikyu	Porygon-Z	teammate
+Lurantis	Mimikyu	teammate
+Cradily	Mimikyu	teammate
+Luxray	Mimikyu	teammate
+Dhelmise	Mimikyu	teammate
+Mimikyu	Turtonator	teammate
+Mimikyu	Ninetales	teammate
+Mimikyu	Sirfetch'd	teammate
+Drapion	Mimikyu	teammate
+Flareon	Mimikyu	teammate
+Bewear	Mimikyu	teammate
+Lickilicky	Mimikyu	teammate
+Mime Jr.	Mimikyu	teammate
+Heat Rotom	Meowstic Male	teammate
+Hatterene	Meowstic Male	teammate
+Meowstic Male	Swoobat	teammate
+Meowstic Male	Ninetales	teammate
+Emolga	Meowstic Male	teammate
+Meowstic Male	Shiinotic	teammate
+Flygon	Meowstic Male	teammate
+Lycanroc Midnight Form	Meowstic Male	teammate
+Arcanine	Eternatus	teammate
+Alcremie	Arcanine	teammate
+Arcanine	Slowbro	teammate
+Arcanine	Togedemaru	teammate
+Arcanine	Excadrill	teammate
+Arcanine	Grapploct	teammate
+Arcanine	Togetic	teammate
+Arcanine	Flapple	teammate
+Arcanine	Sylveon	teammate
+Arcanine	Emolga	teammate
+Arcanine	Golisopod	teammate
+Arcanine	Bouffalant	teammate
+Arcanine	Gourgeist Super Size	teammate
+Arcanine	Heracross	teammate
+Arcanine	Noivern	teammate
+Arcanine	Jolteon	teammate
+Arcanine	Wigglytuff	teammate
+Arcanine	Druddigon	teammate
+Arcanine	Poliwrath	teammate
+Arcanine	Golurk	teammate
+Arcanine	Hitmonlee	teammate
+Arcanine	Scolipede	teammate
+Arcanine	Sandslash	teammate
+Arcanine	Steelix	teammate
+Arcanine	Gourgeist Large Size	teammate
+Alcremie	Eternatus	teammate
+Alcremie	Porygon-Z	teammate
+Comfey	Regigigas	teammate
+Comfey	Zygarde Complete Forme	teammate
+Comfey	Zamazenta Crowned Shield	teammate
+Comfey	Zekrom	teammate
+Comfey	Talonflame	teammate
+Comfey	Giratina Altered Forme	teammate
+Comfey	Tyrantrum	teammate
+Cloyster	Comfey	teammate
+Blaziken	Comfey	teammate
+Comfey	Lilligant	teammate
+Comfey	Eiscue Ice Face	teammate
+Comfey	Gallade	teammate
+Bouffalant	Comfey	teammate
+Comfey	Sandaconda	teammate
+Comfey	Miltank	teammate
+Comfey	Dedenne	teammate
+Comfey	Dusknoir	teammate
+Comfey	Marowak	teammate
+Bewear	Comfey	teammate
+Comfey	Golurk	teammate
+Comfey	Hitmonlee	teammate
+Cinderace	Indeedee Male	teammate
+Hatterene	Indeedee Male	teammate
+Indeedee Male	Slowking	teammate
+Indeedee Male	Moltres	teammate
+Indeedee Male	Terrakion	teammate
+Crobat	Indeedee Male	teammate
+Grapploct	Indeedee Male	teammate
+Indeedee Male	Qwilfish	teammate
+Indeedee Male	Sylveon	teammate
+Indeedee Male	Slurpuff	teammate
+Alakazam	Indeedee Male	teammate
+Indeedee Male	Thievul	teammate
+Indeedee Male	Starmie	teammate
+Indeedee Male	Turtonator	teammate
+Indeedee Male	Toxtricity Low Key Form	teammate
+Frost Rotom	Indeedee Male	teammate
+Indeedee Male	Tangela	teammate
+Indeedee Male	Miltank	teammate
+Crawdaunt	Indeedee Male	teammate
+Exploud	Indeedee Male	teammate
+Indeedee Male	Wigglytuff	teammate
+Indeedee Male	Vanilluxe	teammate
+Indeedee Male	Sigilyph	teammate
+Decidueye	Indeedee Male	teammate
+Indeedee Male	Passimian	teammate
+Alolan Sandslash	Indeedee Male	teammate
+Hitmonlee	Indeedee Male	teammate
+Dunsparce	Indeedee Male	teammate
+Indeedee Male	Urshifu Rapid Strike Style	teammate
+Rayquaza	Urshifu Rapid Strike Style	teammate
+Urshifu Rapid Strike Style	Zamazenta Crowned Shield	teammate
+Galarian Articuno	Urshifu Rapid Strike Style	teammate
+Nihilego	Urshifu Rapid Strike Style	teammate
+Grapploct	Urshifu Rapid Strike Style	teammate
+Haxorus	Urshifu Rapid Strike Style	teammate
+Braviary	Urshifu Rapid Strike Style	teammate
+Alolan Raichu	Urshifu Rapid Strike Style	teammate
+Slurpuff	Urshifu Rapid Strike Style	teammate
+Ninetales	Urshifu Rapid Strike Style	teammate
+Magnezone	Urshifu Rapid Strike Style	teammate
+Gallade	Urshifu Rapid Strike Style	teammate
+Galarian Slowbro	Urshifu Rapid Strike Style	teammate
+Magneton	Urshifu Rapid Strike Style	teammate
+Exploud	Urshifu Rapid Strike Style	teammate
+Gardevoir	Urshifu Rapid Strike Style	teammate
+Seaking	Urshifu Rapid Strike Style	teammate
+Dragalge	Urshifu Rapid Strike Style	teammate
+Scolipede	Urshifu Rapid Strike Style	teammate
+Electivire	Rayquaza	teammate
+Rayquaza	Xurkitree	teammate
+Gengar	Rayquaza	teammate
+Coalossal	Dragapult	teammate
+Dragapult	Scizor	teammate
+Dragapult	Kabutops	teammate
+Dragapult	Swoobat	teammate
+Conkeldurr	Dragapult	teammate
+Cobalion	Dragapult	teammate
+Dragapult	Virizion	teammate
+Alolan Raichu	Dragapult	teammate
+Copperajah	Dragapult	teammate
+Dragapult	Sylveon	teammate
+Dragapult	Hippowdon	teammate
+Dragapult	Torracat	teammate
+Dragapult	Toxtricity Low Key Form	teammate
+Dragapult	Vaporeon	teammate
+Dragapult	Magnezone	teammate
+Dragapult	Gourgeist Small Size	teammate
+Dragapult	Golisopod	teammate
+Dragapult	Lycanroc Dusk Form	teammate
+Dragapult	Tangela	teammate
+Dragapult	Miltank	teammate
+Dragapult	Gourgeist Super Size	teammate
+Dragapult	Magneton	teammate
+Dedenne	Dragapult	teammate
+Dragapult	Reuniclus	teammate
+Dragapult	Exploud	teammate
+Dragapult	Lycanroc Midday Form	teammate
+Beheeyem	Dragapult	teammate
+Dragapult	Dunsparce	teammate
+Dragapult	Mime Jr.	teammate
+Dragapult	Gourgeist Large Size	teammate
+Lunala	Umbreon	teammate
+Celesteela	Lunala	teammate
+Araquanid	Lunala	teammate
+Lunala	Stakataka	teammate
+Lunala	Sneasel	teammate
+Lunala	Porygon-Z	teammate
+Lunala	Obstagoon	teammate
+Blacephalon	Lunala	teammate
+Lunala	Wishiwashi Solo Form	teammate
+Lunala	Machamp	teammate
+Lunala	Silvally	teammate
+Lunala	Mime Galarian Mr. Mime	teammate
+Ho-oh	Umbreon	teammate
+Celesteela	Ho-oh	teammate
+Ho-oh	Liepard	teammate
+Ho-oh	Shuckle	teammate
+Ho-oh	Sneasel	teammate
+Ho-oh	Wash Rotom	teammate
+Azumarill	Ho-oh	teammate
+Ho-oh	Krookodile	teammate
+Ho-oh	Obstagoon	teammate
+Ho-oh	Scrafty	teammate
+Aerodactyl	Ho-oh	teammate
+Ho-oh	Swoobat	teammate
+Cinderace	Klinklang	teammate
+Cinderace	Togedemaru	teammate
+Cinderace	Mandibuzz	teammate
+Cinderace	Dragonite	teammate
+Cinderace	Corviknight	teammate
+Braviary	Cinderace	teammate
+Alolan Raichu	Cinderace	teammate
+Beartic	Cinderace	teammate
+Alakazam	Cinderace	teammate
+Cinderace	Thievul	teammate
+Arctozolt	Cinderace	teammate
+Cinderace	Starmie	teammate
+Cinderace	Sirfetch'd	teammate
+Cinderace	Emolga	teammate
+Cinderace	Toxtricity Low Key Form	teammate
+Cinderace	Vaporeon	teammate
+Cinderace	Gallade	teammate
+Cinderace	Lopunny	teammate
+Cinderace	Gourgeist Small Size	teammate
+Cinderace	Malamar	teammate
+Cinderace	Golisopod	teammate
+Cinderace	Golduck	teammate
+Cinderace	Shiinotic	teammate
+Cinderace	Lycanroc Dusk Form	teammate
+Cinderace	Roserade	teammate
+Cinderace	Polteageist	teammate
+Cinderace	Morpeko Full Belly Mode	teammate
+Cinderace	Eldegoss	teammate
+Cinderace	Crawdaunt	teammate
+Cinderace	Crustle	teammate
+Cinderace	Dusknoir	teammate
+Cinderace	Drapion	teammate
+Cinderace	Exploud	teammate
+Cinderace	Gardevoir	teammate
+Cinderace	Vanilluxe	teammate
+Cinderace	Sigilyph	teammate
+Cinderace	Decidueye	teammate
+Cinderace	Galvantula	teammate
+Arctovish	Cinderace	teammate
+Cinderace	Maractus	teammate
+Cinderace	Orbeetle	teammate
+Cinderace	Ninjask	teammate
+Beheeyem	Cinderace	teammate
+Cinderace	Marowak	teammate
+Cinderace	Dragalge	teammate
+Cinderace	Scyther	teammate
+Alolan Sandslash	Cinderace	teammate
+Cinderace	Lycanroc Midnight Form	teammate
+Cinderace	Scolipede	teammate
+Hatterene	Slowking	teammate
+Hatterene	Moltres	teammate
+Greedent	Hatterene	teammate
+Hatterene	Swoobat	teammate
+Hatterene	Zoroark	teammate
+Clawitzer	Hatterene	teammate
+Hatterene	Haxorus	teammate
+Dhelmise	Hatterene	teammate
+Hatterene	Runerigus	teammate
+Braviary	Hatterene	teammate
+Hatterene	Virizion	teammate
+Copperajah	Hatterene	teammate
+Hatterene	Slurpuff	teammate
+Alakazam	Hatterene	teammate
+Hatterene	Mr. Mime	teammate
+Gallade	Hatterene	teammate
+Hatterene	Malamar	teammate
+Hatterene	Shiinotic	teammate
+Hatterene	Perrserker	teammate
+Hatterene	Tangrowth	teammate
+Eldegoss	Hatterene	teammate
+Crawdaunt	Hatterene	teammate
+Hatterene	Vileplume	teammate
+Cursola	Hatterene	teammate
+Dusknoir	Hatterene	teammate
+Dragalge	Hatterene	teammate
+Bewear	Hatterene	teammate
+Golurk	Hatterene	teammate
+Hatterene	Lickilicky	teammate
+Blacephalon	Zekrom	teammate
+Luxray	Zekrom	teammate
+Blaziken	Zekrom	teammate
+Zamazenta Crowned Shield	Zygarde Complete Forme	teammate
+Galarian Zapdos	Zygarde Complete Forme	teammate
+Ludicolo	Zygarde Complete Forme	teammate
+Butterfree	Zygarde Complete Forme	teammate
+Bisharp	Zygarde Complete Forme	teammate
+Glaceon	Zygarde Complete Forme	teammate
+Hitmontop	Zamazenta Crowned Shield	teammate
+Galarian Zapdos	Zamazenta Crowned Shield	teammate
+Ludicolo	Zamazenta Crowned Shield	teammate
+Centiskorch	Zamazenta Crowned Shield	teammate
+Darmanitan Standard Mode	Zamazenta Crowned Shield	teammate
+Appletun	Zamazenta Crowned Shield	teammate
+Mr. Rime	Zamazenta Crowned Shield	teammate
+Glaceon	Zamazenta Crowned Shield	teammate
+Tapu Fini	Zygarde Complete Forme	teammate
+Metagross	Tapu Fini	teammate
+Tapu Fini	Zamazenta Crowned Shield	teammate
+Galarian Zapdos	Tapu Fini	teammate
+Drifblim	Tapu Fini	teammate
+Cherrim	Tapu Fini	teammate
+Aerodactyl	Tapu Fini	teammate
+Rhyperior	Tapu Fini	teammate
+Drampa	Tapu Fini	teammate
+Metagross	Zygarde Complete Forme	teammate
+Metagross	Zamazenta Crowned Shield	teammate
+Galarian Zapdos	Metagross	teammate
+Metagross	Pelipper	teammate
+Metagross	Swoobat	teammate
+Black Kyurem	Metagross	teammate
+Galarian Zapdos	Xurkitree	teammate
+Galarian Zapdos	Luxray	teammate
+Dugtrio	Galarian Zapdos	teammate
+Galarian Zapdos	Manectric	teammate
+Barraskewda	Pelipper	teammate
+Flapple	Pelipper	teammate
+Pelipper	Poliwrath	teammate
+Celesteela	Sneasel	teammate
+Eiscue Ice Face	Sneasel	teammate
+Celesteela	Umbreon	teammate
+Sneasel	Umbreon	teammate
+Garchomp	Umbreon	teammate
+Tapu Bulu	Umbreon	teammate
+Leafeon	Umbreon	teammate
+Swoobat	Umbreon	teammate
+Glaceon	Umbreon	teammate
+Manectric	Umbreon	teammate
+Espeon	Umbreon	teammate
+Umbreon	Vaporeon	teammate
+Flygon	Umbreon	teammate
+Flareon	Umbreon	teammate
+Araquanid	Mienshao	teammate
+Giratina Altered Forme	Mienshao	teammate
+Blissey	Mienshao	teammate
+Maractus	Mienshao	teammate
+Chansey	Eternatus	teammate
+Eternatus	Galarian Articuno	teammate
+Eternatus	Slowbro	teammate
+Eternatus	Toxapex	teammate
+Eternatus	Togedemaru	teammate
+Eternatus	Tapu Bulu	teammate
+Eternatus	Mudsdale	teammate
+Eternatus	Klefki	teammate
+Eternatus	Heatran	teammate
+Diggersby	Eternatus	teammate
+Boltund	Eternatus	teammate
+Accelgor	Eternatus	teammate
+Eternatus	Mow Rotom	teammate
+Eternatus	Manectric	teammate
+Eternatus	Palossand	teammate
+Arcanine	White Kyurem	teammate
+Hydreigon	White Kyurem	teammate
+Scizor	White Kyurem	teammate
+Alolan Ninetales	White Kyurem	teammate
+Slowbro	White Kyurem	teammate
+Toxapex	White Kyurem	teammate
+Pincurchin	White Kyurem	teammate
+Exeggutor	White Kyurem	teammate
+Latias	White Kyurem	teammate
+Leafeon	White Kyurem	teammate
+Vikavolt	White Kyurem	teammate
+Cinccino	White Kyurem	teammate
+Araquanid	Snorlax	teammate
+Araquanid	Oranguru	teammate
+Araquanid	Drednaw	teammate
+Araquanid	Black Kyurem	teammate
+Araquanid	Glaceon	teammate
+Chansey	Shuckle	teammate
+Liepard	Shuckle	teammate
+Azumarill	Shuckle	teammate
+Runerigus	Shuckle	teammate
+Mr. Mime	Shuckle	teammate
+Ninjask	Shuckle	teammate
+Mime Jr.	Shuckle	teammate
+Chansey	Liepard	teammate
+Azumarill	Liepard	teammate
+Liepard	Pincurchin	teammate
+Clefable	Liepard	teammate
+Liepard	Runerigus	teammate
+Liepard	Mr. Mime	teammate
+Azumarill	Chansey	teammate
+Chansey	Runerigus	teammate
+Chansey	Cofagrigus	teammate
+Chansey	Mr. Mime	teammate
+Chansey	Polteageist	teammate
+Chansey	Mime Jr.	teammate
+Azumarill	Slurpuff	teammate
+Azumarill	Lopunny	teammate
+Azumarill	Sandaconda	teammate
+Azumarill	Jolteon	teammate
+Azumarill	Dedenne	teammate
+Azumarill	Reuniclus	teammate
+Azumarill	Wigglytuff	teammate
+Azumarill	Passimian	teammate
+Azumarill	Flareon	teammate
+Azumarill	Scolipede	teammate
+Hydreigon	Slowbro	teammate
+Slowbro	Togedemaru	teammate
+Slowbro	Tangela	teammate
+Heracross	Slowbro	teammate
+Reshiram	Weavile	teammate
+Pikachu	Reshiram	teammate
+Gyarados	Reshiram	teammate
+Heliolisk	Reshiram	teammate
+Cherrim	Reshiram	teammate
+Reshiram	Vikavolt	teammate
+Glastrier	Milotic	teammate
+Drifblim	Milotic	teammate
+Eiscue Ice Face	Milotic	teammate
+Cofagrigus	Milotic	teammate
+Milotic	Turtonator	teammate
+Milotic	Sirfetch'd	teammate
+Charjabug	Milotic	teammate
+Lopunny	Milotic	teammate
+Milotic	Polteageist	teammate
+Milotic	Morpeko Full Belly Mode	teammate
+Magneton	Milotic	teammate
+Milotic	Noivern	teammate
+Decidueye	Milotic	teammate
+Galvantula	Milotic	teammate
+Milotic	Orbeetle	teammate
+Milotic	Ninjask	teammate
+Hitmonlee	Milotic	teammate
+Milotic	Scolipede	teammate
+Dracovish	Greedent	teammate
+Barraskewda	Regidrago	teammate
+Barraskewda	Politoed	teammate
+Barraskewda	Mr. Rime	teammate
+Barraskewda	Crobat	teammate
+Barraskewda	Golduck	teammate
+Bronzong	Zekrom	teammate
+Bronzong	Giratina Origin Forme	teammate
+Bronzong	Gengar	teammate
+Bronzong	Cursola	teammate
+Heat Rotom	Politoed	teammate
+Heat Rotom	Primarina	teammate
+Heat Rotom	Sceptile	teammate
+Drampa	Heat Rotom	teammate
+Heat Rotom	Hippowdon	teammate
+Heat Rotom	Sirfetch'd	teammate
+Gallade	Heat Rotom	teammate
+Bewear	Heat Rotom	teammate
+Talonflame	Tsareena	teammate
+Durant	Tsareena	teammate
+Salazzle	Tsareena	teammate
+Noivern	Tsareena	teammate
+Dedenne	Tsareena	teammate
+Sigilyph	Tsareena	teammate
+Orbeetle	Tsareena	teammate
+Glastrier	Klefki	teammate
+Mewtwo	Wash Rotom	teammate
+Leafeon	Wash Rotom	teammate
+Kommo-o	Wash Rotom	teammate
+Lycanroc Dusk Form	Wash Rotom	teammate
+Bouffalant	Wash Rotom	teammate
+Gourgeist Super Size	Wash Rotom	teammate
+Dracozolt	Klinklang	teammate
+Chandelure	Dracozolt	teammate
+Dracozolt	Gigalith	teammate
+Dracozolt	Salazzle	teammate
+Dracozolt	Orbeetle	teammate
+Hydreigon	Klinklang	teammate
+Hydreigon	Togedemaru	teammate
+Aerodactyl	Hydreigon	teammate
+Crustle	Hydreigon	teammate
+Decidueye	Hydreigon	teammate
+Hitmontop	Klinklang	teammate
+Hitmontop	Raikou	teammate
+Hitmontop	Leafeon	teammate
+Gengar	Hitmontop	teammate
+Hitmontop	Ribombee	teammate
+Golduck	Hitmontop	teammate
+Claydol	Hitmontop	teammate
+Dedenne	Hitmontop	teammate
+Crustle	Hitmontop	teammate
+Arctovish	Hitmontop	teammate
+Hitmontop	Noctowl	teammate
+Salamence	Slowking	teammate
+Moltres	Slowking	teammate
+Mudsdale	Slowking	teammate
+Slowking	Tangrowth	teammate
+Lickilicky	Slowking	teammate
+Mudsdale	Salamence	teammate
+Cinccino	Mudsdale	teammate
+Cloyster	Mudsdale	teammate
+Morpeko Full Belly Mode	Mudsdale	teammate
+Hatterene	Lugia	teammate
+Lugia	Nihilego	teammate
+Lugia	Togedemaru	teammate
+Lugia	Swoobat	teammate
+Cloyster	Lugia	teammate
+Celesteela	Pikachu	teammate
+Celesteela	Exeggutor	teammate
+Altaria	Celesteela	teammate
+Sableye	Sneasel	teammate
+Centiskorch	Sableye	teammate
+Jellicent	Sableye	teammate
+Latias	Sableye	teammate
+Obstagoon	Sableye	teammate
+Sableye	Trevenant	teammate
+Sableye	Silvally	teammate
+Crobat	Sableye	teammate
+Crawdaunt	Sableye	teammate
+Kingler	Mewtwo	teammate
+Mewtwo	Scrafty	teammate
+Kabutops	Mewtwo	teammate
+Porygon-Z	Swampert	teammate
+Porygon-Z	Virizion	teammate
+Porygon-Z	Starmie	teammate
+Charjabug	Porygon-Z	teammate
+Gourgeist Small Size	Porygon-Z	teammate
+Heracross	Porygon-Z	teammate
+Passimian	Porygon-Z	teammate
+Flareon	Porygon-Z	teammate
+Excadrill	Tyranitar	teammate
+Excadrill	Gigalith	teammate
+Excadrill	Togetic	teammate
+Excadrill	Flapple	teammate
+Excadrill	Hippowdon	teammate
+Excadrill	Turtonator	teammate
+Excadrill	Sharpedo	teammate
+Excadrill	Sirfetch'd	teammate
+Emolga	Excadrill	teammate
+Excadrill	Lopunny	teammate
+Bouffalant	Excadrill	teammate
+Excadrill	Gourgeist Super Size	teammate
+Excadrill	Stoutland	teammate
+Excadrill	Noivern	teammate
+Dedenne	Excadrill	teammate
+Excadrill	Maractus	teammate
+Excadrill	Lycanroc Midday Form	teammate
+Excadrill	Scyther	teammate
+Excadrill	Fan Rotom	teammate
+Excadrill	Hitmonlee	teammate
+Dracovish	Tyranitar	teammate
+Dracovish	Toxicroak	teammate
+Aegislash Shield Forme	Dracovish	teammate
+Dracovish	Lucario	teammate
+Cradily	Dracovish	teammate
+Dracovish	Duraludon	teammate
+Dracovish	Luxray	teammate
+Dracovish	Gengar	teammate
+Dracovish	Flapple	teammate
+Dracovish	Eiscue Ice Face	teammate
+Arctozolt	Dracovish	teammate
+Dracovish	Toxtricity Low Key Form	teammate
+Dracovish	Lopunny	teammate
+Bouffalant	Dracovish	teammate
+Dracovish	Polteageist	teammate
+Dracovish	Jolteon	teammate
+Dracovish	Falinks	teammate
+Dracovish	Vanilluxe	teammate
+Dracovish	Seaking	teammate
+Dracovish	Sigilyph	teammate
+Dracovish	Tentacruel	teammate
+Pheromosa	Pikachu	teammate
+Chandelure	Pheromosa	teammate
+Dracozolt	Pheromosa	teammate
+Gigalith	Pheromosa	teammate
+Giratina Altered Forme	Pheromosa	teammate
+Alolan Ninetales	Suicune	teammate
+Latias	Suicune	teammate
+Alolan Marowak	Snorlax	teammate
+Oranguru	Snorlax	teammate
+Snorlax	Zoroark	teammate
+Ribombee	Snorlax	teammate
+Golduck	Snorlax	teammate
+Snorlax	Unfezant	teammate
+Snorlax	Tangrowth	teammate
+Aromatisse	Snorlax	teammate
+Crustle	Snorlax	teammate
+Arctovish	Snorlax	teammate
+Fan Rotom	Snorlax	teammate
+Snorlax	Steelix	teammate
+Galvantula	Togedemaru	teammate
+Giratina Origin Forme	Politoed	teammate
+Kangaskhan	Politoed	teammate
+Dhelmise	Politoed	teammate
+Alolan Raichu	Politoed	teammate
+Beartic	Politoed	teammate
+Perrserker	Politoed	teammate
+Miltank	Politoed	teammate
+Jolteon	Politoed	teammate
+Cursola	Politoed	teammate
+Politoed	Seaking	teammate
+Politoed	Poliwrath	teammate
+Hitmonlee	Politoed	teammate
+Noctowl	Politoed	teammate
+Giratina Origin Forme	Lapras	teammate
+Lapras	Toxapex	teammate
+Kangaskhan	Lapras	teammate
+Krookodile	Lapras	teammate
+Lapras	Toxicroak	teammate
+Cradily	Lapras	teammate
+Heatran	Lapras	teammate
+Lapras	Rhyperior	teammate
+Lapras	Stonjourner	teammate
+Electivire	Lapras	teammate
+Grapploct	Lapras	teammate
+Lapras	Zoroark	teammate
+Lapras	Togetic	teammate
+Beartic	Lapras	teammate
+Lapras	Sylveon	teammate
+Lapras	Ribombee	teammate
+Lapras	Magnezone	teammate
+Golisopod	Lapras	teammate
+Lapras	Roserade	teammate
+Lapras	Sandaconda	teammate
+Lapras	Miltank	teammate
+Crawdaunt	Lapras	teammate
+Lapras	Noivern	teammate
+Claydol	Lapras	teammate
+Jolteon	Lapras	teammate
+Cursola	Lapras	teammate
+Falinks	Lapras	teammate
+Dusknoir	Lapras	teammate
+Drapion	Lapras	teammate
+Lapras	Seaking	teammate
+Lapras	Sigilyph	teammate
+Lapras	Tentacruel	teammate
+Bewear	Lapras	teammate
+Golurk	Lapras	teammate
+Raikou	Togekiss	teammate
+Porygon-Z	Togekiss	teammate
+Conkeldurr	Togekiss	teammate
+Togekiss	Zoroark	teammate
+Lilligant	Togekiss	teammate
+Clawitzer	Togekiss	teammate
+Qwilfish	Togekiss	teammate
+Haxorus	Togekiss	teammate
+Dhelmise	Togekiss	teammate
+Runerigus	Togekiss	teammate
+Togekiss	Virizion	teammate
+Togekiss	Togetic	teammate
+Alolan Raichu	Togekiss	teammate
+Beartic	Togekiss	teammate
+Copperajah	Togekiss	teammate
+Flapple	Togekiss	teammate
+Slurpuff	Togekiss	teammate
+Eiscue Ice Face	Togekiss	teammate
+Alakazam	Togekiss	teammate
+Thievul	Togekiss	teammate
+Arctozolt	Togekiss	teammate
+Cofagrigus	Togekiss	teammate
+Togekiss	Turtonator	teammate
+Salazzle	Togekiss	teammate
+Ninetales	Togekiss	teammate
+Emolga	Togekiss	teammate
+Ribombee	Togekiss	teammate
+Togekiss	Toxtricity Low Key Form	teammate
+Mr. Mime	Togekiss	teammate
+Magnezone	Togekiss	teammate
+Lopunny	Togekiss	teammate
+Gourgeist Small Size	Togekiss	teammate
+Shiinotic	Togekiss	teammate
+Lycanroc Dusk Form	Togekiss	teammate
+Togekiss	Unfezant	teammate
+Perrserker	Togekiss	teammate
+Galarian Slowbro	Togekiss	teammate
+Bouffalant	Togekiss	teammate
+Roserade	Togekiss	teammate
+Polteageist	Togekiss	teammate
+Morpeko Full Belly Mode	Togekiss	teammate
+Gourgeist Super Size	Togekiss	teammate
+Crawdaunt	Togekiss	teammate
+Heracross	Togekiss	teammate
+Magneton	Togekiss	teammate
+Stoutland	Togekiss	teammate
+Claydol	Togekiss	teammate
+Jolteon	Togekiss	teammate
+Togekiss	Vileplume	teammate
+Falinks	Togekiss	teammate
+Dedenne	Togekiss	teammate
+Flygon	Togekiss	teammate
+Reuniclus	Togekiss	teammate
+Dusknoir	Togekiss	teammate
+Drapion	Togekiss	teammate
+Exploud	Togekiss	teammate
+Togekiss	Wigglytuff	teammate
+Galarian Corsola	Togekiss	teammate
+Sigilyph	Togekiss	teammate
+Decidueye	Togekiss	teammate
+Galvantula	Togekiss	teammate
+Arctovish	Togekiss	teammate
+Passimian	Togekiss	teammate
+Lycanroc Midday Form	Togekiss	teammate
+Tentacruel	Togekiss	teammate
+Dragalge	Togekiss	teammate
+Bewear	Togekiss	teammate
+Scyther	Togekiss	teammate
+Alolan Sandslash	Togekiss	teammate
+Poliwrath	Togekiss	teammate
+Lycanroc Midnight Form	Togekiss	teammate
+Golurk	Togekiss	teammate
+Lickilicky	Togekiss	teammate
+Scolipede	Togekiss	teammate
+Dunsparce	Togekiss	teammate
+Sandslash	Togekiss	teammate
+Steelix	Togekiss	teammate
+Corsola	Togekiss	teammate
+Gourgeist Large Size	Togekiss	teammate
+Galarian Weezing	Volcarona	teammate
+Electivire	Volcarona	teammate
+Vikavolt	Volcarona	teammate
+Dhelmise	Volcarona	teammate
+Alolan Raichu	Volcarona	teammate
+Morpeko Full Belly Mode	Volcarona	teammate
+Magneton	Volcarona	teammate
+Claydol	Volcarona	teammate
+Fan Rotom	Volcarona	teammate
+Gyarados	Mamoswine	teammate
+Mamoswine	Polteageist	teammate
+Heliolisk	Toxicroak	teammate
+Heliolisk	Weavile	teammate
+Eiscue Ice Face	Weavile	teammate
+Vaporeon	Weavile	teammate
+Weavile	Wigglytuff	teammate
+Clefable	Tyranitar	teammate
+Haxorus	Tyranitar	teammate
+Flapple	Tyranitar	teammate
+Torracat	Tyranitar	teammate
+Sharpedo	Tyranitar	teammate
+Emolga	Tyranitar	teammate
+Malamar	Tyranitar	teammate
+Galarian Slowbro	Tyranitar	teammate
+Tangela	Tyranitar	teammate
+Morpeko Full Belly Mode	Tyranitar	teammate
+Aromatisse	Tyranitar	teammate
+Magneton	Tyranitar	teammate
+Stoutland	Tyranitar	teammate
+Noivern	Tyranitar	teammate
+Claydol	Tyranitar	teammate
+Tyranitar	Vileplume	teammate
+Dedenne	Tyranitar	teammate
+Reuniclus	Tyranitar	teammate
+Decidueye	Tyranitar	teammate
+Arctovish	Tyranitar	teammate
+Maractus	Tyranitar	teammate
+Passimian	Tyranitar	teammate
+Druddigon	Tyranitar	teammate
+Lycanroc Midday Form	Tyranitar	teammate
+Bewear	Tyranitar	teammate
+Fan Rotom	Tyranitar	teammate
+Hitmonlee	Tyranitar	teammate
+Sandslash	Tyranitar	teammate
+Noctowl	Tyranitar	teammate
+Excadrill	Galarian Moltres	teammate
+Galarian Moltres	Machamp	teammate
+Primarina	Sceptile	teammate
+Blissey	Sceptile	teammate
+Cherrim	Shiftry	teammate
+Cherrim	Goodra	teammate
+Chandelure	Gigalith	teammate
+Gigalith	Torracat	teammate
+Aromatisse	Gigalith	teammate
+Gigalith	Stoutland	teammate
+Gigalith	Sandslash	teammate
+Charjabug	Heliolisk	teammate
+Chandelure	Zoroark	teammate
+Chandelure	Gallade	teammate
+Chandelure	Roserade	teammate
+Blissey	Primarina	teammate
+Alolan Raichu	Primarina	teammate
+Primarina	Salazzle	teammate
+Emolga	Primarina	teammate
+Charjabug	Primarina	teammate
+Primarina	Toxtricity Low Key Form	teammate
+Mr. Mime	Primarina	teammate
+Magnezone	Primarina	teammate
+Primarina	Stoutland	teammate
+Primarina	Reuniclus	teammate
+Decidueye	Primarina	teammate
+Orbeetle	Primarina	teammate
+Ninjask	Primarina	teammate
+Beheeyem	Primarina	teammate
+Primarina	Tentacruel	teammate
+Alolan Sandslash	Primarina	teammate
+Fan Rotom	Primarina	teammate
+Clefable	Pincurchin	teammate
+Clefable	Sandslash	teammate
+Centiskorch	Mr. Rime	teammate
+Braviary	Lucario	teammate
+Braviary	Duraludon	teammate
+Braviary	Haxorus	teammate
+Braviary	Torracat	teammate
+Braviary	Ninetales	teammate
+Braviary	Sigilyph	teammate
+Duraludon	Lucario	teammate
+Duraludon	Sylveon	teammate
+Duraludon	Hippowdon	teammate
+Duraludon	Salazzle	teammate
+Duraludon	Golduck	teammate
+Duraludon	Shiinotic	teammate
+Duraludon	Polteageist	teammate
+Duraludon	Morpeko Full Belly Mode	teammate
+Duraludon	Eldegoss	teammate
+Duraludon	Sigilyph	teammate
+Druddigon	Duraludon	teammate
+Duraludon	Gourgeist Large Size	teammate
+Froslass	Tauros	teammate
+Gardevoir	Tauros	teammate
+Sandslash	Tauros	teammate
+Froslass	Mandibuzz	teammate
+Jellicent	Pincurchin	teammate
+Alolan Raichu	Pincurchin	teammate
+Emolga	Pincurchin	teammate
+Lycanroc Midnight Form	Pincurchin	teammate
+Jellicent	Ludicolo	teammate
+Ludicolo	Mantine	teammate
+Goodra	Ludicolo	teammate
+Ludicolo	Starmie	teammate
+Jolteon	Ludicolo	teammate
+Ludicolo	Seaking	teammate
+Dusk Mane Necrozma	Mandibuzz	teammate
+Drednaw	Dusk Mane Necrozma	teammate
+Clefable	Dusk Mane Necrozma	teammate
+Appletun	Dusk Mane Necrozma	teammate
+Dusk Mane Necrozma	Vikavolt	teammate
+Beartic	Froslass	teammate
+Lurantis	Spectrier	teammate
+Articuno	Spectrier	teammate
+Darmanitan Standard Mode	Garbodor	teammate
+Appletun	Darmanitan Standard Mode	teammate
+Abomasnow	Appletun	teammate
+Cradily	Goodra	teammate
+Goodra	Lilligant	teammate
+Arctozolt	Goodra	teammate
+Golisopod	Goodra	teammate
+Goodra	Wigglytuff	teammate
+Goodra	Scyther	teammate
+Goodra	Lycanroc Midnight Form	teammate
+Goodra	Steelix	teammate
+Aerodactyl	Shiinotic	teammate
+Cobalion	Kabutops	teammate
+Cobalion	Thievul	teammate
+Cobalion	Salazzle	teammate
+Cobalion	Dunsparce	teammate
+Cobalion	Corsola	teammate
+Articuno	Krookodile	teammate
+Krookodile	Unfezant	teammate
+Drednaw	Mow Rotom	teammate
+Heatran	Rhyperior	teammate
+Lilligant	Rhyperior	teammate
+Perrserker	Rhyperior	teammate
+Rhyperior	Tangrowth	teammate
+Eldegoss	Rhyperior	teammate
+Rhyperior	Vileplume	teammate
+Rhyperior	Wigglytuff	teammate
+Rhyperior	Scyther	teammate
+Appletun	Togetic	teammate
+Gourgeist Large Size	Togetic	teammate
+Giratina Origin Forme	Registeel	teammate
+Cradily	Electivire	teammate
+Abomasnow	Beartic	teammate
+Abomasnow	Talonflame	teammate
+Giratina Altered Forme	Talonflame	teammate
+Grapploct	Talonflame	teammate
+Starmie	Talonflame	teammate
+Magnezone	Talonflame	teammate
+Gourgeist Small Size	Talonflame	teammate
+Golduck	Talonflame	teammate
+Frost Rotom	Talonflame	teammate
+Drapion	Talonflame	teammate
+Galarian Corsola	Talonflame	teammate
+Passimian	Talonflame	teammate
+Marowak	Talonflame	teammate
+Lycanroc Midnight Form	Talonflame	teammate
+Gourgeist Large Size	Talonflame	teammate
+Boltund	Diggersby	teammate
+Alolan Ninetales	Corviknight	teammate
+Alolan Ninetales	Beartic	teammate
+Alolan Ninetales	Eiscue Ice Face	teammate
+Alolan Ninetales	Gourgeist Small Size	teammate
+Alolan Ninetales	Frost Rotom	teammate
+Alolan Ninetales	Alolan Sandslash	teammate
+Aegislash Shield Forme	Corviknight	teammate
+Aegislash Shield Forme	Fan Rotom	teammate
+Corviknight	Haxorus	teammate
+Durant	Pikachu	teammate
+Gengar	Pikachu	teammate
+Lycanroc Midday Form	Pikachu	teammate
+Dunsparce	Pikachu	teammate
+Centiskorch	Grapploct	teammate
+Centiskorch	Sandaconda	teammate
+Diggersby	Lopunny	teammate
+Cobalion	Kingler	teammate
+Black Kyurem	Turtonator	teammate
+Sirfetch'd	Turtonator	teammate
+Mantine	Thundurus Therian Forme	teammate
+Accelgor	Machamp	teammate
+Accelgor	Palossand	teammate
+Accelgor	Sharpedo	teammate
+Accelgor	Charjabug	teammate
+Accelgor	Ninjask	teammate
+Silvally	Stakataka	teammate
+Stakataka	Xurkitree	teammate
+Blissey	Stakataka	teammate
+Palossand	Sharpedo	teammate
+Luxray	Tapu Koko	teammate
+Blaziken	Tapu Koko	teammate
+Clefairy	Dugtrio	teammate
+Clefairy	Sylveon	teammate
+Clefairy	Hippowdon	teammate
+Clefairy	Thievul	teammate
+Clefairy	Malamar	teammate
+Clefairy	Vanilluxe	teammate
+Clefairy	Passimian	teammate
+Clefairy	Lycanroc Midday Form	teammate
+Clefairy	Flareon	teammate
+Clefairy	Steelix	teammate
+Galarian Articuno	Mow Rotom	teammate
+Escavalier	Mow Rotom	teammate
+Alolan Marowak	Mow Rotom	teammate
+Alolan Marowak	Clawitzer	teammate
+Alolan Marowak	Arctozolt	teammate
+Alolan Marowak	Sharpedo	teammate
+Alolan Marowak	Ribombee	teammate
+Alolan Marowak	Roserade	teammate
+Alolan Marowak	Tangela	teammate
+Alolan Marowak	Ninjask	teammate
+Gengar	Sirfetch'd	teammate
+Cofagrigus	Sirfetch'd	teammate
+Gengar	Lucario	teammate
+Galvantula	Lucario	teammate
+Dragonite	Gengar	teammate
+Glaceon	Leafeon	teammate
+Espeon	Leafeon	teammate
+Espeon	Glaceon	teammate
+Espeon	Vaporeon	teammate
+Druddigon	Espeon	teammate
+Espeon	Flareon	teammate
+Dunsparce	Espeon	teammate
+Espeon	Sandslash	teammate
+Manectric	Obstagoon	teammate
+Obstagoon	Torracat	teammate
+Espeon	Grapploct	teammate
+Grapploct	Sandaconda	teammate
+Espeon	Garchomp	teammate
+Eiscue Ice Face	Glaceon	teammate
+Frost Rotom	Glaceon	teammate
+Scizor	Tyrantrum	teammate
+Eiscue Ice Face	Scizor	teammate
+Scizor	Vaporeon	teammate
+Orbeetle	Scizor	teammate
+Noctowl	Scizor	teammate
+Cinccino	Cloyster	teammate
+Blaziken	Corviknight	teammate
+Corviknight	Grapploct	teammate
+Corviknight	Torracat	teammate
+Corviknight	Sirfetch'd	teammate
+Corviknight	Tangela	teammate
+Corviknight	Crawdaunt	teammate
+Beheeyem	Corviknight	teammate
+Corviknight	Marowak	teammate
+Corviknight	Poliwrath	teammate
+Gengar	Grapploct	teammate
+Gengar	Turtonator	teammate
+Gengar	Sandaconda	teammate
+Gengar	Stoutland	teammate
+Falinks	Gengar	teammate
+Gyarados	Zoroark	teammate
+Gyarados	Starmie	teammate
+Gyarados	Sirfetch'd	teammate
+Galarian Slowbro	Gyarados	teammate
+Gyarados	Tangela	teammate
+Falinks	Gyarados	teammate
+Dedenne	Gyarados	teammate
+Galarian Corsola	Gyarados	teammate
+Gyarados	Seaking	teammate
+Galvantula	Gyarados	teammate
+Gyarados	Ninjask	teammate
+Druddigon	Gyarados	teammate
+Gyarados	Marowak	teammate
+Gyarados	Tentacruel	teammate
+Gyarados	Scyther	teammate
+Golurk	Gyarados	teammate
+Gyarados	Sandslash	teammate
+Gyarados	Steelix	teammate
+Bouffalant	Lilligant	teammate
+Bouffalant	Frost Rotom	teammate
+Bouffalant	Gourgeist Super Size	teammate
+Bouffalant	Hitmonlee	teammate
+Lilligant	Ninetales	teammate
+Charjabug	Ninetales	teammate
+Miltank	Ninetales	teammate
+Clawitzer	Sylveon	teammate
+Charjabug	Sylveon	teammate
+Sylveon	Vaporeon	teammate
+Shiinotic	Sylveon	teammate
+Jolteon	Sylveon	teammate
+Flygon	Sylveon	teammate
+Ninjask	Sylveon	teammate
+Druddigon	Sylveon	teammate
+Flareon	Sylveon	teammate
+Corsola	Sylveon	teammate
+Clawitzer	Qwilfish	teammate
+Manectric	Qwilfish	teammate
+Starmie	Virizion	teammate
+Riolu	Togetic	teammate
+Riolu	Unfezant	teammate
+Miltank	Riolu	teammate
+Dusknoir	Riolu	teammate
+Exploud	Riolu	teammate
+Ninjask	Riolu	teammate
+Golurk	Togetic	teammate
+Galarian Slowbro	Togetic	teammate
+Crawdaunt	Galarian Slowbro	teammate
+Galarian Slowbro	Heracross	teammate
+Conkeldurr	Togetic	teammate
+Conkeldurr	Sharpedo	teammate
+Conkeldurr	Roserade	teammate
+Conkeldurr	Cursola	teammate
+Conkeldurr	Maractus	teammate
+Drapion	Togetic	teammate
+Drapion	Lickilicky	teammate
+Hippowdon	Lycanroc Midday Form	teammate
+Torracat	Toxtricity Low Key Form	teammate
+Tangela	Toxtricity Low Key Form	teammate
+Toxtricity Low Key Form	Vanilluxe	teammate
+Terrakion	Thievul	teammate
+Starmie	Terrakion	teammate
+Malamar	Terrakion	teammate
+Gourgeist Super Size	Terrakion	teammate
+Reuniclus	Terrakion	teammate
+Gardevoir	Terrakion	teammate
+Galarian Corsola	Terrakion	teammate
+Gourgeist Large Size	Terrakion	teammate
+Arctozolt	Golisopod	teammate
+Arctozolt	Galarian Weezing	teammate
+Galarian Weezing	Golisopod	teammate
+Galarian Weezing	Noivern	teammate
+Galarian Weezing	Maractus	teammate
+Galarian Weezing	Gourgeist Large Size	teammate
+Cofagrigus	Zoroark	teammate
+Sirfetch'd	Zoroark	teammate
+Alakazam	Turtonator	teammate
+Alakazam	Vileplume	teammate
+Alakazam	Falinks	teammate
+Inteleon	Salazzle	teammate
+Frost Rotom	Inteleon	teammate
+Inteleon	Vanilluxe	teammate
+Beheeyem	Inteleon	teammate
+Alolan Sandslash	Inteleon	teammate
+Hitmonlee	Inteleon	teammate
+Magnezone	Ninetales	teammate
+Golisopod	Magnezone	teammate
+Magnezone	Unfezant	teammate
+Bouffalant	Magnezone	teammate
+Gourgeist Super Size	Magnezone	teammate
+Heracross	Magnezone	teammate
+Flygon	Magnezone	teammate
+Druddigon	Magnezone	teammate
+Marowak	Sirfetch'd	teammate
+Crustle	Ribombee	teammate
+Crustle	Golduck	teammate
+Crustle	Decidueye	teammate
+Golduck	Ribombee	teammate
+Charjabug	Ninjask	teammate
+Flareon	Vaporeon	teammate
+Jolteon	Vaporeon	teammate
+Flareon	Jolteon	teammate
+Darmanitan Galarian Standard Mode	Mr. Mime	teammate
+Darmanitan Galarian Standard Mode	Flygon	teammate
+Darmanitan Galarian Standard Mode	Galarian Corsola	teammate
+Beheeyem	Darmanitan Galarian Standard Mode	teammate
+Corsola	Darmanitan Galarian Standard Mode	teammate
+Gallade	Scolipede	teammate
+Lopunny	Maractus	teammate
+Luxray	Unfezant	teammate
+Gardevoir	Unfezant	teammate
+Gardevoir	Polteageist	teammate
+Durant	Perrserker	teammate
+Bouffalant	Durant	teammate
+Durant	Roserade	teammate
+Durant	Gourgeist Super Size	teammate
+Claydol	Durant	teammate
+Durant	Noctowl	teammate
+Frost Rotom	Vanilluxe	teammate
+Lickilicky	Tangrowth	teammate
+Dunsparce	Lickilicky	teammate
+Passimian	Tangela	teammate
+Morpeko Full Belly Mode	Tentacruel	teammate
+Seaking	Tentacruel	teammate
+Eldegoss	Malamar	teammate
+Galvantula	Malamar	teammate
+Eldegoss	Jellicent	teammate
+Jellicent	Seaking	teammate
+Eldegoss	Lurantis	teammate
+Cursola	Eldegoss	teammate
+Aromatisse	Drampa	teammate
+Dusknoir	Miltank	teammate
+Hawlucha	Magneton	teammate
+Bisharp	Stoutland	teammate
+Bisharp	Claydol	teammate
+Bisharp	Vanilluxe	teammate
+Arctovish	Bisharp	teammate
+Lycanroc Dusk Form	Noivern	teammate
+Claydol	Noctowl	teammate
+Silvally	Vileplume	teammate
+Falinks	Oranguru	teammate
+Galarian Corsola	Oranguru	teammate
+Beheeyem	Oranguru	teammate
+Crustle	Toxapex	teammate
+Decidueye	Toxapex	teammate
+Seaking	Sharpedo	teammate
+Arctovish	Butterfree	teammate
+Druddigon	Sandslash	teammate
+Beheeyem	Sandslash	teammate
+Beheeyem	Wigglytuff	teammate
+Dunsparce	Wigglytuff	teammate
+Exeggutor	Scolipede	teammate
+Corsola	Flygon	teammate
+Mime Jr.	Scrafty	teammate
+Gourgeist Large Size	Scrafty	teammate
+Bewear	Mime Jr.	teammate
+Bulbasaur	Ivysaur	evolves
+Ivysaur	Venusaur	evolves
+Mega Venusaur	Venusaur	evolves
+Venusaur	Venusaur Gigantamax	evolves
+Charmander	Charmeleon	evolves
+Charizard	Mega Charizard Y	evolves
+Charizard	Charizard Gigantamax	evolves
+Charizard	Mega Charizard X	evolves
+Charizard	Charmeleon	evolves
+Squirtle	Wartortle	evolves
+Blastoise	Blastoise Gigantamax	evolves
+Blastoise	Wartortle	evolves
+Blastoise	Mega Blastoise	evolves
+Caterpie	Metapod	evolves
+Butterfree	Butterfree Gigantamax	evolves
+Butterfree	Metapod	evolves
+Kakuna	Weedle	evolves
+Beedrill	Kakuna	evolves
+Beedrill	Mega Beedrill	evolves
+Pidgeotto	Pidgey	evolves
+Pidgeot	Pidgeotto	evolves
+Mega Pidgeot	Pidgeot	evolves
+Raticate	Rattata	evolves
+Alolan Raticate	Rattata	evolves
+Fearow	Spearow	evolves
+Arbok	Ekans	evolves
+Pikachu	Pikachu Gigantamax	evolves
+Pichu	Pikachu	evolves
+Partner Pikachu	Pichu	evolves
+Alolan Raichu	Pikachu	evolves
+Pikachu	Raichu	evolves
+Sandshrew	Sandslash	evolves
+Alolan Sandslash	Sandshrew	evolves
+Nidoqueen	Nidorina	evolves
+Nidoking	Nidorino	evolves
+Clefairy	Cleffa	evolves
+Clefable	Clefairy	evolves
+Ninetales	Vulpix	evolves
+Alolan Ninetales	Vulpix	evolves
+Igglybuff	Jigglypuff	evolves
+Jigglypuff	Wigglytuff	evolves
+Golbat	Zubat	evolves
+Gloom	Oddish	evolves
+Gloom	Vileplume	evolves
+Paras	Parasect	evolves
+Venomoth	Venonat	evolves
+Alolan Dugtrio	Diglett	evolves
+Diglett	Dugtrio	evolves
+Meowth	Meowth Gigantamax	evolves
+Meowth	Persian	evolves
+Alolan Persian	Meowth	evolves
+Golduck	Psyduck	evolves
+Mankey	Primeape	evolves
+Growlithe	Hisuian Arcanine	evolves
+Arcanine	Growlithe	evolves
+Poliwag	Poliwhirl	evolves
+Poliwhirl	Poliwrath	evolves
+Abra	Kadabra	evolves
+Alakazam	Kadabra	evolves
+Alakazam	Mega Alakazam	evolves
+Machoke	Machop	evolves
+Machamp	Machamp Gigantamax	evolves
+Machamp	Machoke	evolves
+Bellsprout	Weepinbell	evolves
+Victreebel	Weepinbell	evolves
+Tentacool	Tentacruel	evolves
+Geodude	Graveler	evolves
+Alolan Graveler	Geodude	evolves
+Golem	Graveler	evolves
+Alolan Golem	Graveler	evolves
+Ponyta	Rapidash	evolves
+Galarian Rapidash	Ponyta	evolves
+Mega Slowbro	Slowbro	evolves
+Galarian Slowbro	Slowpoke	evolves
+Slowbro	Slowpoke	evolves
+Magnemite	Magneton	evolves
+Dodrio	Doduo	evolves
+Dewgong	Seel	evolves
+Alolan Muk	Grimer	evolves
+Grimer	Muk	evolves
+Cloyster	Shellder	evolves
+Gastly	Haunter	evolves
+Gengar	Haunter	evolves
+Gengar	Gengar Gigantamax	evolves
+Gengar	Mega Gengar	evolves
+Drowzee	Hypno	evolves
+Kingler	Kingler Gigantamax	evolves
+Kingler	Krabby	evolves
+Hisuian Electrode	Voltorb	evolves
+Electrode	Voltorb	evolves
+Alolan Exeggutor	Exeggcute	evolves
+Exeggcute	Exeggutor	evolves
+Alolan Marowak	Cubone	evolves
+Cubone	Marowak	evolves
+Hitmonlee	Tyrogue	evolves
+Hitmonchan	Tyrogue	evolves
+Koffing	Weezing	evolves
+Galarian Weezing	Koffing	evolves
+Rhydon	Rhyhorn	evolves
+Chansey	Happiny	evolves
+Kangaskhan	Mega Kangaskhan	evolves
+Horsea	Seadra	evolves
+Goldeen	Seaking	evolves
+Starmie	Staryu	evolves
+Jynx	Smoochum	evolves
+Electabuzz	Elekid	evolves
+Magby	Magmar	evolves
+Mega Pinsir	Pinsir	evolves
+Gyarados	Mega Gyarados	evolves
+Gyarados	Magikarp	evolves
+Lapras	Lapras Gigantamax	evolves
+Eevee	Eevee Gigantamax	evolves
+Eevee	Vaporeon	evolves
+Eevee	Jolteon	evolves
+Eevee	Flareon	evolves
+Omanyte	Omastar	evolves
+Kabuto	Kabutops	evolves
+Aerodactyl	Mega Aerodactyl	evolves
+Snorlax	Snorlax Gigantamax	evolves
+Munchlax	Snorlax	evolves
+Dragonair	Dratini	evolves
+Dragonair	Dragonite	evolves
+Mega Mewtwo Y	Mewtwo	evolves
+Mega Mewtwo X	Mewtwo	evolves
+Bayleef	Chikorita	evolves
+Bayleef	Meganium	evolves
+Cyndaquil	Quilava	evolves
+Hisuian Typhlosion	Quilava	evolves
+Quilava	Typhlosion	evolves
+Croconaw	Totodile	evolves
+Croconaw	Feraligatr	evolves
+Furret	Sentret	evolves
+Hoothoot	Noctowl	evolves
+Ledian	Ledyba	evolves
+Ariados	Spinarak	evolves
+Crobat	Golbat	evolves
+Chinchou	Lanturn	evolves
+Togepi	Togetic	evolves
+Natu	Xatu	evolves
+Flaaffy	Mareep	evolves
+Ampharos	Flaaffy	evolves
+Ampharos	Mega Ampharos	evolves
+Bellossom	Gloom	evolves
+Azurill	Marill	evolves
+Azumarill	Marill	evolves
+Bonsly	Sudowoodo	evolves
+Politoed	Poliwhirl	evolves
+Hoppip	Skiploom	evolves
+Jumpluff	Skiploom	evolves
+Sunflora	Sunkern	evolves
+Quagsire	Wooper	evolves
+Eevee	Espeon	evolves
+Eevee	Umbreon	evolves
+Slowking	Slowpoke	evolves
+Galarian Slowking	Slowpoke	evolves
+Wobbuffet	Wynaut	evolves
+Forretress	Pineco	evolves
+Onix	Steelix	evolves
+Mega Steelix	Steelix	evolves
+Granbull	Snubbull	evolves
+Mega Scizor	Scizor	evolves
+Scizor	Scyther	evolves
+Heracross	Mega Heracross	evolves
+Teddiursa	Ursaring	evolves
+Magcargo	Slugma	evolves
+Piloswine	Swinub	evolves
+Octillery	Remoraid	evolves
+Mantine	Mantyke	evolves
+Houndoom	Houndour	evolves
+Houndoom	Mega Houndoom	evolves
+Kingdra	Seadra	evolves
+Donphan	Phanpy	evolves
+Porygon	Porygon2	evolves
+Hitmontop	Tyrogue	evolves
+Blissey	Chansey	evolves
+Larvitar	Pupitar	evolves
+Mega Tyranitar	Tyranitar	evolves
+Pupitar	Tyranitar	evolves
+Grovyle	Treecko	evolves
+Mega Sceptile	Sceptile	evolves
+Grovyle	Sceptile	evolves
+Combusken	Torchic	evolves
+Blaziken	Combusken	evolves
+Blaziken	Mega Blaziken	evolves
+Marshtomp	Mudkip	evolves
+Mega Swampert	Swampert	evolves
+Marshtomp	Swampert	evolves
+Mightyena	Poochyena	evolves
+Linoone	Zigzagoon	evolves
+Galarian Linoone	Zigzagoon	evolves
+Silcoon	Wurmple	evolves
+Beautifly	Silcoon	evolves
+Cascoon	Wurmple	evolves
+Cascoon	Dustox	evolves
+Lombre	Lotad	evolves
+Lombre	Ludicolo	evolves
+Nuzleaf	Seedot	evolves
+Nuzleaf	Shiftry	evolves
+Swellow	Taillow	evolves
+Pelipper	Wingull	evolves
+Kirlia	Ralts	evolves
+Gardevoir	Kirlia	evolves
+Gardevoir	Mega Gardevoir	evolves
+Masquerain	Surskit	evolves
+Breloom	Shroomish	evolves
+Slakoth	Vigoroth	evolves
+Slaking	Vigoroth	evolves
+Nincada	Ninjask	evolves
+Nincada	Shedinja	evolves
+Loudred	Whismur	evolves
+Exploud	Loudred	evolves
+Hariyama	Makuhita	evolves
+Delcatty	Skitty	evolves
+Mega Sableye	Sableye	evolves
+Mawile	Mega Mawile	evolves
+Aron	Lairon	evolves
+Aggron	Lairon	evolves
+Aggron	Mega Aggron	evolves
+Medicham	Meditite	evolves
+Medicham	Mega Medicham	evolves
+Electrike	Manectric	evolves
+Manectric	Mega Manectric	evolves
+Budew	Roselia	evolves
+Gulpin	Swalot	evolves
+Mega Sharpedo	Sharpedo	evolves
+Carvanha	Sharpedo	evolves
+Wailmer	Wailord	evolves
+Camerupt	Numel	evolves
+Camerupt	Mega Camerupt	evolves
+Grumpig	Spoink	evolves
+Trapinch	Vibrava	evolves
+Flygon	Vibrava	evolves
+Cacnea	Cacturne	evolves
+Altaria	Swablu	evolves
+Altaria	Mega Altaria	evolves
+Barboach	Whiscash	evolves
+Corphish	Crawdaunt	evolves
+Baltoy	Claydol	evolves
+Cradily	Lileep	evolves
+Anorith	Armaldo	evolves
+Feebas	Milotic	evolves
+Banette	Mega Banette	evolves
+Banette	Shuppet	evolves
+Dusclops	Duskull	evolves
+Chimecho	Chingling	evolves
+Absol	Mega Absol	evolves
+Glalie	Mega Glalie	evolves
+Glalie	Snorunt	evolves
+Sealeo	Spheal	evolves
+Sealeo	Walrein	evolves
+Clamperl	Huntail	evolves
+Clamperl	Gorebyss	evolves
+Bagon	Shelgon	evolves
+Mega Salamence	Salamence	evolves
+Salamence	Shelgon	evolves
+Beldum	Metang	evolves
+Mega Metagross	Metagross	evolves
+Metagross	Metang	evolves
+Latias	Mega Latias	evolves
+Latios	Mega Latios	evolves
+Kyogre	Primal Kyogre	evolves
+Groudon	Primal Groudon	evolves
+Mega Rayquaza	Rayquaza	evolves
+Grotle	Turtwig	evolves
+Grotle	Torterra	evolves
+Chimchar	Monferno	evolves
+Infernape	Monferno	evolves
+Piplup	Prinplup	evolves
+Empoleon	Prinplup	evolves
+Staravia	Starly	evolves
+Staraptor	Staravia	evolves
+Bibarel	Bidoof	evolves
+Kricketot	Kricketune	evolves
+Luxio	Shinx	evolves
+Luxio	Luxray	evolves
+Roselia	Roserade	evolves
+Cranidos	Rampardos	evolves
+Bastiodon	Shieldon	evolves
+Combee	Vespiquen	evolves
+Buizel	Floatzel	evolves
+Cherrim	Cherubi	evolves
+Gastrodon	Shellos	evolves
+Aipom	Ambipom	evolves
+Drifblim	Drifloon	evolves
+Lopunny	Mega Lopunny	evolves
+Buneary	Lopunny	evolves
+Misdreavus	Mismagius	evolves
+Honchkrow	Murkrow	evolves
+Glameow	Purugly	evolves
+Skuntank	Stunky	evolves
+Bronzong	Bronzor	evolves
+Gabite	Gible	evolves
+Gabite	Garchomp	evolves
+Garchomp	Mega Garchomp	evolves
+Lucario	Mega Lucario	evolves
+Lucario	Riolu	evolves
+Hippopotas	Hippowdon	evolves
+Drapion	Skorupi	evolves
+Croagunk	Toxicroak	evolves
+Finneon	Lumineon	evolves
+Abomasnow	Snover	evolves
+Abomasnow	Mega Abomasnow	evolves
+Sneasel	Weavile	evolves
+Magneton	Magnezone	evolves
+Lickilicky	Lickitung	evolves
+Rhydon	Rhyperior	evolves
+Tangela	Tangrowth	evolves
+Electabuzz	Electivire	evolves
+Magmar	Magmortar	evolves
+Togekiss	Togetic	evolves
+Yanma	Yanmega	evolves
+Eevee	Leafeon	evolves
+Eevee	Glaceon	evolves
+Gligar	Gliscor	evolves
+Mamoswine	Piloswine	evolves
+Porygon-Z	Porygon2	evolves
+Gallade	Kirlia	evolves
+Gallade	Mega Gallade	evolves
+Nosepass	Probopass	evolves
+Dusclops	Dusknoir	evolves
+Froslass	Snorunt	evolves
+Servine	Snivy	evolves
+Serperior	Servine	evolves
+Pignite	Tepig	evolves
+Emboar	Pignite	evolves
+Dewott	Oshawott	evolves
+Dewott	Samurott	evolves
+Dewott	Hisuian Samurott	evolves
+Patrat	Watchog	evolves
+Herdier	Lillipup	evolves
+Herdier	Stoutland	evolves
+Liepard	Purrloin	evolves
+Pansage	Simisage	evolves
+Pansear	Simisear	evolves
+Panpour	Simipour	evolves
+Munna	Musharna	evolves
+Pidove	Tranquill	evolves
+Tranquill	Unfezant	evolves
+Blitzle	Zebstrika	evolves
+Boldore	Roggenrola	evolves
+Boldore	Gigalith	evolves
+Swoobat	Woobat	evolves
+Drilbur	Excadrill	evolves
+Audino	Mega Audino	evolves
+Gurdurr	Timburr	evolves
+Conkeldurr	Gurdurr	evolves
+Palpitoad	Tympole	evolves
+Palpitoad	Seismitoad	evolves
+Sewaddle	Swadloon	evolves
+Leavanny	Swadloon	evolves
+Venipede	Whirlipede	evolves
+Scolipede	Whirlipede	evolves
+Cottonee	Whimsicott	evolves
+Hisuian Lilligant	Petilil	evolves
+Lilligant	Petilil	evolves
+Krokorok	Sandile	evolves
+Krokorok	Krookodile	evolves
+Darmanitan Standard Mode	Darumaka	evolves
+Darmanitan Galarian Zen Mode	Darumaka	evolves
+Darmanitan Galarian Standard Mode	Darumaka	evolves
+Darmanitan Zen Mode	Darumaka	evolves
+Crustle	Dwebble	evolves
+Scrafty	Scraggy	evolves
+Cofagrigus	Yamask	evolves
+Carracosta	Tirtouga	evolves
+Archen	Archeops	evolves
+Garbodor	Garbodor Gigantamax	evolves
+Garbodor	Trubbish	evolves
+Zoroark	Zorua	evolves
+Hisuian Zoroark	Zorua	evolves
+Cinccino	Minccino	evolves
+Gothita	Gothorita	evolves
+Gothitelle	Gothorita	evolves
+Duosion	Solosis	evolves
+Duosion	Reuniclus	evolves
+Ducklett	Swanna	evolves
+Vanillish	Vanillite	evolves
+Vanillish	Vanilluxe	evolves
+Deerling	Sawsbuck	evolves
+Escavalier	Karrablast	evolves
+Amoonguss	Foongus	evolves
+Frillish	Jellicent	evolves
+Galvantula	Joltik	evolves
+Ferroseed	Ferrothorn	evolves
+Klang	Klink	evolves
+Klang	Klinklang	evolves
+Eelektrik	Tynamo	evolves
+Eelektrik	Eelektross	evolves
+Beheeyem	Elgyem	evolves
+Lampent	Litwick	evolves
+Chandelure	Lampent	evolves
+Axew	Fraxure	evolves
+Fraxure	Haxorus	evolves
+Beartic	Cubchoo	evolves
+Accelgor	Shelmet	evolves
+Mienfoo	Mienshao	evolves
+Golett	Golurk	evolves
+Bisharp	Pawniard	evolves
+Hisuian Braviary	Rufflet	evolves
+Braviary	Rufflet	evolves
+Mandibuzz	Vullaby	evolves
+Deino	Zweilous	evolves
+Hydreigon	Zweilous	evolves
+Larvesta	Volcarona	evolves
+Chespin	Quilladin	evolves
+Chesnaught	Quilladin	evolves
+Braixen	Fennekin	evolves
+Braixen	Delphox	evolves
+Froakie	Frogadier	evolves
+Frogadier	Greninja	evolves
+Ash-Greninja	Frogadier	evolves
+Bunnelby	Diggersby	evolves
+Fletchinder	Fletchling	evolves
+Fletchinder	Talonflame	evolves
+Scatterbug	Spewpa	evolves
+Spewpa	Vivillon	evolves
+Litleo	Pyroar	evolves
+Floette	Florges	evolves
+Gogoat	Skiddo	evolves
+Pancham	Pangoro	evolves
+Espurr	Meowstic Female	evolves
+Espurr	Meowstic Male	evolves
+Doublade	Honedge	evolves
+Aegislash Blade Forme	Doublade	evolves
+Aegislash Shield Forme	Doublade	evolves
+Aromatisse	Spritzee	evolves
+Slurpuff	Swirlix	evolves
+Inkay	Malamar	evolves
+Barbaracle	Binacle	evolves
+Dragalge	Skrelp	evolves
+Clauncher	Clawitzer	evolves
+Heliolisk	Helioptile	evolves
+Tyrantrum	Tyrunt	evolves
+Amaura	Aurorus	evolves
+Eevee	Sylveon	evolves
+Goomy	Hisuian Sliggoo	evolves
+Goomy	Sliggoo	evolves
+Goodra	Sliggoo	evolves
+Hisuian Goodra	Sliggoo	evolves
+Phantump	Trevenant	evolves
+Bergmite	Hisuian Avalugg	evolves
+Avalugg	Bergmite	evolves
+Noibat	Noivern	evolves
+Diancie	Mega Diancie	evolves
+Dartrix	Rowlet	evolves
+Dartrix	Hisuian Decidueye	evolves
+Dartrix	Decidueye	evolves
+Litten	Torracat	evolves
+Incineroar	Torracat	evolves
+Brionne	Popplio	evolves
+Brionne	Primarina	evolves
+Pikipek	Trumbeak	evolves
+Toucannon	Trumbeak	evolves
+Gumshoos	Yungoos	evolves
+Charjabug	Grubbin	evolves
+Charjabug	Vikavolt	evolves
+Crabominable	Crabrawler	evolves
+Cutiefly	Ribombee	evolves
+Lycanroc Midday Form	Rockruff	evolves
+Lycanroc Midnight Form	Rockruff	evolves
+Lycanroc Dusk Form	Rockruff	evolves
+Mareanie	Toxapex	evolves
+Mudbray	Mudsdale	evolves
+Araquanid	Dewpider	evolves
+Fomantis	Lurantis	evolves
+Morelull	Shiinotic	evolves
+Salandit	Salazzle	evolves
+Bewear	Stufful	evolves
+Bounsweet	Steenee	evolves
+Steenee	Tsareena	evolves
+Golisopod	Wimpod	evolves
+Palossand	Sandygast	evolves
+Hakamo-o	Jangmo-o	evolves
+Hakamo-o	Kommo-o	evolves
+Cosmoem	Cosmog	evolves
+Cosmoem	Solgaleo	evolves
+Cosmoem	Lunala	evolves
+Naganadel	Poipole	evolves
+Melmetal	Melmetal Gigantamax	evolves
+Grookey	Thwackey	evolves
+Rillaboom	Rillaboom Gigantamax	evolves
+Rillaboom	Thwackey	evolves
+Raboot	Scorbunny	evolves
+Cinderace	Cinderace Gigantamax	evolves
+Cinderace	Raboot	evolves
+Drizzile	Sobble	evolves
+Inteleon	Inteleon Gigantamax	evolves
+Drizzile	Inteleon	evolves
+Greedent	Skwovet	evolves
+Corvisquire	Rookidee	evolves
+Corviknight	Corvisquire	evolves
+Corviknight	Corviknight Gigantamax	evolves
+Blipbug	Dottler	evolves
+Dottler	Orbeetle	evolves
+Orbeetle	Orbeetle Gigantamax	evolves
+Nickit	Thievul	evolves
+Eldegoss	Gossifleur	evolves
+Dubwool	Wooloo	evolves
+Drednaw	Drednaw Gigantamax	evolves
+Chewtle	Drednaw	evolves
+Boltund	Yamper	evolves
+Carkol	Rolycoly	evolves
+Coalossal	Coalossal Gigantamax	evolves
+Carkol	Coalossal	evolves
+Applin	Flapple	evolves
+Flapple	Flapple Gigantamax	evolves
+Appletun	Applin	evolves
+Appletun	Appletun Gigantamax	evolves
+Sandaconda	Sandaconda Gigantamax	evolves
+Sandaconda	Silicobra	evolves
+Arrokuda	Barraskewda	evolves
+Toxel	Toxtricity Amped Form	evolves
+Toxel	Toxtricity Low Key Form	evolves
+Centiskorch	Centiskorch Gigantamax	evolves
+Centiskorch	Sizzlipede	evolves
+Clobbopus	Grapploct	evolves
+Polteageist	Sinistea	evolves
+Hatenna	Hattrem	evolves
+Hatterene	Hattrem	evolves
+Hatterene	Hatterene Gigantamax	evolves
+Impidimp	Morgrem	evolves
+Grimmsnarl	Grimmsnarl Gigantamax	evolves
+Grimmsnarl	Morgrem	evolves
+Linoone	Obstagoon	evolves
+Meowth	Perrserker	evolves
+Corsola	Cursola	evolves
+Runerigus	Yamask	evolves
+Alcremie	Milcery	evolves
+Alcremie	Alcremie Gigantamax	evolves
+Frosmoth	Snom	evolves
+Copperajah	Copperajah Gigantamax	evolves
+Copperajah	Cufant	evolves
+Duraludon	Duraludon Gigantamax	evolves
+Drakloak	Dreepy	evolves
+Dragapult	Drakloak	evolves
+Kubfu	Urshifu Single Strike Style	evolves
+Kubfu	Urshifu Rapid Strike Style	evolves
