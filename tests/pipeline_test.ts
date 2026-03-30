@@ -5,9 +5,10 @@ import {
   MINHASH_K, GRID_SIZE, ZOOM_LEVELS, RAW_LEVEL,
   computeMinHash, computeMinHashInto, _sig, projectWith, projectInto,
   buildGaussianProjection, hashToken, jaccardEstimate, cellIdAtLevel,
-  normalizeAndQuantize, unifiedBlend, buildLevel, buildLevelNodes, buildLevelEdges, generateGroupColors,
+  normalizeAndQuantize, unifiedBlend, buildLevel, buildLevelNodes, buildLevelEdges,
   maxCountKey, getNodePropValue, getSupernodeDominantValue,
 } from "../docs/bitzoom-algo.js";
+import { generateGroupColors } from "../docs/bitzoom-colors.js";
 
 import {
   parseEdgesFile, parseNodesFile, buildGraph,

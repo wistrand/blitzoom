@@ -13,10 +13,11 @@
 
 import {
   MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
-  buildGaussianProjection, generateGroupColors, unifiedBlend, buildLevel,
+  buildGaussianProjection, unifiedBlend, buildLevel,
   buildLevelNodes, buildLevelEdges, cellIdAtLevel,
   getNodePropValue, getSupernodeDominantValue, maxCountKey,
 } from './bitzoom-algo.js';
+import { generateGroupColors, COLOR_SCHEMES, COLOR_SCHEME_NAMES } from './bitzoom-colors.js';
 import { autoTuneWeights } from './bitzoom-utils.js';
 import { initGL, renderGL } from './bitzoom-gl-renderer.js';
 
@@ -87,6 +88,7 @@ export class BitZoomCanvas {
     this.showResetBtn = opts.showResetBtn || false;
     this._progressText = null; // overlay text shown during auto-tune
     this.showFps = opts.showFps || false;
+    this._colorScheme = opts.colorScheme || 0;
     this._useGPU = false; // when true, blend uses GPU compute
     this._gl = null;       // WebGL2 context (null = Canvas 2D mode)
     this._glCanvas = null; // WebGL canvas element
@@ -175,6 +177,21 @@ export class BitZoomCanvas {
     this.levels = new Array(ZOOM_LEVELS.length).fill(null);
     if (this._edgeBuildRaf) { cancelAnimationFrame(this._edgeBuildRaf); this._edgeBuildRaf = null; }
   }
+
+  /** Cycle to next color scheme and regenerate all colors */
+  cycleColorScheme() {
+    this._colorScheme = (this._colorScheme + 1) % COLOR_SCHEMES.length;
+    // Regenerate propColors for all groups using sorted values
+    for (const g of this.groupNames) {
+      const values = [...new Set(this.nodes.map(n => getNodePropValue(n, g, this.adjList)))].sort();
+      this.propColors[g] = generateGroupColors(values, this._colorScheme);
+    }
+    this._refreshPropCache();
+    this.layoutAll();
+    this.render();
+  }
+
+  get colorSchemeName() { return COLOR_SCHEME_NAMES[this._colorScheme]; }
 
   // ─── Node property accessors (used by renderer) ───────────────────────────
 
@@ -737,6 +754,7 @@ export class BitZoomCanvas {
       else if (e.key === '-' || e.key === '_') { e.preventDefault(); this._zoomBy(1/1.15); }
       else if (e.key === 'f') { this.showFps = !this.showFps; this.render(); }
       else if (e.key === 'l') { this.showLegend = (this.showLegend + 1) % 5; this.render(); }
+      else if (e.key === 'c') { this.cycleColorScheme(); }
     }, sig);
 
     // Resize

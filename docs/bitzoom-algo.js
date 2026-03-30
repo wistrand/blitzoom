@@ -198,27 +198,6 @@ export function cellIdAtLevel(gx, gy, level) {
 
 // ─── Color generation ────────────────────────────────────────────────────────
 
-export function hslToHex(h, s, l) {
-  s /= 100; l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = n => {
-    const k = (n + h / 30) % 12;
-    const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * c).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-export function generateGroupColors(values) {
-  const colors = {};
-  const golden = 137.508;
-  for (let i = 0; i < values.length; i++) {
-    const h = (i * golden) % 360;
-    colors[values[i]] = hslToHex(h, 65, 62);
-  }
-  return colors;
-}
-
 // ─── Unified blend ───────────────────────────────────────────────────────────
 
 // #2: Deterministic tie-break by node ID in rank quantization

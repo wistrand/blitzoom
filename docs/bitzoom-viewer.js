@@ -2,8 +2,9 @@
 
 import {
     MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
-    buildGaussianProjection, generateGroupColors, unifiedBlend, cellIdAtLevel,
+    buildGaussianProjection, unifiedBlend, cellIdAtLevel,
 } from './bitzoom-algo.js';
+import { generateGroupColors } from './bitzoom-colors.js';
 import { autoTuneWeights } from './bitzoom-utils.js';
 import { convertStixToSnap } from './stix2snap.js';
 import { initGPU, computeProjectionsGPU } from './bitzoom-gpu.js';
@@ -1510,6 +1511,8 @@ class BitZoom {
             } else if (e.key === 'l') {
                 v.showLegend = (v.showLegend + 1) % 5;
                 v.render();
+            } else if (e.key === 'c') {
+                v.cycleColorScheme();
             }
         }, sig);
 
