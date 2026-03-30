@@ -1,5 +1,5 @@
 # BitZoom source code graph
-# Nodes: 646 Edges: 1476
+# Nodes: 651 Edges: 1486
 # FromId	ToId	RelationshipType
 file:scripts/bench-hashslot.js	const:scripts/bench-hashslot.js:LARGE_PRIME	defines
 file:scripts/bench-hashslot.js	const:scripts/bench-hashslot.js:MINHASH_K	defines
@@ -57,6 +57,9 @@ file:scripts/bench-render.js	fn:scripts/bench-render.js:fmt	defines
 file:scripts/bench-render.js	const:scripts/bench-render.js:nodes	defines
 file:scripts/bench-render.js	const:scripts/bench-render.js:ITERS	defines
 file:scripts/bench-render.js	const:scripts/bench-render.js:LOOKUPS	defines
+file:scripts/azgaar2snap.ts	const:scripts/azgaar2snap.ts:edgeLines	defines
+file:scripts/azgaar2snap.ts	const:scripts/azgaar2snap.ts:nodeLines	defines
+file:scripts/azgaar2snap.ts	const:scripts/azgaar2snap.ts:counts	defines
 file:scripts/src2snap.ts	fn:scripts/src2snap.ts:addSymbol	defines
 file:scripts/src2snap.ts	fn:scripts/src2snap.ts:addEdge	defines
 file:scripts/src2snap.ts	const:scripts/src2snap.ts:EXTENSIONS	defines
@@ -447,6 +450,7 @@ file:docs/comparison.html	elem:docs/comparison.html:#methods	defines
 file:docs/comparison.html	elem:docs/comparison.html:#quant	defines
 file:docs/comparison.html	elem:docs/comparison.html:#caveats	defines
 file:docs/comparison.html	region:docs/comparison.html:script:453	defines
+file:docs/viewer.html	elem:docs/viewer.html:#datasetName	defines
 file:docs/viewer.html	elem:docs/viewer.html:#loadNewBtn	defines
 file:docs/viewer.html	elem:docs/viewer.html:#zoomPrev	defines
 file:docs/viewer.html	elem:docs/viewer.html:#zoomCurrent	defines
@@ -629,6 +633,7 @@ method:docs/bitzoom-viewer.js:BitZoom._applyWorkerResult	elem:docs/viewer.html:#
 method:docs/bitzoom-viewer.js:BitZoom._applyWorkerResult	elem:docs/viewer.html:#loadNewBtn	references
 method:docs/bitzoom-viewer.js:BitZoom.loadDataset	elem:docs/viewer.html:#loadStatus	references
 method:docs/bitzoom-viewer.js:BitZoom.loadDataset	elem:docs/viewer.html:#loadProgress	references
+method:docs/bitzoom-viewer.js:BitZoom.loadDataset	elem:docs/viewer.html:#datasetName	references
 method:docs/bitzoom-viewer.js:BitZoom.showLoaderScreen	elem:docs/viewer.html:#edgesFile	references
 method:docs/bitzoom-viewer.js:BitZoom.showLoaderScreen	elem:docs/viewer.html:#nodesFile	references
 method:docs/bitzoom-viewer.js:BitZoom.showLoaderScreen	elem:docs/viewer.html:#loadBtn	references
@@ -667,6 +672,7 @@ method:docs/bitzoom-viewer.js:BitZoom.updateGlBtn	elem:docs/viewer.html:#nodesFi
 method:docs/bitzoom-viewer.js:BitZoom.updateGlBtn	elem:docs/viewer.html:#dropZone	references
 method:docs/bitzoom-viewer.js:BitZoom.updateGlBtn	elem:docs/viewer.html:#loadBtn	references
 method:docs/bitzoom-viewer.js:BitZoom.updateGlBtn	elem:docs/viewer.html:#loadProgress	references
+method:docs/bitzoom-viewer.js:BitZoom.updateGlBtn	elem:docs/viewer.html:#datasetName	references
 method:docs/bitzoom-viewer.js:BitZoom._toggleSidebar	elem:docs/viewer.html:#sidebarBackdrop	references
 method:docs/bitzoom-viewer.js:BitZoom._handleStixFile	elem:docs/viewer.html:#loadStatus	references
 method:docs/bitzoom-viewer.js:BitZoom._handleStixFile	elem:docs/viewer.html:#loadBtn	references
@@ -996,10 +1002,12 @@ method:docs/bitzoom-viewer.js:BitZoom.switchLevel	fn:docs/bitzoom-algo.js:cellId
 method:docs/bitzoom-viewer.js:BitZoom.switchLevel	method:docs/bitzoom-canvas.js:BitZoomCanvas.renderNow	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._applyDatasetSettings	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-canvas.js:BitZoomCanvas._blend	calls
-method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._restoreFromHash	calls
-method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._applyHashState	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-canvas.js:BitZoomCanvas.resize	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-canvas.js:BitZoomCanvas.zoomForLevel	calls
+method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._restoreFromHash	calls
+method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._applyHashState	calls
+method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	fn:docs/bitzoom-renderer.js:render	calls
+method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-canvas.js:BitZoomCanvas.render	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._updateStepperUI	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._updateOverview	calls
 method:docs/bitzoom-viewer.js:BitZoom.requestAnimationFrame	method:docs/bitzoom-viewer.js:BitZoom._updateAlgoInfo	calls
@@ -1075,10 +1083,12 @@ method:docs/bitzoom-viewer.js:BitZoom._applyWorkerResult	method:docs/bitzoom-can
 method:docs/bitzoom-viewer.js:BitZoom._applyWorkerResult	method:docs/bitzoom-canvas.js:BitZoomCanvas._blend	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._applyDatasetSettings	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-canvas.js:BitZoomCanvas._blend	calls
-method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._restoreFromHash	calls
-method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._applyHashState	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-canvas.js:BitZoomCanvas.resize	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-canvas.js:BitZoomCanvas.zoomForLevel	calls
+method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._restoreFromHash	calls
+method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._applyHashState	calls
+method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	fn:docs/bitzoom-renderer.js:render	calls
+method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-canvas.js:BitZoomCanvas.render	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._updateStepperUI	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._updateOverview	calls
 method:docs/bitzoom-viewer.js:BitZoom._finalizeLoad	method:docs/bitzoom-viewer.js:BitZoom._updateAlgoInfo	calls
