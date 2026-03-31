@@ -370,10 +370,6 @@
   @media (max-width: 600px) {
     .nudge-control { margin-left: 0; }
   }
-    color: var(--text-dim);
-    line-height: 1.6;
-    letter-spacing: 0.03em;
-  }
 
   .bucket-id {
     font-size: 10px;
@@ -472,12 +468,6 @@
   }
   .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
   .preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    font-size: 10px;
-    color: var(--text-dim);
-    line-height: 1.7;
-    border-left: 2px solid var(--accent);
-    padding-left: 8px;
-  }
 
   .loader-screen {
     grid-column: 1 / -1;
