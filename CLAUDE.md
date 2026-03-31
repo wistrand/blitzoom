@@ -38,16 +38,17 @@ docs/                    Web app (ES modules, no build step)
   bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (1061 lines)
   bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1772 lines)
   bitzoom-utils.js         Auto-tune optimizer (277 lines)
+  bitzoom-svg.js           SVG export utility — exportSVG(bz, opts) renders graph as SVG string
   bitzoom-colors.js        Color schemes (vivid, viridis, plasma, etc.)
   bitzoom-gpu.js           WebGPU compute acceleration (671 lines)
   bitzoom-worker.js        Web Worker coordinator (142 lines)
   bitzoom-proj-worker.js   Web Worker projection (95 lines)
   bz-graph.js              <bz-graph> web component
-  bitzoom.js               Public API entrypoint (re-exports all public symbols)
+  bitzoom.js               Public API entrypoint (re-exports createBitZoomView, exportSVG, autoTuneWeights, etc.)
   webgl-test.html          Side-by-side Canvas 2D vs WebGL2 comparison page (246 lines)
 
 docs/dist/                 Bundled distribution
-  bitzoom.bundle.js        Minified single-file bundle (~90KB, 30KB gzipped). Build: `deno task bundle`
+  bitzoom.bundle.js        Minified single-file bundle (~98KB, gzipped). Build: `deno task bundle`
 
 docs/data/                 9 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
 benchmarks/                Layout comparison suite (export, compare, Docker runner)
@@ -85,7 +86,9 @@ scripts/
 
 - **ES modules** — `import`/`export` everywhere. Module workers. `<script type="module">` in each HTML page.
 - **No code duplication** — GC-optimized MinHash/projection (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) in [bitzoom-algo.js](docs/bitzoom-algo.js), imported by pipeline and workers.
-- **Composition** — `BitZoom` owns a `BitZoomCanvas` (`this.view`) for all graph state, rendering, and interaction primitives. `BitZoom` adds UI, workers, data loading, detail panel, URL hash state. `BitZoomCanvas` is standalone (no DOM beyond `<canvas>`), with `createBitZoomView()` factory and `skipEvents`/`onRender`/`autoTune`/`autoGPU`/`webgl` options for embedding.
+- **Composition** — `BitZoom` owns a `BitZoomCanvas` (`this.view`) for all graph state, rendering, and interaction primitives. `BitZoom` adds UI, workers, data loading, detail panel, URL hash state. `BitZoomCanvas` is standalone (no DOM beyond `<canvas>`), with `createBitZoomView()` factory and `skipEvents`/`onRender`/`autoTune`/`autoGPU`/`webgl`/`colorBy` options for embedding.
+- **colorBy** — `BitZoomCanvas.colorBy` property overrides which property group controls node colors (default: auto = highest-weight group). In the viewer, click a group name label to set colorBy (underline indicates active); click again to return to auto. `<bz-graph>` supports `color-by` attribute.
+- **SVG export** — `exportSVG(bz, opts)` in [bitzoom-svg.js](docs/bitzoom-svg.js) renders the current graph view as an SVG string. In the viewer, press **S** to download an SVG file.
 - **WebGL2 rendering** — optional GPU-accelerated layer for grid, edges, heatmap, and circles via 7 shader programs in [bitzoom-gl-renderer.js](docs/bitzoom-gl-renderer.js). Text stays on Canvas 2D overlay. Dual canvas architecture: wrapper div with GL canvas behind, original canvas transparent on top. Toggle via `webgl: true` option or GL button in viewer toolbar. Falls back silently if WebGL2 unavailable (`isWebGL2Available()` probe).
 - **Auto-tune** — `autoTuneWeights` in [bitzoom-utils.js](docs/bitzoom-utils.js) optimizes weights/alpha/quant by maximizing spread × clumpiness at L5. Async with yield-based progress. Supports `AbortSignal` and timeout. Accepts `blendFn` option (defaults to CPU `unifiedBlend`). Viewer has "Auto" button; embedded views accept `autoTune` option.
 - **Web Workers** — coordinator fans out to up to 3 projection sub-workers. Transferable Float64Array buffers.

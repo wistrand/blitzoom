@@ -21,6 +21,7 @@ docs/                    Web application (ES modules, served by Deno)
   bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering
   bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading
   bitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
+  bitzoom-svg.js           SVG export — exportSVG(bz, opts) renders graph as SVG string
   bitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
   bitzoom-proj-worker.js   Web Worker — imports from algo+pipeline, computes projections
   webgl-test.html          Side-by-side Canvas 2D vs WebGL2 visual comparison
@@ -52,6 +53,8 @@ bitzoom-utils.js             (imports from algo — autoTuneWeights)
   ↑
 bitzoom-canvas.js            (imports from algo + renderer + gl-renderer + utils)
   ↑             ↑
+bitzoom-svg.js               (imports from algo + renderer — SVG export)
+  ↑
 bitzoom-viewer.js  bitzoom-worker.js → bitzoom-proj-worker.js
   (composes                            ↑
    BitZoomCanvas)            (imports from algo + pipeline)
@@ -152,7 +155,9 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
-**`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propWeights, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Constructor accepts `skipEvents` (for composition), `onRender` callback, `showLegend`, `showResetBtn`, `webgl`, and `autoGPU` options.
+**`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propWeights, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Constructor accepts `skipEvents` (for composition), `onRender` callback, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, and `colorBy` options.
+
+**`colorBy`**: getter/setter overrides which property group controls node colors. Default `null` = auto (highest-weight group). Setting to a valid group name pins coloring to that group; setting to `null` returns to auto. In the viewer, clicking a group name label toggles colorBy (underlined = active). `<bz-graph>` supports the `color-by` attribute.
 
 **WebGL2 integration**: `_initWebGL()` creates a wrapper div, inserts a GL canvas behind the original (transparent overlay), and calls `initGL()`. `_destroyWebGL()` unwraps and restores. `useWebGL` getter/setter toggles at runtime. `resize()` uses `canvas.clientWidth`/`clientHeight` (content box, excludes border) for measurement.
 
@@ -176,7 +181,13 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **URL hash**: `d=name&l=level&z=zoom&x=pan&y=pan&bl=base&s=selected`. Updates via `replaceState` on each render (via `onRender` callback).
 
-**UI**: dynamic weight sliders, preset buttons, label checkboxes, size-by toggle (members/edges), quantization mode toggle (gaussian/rank), heatmap mode cycle (off/splat/density), edge mode cycle (curves/lines/none), GL toggle button (WebGL2 on/off, shows "N/A" when unavailable), GPU tri-state button (Auto → GPU → CPU, cycles on click), FPS counter (F key or click top-left), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation. Cancel button on load screen (visible when data already loaded) returns to current view. GL wrapper div hidden/shown with loader screen. Mobile: compact toolbar, hidden hint section.
+**UI**: dynamic weight sliders, preset buttons, label checkboxes, size-by toggle (members/edges), quantization mode toggle (gaussian/rank), heatmap mode cycle (off/splat/density), edge mode cycle (curves/lines/none), GL toggle button (WebGL2 on/off, shows "N/A" when unavailable), GPU tri-state button (Auto → GPU → CPU, cycles on click), FPS counter (F key or click top-left), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation. Cancel button on load screen (visible when data already loaded) returns to current view. GL wrapper div hidden/shown with loader screen. Mobile: compact toolbar, hidden hint section. Press **S** to download SVG export.
+
+**Color-by UI**: clicking a group name label in the sidebar sets `view.colorBy` to that group (underline indicates active). Clicking again returns to auto (highest-weight group). This overrides coloring without affecting layout weights.
+
+### [bitzoom-svg.js](../docs/bitzoom-svg.js) (~220 lines)
+
+SVG export utility. `exportSVG(bz, opts)` renders the current graph view as an SVG string. Reads the same view state (nodes, edges, zoom, pan, level, colors) as the canvas renderer. Produces a standalone `<svg>` element with circles, edges, and labels. Used by the viewer's S key shortcut.
 
 ### Workers (142 + 95 lines)
 

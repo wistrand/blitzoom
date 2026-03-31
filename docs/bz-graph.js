@@ -33,6 +33,7 @@ const ATTR_MAP = {
   'webgl':        { prop: 'webgl',        type: 'bool', default: false },
   'auto-gpu':     { prop: 'autoGPU',      type: 'bool', default: true },
   'use-gpu':      { prop: 'useGPU',      type: 'bool', default: false },
+  'color-by':     { prop: 'colorBy',    type: 'string', default: null },
   'auto-tune':    { prop: 'autoTune',     type: 'json', default: null },
 };
 
@@ -155,6 +156,7 @@ class BzGraph extends HTMLElement {
       case 'legend': v.showLegend = this.hasAttribute('legend') ? 1 : 0; v.render(); break;
       case 'heatmap': v.setOptions({ heatmapMode: newVal || 'off' }); v.render(); break;
       case 'edge-mode': v.setOptions({ edgeMode: newVal || 'curves' }); v.render(); break;
+      case 'color-by': v.colorBy = newVal || null; break;
     }
   }
 }

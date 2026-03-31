@@ -9,6 +9,7 @@ import { autoTuneWeights } from './bitzoom-utils.js';
 import { convertStixToSnap } from './stix2snap.js';
 import { initGPU, computeProjectionsGPU } from './bitzoom-gpu.js';
 import { isWebGL2Available } from './bitzoom-gl-renderer.js';
+import { exportSVG } from './bitzoom-svg.js';
 
 import { BitZoomCanvas } from './bitzoom-canvas.js';
 import { computeNodeSig, runPipelineGPU, runPipeline, parseEdgesFile, parseNodesFile, buildGraph, computeProjections } from './bitzoom-pipeline.js';
@@ -675,12 +676,29 @@ class BitZoom {
                 v._refreshPropCache();
                 v.render();
             });
+            // Click group name to set colorBy
+            row.querySelector('.weight-label').addEventListener('click', () => {
+                v.colorBy = (v.colorBy === key) ? null : key;
+                this._updateColorByUI();
+            });
         }
+        this._updateColorByUI();
+    }
+
+    _updateColorByUI() {
+        const v = this.view;
+        document.querySelectorAll('.weight-label').forEach(el => {
+            const g = el.textContent;
+            const isColorBy = v.colorBy === g;
+            el.style.textDecoration = isColorBy ? 'underline' : 'none';
+            el.style.cursor = 'pointer';
+            el.title = isColorBy ? 'Click to reset to auto color' : `Color by ${g}`;
+        });
     }
 
     _scheduleRebuild() {
         if (this.rebuildTimer) clearTimeout(this.rebuildTimer);
-        this.rebuildTimer = setTimeout(async () => { await this.rebuildProjections(); this.rebuildTimer = null; }, 150);
+        this.rebuildTimer = setTimeout(async () => { await this.rebuildProjections(); this._updateColorByUI(); this.rebuildTimer = null; }, 150);
     }
 
     _syncWeightUI() {
@@ -980,6 +998,7 @@ class BitZoom {
             this._updateStepperUI();
             this._updateOverview();
             this._updateAlgoInfo();
+            this._updateColorByUI();
             this._scheduleHashUpdate();
         });
     }
@@ -1528,6 +1547,21 @@ class BitZoom {
                 v.render();
             } else if (e.key === 'c') {
                 v.cycleColorScheme();
+            } else if (e.key === 's') {
+                const svg = exportSVG(v, { metadata: this._currentDatasetId || undefined });
+                const blob = new Blob([svg], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bitzoom-${this._currentDatasetId || 'export'}.svg`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } else if (e.key === 'S') {
+                const svg = exportSVG(v, { metadata: this._currentDatasetId || undefined });
+                navigator.clipboard.writeText(svg).then(() => {
+                    v.showProgress('SVG copied to clipboard');
+                    setTimeout(() => { v._progressText = null; v.render(); }, 1500);
+                });
             }
         }, sig);
 

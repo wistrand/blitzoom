@@ -130,6 +130,7 @@
   <a href="#callbacks">Callbacks</a>
   <a href="#weights">Weight Tuning</a>
   <a href="#autotune">Auto-Tune</a>
+  <a href="#svg-export">SVG Export</a>
   <a href="#offline">Offline Pipeline</a>
   <a href="#performance">Performance</a>
   <a href="#pitfalls">Common Pitfalls</a>
@@ -302,6 +303,7 @@ eve	Eve	management	director	12</pre>
   <tr><td><code>useGPU</code></td><td>boolean</td><td>false</td><td>Force WebGPU compute for projection and blend (<a href="webgpu.html">details</a>)</td></tr>
   <tr><td><code>autoGPU</code></td><td>boolean</td><td>true</td><td>Automatically enable WebGPU when dataset is large enough to benefit (N&times;G &gt; 2000). Set to <code>false</code> to disable.</td></tr>
   <tr><td><code>colorScheme</code></td><td>number</td><td>0</td><td>Color scheme index: 0=vivid, 1=viridis, 2=plasma, 3=inferno, 4=thermal, 5=grayscale, 6=diverging, 7=greens, 8=reds</td></tr>
+  <tr><td><code>colorBy</code></td><td>string</td><td>null</td><td>Override which property group controls node colors. <code>null</code> = auto (highest-weight group). Set to a group name to pin coloring.</td></tr>
   <tr><td><code>lightMode</code></td><td>boolean</td><td>false</td><td>Light theme for labels, legend, and grid. Press <kbd>C</kbd> to cycle color schemes, set <code>view.lightMode = true</code> at runtime.</td></tr>
 </table>
 
@@ -436,7 +438,7 @@ view.<span class="fn">setOptions</span>({
 
 <p>Call <code>autoTuneWeights</code> directly for full control:</p>
 
-<pre><span class="keyword">import</span> { autoTuneWeights } <span class="keyword">from</span> <span class="string">'./bitzoom-utils.js'</span>;
+<pre><span class="keyword">import</span> { autoTuneWeights } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
 
 <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="fn">autoTuneWeights</span>(
   view.nodes, view.groupNames, view.adjList, view.nodeIndexFull,
@@ -468,6 +470,19 @@ view.setWeights(result.weights); <span class="comment">// triggers re-blend and 
 </ol>
 
 <p>Each evaluation runs a full blend + quantize cycle (~1-3ms per evaluation depending on graph size). Total time is typically 200-800ms for graphs under 5K nodes.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<h2 id="svg-export">SVG Export</h2>
+
+<p>Export the current graph view as a standalone SVG. In the viewer, press <kbd>S</kbd> to download. Programmatically:</p>
+
+<pre><span class="keyword">import</span> { exportSVG } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+
+<span class="keyword">const</span> svgString = <span class="fn">exportSVG</span>(view);
+<span class="comment">// Returns a complete &lt;svg&gt; string with circles, edges, and labels</span></pre>
+
+<p>The export reads the same view state (nodes, edges, zoom, pan, level, colors) as the canvas renderer, producing a vector image suitable for print or embedding in documents.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
@@ -736,6 +751,7 @@ carol	alice
   <tr><td><code>reset-btn</code></td><td>(boolean)</td><td>Show reset button</td></tr>
   <tr><td><code>light-mode</code></td><td>(boolean)</td><td>Light theme</td></tr>
   <tr><td><code>webgl</code></td><td>(boolean)</td><td>WebGL2 rendering</td></tr>
+  <tr><td><code>color-by</code></td><td><code>"group"</code></td><td>Override color group (null = auto, highest-weight group)</td></tr>
 </table>
 
 <p>Access the underlying <code>BitZoomCanvas</code> via <code>element.view</code> for programmatic control:</p>
@@ -755,7 +771,7 @@ el.setAttribute(<span class="string">'level'</span>, <span class="string">'5'</s
 
 <h3>Quickest: single-file bundle</h3>
 
-<p><a href="dist/bitzoom.bundle.js">One file</a>, 90KB minified (30KB gzipped), includes everything:</p>
+<p><a href="dist/bitzoom.bundle.js">One file</a>, ~98KB minified (gzipped), includes everything:</p>
 
 <pre>&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;</pre>
 
@@ -789,6 +805,7 @@ el.setAttribute(<span class="string">'level'</span>, <span class="string">'5'</s
   <tr><td><code>bitzoom-utils.js</code></td><td>Auto-tune optimizer</td></tr>
   <tr><td><code>bitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering</td></tr>
   <tr><td><code>bitzoom-gpu.js</code></td><td>WebGPU compute acceleration</td></tr>
+  <tr><td><code>bitzoom-svg.js</code></td><td>SVG export (<code>exportSVG</code>)</td></tr>
   <tr><td><code>bitzoom-colors.js</code></td><td>Color schemes (vivid, viridis, plasma, etc.)</td></tr>
   <tr><td><code>bz-graph.js</code></td><td><code>&lt;bz-graph&gt;</code> web component</td></tr>
   <tr><td><code>dist/bitzoom.bundle.js</code></td><td>Minified single-file bundle (all of the above)</td></tr>

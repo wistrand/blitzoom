@@ -9,6 +9,7 @@ export { BzGraph } from './bz-graph.js';
 
 // Utilities
 export { autoTuneWeights } from './bitzoom-utils.js';
+export { exportSVG } from './bitzoom-svg.js';
 
 // Feature probes
 export { isWebGL2Available } from './bitzoom-gl-renderer.js';

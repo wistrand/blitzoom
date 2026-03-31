@@ -89,6 +89,7 @@ export class BitZoomCanvas {
     this._progressText = null; // overlay text shown during auto-tune
     this.showFps = opts.showFps || false;
     this._colorScheme = opts.colorScheme || 0;
+    this._colorBy = opts.colorBy || null; // null = auto (highest weight group)
     this._lightMode = opts.lightMode || false;
     this._useGPU = false; // when true, blend uses GPU compute
     this._gl = null;       // WebGL2 context (null = Canvas 2D mode)
@@ -173,9 +174,11 @@ export class BitZoomCanvas {
     for (const g of this.groupNames) {
       if ((this.propWeights[g] || 0) > bestW) { bestW = this.propWeights[g]; best = g; }
     }
-    this._cachedDominant = best;
+    // colorBy overrides auto-selection for coloring; layout dominant stays weight-based
+    const colorProp = (this._colorBy && this.groupNames.includes(this._colorBy)) ? this._colorBy : best;
+    this._cachedDominant = colorProp;
     this._cachedLabelProps = this.labelProps.size > 0 ? [...this.labelProps] : [best];
-    this._cachedColorMap = this.propColors[best] || {};
+    this._cachedColorMap = this.propColors[colorProp] || {};
     this.levels = new Array(ZOOM_LEVELS.length).fill(null);
     if (this._edgeBuildRaf) { cancelAnimationFrame(this._edgeBuildRaf); this._edgeBuildRaf = null; }
   }
@@ -205,6 +208,14 @@ export class BitZoomCanvas {
     this.render();
   }
   get colorSchemeName() { return COLOR_SCHEME_NAMES[this._colorScheme]; }
+
+  get colorBy() { return this._colorBy; }
+  set colorBy(val) {
+    this._colorBy = val && this.groupNames.includes(val) ? val : null;
+    this._refreshPropCache();
+    this.layoutAll();
+    this.render();
+  }
 
   get lightMode() { return this._lightMode; }
   set lightMode(val) {

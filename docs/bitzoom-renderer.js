@@ -931,9 +931,14 @@ function renderLegend(bz) {
   }
   maxW = Math.min(maxW, maxLabelW);
 
+  const headerText = bz._cachedDominant.toUpperCase();
+  ctx.font = `bold 8px JetBrains Mono, monospace`;
+  const headerW = ctx.measureText(headerText).width;
+  const headerH = 14;
+
   const lines = entries.length + (overflow > 0 ? 1 : 0);
-  const boxW = dotR * 2 + 6 + maxW + pad * 2;
-  const boxH = lines * lineH + pad * 2;
+  const boxW = Math.max(dotR * 2 + 6 + maxW, headerW) + pad * 2;
+  const boxH = headerH + lines * lineH + pad * 2;
   const margin = 8;
   const pos = bz.showLegend || 1; // 1=BR, 2=BL, 3=TL, 4=TR
   const x = (pos === 2 || pos === 3) ? margin : bz.W - boxW - margin;
@@ -945,10 +950,17 @@ function renderLegend(bz) {
   ctx.roundRect(x, y, boxW, boxH, 4);
   ctx.fill();
 
+  // Header
+  ctx.fillStyle = _t(bz).legendOverflow;
+  ctx.font = 'bold 8px JetBrains Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(headerText, x + pad, y + pad);
+
   // Entries
   for (let i = 0; i < entries.length; i++) {
     const [label, color] = entries[i];
-    const ey = y + pad + i * lineH + lineH / 2;
+    const ey = y + pad + headerH + i * lineH + lineH / 2;
 
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -964,7 +976,7 @@ function renderLegend(bz) {
 
   // Overflow indicator
   if (overflow > 0) {
-    const ey = y + pad + entries.length * lineH + lineH / 2;
+    const ey = y + pad + headerH + entries.length * lineH + lineH / 2;
     ctx.fillStyle = _t(bz).legendOverflow;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
