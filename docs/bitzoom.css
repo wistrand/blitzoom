@@ -19,7 +19,7 @@
 
   body.light {
     --bg: #f0f0f5;
-    --surface: #ffffff;
+    --surface: #e8e8f0;
     --border: #d0d0dd;
     --accent: #5b4bd5;
     --accent2: #d44a6a;
@@ -27,8 +27,8 @@
     --text: #333340;
     --text-dim: #6a6a80;
     --text-bright: #111118;
-    --canvas-bg: #e8e8f0;
-    --canvas-border: #c0c0d0;
+    --canvas-bg: #ffffff;
+    --canvas-border: #d0d0dd;
   }
 
   body {

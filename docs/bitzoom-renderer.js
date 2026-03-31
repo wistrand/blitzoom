@@ -683,9 +683,17 @@ function renderHeatmapSplat(bz) {
   const isRaw = bz.currentLevel === RAW_LEVEL;
   const allNodes = isRaw ? bz.nodes : bz.getLevel(bz.currentLevel).supernodes;
 
+  const light = bz._lightMode;
   ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
-  ctx.globalAlpha = 0.6;
+  if (light) {
+    // Light mode: source-over with higher alpha — splats colorize the light background
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 0.5;
+  } else {
+    // Dark mode: additive blending — splats brighten the dark background
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = 0.6;
+  }
 
   for (let i = 0; i < allNodes.length; i++) {
     const n = allNodes[i];
@@ -705,9 +713,16 @@ function renderHeatmapSplat(bz) {
     const rgb = hexToRgb(hexCol);
 
     const grad = ctx.createRadialGradient(px, py, 0, px, py, r);
-    grad.addColorStop(0, rgba(rgb.r, rgb.g, rgb.b, 0.25));
-    grad.addColorStop(0.5, rgba(rgb.r, rgb.g, rgb.b, 0.08));
-    grad.addColorStop(1, rgba(rgb.r, rgb.g, rgb.b, 0));
+    if (light) {
+      // Stronger center alpha, saturated color on light background
+      grad.addColorStop(0, rgba(rgb.r, rgb.g, rgb.b, 0.4));
+      grad.addColorStop(0.5, rgba(rgb.r, rgb.g, rgb.b, 0.15));
+      grad.addColorStop(1, rgba(rgb.r, rgb.g, rgb.b, 0));
+    } else {
+      grad.addColorStop(0, rgba(rgb.r, rgb.g, rgb.b, 0.25));
+      grad.addColorStop(0.5, rgba(rgb.r, rgb.g, rgb.b, 0.08));
+      grad.addColorStop(1, rgba(rgb.r, rgb.g, rgb.b, 0));
+    }
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(px, py, r, 0, Math.PI * 2);
@@ -838,16 +853,30 @@ function renderHeatmapDensity(bz) {
 
   const px = _densityImgData.data;
   const invThreshold = 1 / (_densityMaxW * 0.3);
+  const light = bz._lightMode;
   for (let i = 0; i < totalCells; i++) {
     const w = _densityW[i];
     if (w < 0.001) { px[i*4+3] = 0; continue; }
     const intensity = Math.min(1, w * invThreshold);
     const invW = intensity / w;
     const off = i * 4;
-    px[off]     = Math.min(255, _densityR[i] * invW + 0.5 | 0);
-    px[off + 1] = Math.min(255, _densityG[i] * invW + 0.5 | 0);
-    px[off + 2] = Math.min(255, _densityB[i] * invW + 0.5 | 0);
-    px[off + 3] = Math.min(255, intensity * 180 + 0.5 | 0);
+    // Average color weighted by intensity
+    const cr = Math.min(255, _densityR[i] * invW + 0.5 | 0);
+    const cg = Math.min(255, _densityG[i] * invW + 0.5 | 0);
+    const cb = Math.min(255, _densityB[i] * invW + 0.5 | 0);
+    if (light) {
+      // Light mode: lerp from white (bg) toward color. Dense = saturated color.
+      px[off]     = 255 - (255 - cr) * intensity + 0.5 | 0;
+      px[off + 1] = 255 - (255 - cg) * intensity + 0.5 | 0;
+      px[off + 2] = 255 - (255 - cb) * intensity + 0.5 | 0;
+      px[off + 3] = Math.min(255, intensity * 220 + 0.5 | 0);
+    } else {
+      // Dark mode: color scaled by intensity
+      px[off]     = cr;
+      px[off + 1] = cg;
+      px[off + 2] = cb;
+      px[off + 3] = Math.min(255, intensity * 180 + 0.5 | 0);
+    }
   }
 
   const octx = _densityCanvas.getContext('2d');

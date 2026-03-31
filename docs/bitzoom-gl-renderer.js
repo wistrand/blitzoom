@@ -274,6 +274,7 @@ precision highp float;
 in vec2 v_uv;
 uniform sampler2D u_density;
 uniform float u_maxW;
+uniform float u_lightMode;
 
 out vec4 fragColor;
 
@@ -282,8 +283,11 @@ void main() {
   float w = d.a;
   if (w < 0.001) discard;
   float intensity = min(1.0, w / (u_maxW * 0.3));
-  vec3 col = d.rgb / w * intensity;
-  fragColor = vec4(col, intensity * 0.7);
+  vec3 avgCol = d.rgb / w;
+  // Dark: color scaled by intensity. Light: lerp from white toward color.
+  vec3 col = mix(avgCol * intensity, 1.0 - (1.0 - avgCol) * intensity, u_lightMode);
+  float alpha = mix(intensity * 0.7, intensity * 0.86, u_lightMode);
+  fragColor = vec4(col, alpha);
 }
 `;
 
@@ -306,18 +310,20 @@ precision highp float;
 in vec2 v_screenPos;
 uniform float u_gridSize;
 uniform vec2 u_pan;
+uniform float u_lightMode;
 
 out vec4 fragColor;
 
 void main() {
-  // Grid line at every u_gridSize pixels, offset by pan
   vec2 p = v_screenPos - u_pan;
   vec2 g = abs(fract(p / u_gridSize + 0.5) - 0.5) * u_gridSize;
   float d = min(g.x, g.y);
-  // Match Canvas 2D lineWidth 0.5: very thin line with AA
   float line = 1.0 - smoothstep(0.0, 1.0, d);
   if (line < 0.01) discard;
-  fragColor = vec4(60.0/255.0, 60.0/255.0, 100.0/255.0, 0.3 * line);
+  // Dark: subtle blue-gray. Light: faint gray.
+  vec3 col = mix(vec3(60.0/255.0, 60.0/255.0, 100.0/255.0), vec3(0.4, 0.4, 0.55), u_lightMode);
+  float alpha = mix(0.3, 0.15, u_lightMode);
+  fragColor = vec4(col, alpha * line);
 }
 `;
 
@@ -459,6 +465,7 @@ function _createGridProgram(gl) {
   prog.u_resolution = gl.getUniformLocation(prog, 'u_resolution');
   prog.u_gridSize = gl.getUniformLocation(prog, 'u_gridSize');
   prog.u_pan = gl.getUniformLocation(prog, 'u_pan');
+  prog.u_lightMode = gl.getUniformLocation(prog, 'u_lightMode');
   return prog;
 }
 
@@ -480,6 +487,7 @@ function _createHeatResolveProgram(gl) {
   if (!prog) return null;
   prog.u_density = gl.getUniformLocation(prog, 'u_density');
   prog.u_maxW = gl.getUniformLocation(prog, 'u_maxW');
+  prog.u_lightMode = gl.getUniformLocation(prog, 'u_lightMode');
   return prog;
 }
 
@@ -1055,6 +1063,7 @@ function _renderHeatmapDensity(gl, bz) {
   gl.useProgram(gl._heatResolveProg);
   gl.uniform1i(gl._heatResolveProg.u_density, 0);
   gl.uniform1f(gl._heatResolveProg.u_maxW, gl._heatMaxW);
+  gl.uniform1f(gl._heatResolveProg.u_lightMode, bz._lightMode ? 1.0 : 0.0);
 
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, gl._heatTex);
@@ -1104,7 +1113,7 @@ function _buildSplatInstances(bz) {
     data[off + 3] = rgb[0];
     data[off + 4] = rgb[1];
     data[off + 5] = rgb[2];
-    data[off + 6] = 0.15;
+    data[off + 6] = bz._lightMode ? 0.3 : 0.15;
     data[off + 7] = 0;
     data[off + 8] = 0;
     data[off + 9] = 0;
@@ -1121,7 +1130,11 @@ function _renderHeatmapSplat(gl, bz) {
   if (count === 0) return;
 
   gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // additive
+  if (bz._lightMode) {
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // source-over for light bg
+  } else {
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // additive for dark bg
+  }
 
   const glowProg = gl._circleProgram._glow;
   gl.useProgram(glowProg);
@@ -1163,6 +1176,7 @@ export function renderGL(gl, bz) {
     gl.uniform2f(gl._gridProgram.u_resolution, W, H);
     gl.uniform1f(gl._gridProgram.u_gridSize, gridSize);
     gl.uniform2f(gl._gridProgram.u_pan, bz.pan.x % gridSize, bz.pan.y % gridSize);
+    gl.uniform1f(gl._gridProgram.u_lightMode, bz._lightMode ? 1.0 : 0.0);
     gl.bindVertexArray(gl._heatResolveVAO);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }

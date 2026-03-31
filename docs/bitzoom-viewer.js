@@ -1168,7 +1168,7 @@ class BitZoom {
         // Heatmap toggle
         const heatBtn = document.getElementById('heatmapBtn');
         const HEAT_MODES = ['off', 'splat', 'density'];
-        const HEAT_LABELS = { off: 'H', splat: 'H:S', density: 'H:D' };
+        const HEAT_LABELS = { off: 'H:-', splat: 'H:S', density: 'H:D' };
         const updateHeatBtn = () => {
             heatBtn.textContent = HEAT_LABELS[v.heatmapMode];
             heatBtn.style.background = v.heatmapMode !== 'off' ? 'var(--accent)' : '';
