@@ -14,7 +14,7 @@
 <meta name="twitter:description" content="Embed graph views or run the pipeline offline. ES modules, no dependencies.">
 <meta name="twitter:image" content="images/bitzoom-2.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<script type="module" src="bz-graph.js"></script>
+<script type="module" src="bitzoom.js"></script>
 <style>
   bz-graph:not(:defined) { visibility: hidden; }
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -158,9 +158,9 @@
 
 <h2 id="quick-start">Quick Start</h2>
 
-<p>The fastest way to get a BitZoom graph on screen: one import, one function call, done. See the <a href="example.html">minimal example</a> for a complete working page.</p>
+<p>The fastest way to get a BitZoom graph on screen: one import, one function call, done. See the <a href="example.html">JS example</a> or <a href="bz-graph-demo.html">&lt;bz-graph&gt; example</a> for complete working pages.</p>
 
-<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom-canvas.js'</span>;
+<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
 
 <span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(
   document.getElementById(<span class="string">'canvas'</span>),
@@ -243,7 +243,7 @@ eve	Eve	management	director	12</pre>
 
 <p>If your graph is already in memory as JavaScript objects, skip the SNAP parsing entirely with <code>createBitZoomFromGraph</code>. Pass nodes as plain objects with <code>id</code>, <code>group</code>, <code>label</code>, and any extra properties. Edges are <code>{src, dst}</code> pairs.</p>
 
-<pre><span class="keyword">import</span> { createBitZoomFromGraph } <span class="keyword">from</span> <span class="string">'./bitzoom-canvas.js'</span>;
+<pre><span class="keyword">import</span> { createBitZoomFromGraph } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
 
 <span class="keyword">const</span> nodes = [
   { id: <span class="string">'alice'</span>,   group: <span class="string">'engineer'</span>, label: <span class="string">'Alice'</span>,   lang: <span class="string">'Go'</span>,     exp: 8 },
@@ -411,7 +411,7 @@ view.<span class="fn">setOptions</span>({
 
 <p>Pass <code>autoTune</code> in the options. The view renders immediately with defaults; the optimizer runs in the background and re-renders when done. A progress overlay appears on the canvas during optimization.</p>
 
-<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom-canvas.js'</span>;
+<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
 
 <span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edgesText, nodesText, {
   <span class="comment">// Auto-tune all parameters</span>
@@ -653,7 +653,7 @@ console.log(<span class="fn">jaccardEstimate</span>(sigA, sigA)); <span class="c
   </div>
 </div>
 
-<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom-canvas.js'</span>;
+<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
 
 <span class="comment">// Canvas 2D (default)</span>
 <span class="keyword">const</span> view2d = <span class="fn">createBitZoomView</span>(canvas1, edges, nodes, {
@@ -680,7 +680,7 @@ viewGL.useWebGL = <span class="keyword">true</span>;   <span class="comment">// 
 
 <h3>From files</h3>
 
-<pre>&lt;script type="module" src="bz-graph.js"&gt;&lt;/script&gt;
+<pre>&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;
 &lt;style&gt;bz-graph:not(:defined) { visibility: hidden; }&lt;/style&gt;
 
 &lt;bz-graph edges="data/epstein.edges" nodes="data/epstein.nodes"
@@ -751,39 +751,55 @@ el.setAttribute(<span class="string">'level'</span>, <span class="string">'5'</s
 
 <h2 id="files">Required Files</h2>
 
-<p>BitZoom has no build step and no npm package. Copy the files you need into your project:</p>
+<p>BitZoom has no build step and no npm package.</p>
+
+<h3>Quickest: single-file bundle</h3>
+
+<p><a href="dist/bitzoom.bundle.js">One file</a>, 90KB minified (30KB gzipped), includes everything:</p>
+
+<pre>&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;</pre>
+
+<p>Use <code>&lt;bz-graph&gt;</code> elements or import <code>createBitZoomView</code> from the same file.</p>
+
+<h3>Unbundled: ES modules</h3>
+
+<p>Copy all <code>.js</code> files from <code>docs/</code> into one directory. Import from <code>bitzoom.js</code> &mdash; it re-exports the full public API:</p>
+
+<pre>&lt;script type="module"&gt;
+  import { createBitZoomView } from './bitzoom.js';
+&lt;/script&gt;</pre>
 
 <h3>Offline / headless (Deno, Node, Web Worker)</h3>
-<p>For running the pipeline without a browser or canvas:</p>
-<table>
-  <tr><th>File</th><th>Role</th></tr>
-  <tr><td><code>bitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization, levels</td></tr>
-  <tr><td><code>bitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
-</table>
-<p>These two files have zero DOM dependencies. Import <code>runPipeline</code> from <code>bitzoom-pipeline.js</code>.</p>
 
-<h3>Browser (interactive canvas)</h3>
-<p>For embedding an interactive graph view in a web page:</p>
+<p>Only two files needed, zero DOM dependencies:</p>
+
+<pre>import { runPipeline } from './bitzoom-pipeline.js';</pre>
+
+<p>Requires <code>bitzoom-algo.js</code> + <code>bitzoom-pipeline.js</code>.</p>
+
+<h3>Full file list</h3>
+
 <table>
   <tr><th>File</th><th>Role</th></tr>
-  <tr><td><code>bitzoom-canvas.js</code></td><td>Entry point, <code>createBitZoomView()</code> factory</td></tr>
+  <tr><td><code>bitzoom.js</code></td><td>Public API entrypoint (recommended import)</td></tr>
+  <tr><td><code>bitzoom-canvas.js</code></td><td>Canvas component, <code>createBitZoomView()</code> factory</td></tr>
   <tr><td><code>bitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization</td></tr>
   <tr><td><code>bitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
   <tr><td><code>bitzoom-renderer.js</code></td><td>Canvas 2D rendering, hit testing, layout</td></tr>
   <tr><td><code>bitzoom-utils.js</code></td><td>Auto-tune optimizer</td></tr>
-  <tr><td><code>bitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering (optional feature, always imported)</td></tr>
-  <tr><td><code>bitzoom-gpu.js</code></td><td>WebGPU compute acceleration (optional feature, always imported)</td></tr>
+  <tr><td><code>bitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering</td></tr>
+  <tr><td><code>bitzoom-gpu.js</code></td><td>WebGPU compute acceleration</td></tr>
   <tr><td><code>bitzoom-colors.js</code></td><td>Color schemes (vivid, viridis, plasma, etc.)</td></tr>
-  <tr><td><code>bz-graph.js</code></td><td><code>&lt;bz-graph&gt;</code> web component (optional, imports bitzoom-canvas.js)</td></tr>
+  <tr><td><code>bz-graph.js</code></td><td><code>&lt;bz-graph&gt;</code> web component</td></tr>
+  <tr><td><code>dist/bitzoom.bundle.js</code></td><td>Minified single-file bundle (all of the above)</td></tr>
 </table>
-<p>The first seven files are required for <code>createBitZoomView</code>. Add <code>bz-graph.js</code> for the web component. All are ES modules. Place them in the same directory. No bundler required.</p>
 
 <p style="margin-top:48px;color:var(--text-dim);font-size:13px;text-align:center;">
   <a href="about.html">How It Works</a> &middot; <a href="viewer.html">Viewer</a> &middot; <a href="https://github.com/wistrand/bitzoom">GitHub</a>
 </p>
 
 <script type="module">
-import { createBitZoomView, createBitZoomFromGraph } from './bitzoom-canvas.js';
+import { createBitZoomView, createBitZoomFromGraph } from './bitzoom.js';
 
 // From-JS demo
 createBitZoomFromGraph(document.getElementById('demo-from-js'),

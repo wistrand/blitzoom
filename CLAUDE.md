@@ -26,21 +26,28 @@ deno task src2snap    # source code → SNAP call graph
 ```
 docs/                    Web app (ES modules, no build step)
   index.html               Landing page (308 lines)
-  viewer.html              Viewer HTML shell (108 lines)
-  about.html               How It Works page (1529 lines)
-  howto.html               Developer Guide (762 lines)
+  viewer.html              Viewer HTML shell (109 lines)
+  about.html               How It Works page (1562 lines)
+  howto.html               Developer Guide (897 lines)
   example.html             Minimal example — two graphs, linked from developer guide (53 lines)
-  bitzoom.css              Styles (657 lines)
-  bitzoom-algo.js          Pure algorithm functions and constants (516 lines)
+  bitzoom.css              Styles (673 lines)
+  bitzoom-algo.js          Pure algorithm functions and constants (495 lines)
   bitzoom-pipeline.js      Parsers, graph building, tokenization, projection (369 lines)
-  bitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing, FPS counter (944 lines)
+  bitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing, FPS counter (1067 lines)
   bitzoom-gl-renderer.js   WebGL2 rendering — shaders, instanced draw, GPU heatmap (1235 lines)
-  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (1011 lines)
-  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1750 lines)
+  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering (1061 lines)
+  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading (1772 lines)
   bitzoom-utils.js         Auto-tune optimizer (277 lines)
+  bitzoom-colors.js        Color schemes (vivid, viridis, plasma, etc.)
+  bitzoom-gpu.js           WebGPU compute acceleration (671 lines)
   bitzoom-worker.js        Web Worker coordinator (142 lines)
   bitzoom-proj-worker.js   Web Worker projection (95 lines)
+  bz-graph.js              <bz-graph> web component
+  bitzoom.js               Public API entrypoint (re-exports all public symbols)
   webgl-test.html          Side-by-side Canvas 2D vs WebGL2 comparison page (246 lines)
+
+docs/dist/                 Bundled distribution
+  bitzoom.bundle.js        Minified single-file bundle (~90KB, 30KB gzipped). Build: `deno task bundle`
 
 docs/data/                 9 SNAP-format datasets (.edges + .nodes, Amazon .gz compressed)
 benchmarks/                Layout comparison suite (export, compare, Docker runner)

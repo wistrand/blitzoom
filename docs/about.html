@@ -14,7 +14,7 @@
 <meta name="twitter:description" content="MinHash signatures, Gaussian projection, weighted blend, bit-shift zoom hierarchy.">
 <meta name="twitter:image" content="images/bitzoom-1.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<script type="module" src="bz-graph.js"></script>
+<script type="module" src="bitzoom.js"></script>
 <style>
   bz-graph:not(:defined) { visibility: hidden; }
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -1430,7 +1430,7 @@
   </div>
 </div>
 
-<pre style="font-size:11px">&lt;script type="module" src="bz-graph.js"&gt;&lt;/script&gt;
+<pre style="font-size:11px">&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;
 
 &lt;bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
           level="2" heatmap="density" legend
@@ -1438,7 +1438,7 @@
 &lt;/bz-graph&gt;</pre>
 
 <script type="module">
-import { createBitZoomView } from './bitzoom-canvas.js';
+import { createBitZoomView } from './bitzoom.js';
 
 const DEMO_PRESETS = {
   'epstein':        { initialLevel: 2, weights: { group: 8, edgetype: 4 }, labelProps: ['label'] },

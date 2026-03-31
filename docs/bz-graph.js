@@ -32,6 +32,7 @@ const ATTR_MAP = {
   'size-by':      { prop: 'sizeBy',       type: 'string', default: 'edges' },
   'webgl':        { prop: 'webgl',        type: 'bool', default: false },
   'auto-gpu':     { prop: 'autoGPU',      type: 'bool', default: true },
+  'use-gpu':      { prop: 'useGPU',      type: 'bool', default: false },
   'auto-tune':    { prop: 'autoTune',     type: 'json', default: null },
 };
 
@@ -60,8 +61,9 @@ class BzGraph extends HTMLElement {
     this._shadow = this.attachShadow({ mode: 'open' });
     this._shadow.innerHTML = `<style>
       :host { display: block; position: relative; }
+      .wrap { width: 100%; height: 100%; position: relative; }
       canvas { width: 100%; height: 100%; display: block; background: var(--bz-bg, #12122a); }
-    </style><canvas></canvas>`;
+    </style><div class="wrap"><canvas></canvas></div>`;
     this._canvas = this._shadow.querySelector('canvas');
   }
 
