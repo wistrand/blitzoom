@@ -18,94 +18,115 @@
 </head>
 <body>
 
-<header>
+<header role="banner">
   <div>
-    <h1><a href="index.html" style="color:inherit;text-decoration:none" title="Home">BITZOOM</a> <span id="datasetName" style="color:var(--text-dim);font-weight:400;font-size:11px"></span></h1>
-    <div class="subtitle"><a href="about.html" style="color:var(--text-dim);font-size:10px">How It Works</a> &middot; <a href="comparison.html" style="color:var(--text-dim);font-size:10px">Comparison</a> &middot; <a href="howto.html" style="color:var(--text-dim);font-size:10px">Developer Guide</a></div>
+    <h1><a href="index.html" style="color:inherit;text-decoration:none" title="Home">Bit<span style="color:var(--accent)">Zoom</span></a> <span id="datasetName" style="color:var(--text-dim);font-weight:400;font-size:11px" aria-label="Current dataset"></span></h1>
+    <nav class="subtitle" aria-label="Documentation links"><a href="about.html" style="color:var(--text-dim);font-size:10px">How It Works</a> &middot; <a href="comparison.html" style="color:var(--text-dim);font-size:10px">Comparison</a> &middot; <a href="howto.html" style="color:var(--text-dim);font-size:10px">Developer Guide</a></nav>
   </div>
-  <div class="zoom-controls">
-    <button class="reset-btn" id="loadNewBtn" style="display:none">Load</button>
-    <span class="zoom-label">Level</span>
-    <div class="zoom-stepper">
-      <button class="zoom-step-btn" id="zoomPrev">&#9664;</button>
-      <div class="zoom-current" id="zoomCurrent">L1</div>
-      <button class="zoom-step-btn" id="zoomNext">&#9654;</button>
+  <div class="zoom-controls" role="toolbar" aria-label="Viewer controls">
+    <button class="reset-btn" id="loadNewBtn" style="display:none" title="Load a different dataset" aria-label="Load dataset">Load</button>
+    <span class="zoom-label" title="Aggregation level — higher = more detail" id="levelLabel">Level</span>
+    <div class="zoom-stepper" role="group" aria-labelledby="levelLabel">
+      <button class="zoom-step-btn" id="zoomPrev" title="Coarser level" aria-label="Zoom out to coarser level">&#9664;</button>
+      <div class="zoom-current" id="zoomCurrent" title="Current zoom level" role="status" aria-live="polite">L1</div>
+      <button class="zoom-step-btn" id="zoomNext" title="Finer level" aria-label="Zoom in to finer level">&#9654;</button>
     </div>
-    <button class="reset-btn" id="resetBtn">↺</button>
-    <div class="nudge-control">
-      <span class="zoom-label">Topo α</span>
-      <input type="range" id="nudgeSlider" min="0" max="1" step="0.05" value="0">
-      <span class="nudge-val" id="nudgeVal">0</span>
+    <button class="reset-btn" id="resetBtn" title="Reset zoom and pan to fit all nodes" aria-label="Reset view">↺</button>
+    <div class="nudge-control" role="group" aria-label="Topology blend">
+      <span class="zoom-label" id="topoLabel">Topo α</span>
+      <input type="range" id="nudgeSlider" min="0" max="1" step="0.05" value="0" title="Topology weight (α)" aria-labelledby="topoLabel" aria-valuemin="0" aria-valuemax="1">
+      <span class="nudge-val" id="nudgeVal" aria-hidden="true">0</span>
     </div>
-    <div class="nudge-control">
+    <div class="nudge-control" role="group" aria-label="Node sizing">
       <span class="zoom-label">Size</span>
       <div class="zoom-stepper">
-        <button class="zoom-step-btn" id="sizeByMembers" style="font-size:9px;width:auto;padding:0 6px" title="Size by member count">n</button>
-        <button class="zoom-step-btn" id="sizeByEdges" style="font-size:9px;width:auto;padding:0 6px" title="Size by edge count">e</button>
-        <button class="zoom-step-btn" id="sizeLogBtn" style="font-size:9px;width:auto;padding:0 6px" title="Toggle log scale">log</button>
+        <button class="zoom-step-btn" id="sizeByMembers" style="font-size:9px;width:auto;padding:0 6px" title="Size by member count" aria-label="Size nodes by member count">n</button>
+        <button class="zoom-step-btn" id="sizeByEdges" style="font-size:9px;width:auto;padding:0 6px" title="Size by edge count" aria-label="Size nodes by edge count">e</button>
+        <button class="zoom-step-btn" id="sizeLogBtn" style="font-size:9px;width:auto;padding:0 6px" title="Toggle log scale for node size" aria-label="Toggle logarithmic size scale">log</button>
       </div>
     </div>
-    <button class="reset-btn" id="quantModeBtn" title="Quantization: gaussian/rank">Q:G</button>
-    <button class="reset-btn" id="edgeModeBtn" title="Edge mode: curves/lines/none">E</button>
-    <button class="reset-btn" id="heatmapBtn" title="Toggle heatmap">H</button>
-    <button class="reset-btn" id="autoTuneBtn" title="Auto-tune weights, alpha, and quantization">Auto</button>
-    <button class="reset-btn" id="gpuBtn" title="GPU compute: Auto / GPU / CPU" style="width:42px;text-align:center">Auto</button>
-    <button class="reset-btn" id="glBtn" title="Toggle WebGL2 rendering">GL</button>
-    <button class="reset-btn" id="themeBtn" title="Toggle light/dark mode">&#9788;</button>
+    <button class="reset-btn" id="quantModeBtn" title="Quantization mode: Gaussian (density-preserving) or Rank (uniform)" aria-label="Toggle quantization mode">Q:G</button>
+    <button class="reset-btn" id="edgeModeBtn" title="Edge display: curves / straight lines / hidden" aria-label="Cycle edge display mode">E:C</button>
+    <button class="reset-btn" id="heatmapBtn" title="Heatmap: off / density / splat" aria-label="Cycle heatmap mode">H:D</button>
+    <button class="reset-btn" id="autoTuneBtn" title="Auto-tune weights, alpha, and quantization to maximize visual structure" aria-label="Auto-tune parameters">Auto</button>
+    <button class="reset-btn" id="gpuBtn" title="WebGPU compute: Auto (adaptive) / GPU always / CPU only" style="width:42px;text-align:center" aria-label="Cycle GPU compute mode">Auto</button>
+    <button class="reset-btn" id="glBtn" title="WebGL2 rendering: offloads circle and edge drawing to GPU" aria-label="Toggle WebGL rendering">GL</button>
+    <button class="reset-btn" id="themeBtn" title="Toggle light/dark theme" aria-label="Toggle theme">&#9788;</button>
+    <button class="reset-btn" id="helpBtn" title="Show keyboard shortcuts and control reference" aria-label="Help">?</button>
   </div>
 </header>
 
-<div id="loader-screen" class="loader-screen">
-  <div class="drop-zone" id="dropZone">
-    <div class="drop-title">Load Graph</div>
+<dialog id="helpDialog" aria-labelledby="helpDialogTitle" style="max-width:520px;margin:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'JetBrains Mono',monospace;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+  <h3 style="margin:0 0 16px;color:var(--text-bright);font-size:15px;font-family:'Syne',sans-serif" id="helpDialogTitle">Controls</h3>
+  <div id="helpDialogContent" style="font-size:12px;line-height:1.8;max-height:60vh;overflow-y:auto"></div>
+  <form method="dialog" style="margin-top:16px"><button style="background:var(--accent);color:#fff;border:none;border-radius:4px;padding:6px 16px;font-size:12px;cursor:pointer;font-family:inherit" aria-label="Close help">OK</button></form>
+</dialog>
+
+<main id="loader-screen" class="loader-screen" role="region" aria-label="Dataset loader">
+  <div class="drop-zone" id="dropZone" role="region" aria-label="Drop zone for graph files">
+    <div class="drop-title" role="heading" aria-level="2">Load Graph</div>
     <div class="drop-hint">Pick a dataset or drop .edges / .nodes / STIX .json files</div>
-    <div class="dataset-list" id="datasetList"></div>
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:20px">
+      <select id="datasetSelect" aria-label="Choose a dataset" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:12px;font-family:'JetBrains Mono',monospace;min-width:240px"></select>
+      <button id="datasetLoadBtn" class="load-btn" style="margin:0;padding:6px 16px;font-size:12px" aria-label="Load selected dataset">Load</button>
+    </div>
+    <div class="drop-hint" style="margin-top:16px;margin-bottom:12px;border-top:1px solid var(--border);padding-top:16px">Or load from URL</div>
+    <div class="file-input-row" style="flex-direction:column;gap:6px;align-items:stretch;max-width:480px;margin:0 auto">
+      <input type="url" id="edgesUrl" placeholder=".edges URL (https://...)" aria-label="Edges file URL" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:12px;font-family:'JetBrains Mono',monospace;width:100%">
+      <input type="url" id="nodesUrl" placeholder=".nodes URL (optional)" aria-label="Nodes file URL (optional)" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:12px;font-family:'JetBrains Mono',monospace;width:100%">
+    </div>
     <div class="drop-hint" style="margin-top:16px;margin-bottom:12px;border-top:1px solid var(--border);padding-top:16px">Or load from file</div>
     <div class="file-input-row">
       <label>.edges or STIX .json
-        <input type="file" id="edgesFile" accept=".edges,.txt,.tsv,.gz,.json,.json.gz">
+        <input type="file" id="edgesFile" accept=".edges,.txt,.tsv,.gz,.json,.json.gz" aria-label="Choose edges or STIX file">
       </label>
       <label>.nodes (optional)
-        <input type="file" id="nodesFile" accept=".nodes,.labels,.txt,.tsv,.gz">
+        <input type="file" id="nodesFile" accept=".nodes,.labels,.txt,.tsv,.gz" aria-label="Choose nodes file (optional)">
       </label>
     </div>
-    <button class="load-btn" id="loadBtn" disabled>Load Graph</button>
-    <button class="load-btn" id="cancelLoadBtn" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text-dim);margin-left:8px">Cancel</button>
-    <progress id="loadProgress" value="0" max="100" style="width:80%;height:4px;margin-top:12px;display:none"></progress>
-    <div class="load-status" id="loadStatus"></div>
+    <button class="load-btn" id="loadBtn" disabled aria-label="Load graph from file or URL">Load Graph</button>
+    <button class="load-btn" id="cancelLoadBtn" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text-dim);margin-left:8px" aria-label="Cancel and return to viewer">Cancel</button>
+    <progress id="loadProgress" value="0" max="100" style="width:80%;height:4px;margin-top:12px;display:none" aria-label="Loading progress"></progress>
+    <div class="load-status" id="loadStatus" role="status" aria-live="polite"></div>
   </div>
-</div>
+</main>
 
-<canvas id="canvas" style="display:none"></canvas>
+<canvas id="canvas" style="display:none" role="img" aria-label="Graph visualization canvas"></canvas>
 <div id="aria-announce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 <table id="aria-summary" class="visually-hidden" role="table" aria-label="Graph nodes"><thead><tr><th>Name</th><th>Group</th><th>Connections</th></tr></thead><tbody></tbody></table>
 
-<div class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar" role="complementary" aria-label="Graph controls and statistics">
   <div>
-    <div class="panel-title">Overview</div>
-    <div id="overview-stats"></div>
+    <div class="panel-title" role="heading" aria-level="2">Overview</div>
+    <div id="overview-stats" role="status" aria-label="Graph statistics"></div>
   </div>
   <div>
-    <div class="panel-title">Cluster by</div>
-    <div class="preset-row" id="presetRow"></div>
-    <div id="weightSliders"></div>
+    <div class="panel-title" role="heading" aria-level="2">Cluster by</div>
+    <div class="preset-row" id="presetRow" role="group" aria-label="Weight presets"></div>
+    <div id="weightSliders" role="group" aria-label="Property weight sliders"></div>
   </div>
     <div class="algo-info" id="algo-info">
       Click a node or supernode to inspect it. Zoom levels L0–L3 show increasingly fine MinHash bucket partitions.
     </div>
   </div>
   <div class="hint-section">
-    <div class="hint">Drag to pan · Scroll to zoom canvas · Click node to inspect</div>
+    <div class="hint" role="note">Drag to pan · Scroll to zoom canvas · Click node to inspect</div>
   </div>
-</div>
+</aside>
 
-<div id="node-panel" class="node-panel">
-  <button class="node-panel-close" id="nodePanelClose">&times;</button>
+<aside id="node-panel" class="node-panel" role="complementary" aria-label="Node detail panel">
+  <button class="node-panel-close" id="nodePanelClose" aria-label="Close detail panel">&times;</button>
   <div id="node-detail"></div>
-</div>
+</aside>
 
-<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-<button class="sidebar-toggle" id="sidebarToggle">≡</button>
+<dialog id="errorDialog" aria-labelledby="errorDialogTitle" style="max-width:460px;margin:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'JetBrains Mono',monospace;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+  <h3 style="margin:0 0 12px;color:var(--accent2);font-size:14px" id="errorDialogTitle">Error</h3>
+  <p style="margin:0 0 16px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word" id="errorDialogMsg"></p>
+  <form method="dialog"><button style="background:var(--accent);color:#fff;border:none;border-radius:4px;padding:6px 16px;font-size:12px;cursor:pointer;font-family:inherit" aria-label="Dismiss error">OK</button></form>
+</dialog>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">≡</button>
 <script type="module" src="bitzoom-viewer.js"></script>
 </body>
 </html>

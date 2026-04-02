@@ -71,7 +71,12 @@ class BitZoom {
     _serializeHash() {
         const v = this.view;
         const parts = [];
-        if (this._currentDatasetId) parts.push(`d=${encodeURIComponent(this._currentDatasetId)}`);
+        if (this._currentDatasetId === '__url__' && this._currentEdgesUrl) {
+            parts.push(`edges=${encodeURIComponent(this._currentEdgesUrl)}`);
+            if (this._currentNodesUrl) parts.push(`nodes=${encodeURIComponent(this._currentNodesUrl)}`);
+        } else if (this._currentDatasetId) {
+            parts.push(`d=${encodeURIComponent(this._currentDatasetId)}`);
+        }
         parts.push(`l=${v.currentLevel}`);
         parts.push(`z=${v.zoom.toFixed(3)}`);
         parts.push(`x=${v.pan.x.toFixed(0)}`);
@@ -756,7 +761,7 @@ class BitZoom {
                     if (progressBar) progressBar.value = 0;
                     worker.terminate();
                     this.activeWorker = null;
-                    document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = false);
+                    document.getElementById('datasetSelect').disabled = false; document.getElementById('datasetLoadBtn').disabled = false;
                     reject(new Error(msg.message));
                     return;
                 }
@@ -768,21 +773,21 @@ class BitZoom {
                         if (progressBar) progressBar.value = 100;
                         resolve();
                     } catch (err) {
-                        status.textContent = 'Error: ' + err.message;
-                        status.classList.add('error');
-                        document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = false);
+                        status.textContent = '';
+                        document.getElementById('datasetSelect').disabled = false; document.getElementById('datasetLoadBtn').disabled = false;
+                        this._showError('Pipeline Error', err.message);
                         reject(err);
                     }
                 }
             };
 
             worker.onerror = (err) => {
-                status.textContent = 'Worker error: ' + (err.message || 'unknown');
-                status.classList.add('error');
+                status.textContent = '';
                 if (progressBar) progressBar.value = 0;
                 worker.terminate();
                 this.activeWorker = null;
-                document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = false);
+                document.getElementById('datasetSelect').disabled = false; document.getElementById('datasetLoadBtn').disabled = false;
+                this._showError('Worker Error', err.message || 'Unknown worker error');
                 reject(err);
             };
 
@@ -965,6 +970,7 @@ class BitZoom {
         v.selectedId = null;
         document.getElementById('node-panel').classList.remove('open');
         document.getElementById('loader-screen').classList.add('hidden');
+        document.getElementById('sidebar').style.display = '';
         const canvasEl = document.getElementById('canvas');
         canvasEl.style.display = 'block';
         if (canvasEl.parentElement && canvasEl.parentElement !== document.body) {
@@ -1039,7 +1045,7 @@ class BitZoom {
         } catch (err) {
             v._progressText = null;
             v.render();
-            console.error('GPU pipeline failed:', err);
+            this._showError('GPU Pipeline Error', err.message);
         }
     }
 
@@ -1059,7 +1065,7 @@ class BitZoom {
         status.classList.remove('error');
         progressBar.style.display = 'block';
         progressBar.value = 0;
-        document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = true);
+        document.getElementById('datasetSelect').disabled = true; document.getElementById('datasetLoadBtn').disabled = true;
 
         try {
             let edgesText, nodesText = null;
@@ -1084,15 +1090,32 @@ class BitZoom {
                 await this.loadGraph(edgesText, nodesText);
             }
             this._currentDatasetId = dataset.id;
+            if (dataset.id === '__url__') {
+                this._currentEdgesUrl = dataset.edges;
+                this._currentNodesUrl = dataset.nodes;
+            } else {
+                this._currentEdgesUrl = null;
+                this._currentNodesUrl = null;
+            }
             const nameEl = document.getElementById('datasetName');
             if (nameEl) nameEl.textContent = dataset.name;
             this._finalizeLoad(dataset);
         } catch (err) {
-            status.textContent = 'Error: ' + err.message;
-            status.classList.add('error');
+            status.textContent = '';
             progressBar.style.display = 'none';
-            document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = false);
+            document.getElementById('datasetSelect').disabled = false; document.getElementById('datasetLoadBtn').disabled = false;
+            this._showError('Dataset Load Error', err.message);
         }
+    }
+
+    _showError(title, message) {
+        const dlg = document.getElementById('errorDialog');
+        if (dlg) {
+            document.getElementById('errorDialogTitle').textContent = title;
+            document.getElementById('errorDialogMsg').textContent = message;
+            dlg.showModal();
+        }
+        console.error(`[${title}]`, message);
     }
 
     showLoaderScreen() {
@@ -1103,6 +1126,10 @@ class BitZoom {
         this.pendingNodesText = null;
         document.getElementById('edgesFile').value = '';
         document.getElementById('nodesFile').value = '';
+        document.getElementById('edgesUrl').value = '';
+        document.getElementById('nodesUrl').value = '';
+        this._pendingUrlEdges = null;
+        this._pendingUrlNodes = null;
         document.getElementById('loadBtn').disabled = true;
         document.getElementById('loadStatus').textContent = '';
         document.getElementById('loadStatus').classList.remove('error');
@@ -1116,7 +1143,8 @@ class BitZoom {
         document.getElementById('loader-screen').classList.remove('hidden');
         document.getElementById('loadNewBtn').style.display = 'none';
         document.getElementById('cancelLoadBtn').style.display = hadData ? '' : 'none';
-        document.querySelectorAll('.dataset-btn').forEach(b => b.disabled = false);
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('datasetSelect').disabled = false; document.getElementById('datasetLoadBtn').disabled = false;
     }
 
     // ─── Event binding ─────────────────────────────────────────────────────────
@@ -1355,6 +1383,28 @@ class BitZoom {
             v.lightMode = isLight;
         }, sig);
 
+        // Help
+        document.getElementById('helpBtn').addEventListener('click', () => {
+            const dlg = document.getElementById('helpDialog');
+            const content = document.getElementById('helpDialogContent');
+            const rows = [];
+            for (const el of document.querySelectorAll('header [title]')) {
+                const label = el.textContent.trim().replace(/\s+/g, ' ').slice(0, 20);
+                const desc = el.getAttribute('title');
+                if (desc && label) rows.push([label, desc]);
+            }
+            content.innerHTML = rows.map(([label, desc]) =>
+                `<div style="display:flex;gap:12px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--accent);min-width:60px;flex-shrink:0">${label}</span><span style="color:var(--text-dim)">${desc}</span></div>`
+            ).join('') +
+            `<div style="margin-top:12px;color:var(--text-dim)">` +
+            `<div style="padding:3px 0"><span style="color:var(--accent)">Scroll</span> Zoom canvas</div>` +
+            `<div style="padding:3px 0"><span style="color:var(--accent)">Drag</span> Pan view</div>` +
+            `<div style="padding:3px 0"><span style="color:var(--accent)">Click</span> Select node</div>` +
+            `<div style="padding:3px 0"><span style="color:var(--accent)">Ctrl+Click</span> Multi-select</div>` +
+            `</div>`;
+            dlg.showModal();
+        }, sig);
+
         // Sidebar
         document.getElementById('sidebarToggle').addEventListener('click', () => this._toggleSidebar(), sig);
         document.getElementById('sidebarBackdrop')?.addEventListener('click', () => this._toggleSidebar(false), sig);
@@ -1371,9 +1421,11 @@ class BitZoom {
             this.mouseStart = { x: e.clientX, y: e.clientY };
         }, sig);
         canvas.addEventListener('mousemove', e => {
+            const r = canvas.getBoundingClientRect();
+            this._lastMouseX = e.clientX - r.left;
+            this._lastMouseY = e.clientY - r.top;
             if (!this.mouseDown) {
-                const r = canvas.getBoundingClientRect();
-                const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+                const p = { x: this._lastMouseX, y: this._lastMouseY };
                 const hit = v.hitTest(p.x, p.y);
                 const hid = hit ? (hit.type === 'node' ? hit.item.id : hit.item.bid) : null;
                 if (hid !== v.hoveredId) { v.hoveredId = hid; canvas.style.cursor = hid ? 'pointer' : 'grab'; v.render(); }
@@ -1491,18 +1543,11 @@ class BitZoom {
         }, { passive: false, signal: this._abortController.signal });
         canvas.addEventListener('touchcancel', () => { this.t1 = null; this.t2 = null; }, sig);
 
-        // Wheel zoom
+        // Wheel zoom with node attraction
         canvas.addEventListener('wheel', e => {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-            const factor = e.deltaY < 0 ? 1.05 : 1/1.05;
-            const oldRZ = v.renderZoom;
-            v.zoom = Math.max(0.25, Math.min(10000, v.zoom * factor));
-            this._checkAutoLevel();
-            const f = v.renderZoom / oldRZ;
-            v.pan.x = mx - (mx - v.pan.x) * f;
-            v.pan.y = my - (my - v.pan.y) * f;
+            v.wheelZoom(e.clientX - rect.left, e.clientY - rect.top, e.deltaY < 0, () => this._checkAutoLevel());
             v.render();
         }, { passive: false, signal: this._abortController.signal });
 
@@ -1529,21 +1574,15 @@ class BitZoom {
                 e.preventDefault(); this.switchLevel(v.currentLevel + 1);
             } else if (e.key === '+' || e.key === '=') {
                 e.preventDefault();
-                const oldRZ = v.renderZoom;
-                v.zoom = Math.min(10000, v.zoom * 1.15);
-                this._checkAutoLevel();
-                const f = v.renderZoom / oldRZ;
-                v.pan.x = v.W/2 - (v.W/2 - v.pan.x) * f;
-                v.pan.y = v.H/2 - (v.H/2 - v.pan.y) * f;
+                const mx = this._lastMouseX ?? v.W / 2;
+                const my = this._lastMouseY ?? v.H / 2;
+                v.wheelZoom(mx, my, true, () => this._checkAutoLevel());
                 v.render();
             } else if (e.key === '-' || e.key === '_') {
                 e.preventDefault();
-                const oldRZ = v.renderZoom;
-                v.zoom = Math.max(0.25, v.zoom / 1.15);
-                this._checkAutoLevel();
-                const f = v.renderZoom / oldRZ;
-                v.pan.x = v.W/2 - (v.W/2 - v.pan.x) * f;
-                v.pan.y = v.H/2 - (v.H/2 - v.pan.y) * f;
+                const mx = this._lastMouseX ?? v.W / 2;
+                const my = this._lastMouseY ?? v.H / 2;
+                v.wheelZoom(mx, my, false, () => this._checkAutoLevel());
                 v.render();
             } else if (e.key === 'Escape') {
                 v.selectedId = null;
@@ -1599,6 +1638,7 @@ class BitZoom {
         document.getElementById('cancelLoadBtn').addEventListener('click', () => {
             this.dataLoaded = true;
             document.getElementById('loader-screen').classList.add('hidden');
+            document.getElementById('sidebar').style.display = '';
             const canvasEl = document.getElementById('canvas');
             canvasEl.style.display = 'block';
             if (canvasEl.parentElement && canvasEl.parentElement !== document.body) {
@@ -1618,6 +1658,25 @@ class BitZoom {
             if (e.target.files[0]) this._handleFileSelect(e.target.files[0], 'labels');
         }, sig);
 
+        // URL inputs
+        const edgesUrlInput = document.getElementById('edgesUrl');
+        const nodesUrlInput = document.getElementById('nodesUrl');
+        const updateUrlState = () => {
+            const url = edgesUrlInput.value.trim();
+            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                document.getElementById('loadBtn').disabled = false;
+                this._pendingUrlEdges = url;
+                this._pendingUrlNodes = nodesUrlInput.value.trim() || null;
+            } else {
+                this._pendingUrlEdges = null;
+                this._pendingUrlNodes = null;
+                // Re-check file state
+                if (!this.pendingEdgesText) document.getElementById('loadBtn').disabled = true;
+            }
+        };
+        edgesUrlInput.addEventListener('input', updateUrlState, sig);
+        nodesUrlInput.addEventListener('input', updateUrlState, sig);
+
         const dropZone = document.getElementById('dropZone');
         dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); }, sig);
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'), sig);
@@ -1633,6 +1692,19 @@ class BitZoom {
         }, sig);
 
         document.getElementById('loadBtn').addEventListener('click', async () => {
+            // URL-based loading takes priority if edges URL is set
+            if (this._pendingUrlEdges) {
+                const edgesUrl = this._pendingUrlEdges;
+                // If no explicit nodes URL, infer from edges URL
+                let nodesUrl = this._pendingUrlNodes;
+                if (!nodesUrl) {
+                    nodesUrl = edgesUrl.replace(/\.edges(\.gz)?$/, (_, gz) => '.nodes' + (gz || ''));
+                    if (nodesUrl === edgesUrl) nodesUrl = null; // no .edges suffix to replace
+                }
+                const name = edgesUrl.split('/').pop()?.replace(/\.edges(\.gz)?$/, '') || 'Remote';
+                this.loadDataset({ id: '__url__', name, edges: edgesUrl, nodes: nodesUrl, desc: 'URL' });
+                return;
+            }
             const progressBar = document.getElementById('loadProgress');
             progressBar.style.display = 'block';
             progressBar.value = 0;
@@ -1741,8 +1813,8 @@ class BitZoom {
             status.textContent = `STIX: ${result.stats.nodes} nodes, ${result.stats.edges} edges — ready to load`;
             document.getElementById('loadBtn').disabled = false;
         } catch (err) {
-            status.textContent = 'Error: ' + err.message;
-            status.classList.add('error');
+            status.textContent = '';
+            this._showError('STIX Parse Error', err.message);
         }
     }
 
@@ -1757,14 +1829,25 @@ class BitZoom {
     }
 
     _buildDatasetButtons() {
-        const list = document.getElementById('datasetList');
+        const select = document.getElementById('datasetSelect');
+        select.innerHTML = '';
         for (const ds of DATASETS) {
-            const btn = document.createElement('button');
-            btn.className = 'dataset-btn';
-            btn.innerHTML = `${ds.name} <span style="opacity:0.5;font-size:8px;margin-left:3px">${ds.desc}</span>`;
-            btn.addEventListener('click', () => this.loadDataset(ds));
-            list.appendChild(btn);
+            const opt = document.createElement('option');
+            opt.value = ds.id;
+            opt.textContent = `${ds.name} — ${ds.desc}`;
+            select.appendChild(opt);
         }
+        // Pre-select current or default
+        if (this._currentDatasetId) select.value = this._currentDatasetId;
+        document.getElementById('datasetLoadBtn').addEventListener('click', () => {
+            const ds = DATASETS.find(d => d.id === select.value);
+            if (ds) this.loadDataset(ds);
+        });
+        // Double-click loads immediately
+        select.addEventListener('dblclick', () => {
+            const ds = DATASETS.find(d => d.id === select.value);
+            if (ds) this.loadDataset(ds);
+        });
     }
 }
 
@@ -1778,7 +1861,7 @@ window.bz = bz;
     DATASETS = await fetch('datasets.json').then(r => r.json());
     bz._buildDatasetButtons();
   } catch (e) {
-    console.error('[Init] Failed to load datasets.json:', e);
+    bz._showError('Initialization Error', 'Failed to load datasets.json: ' + e.message);
   }
   bz._gpuMode = 'auto';
   try {
@@ -1800,8 +1883,21 @@ window.bz = bz;
 
   // Save hash params before anything can overwrite them
   const hashParams = bz._restoreFromHash();
-  const hashDataset = hashParams?.d ? DATASETS.find(d => d.id === hashParams.d) : null;
-  const startDataset = hashDataset || DATASETS.find(d => d.id === 'epstein');
+  let startDataset = null;
+  if (hashParams?.edges) {
+    // URL-based loading: #edges=https://...&nodes=https://...
+    const edgesUrl = hashParams.edges;
+    let nodesUrl = hashParams.nodes || null;
+    if (!nodesUrl) {
+      nodesUrl = edgesUrl.replace(/\.edges(\.gz)?$/, (_, gz) => '.nodes' + (gz || ''));
+      if (nodesUrl === edgesUrl) nodesUrl = null;
+    }
+    const name = edgesUrl.split('/').pop()?.replace(/\.edges(\.gz)?$/, '') || 'Remote';
+    startDataset = { id: '__url__', name, edges: edgesUrl, nodes: nodesUrl, desc: 'URL' };
+  } else {
+    const hashDataset = hashParams?.d ? DATASETS.find(d => d.id === hashParams.d) : null;
+    startDataset = hashDataset || DATASETS.find(d => d.id === 'epstein');
+  }
   bz._initialHashParams = hashParams; // preserved for _finalizeLoad
   if (startDataset) bz.loadDataset(startDataset);
 })();
@@ -1809,7 +1905,16 @@ window.bz = bz;
 window.addEventListener('hashchange', () => {
     if (!bz.dataLoaded || bz._finalizing) return; // ignore hash changes during loading/finalization
     const params = bz._restoreFromHash();
-    if (params && params.d === bz._currentDatasetId) {
+    if (params?.edges) {
+        const edgesUrl = params.edges;
+        let nodesUrl = params.nodes || null;
+        if (!nodesUrl) {
+            nodesUrl = edgesUrl.replace(/\.edges(\.gz)?$/, (_, gz) => '.nodes' + (gz || ''));
+            if (nodesUrl === edgesUrl) nodesUrl = null;
+        }
+        const name = edgesUrl.split('/').pop()?.replace(/\.edges(\.gz)?$/, '') || 'Remote';
+        bz.loadDataset({ id: '__url__', name, edges: edgesUrl, nodes: nodesUrl, desc: 'URL' });
+    } else if (params && params.d === bz._currentDatasetId) {
         bz._applyHashState(params);
     } else if (params?.d) {
         const ds = DATASETS.find(d => d.id === params.d);

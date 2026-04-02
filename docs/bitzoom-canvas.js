@@ -584,12 +584,14 @@ export class BitZoomCanvas {
     const idx = this.currentLevel;
     const maxIdx = LEVEL_LABELS.length - 1;
     if (idx < maxIdx && this.zoom >= 2) {
+      this._snapshotForCrossfade();
       this.zoom /= 2;
       this.currentLevel = idx + 1;
       this.layoutAll();
       return;
     }
     if (idx > 0 && this.zoom < 0.5) {
+      this._snapshotForCrossfade();
       this.zoom *= 2;
       this.currentLevel = idx - 1;
       this.layoutAll();
@@ -599,6 +601,47 @@ export class BitZoomCanvas {
     if (this.currentLevel === 0 && this.renderZoom <= 1) {
       this.pan = {x: 0, y: 0};
     }
+  }
+
+  /** Capture current canvas into a fading overlay for smooth level transitions. */
+  _snapshotForCrossfade() {
+    const src = this.canvas;
+    // Find the container — GL wrapper or canvas parent
+    const container = src.parentElement;
+    if (!container) return;
+    // Ensure container can anchor absolute children
+    if (getComputedStyle(container).position === 'static') {
+      container.style.position = 'relative';
+    }
+
+    // Reuse or create overlay canvas
+    let overlay = this._crossfadeOverlay;
+    if (!overlay) {
+      overlay = document.createElement('canvas');
+      overlay.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:10;transition:opacity 350ms ease-out;';
+      this._crossfadeOverlay = overlay;
+    }
+
+    overlay.width = src.width;
+    overlay.height = src.height;
+    overlay.style.width = src.style.width || src.offsetWidth + 'px';
+    overlay.style.height = src.style.height || src.offsetHeight + 'px';
+
+    const ctx = overlay.getContext('2d');
+    ctx.drawImage(src, 0, 0);
+
+    overlay.style.opacity = '1';
+    container.appendChild(overlay);
+
+    // Force reflow then trigger fade
+    overlay.offsetHeight; // eslint-disable-line no-unused-expressions
+    overlay.style.opacity = '0';
+
+    // Clean up after transition
+    clearTimeout(this._crossfadeTimer);
+    this._crossfadeTimer = setTimeout(() => {
+      if (overlay.parentElement) overlay.parentElement.removeChild(overlay);
+    }, 400);
   }
 
   // ─── Public API ────────────────────────────────────────────────────────────
@@ -913,14 +956,7 @@ export class BitZoomCanvas {
     canvas.addEventListener('wheel', e => {
       e.preventDefault();
       const r = canvas.getBoundingClientRect();
-      const mx = e.clientX - r.left, my = e.clientY - r.top;
-      const factor = e.deltaY < 0 ? 1.05 : 1/1.05;
-      const oldRZ = this.renderZoom;
-      this.zoom = Math.max(0.25, Math.min(10000, this.zoom * factor));
-      this._checkAutoLevel();
-      const f = this.renderZoom / oldRZ;
-      this.pan.x = mx - (mx - this.pan.x) * f;
-      this.pan.y = my - (my - this.pan.y) * f;
+      this.wheelZoom(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0);
       this.render();
     }, { passive: false, signal: this._abortController.signal });
 
@@ -963,8 +999,123 @@ export class BitZoomCanvas {
     if (this._edgeBuildRaf) { cancelAnimationFrame(this._edgeBuildRaf); this._edgeBuildRaf = null; }
     clearTimeout(this._viewAnnounceTimer);
     clearTimeout(this._hoverAnnounceTimer);
+    clearTimeout(this._crossfadeTimer);
+    if (this._crossfadeOverlay?.parentElement) this._crossfadeOverlay.parentElement.removeChild(this._crossfadeOverlay);
     const helpEl = this.canvas.getAttribute('aria-describedby');
     if (helpEl) { const el = (this.canvas.getRootNode() || document).getElementById?.(helpEl) || document.getElementById(helpEl); if (el) el.remove(); }
+  }
+
+  /**
+   * Zoom around a screen point with node attraction.
+   * Call from wheel handlers. Returns true if attraction was applied.
+   * @param {number} mx - screen x of zoom center
+   * @param {number} my - screen y of zoom center
+   * @param {boolean} zoomingIn
+   */
+  /**
+   * Zoom around a screen point with node attraction.
+   * Used by both wheel and keyboard zoom handlers.
+   * @param {number} mx - screen x of zoom center
+   * @param {number} my - screen y of zoom center
+   * @param {boolean} zoomingIn
+   * @param {function} [onAutoLevel] - called after zoom applied, before pan; use for UI updates on level change
+   */
+  /**
+   * Find the nearest node/supernode to a screen point. Uses spatial culling
+   * at RAW_LEVEL for large datasets (same 3×3 cell approach as hitTest).
+   * @returns {{ x: number, y: number } | null} world coords of nearest item
+   */
+  _nearestItem(sx, sy, maxScreenDist) {
+    if (!this.nodes || this.nodes.length === 0) return null;
+    const rz = this.renderZoom;
+    const wx = (sx - this.pan.x) / rz;
+    const wy = (sy - this.pan.y) / rz;
+    const maxWorld = maxScreenDist / rz;
+    let bestD2 = maxWorld * maxWorld;
+    let bestX = 0, bestY = 0, found = false;
+
+    if (this.currentLevel === RAW_LEVEL) {
+      const scale = this._layoutScale;
+      // Spatial culling for large datasets
+      if (scale && this.nodes.length > 500) {
+        const CULL_IDX = 5;
+        const cullLevel = ZOOM_LEVELS[CULL_IDX];
+        const px = (wx - this._layoutOffX) / scale + this._layoutMinX;
+        const py = (wy - this._layoutOffY) / scale + this._layoutMinY;
+        const gx = Math.max(0, Math.min(GRID_SIZE - 1, Math.floor((px + 1) / 2 * GRID_SIZE)));
+        const gy = Math.max(0, Math.min(GRID_SIZE - 1, Math.floor((py + 1) / 2 * GRID_SIZE)));
+        const shift = GRID_BITS - cullLevel;
+        const ccx = gx >> shift, ccy = gy >> shift;
+        const k = 1 << cullLevel;
+        const level = this.getLevel(CULL_IDX);
+        if (!level._snByBid) {
+          level._snByBid = new Map();
+          for (const sn of level.supernodes) level._snByBid.set(sn.bid, sn);
+        }
+        // Wider neighborhood (5×5) for attraction radius > cell size
+        for (let dy = -2; dy <= 2; dy++) {
+          const cy = ccy + dy;
+          if (cy < 0 || cy >= k) continue;
+          for (let dx = -2; dx <= 2; dx++) {
+            const cx = ccx + dx;
+            if (cx < 0 || cx >= k) continue;
+            const sn = level._snByBid.get((cx << cullLevel) | cy);
+            if (!sn) continue;
+            for (const n of sn.members) {
+              if (n.x === undefined) continue;
+              const ddx = n.x - wx, ddy = n.y - wy;
+              const d2 = ddx * ddx + ddy * ddy;
+              if (d2 < bestD2) { bestD2 = d2; bestX = n.x; bestY = n.y; found = true; }
+            }
+          }
+        }
+      } else {
+        for (let i = 0; i < this.nodes.length; i++) {
+          const n = this.nodes[i];
+          if (n.x === undefined) continue;
+          const ddx = n.x - wx, ddy = n.y - wy;
+          const d2 = ddx * ddx + ddy * ddy;
+          if (d2 < bestD2) { bestD2 = d2; bestX = n.x; bestY = n.y; found = true; }
+        }
+      }
+    } else {
+      const items = this.getLevel(this.currentLevel)?.supernodes || [];
+      for (let i = 0; i < items.length; i++) {
+        const n = items[i];
+        if (n.x === undefined) continue;
+        const ddx = n.x - wx, ddy = n.y - wy;
+        const d2 = ddx * ddx + ddy * ddy;
+        if (d2 < bestD2) { bestD2 = d2; bestX = n.x; bestY = n.y; found = true; }
+      }
+    }
+    return found ? { x: bestX, y: bestY } : null;
+  }
+
+  wheelZoom(mx, my, zoomingIn, onAutoLevel) {
+    // Before zoom: find nearest node/supernode to cursor
+    const nearest = zoomingIn ? this._nearestItem(mx, my, 200) : null;
+
+    // Apply zoom
+    const oldRZ = this.renderZoom;
+    this.zoom = Math.max(0.25, Math.min(10000, this.zoom * (zoomingIn ? 1.03 : 1/1.03)));
+
+    // Auto-level check (caller can hook for UI updates)
+    if (onAutoLevel) onAutoLevel();
+    else this._checkAutoLevel();
+
+    // Pan to keep cursor point fixed
+    const newRZ = this.renderZoom;
+    const f = newRZ / oldRZ;
+    this.pan.x = mx - (mx - this.pan.x) * f;
+    this.pan.y = my - (my - this.pan.y) * f;
+
+    // Nudge nearest node toward cursor
+    if (nearest) {
+      const nsx = nearest.x * newRZ + this.pan.x;
+      const nsy = nearest.y * newRZ + this.pan.y;
+      this.pan.x += (mx - nsx) * 0.08;
+      this.pan.y += (my - nsy) * 0.08;
+    }
   }
 
   // ─── Internal animation helpers ────────────────────────────────────────────

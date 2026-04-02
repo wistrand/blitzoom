@@ -1,16 +1,46 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 /**
- * Generate a SNAP graph from the BitZoom source code.
+ * Generate a SNAP graph from source code.
  *
  * Nodes = files, functions, classes, constants, methods
  * Edges = defines (file→symbol), calls (symbol→symbol), imports (file→file)
  *
- * Usage: deno run --allow-read --allow-write src2snap.ts [output-prefix]
+ * Usage: deno run --allow-read --allow-write src2snap.ts [source-dir] [output-prefix]
+ *
+ * Examples:
+ *   deno run --allow-read --allow-write src2snap.ts                          # scan . → source-graph
+ *   deno run --allow-read --allow-write src2snap.ts /path/to/project out     # scan dir → out.edges/out.nodes
+ *   deno task src2snap                                                       # uses deno.json defaults
  */
 
 import { walk } from "https://deno.land/std/fs/walk.ts";
+import { resolve, basename } from "https://deno.land/std/path/mod.ts";
 
-const prefix = Deno.args[0] || "data/bitzoom-source";
+// Parse args: [source-dir] [output-prefix]
+// If one arg and it looks like a directory (exists), treat as source dir.
+// If one arg and doesn't exist as dir, treat as output prefix.
+let sourceDir = ".";
+let prefix = "source-graph";
+
+if (Deno.args.length >= 2) {
+  sourceDir = Deno.args[0];
+  prefix = Deno.args[1];
+} else if (Deno.args.length === 1) {
+  try {
+    const stat = Deno.statSync(Deno.args[0]);
+    if (stat.isDirectory) {
+      sourceDir = Deno.args[0];
+      prefix = basename(resolve(sourceDir));
+    } else {
+      prefix = Deno.args[0];
+    }
+  } catch {
+    prefix = Deno.args[0];
+  }
+}
+
+sourceDir = resolve(sourceDir);
+console.log(`Scanning ${sourceDir} → ${prefix}.edges / ${prefix}.nodes`);
 
 interface Symbol {
   id: string;
@@ -51,16 +81,19 @@ const SKIP_DIRS = new Set(["node_modules", ".git", "stix", "tmp"]);
 // Collect all project files
 const files: { path: string; relPath: string; content: string; ext: string }[] = [];
 
-for await (const entry of walk(".", {
+for await (const entry of walk(sourceDir, {
   includeDirs: false,
   skip: [...SKIP_DIRS].map(d => new RegExp(`(^|/)${d}(/|$)`)),
 })) {
   const ext = entry.path.slice(entry.path.lastIndexOf("."));
   if (!EXTENSIONS.has(ext)) continue;
-  // Skip data files
-  if (entry.path.startsWith("data/")) continue;
 
-  const relPath = entry.path.startsWith("./") ? entry.path.slice(2) : entry.path;
+  const relPath = entry.path.startsWith(sourceDir)
+    ? entry.path.slice(sourceDir.length + 1)
+    : entry.path.startsWith("./") ? entry.path.slice(2) : entry.path;
+  // Skip data directories
+  if (relPath.startsWith("data/") || relPath.startsWith("data\\")) continue;
+
   const content = Deno.readTextFileSync(entry.path);
   files.push({ path: entry.path, relPath, content, ext });
 }
