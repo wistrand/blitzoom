@@ -132,6 +132,10 @@ draws layer 5):
 - 151-200: counts on large (importance > 0.7), labels hover/select only
 - 200+: all hover/select only. Node opacity scales with `0.3 + 0.7 * sqrt(size/maxSize)` when >50 visible.
 
+**Label truncation**: non-highlighted labels are truncated to `maxChars = max(3, snappedCellPx / charW)` where `snappedCellPx` is quantized to 4px steps to prevent jitter during smooth zoom. Selected, hovered, and zoom-target nodes always show the full untruncated label.
+
+**Zoom target highlight**: during scroll-wheel zoom, the nearest node/supernode that attracts the zoom (`zoomTargetId`) is rendered with the same highlight treatment as hovered nodes (full label, glow, full opacity). Cleared on zoom-out.
+
 **Edge sampling**: `maxEdgesToDraw = min(5000, max(200, nodeCount × 3))`. Short-edge bias in probabilistic sampling.
 
 **Other**: cubic bezier edges, Gaussian splat heatmap (additive), KDE density heatmap (1/4 resolution, persistent buffers), hit testing.
@@ -164,6 +168,8 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Dual canvas layout**: wrapper div (position: relative) → GL canvas (geometry, `pointer-events: none`) + original canvas (text, events, `background: transparent`). All mouse/touch events stay on the original canvas. Canvas has `touch-action: none` to prevent browser gesture interference on mobile.
 
+**Level crossfade**: `_snapshotForCrossfade()` captures the current canvas into an absolutely-positioned overlay that fades out over 350ms, providing a smooth visual transition between zoom levels. The overlay is positioned at the canvas's `offsetTop`/`offsetLeft` within its parent container (not fixed at `top:0;left:0`) so it aligns correctly regardless of layout — e.g., in grid layouts where the canvas is not at the container origin.
+
 **`createBitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`.
@@ -174,7 +180,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Composition**: all graph/view state accessed via `this.view.*`. BitZoom owns app-only state (dataLoaded, presets, workers, hash timers, mouse state).
 
-**Navigation**: `switchLevel` (delegates to view + UI updates, animates supernodes when both old and new levels have <80 nodes), `_checkAutoLevel` (delegates to view, adds stepper/info updates), `zoomToNode` (animated 350ms with reselection after level change), `_animateZoom` (shift+dblclick zoom-out).
+**Navigation**: `switchLevel` (delegates to view + UI updates, animates supernodes when both old and new levels have <80 nodes), `_checkAutoLevel` (delegates to view, adds stepper/info updates), `zoomToNode` (animated 350ms with reselection after level change), `_animateZoom` (shift+dblclick zoom-out). `wheelZoom` sets `zoomTargetId` to the nearest node's id when zooming in (null on zoom-out) so the renderer highlights the attraction target.
 
 **Multi-select**: Ctrl+click toggles `view.selectedIds`. Edges highlight for all selected nodes.
 

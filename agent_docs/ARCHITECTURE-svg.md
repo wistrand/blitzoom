@@ -172,9 +172,10 @@ importance = 0.3 + 0.7 * sqrt(sizeVal / maxSizeVal)
 ## Label visibility
 
 Same rules as canvas renderer:
-- Always shown: selected or hovered nodes
+- Always shown: selected, hovered, or zoom-target nodes (full label, no truncation)
 - Shown when sparse: ≤50 visible nodes and `cellPx ≥ 20`
 - Shown when important: ≤150 visible, importance > 0.7, `cellPx ≥ 20`
+- Non-highlighted labels truncated to `maxChars` derived from `cellPx` (quantized to 4px steps to prevent jitter)
 
 Multi-line labels (when `label` prop is active) split on ` · ` — name above,
 properties below.

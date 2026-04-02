@@ -94,9 +94,10 @@ scripts/
 - **Auto-tune** — `autoTuneWeights` in [bitzoom-utils.js](docs/bitzoom-utils.js) optimizes weights/alpha/quant by maximizing spread × clumpiness at L5. Async with yield-based progress. Supports `AbortSignal` and timeout. Accepts `blendFn` option (defaults to CPU `unifiedBlend`). Viewer has "Auto" button; embedded views accept `autoTune` option.
 - **Web Workers** — coordinator fans out to up to 3 projection sub-workers. Transferable Float64Array buffers.
 - **Supernode color/label cached at build time** — not recomputed per frame. `_refreshPropCache()` invalidates level cache.
-- **Two-zoom system** — logical zoom triggers level changes; `renderZoom = max(1, zoom * 2^levelOffset)` keeps visual scale continuous.
+- **Two-zoom system** — logical zoom triggers level changes; `renderZoom = max(1, zoom * 2^levelOffset)` keeps visual scale continuous. Level crossfade overlay positioned at canvas `offsetTop`/`offsetLeft` (not `top:0;left:0`) to align in any layout.
 - **Multi-select** — Ctrl+click toggles; `selectedIds` Set; edges highlight for all selected.
-- **Adaptive rendering** — edge sampling scales with visible nodes; labels/counts hide at high density, appear on zoom-in; node opacity scales with importance.
+- **Adaptive rendering** — edge sampling scales with visible nodes; labels/counts hide at high density, appear on zoom-in; node opacity scales with importance. Label truncation length quantized to 4px `cellPx` steps to prevent jitter during smooth zoom.
+- **Zoom target highlight** — during scroll-wheel zoom-in, the nearest node (`zoomTargetId`) gets the same highlight treatment as hovered nodes (full label, glow, full opacity). Cleared on zoom-out.
 - **5-layer render order** — edges → heatmap → highlighted edges → circles → labels. WebGL2 renders geometry layers (grid through circles); Canvas 2D overlay handles text (labels, legend, reset button).
 - **GPU tri-state** — viewer GPU button cycles Auto → GPU → CPU. Auto (default) uses adaptive thresholds: GPU projection when N×G > 2000, GPU blend when N > 50K. GPU forces all operations to GPU; CPU forces all to CPU.
 - **Async initial blend** — `createBitZoomView()` returns synchronously; initial blend kicks off async (GPU probe → blend → render). Callers get a ready view immediately; first render completes in background.
