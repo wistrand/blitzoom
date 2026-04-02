@@ -618,7 +618,7 @@ export class BitZoomCanvas {
     let overlay = this._crossfadeOverlay;
     if (!overlay) {
       overlay = document.createElement('canvas');
-      overlay.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:10;transition:opacity 350ms ease-out;';
+      overlay.style.cssText = 'position:absolute;pointer-events:none;z-index:10;transition:opacity 350ms ease-out;';
       this._crossfadeOverlay = overlay;
     }
 
@@ -626,6 +626,9 @@ export class BitZoomCanvas {
     overlay.height = src.height;
     overlay.style.width = src.style.width || src.offsetWidth + 'px';
     overlay.style.height = src.style.height || src.offsetHeight + 'px';
+    // Position overlay at the canvas's offset within its container
+    overlay.style.top = src.offsetTop + 'px';
+    overlay.style.left = src.offsetLeft + 'px';
 
     const ctx = overlay.getContext('2d');
     ctx.drawImage(src, 0, 0);
