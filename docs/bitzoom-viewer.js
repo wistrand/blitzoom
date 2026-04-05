@@ -646,6 +646,7 @@ class BitZoom {
         if (settings.initialLevel != null) {
             v.currentLevel = settings.initialLevel;
             v.baseLevel = settings.initialLevel;
+            v._initLevel = settings.initialLevel;
         }
     }
 
@@ -987,6 +988,7 @@ class BitZoom {
 
         v.currentLevel = 3; // L4
         v.baseLevel = 3;
+        v._initLevel = 3;
         this._pendingSettings = null;
     }
 
@@ -1434,11 +1436,9 @@ class BitZoom {
             if (v.currentLevel < LEVEL_LABELS.length - 1) this.switchLevel(v.currentLevel + 1);
         }, sig);
         document.getElementById('resetBtn').addEventListener('click', () => {
-            v.pan = {x: 0, y: 0};
-            v.zoom = 1;
-            v.baseLevel = v.currentLevel;
-            v.zoomForLevel(v.currentLevel);
-            v.render();
+            v.resetView();
+            this._updateStepperUI();
+            this._deferUIUpdate();
         }, sig);
 
         // Topology alpha slider
