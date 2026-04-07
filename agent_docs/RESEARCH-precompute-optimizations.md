@@ -1,6 +1,6 @@
 # Precompute Pipeline Optimizations
 
-Analysis of published techniques applicable to the Blitzoom precomputation pipeline at 30M+ node scale.
+Analysis of published techniques applicable to the BlitZoom precomputation pipeline at 30M+ node scale.
 
 ## Current Bottleneck Profile (30M nodes, 9M edges, 6 groups)
 
@@ -25,7 +25,7 @@ MinHash dominates at 90%+ of total compute.
 
 **OPH:** Use a single hash function. Partition output range into k bins. Keep minimum per bin. Cost: O(|S|).
 
-**Problem:** Empty bins when |S| < k (common in Blitzoom: 3-10 tokens per set).
+**Problem:** Empty bins when |S| < k (common in BlitZoom: 3-10 tokens per set).
 
 **Fix:** Densified OPH (Shrivastava, Li. ICML 2014). Fills empty bins by rehashing occupied values. Preserves unbiased Jaccard estimation.
 
@@ -89,7 +89,7 @@ projBuf = new Float64Array(N*G*2) // already exists
 2. Cumulative sum: O(65536)
 3. Assign gx by cumulative lookup: O(n)
 
-**Exact within ±1 grid cell.** Indistinguishable from sort-based rank for Blitzoom.
+**Exact within ±1 grid cell.** Indistinguishable from sort-based rank for BlitZoom.
 
 Gaussian quantization already O(n) via Φ lookup. This optimizes rank mode only.
 

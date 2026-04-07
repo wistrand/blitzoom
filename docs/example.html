@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blitzoom — Minimal Example</title>
+<title>BlitZoom — Minimal Example</title>
 <style>
   body { margin: 0; background: #0a0a0f; color: #c8c8d8; font-family: monospace; }
   h2 { font-size: 14px; color: #eeeef8; margin: 16px 12px 8px; }
@@ -19,20 +19,20 @@
 <canvas id="c2"></canvas>
 
 <script type="module">
-import { createBlitzoomView, createBlitzoomFromGraph } from './blitzoom.js';
+import { createBlitZoomView, createBlitZoomFromGraph } from './blitzoom.js';
 
 // Graph 1: load from SNAP files
 const [edges, nodes] = await Promise.all([
   fetch('data/epstein.edges').then(r => r.text()),
   fetch('data/epstein.nodes').then(r => r.text()),
 ]);
-createBlitzoomView(document.getElementById('c1'), edges, nodes, {
+createBlitZoomView(document.getElementById('c1'), edges, nodes, {
   initialLevel: 3, edgeMode: 'lines', heatmapMode: 'density', showLegend: true,
   strengths: { group: 5, edgetype: 8 }, labelProps: ['label'],
 });
 
 // Graph 2: inline data
-createBlitzoomFromGraph(document.getElementById('c2'),
+createBlitZoomFromGraph(document.getElementById('c2'),
   [
     { id: 'a', group: 'eng', label: 'Alice', lang: 'Go' },
     { id: 'b', group: 'eng', label: 'Bob',   lang: 'Go' },

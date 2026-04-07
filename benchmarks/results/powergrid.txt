@@ -4,8 +4,8 @@
 #
 Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
 ----------------------------------------------------------------------------------------
-Blitzoom:powergrid-a000            0.004         0.5044        0.4888    0.0004    0.0014
-Blitzoom:powergrid-a075            0.004         0.2709        0.2478    0.0029    0.0015
-Blitzoom:powergrid-a100            0.003         0.3801        0.3372    0.0034    0.0026
+BlitZoom:powergrid-a000            0.004         0.5044        0.4888    0.0004    0.0014
+BlitZoom:powergrid-a075            0.004         0.2709        0.2478    0.0029    0.0015
+BlitZoom:powergrid-a100            0.003         0.3801        0.3372    0.0034    0.0026
 Force-Directed                   59.394         0.0065        0.0031    0.1954    0.0026
 t-SNE                            23.160         0.1709        0.1170    0.0413    0.0018

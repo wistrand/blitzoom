@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blitzoom — Layout Comparison</title>
-<meta name="description" content="Blitzoom vs force-directed, UMAP, and t-SNE on eight graph datasets.">
+<title>BlitZoom — Layout Comparison</title>
+<meta name="description" content="BlitZoom vs force-directed, UMAP, and t-SNE on eight graph datasets.">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -186,17 +186,17 @@
 </div>
 
 <h1>Layout <span>Comparison</span></h1>
-<p class="subtitle">Blitzoom vs ForceAtlas2, UMAP, and t-SNE on 8 graph datasets.
+<p class="subtitle">BlitZoom vs ForceAtlas2, UMAP, and t-SNE on 8 graph datasets.
 <br><a href="https://github.com/wistrand/blitzoom/blob/main/benchmarks/results/REPORT.md">Full report</a> with methodology and all configurations.</p>
 
-<p>Blitzoom positions nodes by <strong>property similarity</strong>, using topology as a
+<p>BlitZoom positions nodes by <strong>property similarity</strong>, using topology as a
 secondary signal. This comparison measures both topology preservation (do connected
 nodes end up nearby?) and property-similarity preservation (do nodes with similar
 attributes end up nearby?) across 8 datasets against ForceAtlas2, UMAP, and t-SNE.</p>
 
 <p>The results: on datasets where property structure diverges from graph connectivity,
-Blitzoom leads on property grouping by 2-6&times;. When adjacency correlates with properties,
-topology-based methods capture property structure incidentally. Blitzoom's auto-tune
+BlitZoom leads on property grouping by 2-6&times;. When adjacency correlates with properties,
+topology-based methods capture property structure incidentally. BlitZoom's auto-tune
 produces competitive layouts without manual configuration, at millisecond speed.</p>
 
 <h2 id="guide">Which method should I use?</h2>
@@ -208,7 +208,7 @@ produces competitive layouts without manual configuration, at millisecond speed.
   <th style="text-align:left">Tradeoff</th>
 </tr>
 <tr>
-  <td>Blitzoom</td>
+  <td>BlitZoom</td>
   <td class="note">Property similarity matters more than connectivity. Interactive exploration, zoom levels, millisecond speed.</td>
   <td class="note">Weaker on sparse chain topologies.</td>
 </tr>
@@ -234,28 +234,28 @@ produces competitive layouts without manual configuration, at millisecond speed.
 <ul>
 <li><strong>EdgeLen:</strong> How close are connected nodes? Normalized Euclidean distance between edge endpoints. Lower = tighter topology.</li>
 <li><strong>TopoNbrP:</strong> Do a node's graph neighbors end up as its layout neighbors? Jaccard overlap at k=10. Higher = better topology fidelity.</li>
-<li><strong>PropNbrP:</strong> Do a node's most property-similar nodes end up as its layout neighbors? Jaccard overlap at k=10. Higher = better property grouping. Measured using per-node token sets (the same tokens Blitzoom's MinHash operates on).</li>
+<li><strong>PropNbrP:</strong> Do a node's most property-similar nodes end up as its layout neighbors? Jaccard overlap at k=10. Higher = better property grouping. Measured using per-node token sets (the same tokens BlitZoom's MinHash operates on).</li>
 <li><strong>Silhouette:</strong> Do known communities form visible clusters? Score vs ground-truth labels, -1 to +1. Only available for Email-EU (42 departments).</li>
 </ul>
 
 <p>We use k=10 neighbors as a balance between local structure fidelity and global layout quality.</p>
 
 <div class="callout">
-<strong>Not all methods run on all datasets.</strong> UMAP requires computing pairwise Jaccard on dense n&times;n adjacency matrices. At 4K+ nodes this takes too long, so UMAP is only included for smaller datasets (Epstein, Pokemon, Email-EU, BZ Source). ForceAtlas2 and t-SNE run on all datasets but take 3&ndash;87 seconds vs Blitzoom's 1&ndash;5 milliseconds. Where a method is absent from a table, it was too slow to include.
+<strong>Not all methods run on all datasets.</strong> UMAP requires computing pairwise Jaccard on dense n&times;n adjacency matrices. At 4K+ nodes this takes too long, so UMAP is only included for smaller datasets (Epstein, Pokemon, Email-EU, BZ Source). ForceAtlas2 and t-SNE run on all datasets but take 3&ndash;87 seconds vs BlitZoom's 1&ndash;5 milliseconds. Where a method is absent from a table, it was too slow to include.
 </div>
 
 <h2 id="summary">The short version</h2>
 
 <p>On topology metrics, ForceAtlas2 and t-SNE lead. On property-similarity, the answer
 depends on whether properties correlate with graph connectivity. When they don't
-(MITRE, Synth Packages), Blitzoom with property strengths leads by 2.6-6x. When they do
-(Blitzoom Source, where call edges track file structure), topology-based methods capture
-property structure incidentally and score higher. Blitzoom's auto-tune (zero-config)
+(MITRE, Synth Packages), BlitZoom with property strengths leads by 2.6-6x. When they do
+(BlitZoom Source, where call edges track file structure), topology-based methods capture
+property structure incidentally and score higher. BlitZoom's auto-tune (zero-config)
 beats or matches baselines on most property datasets.</p>
 
 <table>
 <tr>
-  <th>Dataset</th><th>Nodes</th><th>Props</th><th>Best Blitzoom</th><th>PropNbrP</th><th>Auto-tune</th><th style="text-align:left">Takeaway</th>
+  <th>Dataset</th><th>Nodes</th><th>Props</th><th>Best BlitZoom</th><th>PropNbrP</th><th>Auto-tune</th><th style="text-align:left">Takeaway</th>
 </tr>
 <tr>
   <td>Epstein</td><td>514</td><td>edge types</td><td>&alpha;=0 wt</td><td class="best">1.44x</td><td class="best">1.42x</td><td class="note">Autotune discovers edgetype; matches hand-tuned</td>
@@ -267,7 +267,7 @@ beats or matches baselines on most property datasets.</p>
   <td>MITRE</td><td>4,736</td><td>rich</td><td>&alpha;=0 wt</td><td class="best">2.42x</td><td>0.91x</td><td class="note">Properties &ne; topology; hand-tuned leads</td>
 </tr>
 <tr>
-  <td>Synth Pkg</td><td>1,868</td><td>rich</td><td>&alpha;=0 wt</td><td class="best">5.86x</td><td class="best">2.62x</td><td class="note">Properties &ne; topology; Blitzoom leads</td>
+  <td>Synth Pkg</td><td>1,868</td><td>rich</td><td>&alpha;=0 wt</td><td class="best">5.86x</td><td class="best">2.62x</td><td class="note">Properties &ne; topology; BlitZoom leads</td>
 </tr>
 <tr>
   <td>BZ Source</td><td>917</td><td>rich</td><td>&alpha;=0.5 wt</td><td>0.84x</td><td>0.56x</td><td class="note">Properties &asymp; topology; topology-based methods lead</td>
@@ -283,7 +283,7 @@ beats or matches baselines on most property datasets.</p>
 </tr>
 </table>
 <p class="section-note">
-PropNbrP ratios are Blitzoom / ForceAtlas2. Auto-tune column shows autotune / FA2. Higher = better. Edge-only datasets have no autotune (no property signal).
+PropNbrP ratios are BlitZoom / ForceAtlas2. Auto-tune column shows autotune / FA2. Higher = better. Edge-only datasets have no autotune (no property signal).
 </p>
 
 <h2 id="datasets">Dataset by dataset</h2>
@@ -295,9 +295,9 @@ BUSINESS_RIVAL, etc.). Properties: group + edge types.</p>
 
 <table data-chart="TopoNbrP,PropNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0</td><td>1ms</td><td>0.510</td><td>0.005</td><td>0.035</td><td class="note">No property strengths</td></tr>
-<tr><td>Blitzoom &alpha;=0 wt</td><td>1ms</td><td>0.456</td><td>0.004</td><td class="best">0.118</td><td class="note">group:5, edgetype:8 &mdash; best PropNbrP</td></tr>
-<tr><td>Blitzoom autotune</td><td>1ms</td><td>0.277</td><td>0.013</td><td class="best">0.116</td><td class="note">group:8, edgetype:3, &alpha;=0.5 &mdash; discovers edgetype</td></tr>
+<tr><td>BlitZoom &alpha;=0</td><td>1ms</td><td>0.510</td><td>0.005</td><td>0.035</td><td class="note">No property strengths</td></tr>
+<tr><td>BlitZoom &alpha;=0 wt</td><td>1ms</td><td>0.456</td><td>0.004</td><td class="best">0.118</td><td class="note">group:5, edgetype:8 &mdash; best PropNbrP</td></tr>
+<tr><td>BlitZoom autotune</td><td>1ms</td><td>0.277</td><td>0.013</td><td class="best">0.116</td><td class="note">group:8, edgetype:3, &alpha;=0.5 &mdash; discovers edgetype</td></tr>
 <tr><td>ForceAtlas2</td><td>3s</td><td class="best">0.045</td><td class="best">0.099</td><td>0.082</td><td class="note">Topology-driven</td></tr>
 <tr><td>UMAP</td><td>4s</td><td>0.376</td><td>0.004</td><td>0.082</td><td class="note">Similar to FA2</td></tr>
 <tr><td>t-SNE</td><td>0.4s</td><td>0.428</td><td>0.006</td><td>0.090</td><td class="note">Third-highest PropNbrP</td></tr>
@@ -316,9 +316,9 @@ Edges exist but properties dominate the similarity structure.</p>
 
 <table data-chart="TopoNbrP,PropNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0</td><td>1ms</td><td>0.500</td><td>0.004</td><td>0.010</td><td class="note">No property strengths</td></tr>
-<tr><td>Blitzoom &alpha;=0 wt</td><td>1ms</td><td>0.476</td><td>0.013</td><td>0.019</td><td class="note">Hand-tuned: type1:8, type2:4, gen:3, rarity:2</td></tr>
-<tr><td>Blitzoom autotune</td><td>1ms</td><td>0.373</td><td>0.009</td><td class="best">0.027</td><td class="note">generation:8, &alpha;=0.15 &mdash; beats hand-tuned</td></tr>
+<tr><td>BlitZoom &alpha;=0</td><td>1ms</td><td>0.500</td><td>0.004</td><td>0.010</td><td class="note">No property strengths</td></tr>
+<tr><td>BlitZoom &alpha;=0 wt</td><td>1ms</td><td>0.476</td><td>0.013</td><td>0.019</td><td class="note">Hand-tuned: type1:8, type2:4, gen:3, rarity:2</td></tr>
+<tr><td>BlitZoom autotune</td><td>1ms</td><td>0.373</td><td>0.009</td><td class="best">0.027</td><td class="note">generation:8, &alpha;=0.15 &mdash; beats hand-tuned</td></tr>
 <tr><td>ForceAtlas2</td><td>17s</td><td class="best">0.024</td><td class="best">0.063</td><td>0.023</td><td class="note">Strong topology</td></tr>
 <tr><td>UMAP</td><td>5s</td><td>0.073</td><td>0.012</td><td>0.022</td><td class="note">Similar to hand-tuned</td></tr>
 <tr><td>t-SNE</td><td>2s</td><td>0.182</td><td>0.011</td><td>0.017</td><td class="note">Lowest baseline PropNbrP</td></tr>
@@ -336,8 +336,8 @@ Edge-only (no node properties beyond auto-generated tokens).</p>
 
 <table data-chart="TopoNbrP,PropNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th>Silhouette</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0</td><td>1ms</td><td>0.466</td><td>0.006</td><td>0.007</td><td>-0.47</td><td class="note">Near-random layout</td></tr>
-<tr><td>Blitzoom &alpha;=1.0</td><td>1ms</td><td>0.221</td><td>0.056</td><td>0.007</td><td>-0.29</td><td class="note">Best Blitzoom for topology</td></tr>
+<tr><td>BlitZoom &alpha;=0</td><td>1ms</td><td>0.466</td><td>0.006</td><td>0.007</td><td>-0.47</td><td class="note">Near-random layout</td></tr>
+<tr><td>BlitZoom &alpha;=1.0</td><td>1ms</td><td>0.221</td><td>0.056</td><td>0.007</td><td>-0.29</td><td class="note">Best BlitZoom for topology</td></tr>
 <tr><td>ForceAtlas2</td><td>19s</td><td class="best">0.009</td><td>0.064</td><td>0.009</td><td>-0.38</td><td class="note">Shortest edges</td></tr>
 <tr><td>UMAP</td><td>5s</td><td>0.182</td><td class="best">0.107</td><td>0.010</td><td class="best">+0.01</td><td class="note">Only positive silhouette</td></tr>
 <tr><td>t-SNE</td><td>1s</td><td>0.161</td><td>0.108</td><td>0.009</td><td>-0.11</td><td class="note">Highest TopoNbrP</td></tr>
@@ -353,12 +353,12 @@ recover department structure best on topology metrics.</p>
 
 <table data-chart="TopoNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=1.0</td><td>3ms</td><td>0.063</td><td>0.110</td><td>0.003</td><td class="note">74% of FA2's TopoNbrP</td></tr>
+<tr><td>BlitZoom &alpha;=1.0</td><td>3ms</td><td>0.063</td><td>0.110</td><td>0.003</td><td class="note">74% of FA2's TopoNbrP</td></tr>
 <tr><td>ForceAtlas2</td><td>65s</td><td class="best">0.011</td><td>0.151</td><td>0.004</td><td class="note">Shortest edges</td></tr>
 <tr><td>t-SNE</td><td>5s</td><td>0.072</td><td class="best">0.176</td><td>0.003</td><td class="note">Highest TopoNbrP</td></tr>
 </table>
 
-<p>Dense ego-network structure responds well to topology smoothing. Blitzoom at &alpha;=1.0
+<p>Dense ego-network structure responds well to topology smoothing. BlitZoom at &alpha;=1.0
 reaches 74% of ForceAtlas2's TopoNbrP. PropNbrP is uniformly low (edge-only dataset).</p>
 
 <h3>Power Grid: sparse chains</h3>
@@ -367,7 +367,7 @@ reaches 74% of ForceAtlas2's TopoNbrP. PropNbrP is uniformly low (edge-only data
 
 <table data-chart="TopoNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0.75</td><td>4ms</td><td>0.271</td><td>0.003</td><td>0.002</td><td class="note">Best Blitzoom; &alpha;=1.0 is worse</td></tr>
+<tr><td>BlitZoom &alpha;=0.75</td><td>4ms</td><td>0.271</td><td>0.003</td><td>0.002</td><td class="note">Best BlitZoom; &alpha;=1.0 is worse</td></tr>
 <tr><td>ForceAtlas2</td><td>61s</td><td class="best">0.006</td><td class="best">0.195</td><td>0.002</td><td class="note">Traces chains via global forces</td></tr>
 <tr><td>t-SNE</td><td>10s</td><td>0.171</td><td>0.041</td><td>0.002</td><td class="note">Limited by sparse adjacency</td></tr>
 </table>
@@ -379,23 +379,23 @@ pure topology with few passes oversmooths hubs while leaving chains unresolved.<
 <h3>MITRE ATT&CK: the property-similarity test</h3>
 
 <p>4,736 nodes (techniques, tactics, software, mitigations) with rich properties:
-platforms, kill chain phases, aliases. This is the dataset that tests Blitzoom's
+platforms, kill chain phases, aliases. This is the dataset that tests BlitZoom's
 core claim.</p>
 
 <table data-chart="TopoNbrP,PropNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0</td><td>5ms</td><td>0.461</td><td>0.001</td><td>0.007</td><td class="note">No property strengths</td></tr>
-<tr><td>Blitzoom &alpha;=0 wt</td><td>4ms</td><td>0.534</td><td>0.002</td><td class="best">0.034</td><td class="note">Property strengths: best PropNbrP</td></tr>
-<tr><td>Blitzoom autotune</td><td>4ms</td><td>0.486</td><td>0.002</td><td>0.013</td><td class="note">killchain:8, &alpha;=0.5 &mdash; near FA2</td></tr>
+<tr><td>BlitZoom &alpha;=0</td><td>5ms</td><td>0.461</td><td>0.001</td><td>0.007</td><td class="note">No property strengths</td></tr>
+<tr><td>BlitZoom &alpha;=0 wt</td><td>4ms</td><td>0.534</td><td>0.002</td><td class="best">0.034</td><td class="note">Property strengths: best PropNbrP</td></tr>
+<tr><td>BlitZoom autotune</td><td>4ms</td><td>0.486</td><td>0.002</td><td>0.013</td><td class="note">killchain:8, &alpha;=0.5 &mdash; near FA2</td></tr>
 <tr><td>ForceAtlas2</td><td>87s</td><td>0.181</td><td>0.005</td><td>0.014</td><td class="note">Shorter edges; lower PropNbrP</td></tr>
 <tr><td>t-SNE</td><td>12s</td><td>0.298</td><td>0.004</td><td>0.026</td><td class="note">Second-highest PropNbrP</td></tr>
 </table>
 
-<p>Blitzoom with property strengths (group=5, platforms=6, killchain=4) scores 2.4x higher
+<p>BlitZoom with property strengths (group=5, platforms=6, killchain=4) scores 2.4x higher
 than ForceAtlas2 on PropNbrP (0.034 vs 0.014). Autotune finds <code>killchain:8</code>
 at &alpha;=0.5, scoring 0.013 &mdash; competitive with FA2 but below hand-tuned. The
 multi-group interaction (group + platforms + killchain) that makes the hand-pick work
-is not discoverable from coordinate descent alone. Without property strengths, Blitzoom's
+is not discoverable from coordinate descent alone. Without property strengths, BlitZoom's
 PropNbrP drops to 0.007.</p>
 
 <h3>Synth Packages: designed group structure</h3>
@@ -405,35 +405,35 @@ version, depcount. Edges are co-reference links, not property-based.</p>
 
 <table data-chart="TopoNbrP,PropNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0</td><td>1ms</td><td>0.468</td><td>0.003</td><td>0.010</td><td class="note">No property strengths</td></tr>
-<tr><td>Blitzoom &alpha;=0 wt</td><td>2ms</td><td>0.387</td><td>0.005</td><td class="best">0.050</td><td class="note">Property strengths: best PropNbrP (6x FA2)</td></tr>
-<tr><td>Blitzoom autotune</td><td>1ms</td><td>0.535</td><td>0.002</td><td>0.022</td><td class="note">downloads:8 &mdash; 2.6x above FA2</td></tr>
+<tr><td>BlitZoom &alpha;=0</td><td>1ms</td><td>0.468</td><td>0.003</td><td>0.010</td><td class="note">No property strengths</td></tr>
+<tr><td>BlitZoom &alpha;=0 wt</td><td>2ms</td><td>0.387</td><td>0.005</td><td class="best">0.050</td><td class="note">Property strengths: best PropNbrP (6x FA2)</td></tr>
+<tr><td>BlitZoom autotune</td><td>1ms</td><td>0.535</td><td>0.002</td><td>0.022</td><td class="note">downloads:8 &mdash; 2.6x above FA2</td></tr>
 <tr><td>ForceAtlas2</td><td>54s</td><td class="best">0.028</td><td>0.018</td><td>0.009</td><td class="note">Shortest edges; low PropNbrP</td></tr>
 <tr><td>t-SNE</td><td>19s</td><td>0.222</td><td>0.001</td><td>0.013</td><td class="note">Low on both metrics</td></tr>
 </table>
 
-<p>Blitzoom with strengths scores 5.9x higher than ForceAtlas2 on PropNbrP (0.050 vs 0.009).
+<p>BlitZoom with strengths scores 5.9x higher than ForceAtlas2 on PropNbrP (0.050 vs 0.009).
 Autotune at 0.022 still beats FA2 by 2.6x. Graph connectivity and property similarity
 diverge: edges are co-reference links, not property-based. The autotune found that
 <code>downloads</code> alone is the most discriminative property for this dataset.</p>
 
-<h3>Blitzoom Source: when topology tracks properties</h3>
+<h3>BlitZoom Source: when topology tracks properties</h3>
 
 <p>916 nodes (functions, methods, classes, imports) from this project's source code, 2,096
 call edges. Properties: kind, file, lines, bytes, age, edge types.</p>
 
 <table data-chart="TopoNbrP,PropNbrP">
 <tr><th>Layout</th><th>Time</th><th>EdgeLen</th><th>TopoNbrP</th><th>PropNbrP</th><th style="text-align:left">Note</th></tr>
-<tr><td>Blitzoom &alpha;=0 wt</td><td>1ms</td><td>0.433</td><td>0.012</td><td>0.236</td><td class="note">kind:8, group:3, rank quant</td></tr>
-<tr><td>Blitzoom &alpha;=0.5 wt</td><td>1ms</td><td>0.308</td><td>0.017</td><td>0.244</td><td class="note">Topology helps slightly</td></tr>
-<tr><td>Blitzoom autotune</td><td>1ms</td><td>0.297</td><td>0.013</td><td>0.163</td><td class="note">kind:3, edgetype:8 &mdash; finds edgetype</td></tr>
+<tr><td>BlitZoom &alpha;=0 wt</td><td>1ms</td><td>0.433</td><td>0.012</td><td>0.236</td><td class="note">kind:8, group:3, rank quant</td></tr>
+<tr><td>BlitZoom &alpha;=0.5 wt</td><td>1ms</td><td>0.308</td><td>0.017</td><td>0.244</td><td class="note">Topology helps slightly</td></tr>
+<tr><td>BlitZoom autotune</td><td>1ms</td><td>0.297</td><td>0.013</td><td>0.163</td><td class="note">kind:3, edgetype:8 &mdash; finds edgetype</td></tr>
 <tr><td>ForceAtlas2</td><td>11s</td><td class="best">0.018</td><td class="best">0.110</td><td>0.290</td><td class="note">High PropNbrP via adjacency</td></tr>
 <tr><td>UMAP</td><td>7s</td><td>0.105</td><td>0.056</td><td class="best">0.303</td><td class="note">Highest PropNbrP</td></tr>
 <tr><td>t-SNE</td><td>3s</td><td>0.208</td><td>0.035</td><td>0.249</td><td class="note">High PropNbrP via adjacency</td></tr>
 </table>
 
 <p>Topology-based methods score higher on PropNbrP (0.25-0.30) because call-graph
-edges track file/kind similarity. Blitzoom hand-tuned at 0.244 reaches 84% of FA2.
+edges track file/kind similarity. BlitZoom hand-tuned at 0.244 reaches 84% of FA2.
 Autotune at 0.163 found <code>edgetype:8</code> as a useful dimension but the hand-tuned
 multi-group combination (kind + group) scores better. On this dataset, topology correlation
 means all methods score well on PropNbrP.</p>
@@ -445,7 +445,7 @@ means all methods score well on PropNbrP.</p>
   <th style="text-align:left">Aspect</th>
   <th style="text-align:left">ForceAtlas2</th>
   <th style="text-align:left">UMAP / t-SNE</th>
-  <th style="text-align:left">Blitzoom</th>
+  <th style="text-align:left">BlitZoom</th>
 </tr>
 <tr><td>Edge length</td><td class="note">Best (optimizes for this)</td><td class="note">Moderate</td><td class="note">Improves with &alpha;</td></tr>
 <tr><td>Topology preservation</td><td class="note">Strong; global forces</td><td class="note">Best overall (t-SNE)</td><td class="note">Comparable on dense graphs</td></tr>
@@ -458,7 +458,7 @@ means all methods score well on PropNbrP.</p>
 
 <h2 id="autotune">Auto-tune: zero-config performance</h2>
 
-<p>Blitzoom's auto-tune uses a <strong>dual-pass</strong> optimizer: it searches the strength
+<p>BlitZoom's auto-tune uses a <strong>dual-pass</strong> optimizer: it searches the strength
 parameter space at both &alpha;=0 (property-only) and &alpha;=0.5 (moderate topology),
 then picks whichever produces the better layout. This discovers two kinds of useful
 properties: those that cluster independently (generation, group) and those that only
@@ -484,14 +484,14 @@ mix requires multi-way interactions.</p>
 
 <h2 id="quant">Rank vs Gaussian quantization</h2>
 
-<p>Blitzoom supports two quantization modes. Rank quantization sorts nodes by position and
+<p>BlitZoom supports two quantization modes. Rank quantization sorts nodes by position and
 assigns grid cells uniformly. Gaussian quantization uses fixed CDF boundaries, preserving
 density structure: tight clusters stay tight, sparse regions stay spread out.</p>
 
 <h2 id="caveats">Caveats</h2>
 
-<p><strong>PropNbrP uses the same similarity Blitzoom optimizes.</strong> Token-set Jaccard
-is both the ground-truth similarity and the signal Blitzoom's MinHash approximates. This
+<p><strong>PropNbrP uses the same similarity BlitZoom optimizes.</strong> Token-set Jaccard
+is both the ground-truth similarity and the signal BlitZoom's MinHash approximates. This
 is partially circular. A fully independent property-similarity metric (e.g., domain-expert
 labels) would be stronger evidence.</p>
 
@@ -499,11 +499,11 @@ labels) would be stronger evidence.</p>
 have no real node properties. PropNbrP is uniformly low across all methods on these graphs.</p>
 
 <p><strong>When adjacency correlates with properties, topology-based methods win PropNbrP too.</strong>
-On Blitzoom Source, ForceAtlas2 and UMAP outscore Blitzoom on PropNbrP because call-graph
-edges track file/kind similarity. Blitzoom's advantage is specific to datasets where
+On BlitZoom Source, ForceAtlas2 and UMAP outscore BlitZoom on PropNbrP because call-graph
+edges track file/kind similarity. BlitZoom's advantage is specific to datasets where
 property structure differs from graph connectivity.</p>
 
-<p><strong>Hierarchical zoom is not measured.</strong> Blitzoom derives 14 aggregation levels from
+<p><strong>Hierarchical zoom is not measured.</strong> BlitZoom derives 14 aggregation levels from
 4 stored bytes per node. No other method produces a zoom hierarchy. This capability is not
 captured by any metric above.</p>
 
@@ -511,7 +511,7 @@ captured by any metric above.</p>
 // ─── Bar charts from table data ──────────────────────────────────────────────
 (function() {
   const COLORS = {
-    'Blitzoom':     '#7c6af7',
+    'BlitZoom':     '#7c6af7',
     'ForceAtlas2': '#f76a8c',
     'UMAP':        '#6af7c8',
     't-SNE':       '#f7c86a',

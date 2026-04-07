@@ -111,7 +111,7 @@ The 241ms was measured before buffer caching and `_blending` guard. See revised 
 
 ### Bugs discovered during Phase A-C
 
-- **Concurrent blend stalls**: Multiple `_blend()` calls overlapped when rAF fired while `mapAsync` was pending. Fixed with `_blending` guard in `BlitzoomCanvas._blend()`.
+- **Concurrent blend stalls**: Multiple `_blend()` calls overlapped when rAF fired while `mapAsync` was pending. Fixed with `_blending` guard in `BlitZoomCanvas._blend()`.
 - **Shadow DOM event leak**: Native `input` events from `<input type="range">` inside `<bz-controls>` shadow DOM bubble without `e.detail`. Fixed with `if (!e.detail) return`.
 
 ### Optimization round 2: profiling + caching (implemented)

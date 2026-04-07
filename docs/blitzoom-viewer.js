@@ -1,4 +1,4 @@
-// blitzoom-viewer.js — Blitzoom viewer application. Composes BlitzoomCanvas with UI, workers, data loading.
+// blitzoom-viewer.js — BlitZoom viewer application. Composes BlitZoomCanvas with UI, workers, data loading.
 
 import {
     MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
@@ -10,7 +10,7 @@ import { initGPU, computeProjectionsGPU, setGpuBlendProfiling } from './blitzoom
 import { isWebGL2Available } from './blitzoom-gl-renderer.js';
 import { exportSVG } from './blitzoom-svg.js';
 
-import { BlitzoomCanvas } from './blitzoom-canvas.js';
+import { BlitZoomCanvas } from './blitzoom-canvas.js';
 import { computeNodeSig, runPipeline, runPipelineGPU, runPipelineFromObjects, runPipelineFromObjectsGPU, parseEdgesFile, parseNodesFile, buildGraph, computeProjections } from './blitzoom-pipeline.js';
 import { parseAny, detectFormat, isObjectFormat, FILE_ACCEPT_ATTR, readFileText, classifyFiles } from './blitzoom-parsers.js';
 
@@ -65,7 +65,7 @@ function pickInitialLevel(nodes, zoomLevels, rawLevel) {
 // Dataset definitions. Optional `settings` configures initial strengths and label checkboxes.
 let DATASETS = [];
 
-class Blitzoom {
+class BlitZoom {
     constructor() {
         const canvas = document.getElementById('canvas');
 
@@ -86,7 +86,7 @@ class Blitzoom {
         if (edgesFile) edgesFile.accept = FILE_ACCEPT_ATTR;
 
         // The canvas view handles all graph state, rendering, interaction primitives
-        this.view = new BlitzoomCanvas(canvas, {
+        this.view = new BlitZoomCanvas(canvas, {
             heatmapMode: 'density',
             showLegend: true,
             initialLevel: 0,
@@ -2375,7 +2375,7 @@ const ready = document.readyState === 'complete'
   : new Promise(r => window.addEventListener('load', r, { once: true }));
 await ready;
 
-const bz = new Blitzoom();
+const bz = new BlitZoom();
 window.bz = bz;
 
 // Load dataset presets, probe WebGPU, then load initial dataset

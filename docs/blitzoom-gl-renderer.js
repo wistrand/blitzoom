@@ -1,4 +1,4 @@
-// blitzoom-gl-renderer.js — WebGL2 renderer for Blitzoom.
+// blitzoom-gl-renderer.js — WebGL2 renderer for BlitZoom.
 // WebGL2 instanced rendering: grid, edges, heatmap, circles.
 
 import { RAW_LEVEL, ZOOM_LEVELS } from './blitzoom-algo.js';
@@ -1154,7 +1154,7 @@ function _renderHeatmapSplat(gl, bz) {
 /**
  * Render geometry to GL canvas.
  * @param {WebGL2RenderingContext} gl
- * @param {object} bz — BlitzoomCanvas instance
+ * @param {object} bz — BlitZoomCanvas instance
  */
 export function renderGL(gl, bz) {
   const W = bz.W, H = bz.H;

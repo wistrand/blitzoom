@@ -33,7 +33,7 @@ The bit-shift hierarchy provides a natural solution: at any zoom level, the view
            │
            ▼
 ┌──────────────────────────────────────────────┐
-│  Viewer: BlitzoomTiled                        │
+│  Viewer: BlitZoomTiled                        │
 │  (browser, <500MB memory)                    │
 │                                              │
 │  Fetches tiles by level + viewport           │
@@ -156,29 +156,29 @@ export class TileManager {
 - Levels 9-14: viewport-filtered — compute visible cell range, fetch only those tiles
 - RAW: always viewport-filtered, 3×3 tile neighborhood around viewport center
 
-### Integration with BlitzoomCanvas
+### Integration with BlitZoomCanvas
 
-`BlitzoomCanvas` currently expects all data in memory via constructor opts. For tiled mode:
+`BlitZoomCanvas` currently expects all data in memory via constructor opts. For tiled mode:
 
-Option A: Create `BlitzoomTiled` that composes `BlitzoomCanvas` with `TileManager`.
+Option A: Create `BlitZoomTiled` that composes `BlitZoomCanvas` with `TileManager`.
 - On level change: fetch tile → construct supernodes array → pass to canvas
 - Canvas doesn't know about tiles — it just gets supernodes like before
 
-Option B: Modify `BlitzoomCanvas.getLevel()` to accept an async provider.
+Option B: Modify `BlitZoomCanvas.getLevel()` to accept an async provider.
 - More invasive, but cleaner long-term
 
-**Recommendation: Option A.** Keep `BlitzoomCanvas` synchronous. `BlitzoomTiled` handles async fetching and feeds data to the canvas.
+**Recommendation: Option A.** Keep `BlitZoomCanvas` synchronous. `BlitZoomTiled` handles async fetching and feeds data to the canvas.
 
 ## Phase 3: Tiled Viewer
 
 ### File: `docs/blitzoom-tiled.js`
 
 ```
-class BlitzoomTiled {
+class BlitZoomTiled {
   constructor(canvas, manifest, opts)
 
-  // Owns a BlitzoomCanvas internally
-  this.view = new BlitzoomCanvas(canvas, { skipEvents: true, ... })
+  // Owns a BlitZoomCanvas internally
+  this.view = new BlitZoomCanvas(canvas, { skipEvents: true, ... })
 
   // Handles events, delegates to view
   // On level change: fetch tile, update view data, re-render
@@ -189,7 +189,7 @@ class BlitzoomTiled {
 
 **Level switch flow:**
 1. User scrolls → auto-level triggers L4 → L5
-2. `BlitzoomTiled` calls `tileManager.getLevel(5)`
+2. `BlitZoomTiled` calls `tileManager.getLevel(5)`
 3. Fetch returns (or cache hit): 1024 supernodes, 50K edges
 4. Construct `view.nodes`, `view.edges`, `view.nodeIndexFull` from tile data
 5. Call `view.layoutAll()`, `view.render()`
@@ -197,7 +197,7 @@ class BlitzoomTiled {
 
 **RAW level viewport flow:**
 1. User zooms to RAW level
-2. `BlitzoomTiled` computes visible tile range from viewport coordinates
+2. `BlitZoomTiled` computes visible tile range from viewport coordinates
 3. Fetches 4-9 tile files (each ~20KB, ~460 nodes)
 4. Merges into `view.nodes`, builds adjList from available edges
 5. Renders ~2-4K individual nodes
@@ -205,9 +205,9 @@ class BlitzoomTiled {
 
 **Ego subgraph flow:**
 1. User clicks supernode (bid=42) at L6
-2. `BlitzoomTiled` fetches `ego/42.json` (precomputed or on-demand)
+2. `BlitZoomTiled` fetches `ego/42.json` (precomputed or on-demand)
 3. Contains all member nodes + their 1-hop neighbors + internal edges
-4. Creates a nested `createBlitzoomFromGraph(detailCanvas, egoNodes, egoEdges)`
+4. Creates a nested `createBlitZoomFromGraph(detailCanvas, egoNodes, egoEdges)`
 5. Shows in detail panel or overlay
 
 ## Phase 4: Weight Changes
@@ -255,7 +255,7 @@ scripts/
   bz-precompute.ts        Precomputation CLI
 docs/
   blitzoom-tiles.js         TileManager (fetch, cache, evict)
-  blitzoom-tiled.js         BlitzoomTiled (viewer for tiled datasets)
+  blitzoom-tiled.js         BlitZoomTiled (viewer for tiled datasets)
   tiled.html               Tiled viewer HTML (minimal, like viewer.html)
   tiles/                   Precomputed tile output directory
     <dataset>/
@@ -281,7 +281,7 @@ docs/
    - Pure fetch + cache, no DOM
    - Verify: unit test fetching manifest + level tiles
 
-3. **blitzoom-tiled.js** — composes BlitzoomCanvas + TileManager
+3. **blitzoom-tiled.js** — composes BlitZoomCanvas + TileManager
    - Same visual result as regular viewer for small datasets
    - Verify: load MITRE via tiles, compare with direct load
 

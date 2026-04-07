@@ -1,6 +1,6 @@
 # WebGPU Architecture
 
-Implementation of WebGPU compute acceleration for Blitzoom's MinHash projection
+Implementation of WebGPU compute acceleration for BlitZoom's MinHash projection
 and topology blend pipelines. Falls back to CPU (Web Workers) when WebGPU is
 unavailable.
 
@@ -30,7 +30,7 @@ await initGPU()
 If any step fails, `_gpuUnavailable = true`, GPU button shows "N/A", all
 operations use CPU. The probe completes before the first dataset load.
 
-For embedded views, `createBlitzoomView` accepts `autoGPU: true` (default) to
+For embedded views, `createBlitZoomView` accepts `autoGPU: true` (default) to
 auto-enable WebGPU when N×G > 2000. The factory returns synchronously; initial
 blend kicks off async (GPU probe → blend → render). GPU kicks in for the
 initial blend and subsequent interactive changes once initialization completes.
@@ -140,7 +140,7 @@ loadDataset → loadGraphGPU:
   → _finalizeLoad → await v._blend() (GPU) → resize/render
 ```
 
-### Path C: Embedded (createBlitzoomView)
+### Path C: Embedded (createBlitZoomView)
 
 ```
 runPipeline (CPU) → create view → return immediately (sync)
@@ -261,7 +261,7 @@ Median of 5 runs after 2 warmup (1 run for Amazon).
 | -------------- | ------: | -----: | ------: | -----: | ------: |
 | Karate Club    |      34 |      4 |  1.5ms  |  18ms  |   0.08x |
 | Epstein        |     364 |      5 |   20ms  |  19ms  |   1.1x  |
-| Blitzoom Source |     433 |     10 |   24ms  |  19ms  |   1.2x  |
+| BlitZoom Source |     433 |     10 |   24ms  |  19ms  |   1.2x  |
 | Synth Packages |   1,868 |      8 |   85ms  |  22ms  |   3.9x  |
 | MITRE ATT&CK  |   4,736 |     10 |  358ms  |  61ms  |   5.9x  |
 | Amazon         | 367,000 |      4 | 24.1s   |  1.7s  |  14.3x  |
@@ -274,7 +274,7 @@ GPU crossover ~400 nodes. GPU time includes CPU-side tokenization and hashing.
 | -------------- | ------: | ------: | -----: | ------: |
 | Karate Club    |      34 | 139µs   |  13ms  |   0.01x |
 | Epstein        |     364 |  0.8ms  |  14ms  |   0.06x |
-| Blitzoom Source |     433 |  1.3ms  |  14ms  |   0.10x |
+| BlitZoom Source |     433 |  1.3ms  |  14ms  |   0.10x |
 | Synth Packages |   1,868 |  2.4ms  |  17ms  |   0.15x |
 | MITRE ATT&CK  |   4,736 |   13ms  |  34ms  |   0.40x |
 | Amazon         | 367,000 |  1.88s  | 407ms  |   4.6x  |

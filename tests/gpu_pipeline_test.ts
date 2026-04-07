@@ -13,7 +13,7 @@ Deno.test('GPU pipeline init', async () => {
   assert(await initGPU(), 'GPU should be available');
 });
 
-Deno.test('GPU vs CPU pipeline: Blitzoom Source dataset', async () => {
+Deno.test('GPU vs CPU pipeline: BlitZoom Source dataset', async () => {
   const edgesText = Deno.readTextFileSync('docs/data/blitzoom-source.edges');
   const nodesText = Deno.readTextFileSync('docs/data/blitzoom-source.nodes');
 

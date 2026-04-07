@@ -238,7 +238,7 @@ export function parseCSVToNodes(text, opts) {
 /**
  * Parse D3 force-directed JSON into the object shape consumed by
  * runPipelineFromObjects. Accepts both `{nodes, links}` (D3 convention) and
- * `{nodes, edges}` (Blitzoom internal convention).
+ * `{nodes, edges}` (BlitZoom internal convention).
  *
  * Node shape: `{id, label?, group?, ...extras}` — any extra top-level keys
  * become property groups.
@@ -308,7 +308,7 @@ export function parseD3(data) {
     edges.push(edge);
   }
 
-  // Top-level metadata: source, description, credits, Blitzoom settings, etc.
+  // Top-level metadata: source, description, credits, BlitZoom settings, etc.
   // Passed through to the viewer for display and optional preset application.
   const metadata = data.metadata || null;
 

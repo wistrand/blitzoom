@@ -1,4 +1,4 @@
-Blitzoom 3M Node Benchmark Results
+BlitZoom 3M Node Benchmark Results
 ==================================
 
 Config: 3,000,000 nodes, ~9,000,000 edges, 30 groups, 6 property groups

@@ -1,8 +1,8 @@
-// blitzoom.js — Public API entrypoint for Blitzoom.
+// blitzoom.js — Public API entrypoint for BlitZoom.
 // Import this file (unbundled) or dist/blitzoom.bundle.js (minified single file).
 
 // Core factories and class
-export { createBlitzoomView, createBlitzoomFromGraph, BlitzoomCanvas } from './blitzoom-canvas.js';
+export { createBlitZoomView, createBlitZoomFromGraph, BlitZoomCanvas } from './blitzoom-canvas.js';
 
 // Web component (<bz-graph> custom element, auto-registers on import)
 export { BzGraph } from './bz-graph.js';

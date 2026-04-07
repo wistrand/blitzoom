@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run full layout comparison: export Blitzoom layouts (Deno), then compare (Python in Docker).
+# Run full layout comparison: export BlitZoom layouts (Deno), then compare (Python in Docker).
 #
 # Usage:
 #   cd blitzoom && bash benchmarks/run-comparison.sh
@@ -11,9 +11,9 @@ LAYOUTS=benchmarks/layouts
 RESULTS=benchmarks/results
 mkdir -p "$LAYOUTS" "$RESULTS"
 
-# ─── Step 1: Export Blitzoom layouts (Deno, native) ───────────────────────────
+# ─── Step 1: Export BlitZoom layouts (Deno, native) ───────────────────────────
 
-echo "=== Exporting Blitzoom layouts ==="
+echo "=== Exporting BlitZoom layouts ==="
 
 export_bz() {
   local name="$1" alpha="$2" tag="$3"
@@ -118,7 +118,7 @@ deno run --allow-read --allow-write benchmarks/export-layout.ts \
   --autotune \
   --out "$LAYOUTS/synth-pkg-autotune.tsv"
 
-# Blitzoom Source (with properties)
+# BlitZoom Source (with properties)
 deno run --allow-read --allow-write benchmarks/export-layout.ts \
   --edges docs/data/blitzoom-source.edges --nodes docs/data/blitzoom-source.nodes \
   --alpha 0 --quant rank \
@@ -230,8 +230,8 @@ run_compare "Synth Packages" \
   --skip-umap \
   --out /bench/results/synth-pkg.txt
 
-# Blitzoom Source (small enough for UMAP)
-run_compare "Blitzoom Source" \
+# BlitZoom Source (small enough for UMAP)
+run_compare "BlitZoom Source" \
   --edges /data/blitzoom-source.edges \
   --blitzoom $(docker_bz bz-source) \
   --tokens /bench/layouts/bz-source.tokens \

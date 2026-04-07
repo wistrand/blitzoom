@@ -1,4 +1,4 @@
-// blitzoom-colors.js — Color scheme generation for Blitzoom.
+// blitzoom-colors.js — Color scheme generation for BlitZoom.
 
 export function hslToHex(h, s, l) {
   s /= 100; l /= 100;

@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blitzoom — WebGL Rendering</title>
-<meta name="description" content="How Blitzoom uses WebGL2 instanced rendering for circles, edges, heatmaps, and grid lines.">
-<meta property="og:title" content="Blitzoom — WebGL Rendering">
+<title>BlitZoom — WebGL Rendering</title>
+<meta name="description" content="How BlitZoom uses WebGL2 instanced rendering for circles, edges, heatmaps, and grid lines.">
+<meta property="og:title" content="BlitZoom — WebGL Rendering">
 <meta property="og:description" content="WebGL2 instanced rendering: SDF circles, GPU-tessellated Bezier edges, two-pass density heatmap.">
 <meta property="og:image" content="images/blitzoom-1.png">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Blitzoom — WebGL Rendering">
+<meta name="twitter:title" content="BlitZoom — WebGL Rendering">
 <meta name="twitter:description" content="WebGL2 instanced rendering for large graph visualization.">
 <meta name="twitter:image" content="images/blitzoom-1.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -197,12 +197,12 @@
   <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </div>
 
-<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Blit<span>zoom</span></a></h1>
+<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Blit<span>Zoom</span></a></h1>
 <p class="subtitle">Optional WebGL2 instanced rendering for circles, edges, heatmaps, and grid.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>WebGL rendering is optional. Blitzoom's default Canvas 2D renderer handles all dataset sizes. When WebGL2 is available, the viewer can offload geometry rendering (circles, edges, heatmaps, grid) to the GPU while keeping text (labels, legend, member counts) on a Canvas 2D overlay.</p>
+<p>WebGL rendering is optional. BlitZoom's default Canvas 2D renderer handles all dataset sizes. When WebGL2 is available, the viewer can offload geometry rendering (circles, edges, heatmaps, grid) to the GPU while keeping text (labels, legend, member counts) on a Canvas 2D overlay.</p>
 
 <p>The implementation lives in <code>blitzoom-gl-renderer.js</code> (1,187 lines): seven shader programs, instanced draw calls for all geometry, and a two-pass density heatmap. No external dependencies. Toggled via the viewer's GL button or <code>{ webgl: true }</code> in the constructor.</p>
 
@@ -212,7 +212,7 @@
 
 <h2 id="dual-canvas">Dual Canvas Layout</h2>
 
-<p>WebGL and Canvas 2D have different strengths: WebGL draws thousands of circles and edges efficiently via instanced rendering; Canvas 2D renders text with correct sub-pixel anti-aliasing and font metrics. Blitzoom uses both simultaneously.</p>
+<p>WebGL and Canvas 2D have different strengths: WebGL draws thousands of circles and edges efficiently via instanced rendering; Canvas 2D renders text with correct sub-pixel anti-aliasing and font metrics. BlitZoom uses both simultaneously.</p>
 
 <!-- Dual canvas diagram -->
 <div class="fig">

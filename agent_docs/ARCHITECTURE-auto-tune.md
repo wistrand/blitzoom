@@ -1,6 +1,6 @@
 # Auto-Tune: Architecture and Implementation
 
-Heuristic optimizer for Blitzoom strength/alpha/quant parameters. Implemented in
+Heuristic optimizer for BlitZoom strength/alpha/quant parameters. Implemented in
 [blitzoom-utils.js](../docs/blitzoom-utils.js). Exploits the O(n) blend+quantize
 cost to evaluate many configurations and find a well-structured layout.
 
@@ -64,7 +64,7 @@ Per trial, `pickCategoryArray(weights)` returns the cached array for the current
 
 ## Why auto-tune works
 
-The optimizer is effective because it exploits structural properties of the Blitzoom layout:
+The optimizer is effective because it exploits structural properties of the BlitZoom layout:
 
 1. **Fixed anchors eliminate most variables.** MinHash + Gaussian projection computes each node's 2D position per group once at load. Strengths linearly blend these fixed points — no force simulation to converge, no embedding to train. Small strength changes produce small layout changes, making the objective smooth and coordinate descent effective.
 
@@ -182,15 +182,15 @@ const result = await autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFull
 
 ## Integration
 
-### Embedded (createBlitzoomView)
+### Embedded (createBlitZoomView)
 
 ```javascript
-const view = createBlitzoomView(canvas, edgesText, nodesText, {
+const view = createBlitZoomView(canvas, edgesText, nodesText, {
   autoTune: { weights: true, alpha: true },
 });
 ```
 
-Returns `BlitzoomCanvas` synchronously with default weights. The optimizer runs
+Returns `BlitZoomCanvas` synchronously with default weights. The optimizer runs
 async in the background, shows progress overlay on the canvas, and re-renders
 with tuned parameters (including label props) when done. Explicit `weights`,
 `smoothAlpha`, `quantMode`, `labelProps` in opts take precedence.

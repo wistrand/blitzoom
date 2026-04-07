@@ -531,7 +531,7 @@ export function buildLevelEdges(levelObj, edges, nodeIndexFull, level) {
   levelObj._edgesReady = true;
 }
 
-// Combined wrapper for backward compatibility (tests, standalone BlitzoomCanvas).
+// Combined wrapper for backward compatibility (tests, standalone BlitZoomCanvas).
 export function buildLevel(level, nodes, edges, nodeIndexFull, colorValFn, labelValFn, colorLookup) {
   const lvl = buildLevelNodes(level, nodes, colorValFn, labelValFn, colorLookup);
   buildLevelEdges(lvl, edges, nodeIndexFull, level);

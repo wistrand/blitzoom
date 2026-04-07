@@ -4,9 +4,9 @@
 #
 Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
 ----------------------------------------------------------------------------------------
-Blitzoom:mitre-a000                0.005         0.4612        0.4303    0.0013    0.0068
-Blitzoom:mitre-a000-weighted       0.004         0.5335        0.5097    0.0015    0.0339
-Blitzoom:mitre-a050-weighted       0.004         0.4821        0.4569    0.0016    0.0335
-Blitzoom:mitre-autotune            0.004         0.4860        0.4781    0.0019    0.0128
+BlitZoom:mitre-a000                0.005         0.4612        0.4303    0.0013    0.0068
+BlitZoom:mitre-a000-weighted       0.004         0.5335        0.5097    0.0015    0.0339
+BlitZoom:mitre-a050-weighted       0.004         0.4821        0.4569    0.0016    0.0335
+BlitZoom:mitre-autotune            0.004         0.4860        0.4781    0.0019    0.0128
 Force-Directed                   87.403         0.1814        0.1657    0.0049    0.0140
 t-SNE                            12.403         0.2975        0.2953    0.0035    0.0260
