@@ -56,7 +56,7 @@ GPU: MinHash signatures → z-score normalize → 2D Gaussian projection
 CPU: unpack Float32Array result into projBuf
 ```
 
-WGSL shader (`WGSL` constant in bitzoom-gpu.js):
+WGSL shader (`WGSL` constant in bitzoom-gpu.js), workgroup size 256:
 - `mulMod(a, b)`: overflow-safe `(a*b) mod P` via 16-bit half splitting with
   per-addition `mersMod` reduction. Matches CPU `hashSlot` exactly.
 - Standard MinHash for <12 tokens (k hash evaluations per token)
@@ -64,6 +64,7 @@ WGSL shader (`WGSL` constant in bitzoom-gpu.js):
 - Degenerate signature detection (`sd < mean*1e-5 || sd < 1.0` → neutral [0,0])
 - 5 storage buffers: tokens, taskMeta (packed offset+count+group), hashParams
   (A+B concatenated), projMatrix, output
+- Workgroup size 256 supports up to 16.7M tasks (1M nodes × 16 groups) within the 65535 dispatch limit
 
 ### Verified precision
 
@@ -88,7 +89,7 @@ GPU: 5 passes of neighbor averaging with ping-pong buffers
 CPU: quantize (gaussianQuantize or normalizeAndQuantize)
 ```
 
-WGSL shader (`BLEND_WGSL`):
+WGSL shader (`BLEND_WGSL`), workgroup size 64:
 - Reads interleaved property anchors (propAnchors), adjacency (CSR), current positions
 - Writes blended positions to separate output buffer (no read-write race)
 - All passes batched in a single command encoder (one `submit()` call)

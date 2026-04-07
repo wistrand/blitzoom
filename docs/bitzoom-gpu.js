@@ -82,7 +82,7 @@ fn hashSlot(a: i32, tv: u32, b: i32) -> u32 {
 fn getParamA(i: u32) -> i32 { return hashParams[i]; }
 fn getParamB(i: u32) -> i32 { return hashParams[K + i]; }
 
-@compute @workgroup_size(64)
+@compute @workgroup_size(256)
 fn main(@builtin(global_invocation_id) gid: vec3u) {
   let taskId = gid.x;
   let numTasks = arrayLength(&taskMeta) / 3u;
@@ -273,7 +273,7 @@ export async function gpuMinHashProject(allTokens, taskOffsets, taskCounts, task
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bindGroup);
-  pass.dispatchWorkgroups(Math.ceil(numTasks / 64));
+  pass.dispatchWorkgroups(Math.ceil(numTasks / 256));
   pass.end();
   encoder.copyBufferToBuffer(outputBuf, 0, readBuf, 0, outputSize);
   device.queue.submit([encoder.finish()]);

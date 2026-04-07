@@ -203,6 +203,8 @@ Two entry points, sharing code:
 
 2. **Automatic: `_autoTuneFresh()` on load** — fired from `_finalizeLoad` when the dataset has no preset `settings` AND the URL hash doesn't carry explicit strengths (`params.st`). Shares the same abort controller and apply path as the manual button (`this._tuneAbort`, `this._applyTuneResult`). Users loading a curated preset (epstein, pokemon, mitre-attack) skip auto-tune entirely; users dropping a raw CSV get a meaningful first frame. After `autoTuneStrengths` completes, `autoTuneBearings` runs to optimize per-group rotations. GPU/CPU mode switches (`_reloadCPU`, `_applyGPUToCurrentData`) do NOT trigger auto-tune — they re-project and re-blend with current settings only.
 
+**Large dataset subsampling:** Both entry points subsample to 50K nodes when the dataset exceeds 50K. The subsample is evenly spaced (`step = N / 50K`), with adjacency filtered to only include edges within the sample. Strength ratios discovered on the subsample transfer to the full dataset — the tuner finds relative importance, not absolute positions.
+
 ## Performance
 
 Each evaluation = `unifiedBlend` (TUNE_PASSES × (n+E)) + quantize + score.

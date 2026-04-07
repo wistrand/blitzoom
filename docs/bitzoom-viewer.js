@@ -1376,12 +1376,28 @@ class BitZoom {
         const v = this.view;
         try {
             const autoBtn = document.getElementById('autoTuneBtn');
-            // Share the abort controller with the manual Auto button so clicking
-            // Stop during an auto-on-load tune aborts and applies best-so-far.
             this._tuneAbort = new AbortController();
             if (autoBtn) { autoBtn.style.background = 'var(--accent)'; autoBtn.style.color = '#fff'; autoBtn.textContent = 'Stop'; }
             const t0 = performance.now();
-            const result = await autoTuneStrengths(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
+            // Subsample for large datasets: tune on a representative subset.
+            // Strength ratios transfer — the tuner finds relative importance,
+            // not absolute positions. 50K nodes is enough signal.
+            const TUNE_MAX = 50000;
+            let tuneNodes = v.nodes, tuneAdj = v.adjList, tuneIndex = v.nodeIndexFull;
+            if (v.nodes.length > TUNE_MAX) {
+                const step = v.nodes.length / TUNE_MAX;
+                tuneNodes = [];
+                for (let i = 0; i < v.nodes.length; i += step) tuneNodes.push(v.nodes[Math.floor(i)]);
+                const idSet = new Set(tuneNodes.map(n => n.id));
+                tuneAdj = {};
+                tuneIndex = {};
+                for (const n of tuneNodes) {
+                    tuneIndex[n.id] = n;
+                    tuneAdj[n.id] = (v.adjList[n.id] || []).filter(nid => idSet.has(nid));
+                }
+                console.log(`[auto-tune] subsampled ${v.nodes.length} → ${tuneNodes.length} nodes`);
+            }
+            const result = await autoTuneStrengths(tuneNodes, v.groupNames, tuneAdj, tuneIndex, {
                 strengths: true, alpha: true, quant: false,
                 signal: this._tuneAbort.signal,
                 onProgress: (info) => {
@@ -1700,7 +1716,23 @@ class BitZoom {
             autoBtn.style.color = '#fff';
             autoBtn.textContent = 'Stop';
             try {
-                const result = await autoTuneStrengths(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
+                // Subsample for large datasets (same as _autoTuneFresh)
+                const TUNE_MAX = 50000;
+                let tuneNodes = v.nodes, tuneAdj = v.adjList, tuneIndex = v.nodeIndexFull;
+                if (v.nodes.length > TUNE_MAX) {
+                    const step = v.nodes.length / TUNE_MAX;
+                    tuneNodes = [];
+                    for (let i = 0; i < v.nodes.length; i += step) tuneNodes.push(v.nodes[Math.floor(i)]);
+                    const idSet = new Set(tuneNodes.map(n => n.id));
+                    tuneAdj = {};
+                    tuneIndex = {};
+                    for (const n of tuneNodes) {
+                        tuneIndex[n.id] = n;
+                        tuneAdj[n.id] = (v.adjList[n.id] || []).filter(nid => idSet.has(nid));
+                    }
+                    console.log(`[auto-tune] subsampled ${v.nodes.length} → ${tuneNodes.length} nodes`);
+                }
+                const result = await autoTuneStrengths(tuneNodes, v.groupNames, tuneAdj, tuneIndex, {
                     strengths: true, alpha: true, quant: false,
                     signal: this._tuneAbort.signal,
                     onProgress: (info) => {
@@ -2111,7 +2143,23 @@ class BitZoom {
                 this.pendingEdgesText = null;
                 this.pendingNodesText = null;
                 this.pendingParsed = null;
-                await this._stageDroppedFiles(files);
+                // Show loader screen before heavy work so UI doesn't appear frozen
+                this.showLoaderScreen();
+                const status = document.getElementById('loadStatus');
+                status.textContent = 'Reading file...';
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+                const file = files[0];
+                const text = await readFileText(file);
+                status.textContent = `Parsing ${file.name}...`;
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+                const format = detectFormat(text, file.name);
+                if (isObjectFormat(format)) {
+                    const parsed = parseAny(text, file.name);
+                    this.pendingParsed = parsed;
+                    this._pendingFileName = file.name.replace(/\.[^.]+$/g, '');
+                } else {
+                    await this._stageDroppedFiles(files);
+                }
                 await this._executeCanvasLoad();
             }
         }, sig);
@@ -2184,6 +2232,11 @@ class BitZoom {
     async _executeCanvasLoad() {
         if (!this.pendingParsed && !this.pendingEdgesText && !this.pendingNodesText) return;
         try {
+            const n = this.pendingParsed ? this.pendingParsed.nodes.size : 0;
+            if (n > 10000) {
+                this.view.showProgress(`Building graph (${n.toLocaleString()} nodes)...`);
+                await new Promise(r => setTimeout(r, 0)); // yield so progress text renders
+            }
             if (this.pendingParsed) {
                 await this.loadFromParsed(this.pendingParsed);
             } else {
