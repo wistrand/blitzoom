@@ -4,7 +4,7 @@
 #
 Layout                          Time(s)  EdgeLen(mean)  EdgeLen(med)  TopoNbrP  PropNbrP
 ----------------------------------------------------------------------------------------
-Blitzoom:synth-pkg-a000-weighted    0.004         0.3868        0.3454    0.0056    0.0494
-Blitzoom:synth-pkg-a050-weighted    0.004         0.3064        0.2644    0.0106    0.0388
-Blitzoom:synth-pkg-a000-weighted-gauss    0.005         0.4114        0.3593    0.0054    0.0500
-Blitzoom:synth-pkg-a050-weighted-gauss    0.004         0.3261        0.2714    0.0102    0.0381
+BlitZoom:synth-pkg-a000-weighted    0.004         0.3868        0.3454    0.0056    0.0494
+BlitZoom:synth-pkg-a050-weighted    0.004         0.3064        0.2644    0.0106    0.0388
+BlitZoom:synth-pkg-a000-weighted-gauss    0.005         0.4114        0.3593    0.0054    0.0500
+BlitZoom:synth-pkg-a050-weighted-gauss    0.004         0.3261        0.2714    0.0102    0.0381

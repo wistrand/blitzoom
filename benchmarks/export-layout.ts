@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
-// Export Blitzoom layout coordinates for comparison benchmarks.
+// Export BlitZoom layout coordinates for comparison benchmarks.
 // Usage: deno run --allow-read --allow-write benchmarks/export-layout.ts \
 //          --edges docs/data/email-eu.edges [--nodes docs/data/email-eu.nodes] \
 //          --alpha 0.75 --quant rank --out benchmarks/layouts/email-eu-a075.tsv

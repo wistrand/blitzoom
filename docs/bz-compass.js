@@ -1,4 +1,4 @@
-// bz-compass.js — <bz-compass> web component for Blitzoom.
+// bz-compass.js — <bz-compass> web component for BlitZoom.
 // Radial 2D control: each property group is a spoke from center.
 // Radial distance = strength (0–max), angular offset from home = bearing.
 //

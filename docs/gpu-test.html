@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blitzoom — GPU vs CPU Comparison</title>
+<title>BlitZoom — GPU vs CPU Comparison</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -156,7 +156,7 @@
   </div>
 </div>
 
-<h2>Blitzoom Source — 433 nodes, kind weight</h2>
+<h2>BlitZoom Source — 433 nodes, kind weight</h2>
 <div class="pair">
   <div class="panel">
     <div class="panel-header">BZ Source · kind:8 group:3 · α=0 <span class="tag tag-cpu">CPU</span></div>
@@ -168,7 +168,7 @@
   </div>
 </div>
 
-<h2>Blitzoom Source — topology α=0.5</h2>
+<h2>BlitZoom Source — topology α=0.5</h2>
 <div class="pair">
   <div class="panel">
     <div class="panel-header">BZ Source · kind:8 group:3 · α=0.5 <span class="tag tag-cpu">CPU</span></div>
@@ -205,7 +205,7 @@
 </div>
 
 <script type="module">
-import { createBlitzoomView, initGPU } from './blitzoom.js';
+import { createBlitZoomView, initGPU } from './blitzoom.js';
 
 const status = document.getElementById('status');
 const results = [];
@@ -220,8 +220,8 @@ async function loadPair(name, edgesFile, nodesFile, cpuId, gpuId, opts = {}) {
   const cpuOpts = { initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true, ...opts };
   const gpuOpts = { ...cpuOpts, useGPU: true };
 
-  const cpuView = createBlitzoomView(document.getElementById(cpuId), edgesRes, nodesRes, cpuOpts);
-  const gpuView = createBlitzoomView(document.getElementById(gpuId), edgesRes, nodesRes, gpuOpts);
+  const cpuView = createBlitZoomView(document.getElementById(cpuId), edgesRes, nodesRes, cpuOpts);
+  const gpuView = createBlitZoomView(document.getElementById(gpuId), edgesRes, nodesRes, gpuOpts);
 
   // Log comparison after GPU finishes (give it time)
   setTimeout(() => {

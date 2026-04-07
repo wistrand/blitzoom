@@ -1,4 +1,4 @@
-# Blitzoom Architecture
+# BlitZoom Architecture
 
 This is the top-level architecture overview. Subsystems have their own docs:
 
@@ -12,7 +12,7 @@ This is the top-level architecture overview. Subsystems have their own docs:
 
 ## Overview
 
-Blitzoom is a deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash + Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
+BlitZoom is a deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash + Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
 
 ## Project Structure
 
@@ -30,7 +30,7 @@ docs/                    Web application (ES modules, served by Deno)
   blitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing (no state mutation)
   blitzoom-gl-renderer.js   WebGL2 instanced renderer — 7 shader programs (~1202 lines)
   blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, event hub
-  blitzoom-viewer.js        Blitzoom app (composes BlitzoomCanvas) — UI, workers, data loading, drop zones
+  blitzoom-viewer.js        BlitZoom app (composes BlitZoomCanvas) — UI, workers, data loading, drop zones
   blitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
   stix2snap.js             STIX 2.1 → object pipeline (parseSTIX, browser-compatible)
   blitzoom-svg.js           SVG export — exportSVG(bz, opts) + createSVGView() headless factory
@@ -78,7 +78,7 @@ blitzoom-worker.js            (pipeline)
 blitzoom-proj-worker.js       (algo, pipeline)
 ```
 
-No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in [blitzoom-algo.js](../docs/blitzoom-algo.js). `Blitzoom` composes `BlitzoomCanvas` (`this.view`) — all graph state, rendering, and interaction primitives live on the canvas component.
+No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in [blitzoom-algo.js](../docs/blitzoom-algo.js). `BlitZoom` composes `BlitZoomCanvas` (`this.view`) — all graph state, rendering, and interaction primitives live on the canvas component.
 
 ## Data Format (SNAP)
 
@@ -129,7 +129,7 @@ Format adapters and content-based dispatcher. Imports `parseNodesFile` from pipe
 
 ### [blitzoom-renderer.js](../docs/blitzoom-renderer.js) (944 lines)
 
-Canvas 2D rendering. Reads Blitzoom instance, no state mutation (except `n.x`/`n.y` in layout).
+Canvas 2D rendering. Reads BlitZoom instance, no state mutation (except `n.x`/`n.y` in layout).
 When WebGL2 is active (`bz._gl` set), `render()` skips geometry drawing (grid, edges, heatmap,
 circles) and only draws text (labels, counts, legend, reset button) on the transparent overlay.
 
@@ -184,7 +184,7 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
-**`BlitzoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propStrengths, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Always owns its event handlers (`_bindEvents`). Constructor accepts `onRender`, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, `colorBy`, `clickDelay` (ms, for single/double-click disambiguation), `keyboardTarget` (default canvas element), and extension callbacks (`onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`).
+**`BlitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propStrengths, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Always owns its event handlers (`_bindEvents`). Constructor accepts `onRender`, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, `colorBy`, `clickDelay` (ms, for single/double-click disambiguation), `keyboardTarget` (default canvas element), and extension callbacks (`onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`).
 
 **`colorBy`**: getter/setter overrides which property group controls node colors. Default `null` = auto (highest-weight group). Setting to a valid group name pins coloring to that group; setting to `null` returns to auto. In the viewer, clicking a group name label toggles colorBy (underlined = active). `<bz-graph>` supports the `color-by` attribute.
 
@@ -194,15 +194,15 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Level crossfade**: `_snapshotForCrossfade()` captures the current canvas into an absolutely-positioned overlay that fades out over 350ms, providing a smooth visual transition between zoom levels. The overlay is positioned at the canvas's `offsetTop`/`offsetLeft` within its parent container (not fixed at `top:0;left:0`) so it aligns correctly regardless of layout — e.g., in grid layouts where the canvas is not at the container origin.
 
-**`createBlitzoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
+**`createBlitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
 
 ### [blitzoom-viewer.js](../docs/blitzoom-viewer.js) (2055 lines)
 
-`Blitzoom` class — composes `BlitzoomCanvas` as `this.view`. Adds application UI and orchestration.
+`BlitZoom` class — composes `BlitZoomCanvas` as `this.view`. Adds application UI and orchestration.
 
-**Composition**: all graph/view state accessed via `this.view.*`. Blitzoom owns app-only state (dataLoaded, presets, workers, hash timers). All canvas-element events (mouse, touch, wheel, keyboard, resize) are handled by `BlitzoomCanvas`; the viewer extends via callbacks passed at construction. Viewer-only keys (a, s, S) are handled in `_handleViewerKeys` via the `onKeydown` callback.
+**Composition**: all graph/view state accessed via `this.view.*`. BlitZoom owns app-only state (dataLoaded, presets, workers, hash timers). All canvas-element events (mouse, touch, wheel, keyboard, resize) are handled by `BlitZoomCanvas`; the viewer extends via callbacks passed at construction. Viewer-only keys (a, s, S) are handled in `_handleViewerKeys` via the `onKeydown` callback.
 
 **Navigation**: `switchLevel` (called via `onSwitchLevel` callback from canvas keyboard `,`/`.` — adds UI updates, animates supernodes when both old and new levels have <80 nodes), `zoomToNode` (called via `onZoomToHit` on dblclick — animated 350ms with reselection after level change). Level-change UI updates (`_updateStepperUI`, `_deferUIUpdate`) fire via the `onLevelChange` callback. `wheelZoom` prefers `hitTest` for zoom target (respects visual label placement), falls back to `_nearestItem` by distance. On level change during zoom, the dominant member of the old supernode is tracked to the new level.
 
@@ -219,7 +219,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 ### [blitzoom-svg.js](../docs/blitzoom-svg.js) (~601 lines)
 
 SVG export. Two entry points:
-- `exportSVG(bz, opts)` — renders the current view (BlitzoomCanvas or headless view) as an SVG string. Produces background, grid, edges, density heatmap contours, circles, labels, and legend.
+- `exportSVG(bz, opts)` — renders the current view (BlitZoomCanvas or headless view) as an SVG string. Produces background, grid, edges, density heatmap contours, circles, labels, and legend.
 - `createSVGView(nodes, edges, opts)` — builds a lightweight view from plain pipeline data, no DOM required. Suitable for headless/server-side SVG export and testing.
 
 Density heatmap uses kernel density estimation on a coarse grid, global normalization across all color groups (matching the canvas renderer), Moore neighborhood contour tracing, RDP simplification, and Chaikin smoothing. Imports from `blitzoom-algo.js` (levels, constants) and `blitzoom-colors.js` (color schemes).
@@ -272,7 +272,7 @@ Level change (auto or manual):
 - Level cache invalidated when weights, labels, or topology alpha change.
 - `renderZoom` compensates for level offset — visual scale never jumps.
 - `switchLevel` adjusts logical zoom so renderZoom stays constant.
-- Renderer never mutates Blitzoom state (except `n.x`/`n.y` in `layoutAll`).
+- Renderer never mutates BlitZoom state (except `n.x`/`n.y` in `layoutAll`).
 - `getLevel()` calls `layoutAll()` after building a new level.
 - Empty/undefined property values emit 0 tokens — no false clustering.
 - Numeric columns tokenized at 3 resolution levels for smooth similarity.
@@ -305,7 +305,7 @@ Numeric values emit 3 tokens (coarse/medium/fine bins). Nearby values share coar
 
 Geometry rendering (grid, edges, heatmap, circles) can run on WebGL2 via
 [blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js). Text (labels, counts, legend) stays on
-Canvas 2D because GPU text rendering adds complexity with no visual benefit at Blitzoom's scale.
+Canvas 2D because GPU text rendering adds complexity with no visual benefit at BlitZoom's scale.
 
 The dual canvas architecture (GL behind, transparent Canvas 2D on top) keeps all event handling
 unchanged and allows toggling at runtime without re-binding listeners. The GL canvas uses
@@ -317,7 +317,7 @@ buffer management.
 ### Adaptive GPU/CPU selection
 
 GPU tri-state in viewer: **Auto** (default, adaptive thresholds) → **GPU** (always) → **CPU**
-(never). Button cycles on click. `autoGPU` option in `createBlitzoomView` auto-enables WebGPU
+(never). Button cycles on click. `autoGPU` option in `createBlitZoomView` auto-enables WebGPU
 when N×G > 2000 (default true).
 
 | Operation  | Auto GPU when                         | Reason                                        |

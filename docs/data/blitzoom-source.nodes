@@ -22,49 +22,49 @@ file:agent_docs/RESEARCH-precompute-optimizations.md	agent_docs/RESEARCH-precomp
 file:agent_docs/PLAN-topology-smoothing.md	agent_docs/PLAN-topology-smoothing.md	agent_docs	file	agent_docs	216	8797	
 file:deno.json	deno.json	.	file	.	14	1104	
 file:scripts/src2snap.ts	scripts/src2snap.ts	scripts	file	scripts	536	20615	
-file:scripts/azgaar2snap.ts	scripts/azgaar2snap.ts	scripts	file	scripts	211	7459	
-file:scripts/porsche2snap.ts	scripts/porsche2snap.ts	scripts	file	scripts	322	13034	
+file:scripts/azgaar2snap.ts	scripts/azgaar2snap.ts	scripts	file	scripts	211	7459	1
+file:scripts/porsche2snap.ts	scripts/porsche2snap.ts	scripts	file	scripts	322	13034	1
 file:scripts/bench-render.js	scripts/bench-render.js	scripts	file	scripts	115	4667	
 file:scripts/bench-minhash.js	scripts/bench-minhash.js	scripts	file	scripts	77	3074	
-file:scripts/csv2snap.ts	scripts/csv2snap.ts	scripts	file	scripts	252	8160	
+file:scripts/csv2snap.ts	scripts/csv2snap.ts	scripts	file	scripts	252	8160	1
 file:scripts/bench-3M.js	scripts/bench-3M.js	scripts	file	scripts	185	7600	
-file:scripts/stix2snap.ts	scripts/stix2snap.ts	scripts	file	scripts	384	13326	
+file:scripts/stix2snap.ts	scripts/stix2snap.ts	scripts	file	scripts	384	13326	1
 file:scripts/bench-gpu.js	scripts/bench-gpu.js	scripts	file	scripts	174	7097	
 file:scripts/bench-pipeline.js	scripts/bench-pipeline.js	scripts	file	scripts	84	3639	
 file:scripts/midi2graph.js	scripts/midi2graph.js	scripts	file	scripts	346	13744	
-file:scripts/ransomware2snap.ts	scripts/ransomware2snap.ts	scripts	file	scripts	274	10421	
+file:scripts/ransomware2snap.ts	scripts/ransomware2snap.ts	scripts	file	scripts	274	10421	1
 file:scripts/bench-oph-threshold.js	scripts/bench-oph-threshold.js	scripts	file	scripts	79	2813	
 file:scripts/bench-viewer.js	scripts/bench-viewer.js	scripts	file	scripts	225	9878	
-file:scripts/serve.ts	scripts/serve.ts	scripts	file	scripts	46	1240	
-file:scripts/bench-hashslot.js	scripts/bench-hashslot.js	scripts	file	scripts	109	3305	
+file:scripts/serve.ts	scripts/serve.ts	scripts	file	scripts	46	1240	1
+file:scripts/bench-hashslot.js	scripts/bench-hashslot.js	scripts	file	scripts	109	3305	1
 file:benchmarks/export-layout.ts	benchmarks/export-layout.ts	benchmarks	file	benchmarks	152	5825	
 file:benchmarks/results/REPORT.md	benchmarks/results/REPORT.md	benchmarks/results	file	benchmarks/results	240	12276	
 file:README.md	README.md	.	file	.	148	6687	
 file:docs/blitzoom-utils.js	docs/blitzoom-utils.js	docs	file	docs	630	25810	
 file:docs/gpu-test.html	docs/gpu-test.html	docs	file	docs	298	9804	
-file:docs/stix2snap.js	docs/stix2snap.js	docs	file	docs	244	9385	
+file:docs/stix2snap.js	docs/stix2snap.js	docs	file	docs	244	9385	1
 file:docs/blitzoom-gpu.js	docs/blitzoom-gpu.js	docs	file	docs	764	30708	
-file:docs/webgl.html	docs/webgl.html	docs	file	docs	489	23305	
+file:docs/webgl.html	docs/webgl.html	docs	file	docs	489	23306	
 file:docs/blitzoom-proj-worker.js	docs/blitzoom-proj-worker.js	docs	file	docs	96	3423	
 file:docs/blitzoom-algo.js	docs/blitzoom-algo.js	docs	file	docs	569	22531	
 file:docs/blitzoom-viewer.js	docs/blitzoom-viewer.js	docs	file	docs	2453	117283	
 file:docs/blitzoom-worker.js	docs/blitzoom-worker.js	docs	file	docs	143	4416	
 file:docs/blitzoom-colors.js	docs/blitzoom-colors.js	docs	file	docs	124	3752	
-file:docs/blitzoom.css	docs/blitzoom.css	docs	file	docs	826	20529	
+file:docs/blitzoom.css	docs/blitzoom.css	docs	file	docs	826	20529	1
 file:docs/bz-graph-demo.html	docs/bz-graph-demo.html	docs	file	docs	111	4646	
 file:docs/blitzoom-renderer.js	docs/blitzoom-renderer.js	docs	file	docs	1112	42810	
-file:docs/index.html	docs/index.html	docs	file	docs	314	8977	
-file:docs/viewer.html	docs/viewer.html	docs	file	docs	147	11833	
-file:docs/webgpu.html	docs/webgpu.html	docs	file	docs	793	38970	
+file:docs/index.html	docs/index.html	docs	file	docs	314	8978	
+file:docs/viewer.html	docs/viewer.html	docs	file	docs	147	11834	
+file:docs/webgpu.html	docs/webgpu.html	docs	file	docs	793	38971	
 file:docs/example.html	docs/example.html	docs	file	docs	54	1825	
-file:docs/dist/blitzoom.bundle.js	docs/dist/blitzoom.bundle.js	docs/dist	file	docs/dist	556	180963	
-file:docs/about.html	docs/about.html	docs	file	docs	1563	90686	
+file:docs/dist/blitzoom.bundle.js	docs/dist/blitzoom.bundle.js	docs/dist	file	docs/dist	556	180968	
+file:docs/about.html	docs/about.html	docs	file	docs	1563	90687	
 file:docs/blitzoom-canvas.js	docs/blitzoom-canvas.js	docs	file	docs	1795	72606	
-file:docs/data/miserables.cyjs.json	docs/data/miserables.cyjs.json	docs/data	file	docs/data	2325	39657	
-file:docs/data/miserables.jgf.json	docs/data/miserables.jgf.json	docs/data	file	docs/data	2251	59325	
-file:docs/data/miserables.json	docs/data/miserables.json	docs/data	file	docs/data	2	11536	
-file:docs/data/midi-synths.json	docs/data/midi-synths.json	docs/data	file	docs/data	22571	524213	
-file:docs/howto.html	docs/howto.html	docs	file	docs	997	60308	
+file:docs/data/miserables.cyjs.json	docs/data/miserables.cyjs.json	docs/data	file	docs/data	2325	39657	1
+file:docs/data/miserables.jgf.json	docs/data/miserables.jgf.json	docs/data	file	docs/data	2251	59325	1
+file:docs/data/miserables.json	docs/data/miserables.json	docs/data	file	docs/data	2	11536	1
+file:docs/data/midi-synths.json	docs/data/midi-synths.json	docs/data	file	docs/data	22571	524213	1
+file:docs/howto.html	docs/howto.html	docs	file	docs	997	60309	
 file:docs/bz-controls.js	docs/bz-controls.js	docs	file	docs	363	15436	
 file:docs/blitzoom-svg.js	docs/blitzoom-svg.js	docs	file	docs	623	25397	
 file:docs/webgl-test.html	docs/webgl-test.html	docs	file	docs	246	7639	
@@ -245,65 +245,65 @@ fn:docs/blitzoom-algo.js:getSupernodeDominantValue	getSupernodeDominantValue	doc
 fn:docs/blitzoom-viewer.js:esc	esc	docs/blitzoom-viewer.js	function	docs/blitzoom-viewer.js	10		
 fn:docs/blitzoom-viewer.js:pickInitialLevel	pickInitialLevel	docs/blitzoom-viewer.js	function	docs/blitzoom-viewer.js	38		
 const:docs/blitzoom-viewer.js:DATASETS	DATASETS	docs/blitzoom-viewer.js	constant	docs/blitzoom-viewer.js	1		
-class:docs/blitzoom-viewer.js:Blitzoom	Blitzoom	docs/blitzoom-viewer.js	class	docs/blitzoom-viewer.js	2302		
-method:docs/blitzoom-viewer.js:Blitzoom.constructor	Blitzoom.constructor	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	71		
-method:docs/blitzoom-viewer.js:Blitzoom._serializeHash	Blitzoom._serializeHash	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	43		
-method:docs/blitzoom-viewer.js:Blitzoom._scheduleHashUpdate	Blitzoom._scheduleHashUpdate	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
-method:docs/blitzoom-viewer.js:Blitzoom._restoreFromHash	Blitzoom._restoreFromHash	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
-method:docs/blitzoom-viewer.js:Blitzoom._applyHashState	Blitzoom._applyHashState	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	66		
-method:docs/blitzoom-viewer.js:Blitzoom.rebuildProjections	Blitzoom.rebuildProjections	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	51		
-method:docs/blitzoom-viewer.js:Blitzoom.switchLevel	Blitzoom.switchLevel	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	95		
-method:docs/blitzoom-viewer.js:Blitzoom.requestAnimationFrame	Blitzoom.requestAnimationFrame	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom._handleViewerKeys	Blitzoom._handleViewerKeys	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	46		
-method:docs/blitzoom-viewer.js:Blitzoom.setTimeout	Blitzoom.setTimeout	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.zoomToNode	Blitzoom.zoomToNode	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	43		
-method:docs/blitzoom-viewer.js:Blitzoom._reselectAfterLevelChange	Blitzoom._reselectAfterLevelChange	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	50		
-method:docs/blitzoom-viewer.js:Blitzoom._centerOnNode	Blitzoom._centerOnNode	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	6		
-method:docs/blitzoom-viewer.js:Blitzoom.selectNode	Blitzoom.selectNode	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	12		
-method:docs/blitzoom-viewer.js:Blitzoom._deferUIUpdate	Blitzoom._deferUIUpdate	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	9		
-method:docs/blitzoom-viewer.js:Blitzoom._updateStepperUI	Blitzoom._updateStepperUI	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	8		
-method:docs/blitzoom-viewer.js:Blitzoom._updateOverview	Blitzoom._updateOverview	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	23		
-method:docs/blitzoom-viewer.js:Blitzoom._updateAlgoInfo	Blitzoom._updateAlgoInfo	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
-method:docs/blitzoom-viewer.js:Blitzoom._showDetail	Blitzoom._showDetail	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	159		
-method:docs/blitzoom-viewer.js:Blitzoom._applyDatasetSettings	Blitzoom._applyDatasetSettings	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	48		
-method:docs/blitzoom-viewer.js:Blitzoom._buildDynamicUI	Blitzoom._buildDynamicUI	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	26		
-method:docs/blitzoom-viewer.js:Blitzoom._updateColorByUI	Blitzoom._updateColorByUI	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	4		
-method:docs/blitzoom-viewer.js:Blitzoom._scheduleRebuild	Blitzoom._scheduleRebuild	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	4		
-method:docs/blitzoom-viewer.js:Blitzoom._syncControls	Blitzoom._syncControls	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	17		
-method:docs/blitzoom-viewer.js:Blitzoom._compassSVGOpts	Blitzoom._compassSVGOpts	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	17		
-method:docs/blitzoom-viewer.js:Blitzoom._syncCompass	Blitzoom._syncCompass	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	26		
-method:docs/blitzoom-viewer.js:Blitzoom._applyPreset	Blitzoom._applyPreset	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
-method:docs/blitzoom-viewer.js:Blitzoom.loadGraph	Blitzoom.loadGraph	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	61		
-method:docs/blitzoom-viewer.js:Blitzoom.reject	Blitzoom.reject	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.resolve	Blitzoom.resolve	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.loadGraphGPU	Blitzoom.loadGraphGPU	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	71		
-method:docs/blitzoom-viewer.js:Blitzoom.loadFromParsed	Blitzoom.loadFromParsed	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	51		
-method:docs/blitzoom-viewer.js:Blitzoom._applyWorkerResult	Blitzoom._applyWorkerResult	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	135		
-method:docs/blitzoom-viewer.js:Blitzoom._finalizeLoad	Blitzoom._finalizeLoad	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	68		
-method:docs/blitzoom-viewer.js:Blitzoom._autoTuneFresh	Blitzoom._autoTuneFresh	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	45		
-method:docs/blitzoom-viewer.js:Blitzoom._applyGPUToCurrentData	Blitzoom._applyGPUToCurrentData	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	34		
-method:docs/blitzoom-viewer.js:Blitzoom._reloadCPU	Blitzoom._reloadCPU	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	27		
-method:docs/blitzoom-viewer.js:Blitzoom.loadDataset	Blitzoom.loadDataset	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	58		
-method:docs/blitzoom-viewer.js:Blitzoom._showError	Blitzoom._showError	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	9		
-method:docs/blitzoom-viewer.js:Blitzoom.showLoaderScreen	Blitzoom.showLoaderScreen	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	28		
-method:docs/blitzoom-viewer.js:Blitzoom._bindEvents	Blitzoom._bindEvents	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	613		
-method:docs/blitzoom-viewer.js:Blitzoom.updateSizeButtons	Blitzoom.updateSizeButtons	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.updateLogBtn	Blitzoom.updateLogBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.updateQuantBtn	Blitzoom.updateQuantBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.updateEdgeBtn	Blitzoom.updateEdgeBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.updateHeatBtn	Blitzoom.updateHeatBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.updateGpuBtn	Blitzoom.updateGpuBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.updateGlBtn	Blitzoom.updateGlBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.startDrag	Blitzoom.startDrag	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom.catch	Blitzoom.catch	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom._toggleSidebar	Blitzoom._toggleSidebar	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	7		
-method:docs/blitzoom-viewer.js:Blitzoom._fetchText	Blitzoom._fetchText	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	19		
-method:docs/blitzoom-viewer.js:Blitzoom._executeCanvasLoad	Blitzoom._executeCanvasLoad	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	25		
-method:docs/blitzoom-viewer.js:Blitzoom._stageDroppedFiles	Blitzoom._stageDroppedFiles	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	13		
-method:docs/blitzoom-viewer.js:Blitzoom._readFileText	Blitzoom._readFileText	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
-method:docs/blitzoom-viewer.js:Blitzoom._handleFileSelect	Blitzoom._handleFileSelect	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	44		
-method:docs/blitzoom-viewer.js:Blitzoom._updateLoadStatus	Blitzoom._updateLoadStatus	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	15		
-method:docs/blitzoom-viewer.js:Blitzoom._buildDatasetButtons	Blitzoom._buildDatasetButtons	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	21		
+class:docs/blitzoom-viewer.js:BlitZoom	BlitZoom	docs/blitzoom-viewer.js	class	docs/blitzoom-viewer.js	2302		
+method:docs/blitzoom-viewer.js:BlitZoom.constructor	BlitZoom.constructor	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	71		
+method:docs/blitzoom-viewer.js:BlitZoom._serializeHash	BlitZoom._serializeHash	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	43		
+method:docs/blitzoom-viewer.js:BlitZoom._scheduleHashUpdate	BlitZoom._scheduleHashUpdate	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
+method:docs/blitzoom-viewer.js:BlitZoom._restoreFromHash	BlitZoom._restoreFromHash	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
+method:docs/blitzoom-viewer.js:BlitZoom._applyHashState	BlitZoom._applyHashState	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	66		
+method:docs/blitzoom-viewer.js:BlitZoom.rebuildProjections	BlitZoom.rebuildProjections	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	51		
+method:docs/blitzoom-viewer.js:BlitZoom.switchLevel	BlitZoom.switchLevel	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	95		
+method:docs/blitzoom-viewer.js:BlitZoom.requestAnimationFrame	BlitZoom.requestAnimationFrame	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom._handleViewerKeys	BlitZoom._handleViewerKeys	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	46		
+method:docs/blitzoom-viewer.js:BlitZoom.setTimeout	BlitZoom.setTimeout	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.zoomToNode	BlitZoom.zoomToNode	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	43		
+method:docs/blitzoom-viewer.js:BlitZoom._reselectAfterLevelChange	BlitZoom._reselectAfterLevelChange	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	50		
+method:docs/blitzoom-viewer.js:BlitZoom._centerOnNode	BlitZoom._centerOnNode	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	6		
+method:docs/blitzoom-viewer.js:BlitZoom.selectNode	BlitZoom.selectNode	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	12		
+method:docs/blitzoom-viewer.js:BlitZoom._deferUIUpdate	BlitZoom._deferUIUpdate	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	9		
+method:docs/blitzoom-viewer.js:BlitZoom._updateStepperUI	BlitZoom._updateStepperUI	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	8		
+method:docs/blitzoom-viewer.js:BlitZoom._updateOverview	BlitZoom._updateOverview	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	23		
+method:docs/blitzoom-viewer.js:BlitZoom._updateAlgoInfo	BlitZoom._updateAlgoInfo	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
+method:docs/blitzoom-viewer.js:BlitZoom._showDetail	BlitZoom._showDetail	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	159		
+method:docs/blitzoom-viewer.js:BlitZoom._applyDatasetSettings	BlitZoom._applyDatasetSettings	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	48		
+method:docs/blitzoom-viewer.js:BlitZoom._buildDynamicUI	BlitZoom._buildDynamicUI	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	26		
+method:docs/blitzoom-viewer.js:BlitZoom._updateColorByUI	BlitZoom._updateColorByUI	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	4		
+method:docs/blitzoom-viewer.js:BlitZoom._scheduleRebuild	BlitZoom._scheduleRebuild	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	4		
+method:docs/blitzoom-viewer.js:BlitZoom._syncControls	BlitZoom._syncControls	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	17		
+method:docs/blitzoom-viewer.js:BlitZoom._compassSVGOpts	BlitZoom._compassSVGOpts	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	17		
+method:docs/blitzoom-viewer.js:BlitZoom._syncCompass	BlitZoom._syncCompass	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	26		
+method:docs/blitzoom-viewer.js:BlitZoom._applyPreset	BlitZoom._applyPreset	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	10		
+method:docs/blitzoom-viewer.js:BlitZoom.loadGraph	BlitZoom.loadGraph	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	61		
+method:docs/blitzoom-viewer.js:BlitZoom.reject	BlitZoom.reject	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.resolve	BlitZoom.resolve	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.loadGraphGPU	BlitZoom.loadGraphGPU	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	71		
+method:docs/blitzoom-viewer.js:BlitZoom.loadFromParsed	BlitZoom.loadFromParsed	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	51		
+method:docs/blitzoom-viewer.js:BlitZoom._applyWorkerResult	BlitZoom._applyWorkerResult	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	135		
+method:docs/blitzoom-viewer.js:BlitZoom._finalizeLoad	BlitZoom._finalizeLoad	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	68		
+method:docs/blitzoom-viewer.js:BlitZoom._autoTuneFresh	BlitZoom._autoTuneFresh	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	45		
+method:docs/blitzoom-viewer.js:BlitZoom._applyGPUToCurrentData	BlitZoom._applyGPUToCurrentData	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	34		
+method:docs/blitzoom-viewer.js:BlitZoom._reloadCPU	BlitZoom._reloadCPU	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	27		
+method:docs/blitzoom-viewer.js:BlitZoom.loadDataset	BlitZoom.loadDataset	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	58		
+method:docs/blitzoom-viewer.js:BlitZoom._showError	BlitZoom._showError	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	9		
+method:docs/blitzoom-viewer.js:BlitZoom.showLoaderScreen	BlitZoom.showLoaderScreen	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	28		
+method:docs/blitzoom-viewer.js:BlitZoom._bindEvents	BlitZoom._bindEvents	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	613		
+method:docs/blitzoom-viewer.js:BlitZoom.updateSizeButtons	BlitZoom.updateSizeButtons	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.updateLogBtn	BlitZoom.updateLogBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.updateQuantBtn	BlitZoom.updateQuantBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.updateEdgeBtn	BlitZoom.updateEdgeBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.updateHeatBtn	BlitZoom.updateHeatBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.updateGpuBtn	BlitZoom.updateGpuBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.updateGlBtn	BlitZoom.updateGlBtn	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.startDrag	BlitZoom.startDrag	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom.catch	BlitZoom.catch	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom._toggleSidebar	BlitZoom._toggleSidebar	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	7		
+method:docs/blitzoom-viewer.js:BlitZoom._fetchText	BlitZoom._fetchText	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	19		
+method:docs/blitzoom-viewer.js:BlitZoom._executeCanvasLoad	BlitZoom._executeCanvasLoad	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	25		
+method:docs/blitzoom-viewer.js:BlitZoom._stageDroppedFiles	BlitZoom._stageDroppedFiles	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	13		
+method:docs/blitzoom-viewer.js:BlitZoom._readFileText	BlitZoom._readFileText	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	1		
+method:docs/blitzoom-viewer.js:BlitZoom._handleFileSelect	BlitZoom._handleFileSelect	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	44		
+method:docs/blitzoom-viewer.js:BlitZoom._updateLoadStatus	BlitZoom._updateLoadStatus	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	15		
+method:docs/blitzoom-viewer.js:BlitZoom._buildDatasetButtons	BlitZoom._buildDatasetButtons	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	21		
 const:docs/blitzoom-viewer.js:ready	ready	docs/blitzoom-viewer.js	constant	docs/blitzoom-viewer.js	1		
 const:docs/blitzoom-worker.js:MAX_WORKERS	MAX_WORKERS	docs/blitzoom-worker.js	constant	docs/blitzoom-worker.js	1		
 fn:docs/blitzoom-worker.js:progress	progress	docs/blitzoom-worker.js	function	docs/blitzoom-worker.js	136		
@@ -354,83 +354,83 @@ fn:docs/blitzoom-renderer.js:renderHeatmapDensity	renderHeatmapDensity	docs/blit
 fn:docs/blitzoom-renderer.js:renderLegend	renderLegend	docs/blitzoom-renderer.js	function	docs/blitzoom-renderer.js	91		
 fn:docs/blitzoom-renderer.js:renderResetBtn	renderResetBtn	docs/blitzoom-renderer.js	function	docs/blitzoom-renderer.js	17		
 fn:docs/blitzoom-renderer.js:hitTest	hitTest	docs/blitzoom-renderer.js	function	docs/blitzoom-renderer.js	104		
-class:docs/blitzoom-canvas.js:BlitzoomCanvas	BlitzoomCanvas	docs/blitzoom-canvas.js	class	docs/blitzoom-canvas.js	1552		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.constructor	BlitzoomCanvas.constructor	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	119		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.renderZoom	BlitzoomCanvas.renderZoom	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	3		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.selectedId	BlitzoomCanvas.selectedId	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	8		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.isSelected	BlitzoomCanvas.isSelected	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.toggleSelection	BlitzoomCanvas.toggleSelection	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	9		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.announce	BlitzoomCanvas.announce	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._emitSummary	BlitzoomCanvas._emitSummary	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	24		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._describeNode	BlitzoomCanvas._describeNode	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	9		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._findById	BlitzoomCanvas._findById	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._describeLevel	BlitzoomCanvas._describeLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._dominantProp	BlitzoomCanvas._dominantProp	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._labelProp	BlitzoomCanvas._labelProp	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._refreshPropCache	BlitzoomCanvas._refreshPropCache	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.cycleColorScheme	BlitzoomCanvas.cycleColorScheme	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	11		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.colorScheme	BlitzoomCanvas.colorScheme	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.colorSchemeName	BlitzoomCanvas.colorSchemeName	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.colorBy	BlitzoomCanvas.colorBy	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.lightMode	BlitzoomCanvas.lightMode	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._nodeLabel	BlitzoomCanvas._nodeLabel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._supernodeLabel	BlitzoomCanvas._supernodeLabel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._nodeColorVal	BlitzoomCanvas._nodeColorVal	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._nodeColor	BlitzoomCanvas._nodeColor	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._supernodeColor	BlitzoomCanvas._supernodeColor	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	8		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.getLevel	BlitzoomCanvas.getLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	19		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._scheduleEdgeBuild	BlitzoomCanvas._scheduleEdgeBuild	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	56		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.layoutAll	BlitzoomCanvas.layoutAll	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.render	BlitzoomCanvas.render	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.requestAnimationFrame	BlitzoomCanvas.requestAnimationFrame	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._drawFps	BlitzoomCanvas._drawFps	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._postRender	BlitzoomCanvas._postRender	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	4		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._a11yCheck	BlitzoomCanvas._a11yCheck	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	63		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.clearTimeout	BlitzoomCanvas.clearTimeout	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.showProgress	BlitzoomCanvas.showProgress	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	19		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.renderNow	BlitzoomCanvas.renderNow	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.worldToScreen	BlitzoomCanvas.worldToScreen	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.screenToWorld	BlitzoomCanvas.screenToWorld	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.hitTest	BlitzoomCanvas.hitTest	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.resize	BlitzoomCanvas.resize	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.zoomForLevel	BlitzoomCanvas.zoomForLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.switchLevel	BlitzoomCanvas.switchLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._checkAutoLevel	BlitzoomCanvas._checkAutoLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	24		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._snapshotForCrossfade	BlitzoomCanvas._snapshotForCrossfade	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	42		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.useGPU	BlitzoomCanvas.useGPU	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.useWebGL	BlitzoomCanvas.useWebGL	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._initWebGL	BlitzoomCanvas._initWebGL	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	58		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._destroyWebGL	BlitzoomCanvas._destroyWebGL	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	25		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._blend	BlitzoomCanvas._blend	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._blendInner	BlitzoomCanvas._blendInner	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	54		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.unifiedBlend	BlitzoomCanvas.unifiedBlend	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._hasAnyBearing	BlitzoomCanvas._hasAnyBearing	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.setStrengths	BlitzoomCanvas.setStrengths	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.setWeights	BlitzoomCanvas.setWeights	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.setBearing	BlitzoomCanvas.setBearing	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.bulkSetBearings	BlitzoomCanvas.bulkSetBearings	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.setAlpha	BlitzoomCanvas.setAlpha	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.setOptions	BlitzoomCanvas.setOptions	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	11		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.resetView	BlitzoomCanvas.resetView	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	12		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.exportLayout	BlitzoomCanvas.exportLayout	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._resetBtnRect	BlitzoomCanvas._resetBtnRect	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	5		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._bindEvents	BlitzoomCanvas._bindEvents	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	232		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.destroy	BlitzoomCanvas.destroy	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._nearestItem	BlitzoomCanvas._nearestItem	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	65		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._buildNavNeighbors	BlitzoomCanvas._buildNavNeighbors	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	55		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._navTo	BlitzoomCanvas._navTo	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	26		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._navSelectNearMouse	BlitzoomCanvas._navSelectNearMouse	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._navSelectLargest	BlitzoomCanvas._navSelectLargest	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	26		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._navByDirection	BlitzoomCanvas._navByDirection	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	20		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._navAnyByDirection	BlitzoomCanvas._navAnyByDirection	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	41		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._navStep	BlitzoomCanvas._navStep	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	16		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas.wheelZoom	BlitzoomCanvas.wheelZoom	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	64		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._animateZoom	BlitzoomCanvas._animateZoom	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	21		
-method:docs/blitzoom-canvas.js:BlitzoomCanvas._zoomToHit	BlitzoomCanvas._zoomToHit	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	26		
+class:docs/blitzoom-canvas.js:BlitZoomCanvas	BlitZoomCanvas	docs/blitzoom-canvas.js	class	docs/blitzoom-canvas.js	1552		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.constructor	BlitZoomCanvas.constructor	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	119		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.renderZoom	BlitZoomCanvas.renderZoom	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	3		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.selectedId	BlitZoomCanvas.selectedId	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	8		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.isSelected	BlitZoomCanvas.isSelected	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.toggleSelection	BlitZoomCanvas.toggleSelection	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	9		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.announce	BlitZoomCanvas.announce	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._emitSummary	BlitZoomCanvas._emitSummary	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	24		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._describeNode	BlitZoomCanvas._describeNode	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	9		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._findById	BlitZoomCanvas._findById	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._describeLevel	BlitZoomCanvas._describeLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._dominantProp	BlitZoomCanvas._dominantProp	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._labelProp	BlitZoomCanvas._labelProp	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._refreshPropCache	BlitZoomCanvas._refreshPropCache	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.cycleColorScheme	BlitZoomCanvas.cycleColorScheme	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	11		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.colorScheme	BlitZoomCanvas.colorScheme	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.colorSchemeName	BlitZoomCanvas.colorSchemeName	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.colorBy	BlitZoomCanvas.colorBy	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.lightMode	BlitZoomCanvas.lightMode	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._nodeLabel	BlitZoomCanvas._nodeLabel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._supernodeLabel	BlitZoomCanvas._supernodeLabel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._nodeColorVal	BlitZoomCanvas._nodeColorVal	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._nodeColor	BlitZoomCanvas._nodeColor	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._supernodeColor	BlitZoomCanvas._supernodeColor	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	8		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.getLevel	BlitZoomCanvas.getLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	19		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._scheduleEdgeBuild	BlitZoomCanvas._scheduleEdgeBuild	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	56		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.layoutAll	BlitZoomCanvas.layoutAll	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.render	BlitZoomCanvas.render	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.requestAnimationFrame	BlitZoomCanvas.requestAnimationFrame	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._drawFps	BlitZoomCanvas._drawFps	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._postRender	BlitZoomCanvas._postRender	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	4		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._a11yCheck	BlitZoomCanvas._a11yCheck	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	63		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.clearTimeout	BlitZoomCanvas.clearTimeout	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.showProgress	BlitZoomCanvas.showProgress	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	19		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.renderNow	BlitZoomCanvas.renderNow	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.worldToScreen	BlitZoomCanvas.worldToScreen	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.screenToWorld	BlitZoomCanvas.screenToWorld	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.hitTest	BlitZoomCanvas.hitTest	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.resize	BlitZoomCanvas.resize	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.zoomForLevel	BlitZoomCanvas.zoomForLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.switchLevel	BlitZoomCanvas.switchLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	10		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._checkAutoLevel	BlitZoomCanvas._checkAutoLevel	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	24		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._snapshotForCrossfade	BlitZoomCanvas._snapshotForCrossfade	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	42		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.useGPU	BlitZoomCanvas.useGPU	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.useWebGL	BlitZoomCanvas.useWebGL	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._initWebGL	BlitZoomCanvas._initWebGL	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	58		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._destroyWebGL	BlitZoomCanvas._destroyWebGL	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	25		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._blend	BlitZoomCanvas._blend	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._blendInner	BlitZoomCanvas._blendInner	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	54		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.unifiedBlend	BlitZoomCanvas.unifiedBlend	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._hasAnyBearing	BlitZoomCanvas._hasAnyBearing	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.setStrengths	BlitZoomCanvas.setStrengths	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.setWeights	BlitZoomCanvas.setWeights	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	1		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.setBearing	BlitZoomCanvas.setBearing	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.bulkSetBearings	BlitZoomCanvas.bulkSetBearings	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.setAlpha	BlitZoomCanvas.setAlpha	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	6		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.setOptions	BlitZoomCanvas.setOptions	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	11		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.resetView	BlitZoomCanvas.resetView	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	12		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.exportLayout	BlitZoomCanvas.exportLayout	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._resetBtnRect	BlitZoomCanvas._resetBtnRect	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	5		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._bindEvents	BlitZoomCanvas._bindEvents	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	232		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.destroy	BlitZoomCanvas.destroy	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	13		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._nearestItem	BlitZoomCanvas._nearestItem	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	65		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._buildNavNeighbors	BlitZoomCanvas._buildNavNeighbors	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	55		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._navTo	BlitZoomCanvas._navTo	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	26		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._navSelectNearMouse	BlitZoomCanvas._navSelectNearMouse	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	7		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._navSelectLargest	BlitZoomCanvas._navSelectLargest	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	26		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._navByDirection	BlitZoomCanvas._navByDirection	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	20		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._navAnyByDirection	BlitZoomCanvas._navAnyByDirection	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	41		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._navStep	BlitZoomCanvas._navStep	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	16		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas.wheelZoom	BlitZoomCanvas.wheelZoom	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	64		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._animateZoom	BlitZoomCanvas._animateZoom	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	21		
+method:docs/blitzoom-canvas.js:BlitZoomCanvas._zoomToHit	BlitZoomCanvas._zoomToHit	docs/blitzoom-canvas.js	method	docs/blitzoom-canvas.js	26		
 fn:docs/blitzoom-canvas.js:_finalize	_finalize	docs/blitzoom-canvas.js	function	docs/blitzoom-canvas.js	110		
 fn:docs/blitzoom-canvas.js:_hydrateAndLink	_hydrateAndLink	docs/blitzoom-canvas.js	function	docs/blitzoom-canvas.js	29		
-fn:docs/blitzoom-canvas.js:createBlitzoomView	createBlitzoomView	docs/blitzoom-canvas.js	function	docs/blitzoom-canvas.js	15		
-fn:docs/blitzoom-canvas.js:createBlitzoomFromGraph	createBlitzoomFromGraph	docs/blitzoom-canvas.js	function	docs/blitzoom-canvas.js	57		
+fn:docs/blitzoom-canvas.js:createBlitZoomView	createBlitZoomView	docs/blitzoom-canvas.js	function	docs/blitzoom-canvas.js	15		
+fn:docs/blitzoom-canvas.js:createBlitZoomFromGraph	createBlitZoomFromGraph	docs/blitzoom-canvas.js	function	docs/blitzoom-canvas.js	57		
 class:docs/bz-controls.js:BzControls	BzControls	docs/bz-controls.js	class	docs/bz-controls.js	347		
 method:docs/bz-controls.js:BzControls.constructor	BzControls.constructor	docs/bz-controls.js	method	docs/bz-controls.js	35		
 method:docs/bz-controls.js:BzControls.super	BzControls.super	docs/bz-controls.js	method	docs/bz-controls.js	1		

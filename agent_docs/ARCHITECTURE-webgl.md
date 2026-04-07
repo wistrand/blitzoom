@@ -1,7 +1,7 @@
 # WebGL Rendering Architecture
 
-WebGL2 instanced renderer for Blitzoom geometry. Text stays on a Canvas 2D
-overlay. Self-contained in BlitzoomCanvas — no external HTML changes.
+WebGL2 instanced renderer for BlitZoom geometry. Text stays on a Canvas 2D
+overlay. Self-contained in BlitZoomCanvas — no external HTML changes.
 
 ## Dual Canvas Layout
 
@@ -16,7 +16,7 @@ wrapper div (position: relative, inherits grid/flex slot from canvas)
 - **Wrapper div**: copies border + layout properties from the canvas, replaces it
   in the DOM flow so CSS grid/flex layout is unaffected
 
-Toggled via `view.useWebGL = true/false` (getter/setter on BlitzoomCanvas).
+Toggled via `view.useWebGL = true/false` (getter/setter on BlitZoomCanvas).
 Constructor accepts `{ webgl: true }`. Probe: `isWebGL2Available()`.
 
 ## Files
@@ -202,7 +202,7 @@ dismiss the loader and return to the current view. On cancel, the canvas and GL 
 restored and `resize()` is called.
 
 **webgl-test.html**: standalone comparison page that renders the same dataset side-by-side in
-Canvas 2D and WebGL2 using two `createBlitzoomView()` instances (one with `webgl: false`, one
+Canvas 2D and WebGL2 using two `createBlitZoomView()` instances (one with `webgl: false`, one
 with `webgl: true`).
 
 ## Buffer Rebuild Triggers

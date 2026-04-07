@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compare Blitzoom layout against force-directed, UMAP, and t-SNE.
+Compare BlitZoom layout against force-directed, UMAP, and t-SNE.
 
 Usage:
   python benchmarks/compare-layouts.py \
@@ -33,7 +33,7 @@ def parse_edges(path):
     return edges
 
 def parse_blitzoom(path):
-    """Parse Blitzoom export TSV. Returns dict {id: (px, py)}."""
+    """Parse BlitZoom export TSV. Returns dict {id: (px, py)}."""
     pos = {}
     with open(path) as f:
         for line in f:
@@ -270,7 +270,7 @@ def property_neighborhood_preservation(pos, token_sets, k=10, max_nodes=500):
 def main():
     parser = argparse.ArgumentParser(description='Compare graph layouts')
     parser.add_argument('--edges', required=True, help='SNAP edge file')
-    parser.add_argument('--blitzoom', required=True, nargs='+', help='Blitzoom export TSV(s)')
+    parser.add_argument('--blitzoom', required=True, nargs='+', help='BlitZoom export TSV(s)')
     parser.add_argument('--ground-truth', help='Ground truth labels file')
     parser.add_argument('--out', help='Output file (default: stdout)')
     parser.add_argument('--skip-umap', action='store_true', help='Skip UMAP (requires umap-learn)')
@@ -293,13 +293,13 @@ def main():
 
     layouts = {}
 
-    # Blitzoom layouts
+    # BlitZoom layouts
     for bz_path in args.blitzoom:
         name = Path(bz_path).stem
         t0 = time.time()
         pos = parse_blitzoom(bz_path)
         elapsed = time.time() - t0
-        layouts[f'Blitzoom:{name}'] = (pos, elapsed)
+        layouts[f'BlitZoom:{name}'] = (pos, elapsed)
 
     # Competing layouts
     if not args.skip_fd:

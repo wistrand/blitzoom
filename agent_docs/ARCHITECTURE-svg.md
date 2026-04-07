@@ -1,6 +1,6 @@
 # SVG Export: Architecture and Implementation
 
-Static SVG rendering of the current BlitzoomCanvas state. Implemented in
+Static SVG rendering of the current BlitZoomCanvas state. Implemented in
 [blitzoom-svg.js](../docs/blitzoom-svg.js). Produces a self-contained SVG string
 that reproduces the canvas view — background, grid, edges, density heatmap,
 circles, labels, and legend.
@@ -23,7 +23,7 @@ const svg = exportSVG(bz, {
 });
 ```
 
-`bz` is a `BlitzoomCanvas` instance or a `createSVGView()` result. All options
+`bz` is a `BlitZoomCanvas` instance or a `createSVGView()` result. All options
 default to `true` (except `legend`, which follows `bz.showLegend`). Returns an
 SVG string suitable for download or embedding.
 

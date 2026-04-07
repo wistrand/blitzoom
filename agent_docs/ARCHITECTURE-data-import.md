@@ -1,6 +1,6 @@
 # Data Import Architecture
 
-Blitzoom accepts data in multiple formats through a unified detection-and-dispatch layer. A single drop or URL handles CSV, D3 force JSON, JGF, GraphML, GEXF, Cytoscape JSON, STIX 2.1 bundles, and SNAP text — the parser module detects the format from content and routes it through one of two pipeline paths.
+BlitZoom accepts data in multiple formats through a unified detection-and-dispatch layer. A single drop or URL handles CSV, D3 force JSON, JGF, GraphML, GEXF, Cytoscape JSON, STIX 2.1 bundles, and SNAP text — the parser module detects the format from content and routes it through one of two pipeline paths.
 
 ## Design principles
 
@@ -17,14 +17,14 @@ Each format we accept encodes a different ontology about what a graph is. Unders
 | Format | Worldview | Implication for parser |
 |---|---|---|
 | **SNAP** (`.edges` + optional `.nodes`) | Graph is connectivity; metadata is annotation | Two-file workflow; edges required historically, now made optional |
-| **D3 force JSON** | Nodes are flat property bags, links are peers | Node's top-level keys flatten directly into `extraProps`; closest to Blitzoom's internal shape |
+| **D3 force JSON** | Nodes are flat property bags, links are peers | Node's top-level keys flatten directly into `extraProps`; closest to BlitZoom's internal shape |
 | **JGF** | Identity separate from attributes; edges have typed relations | Must flatten `metadata: {}` into extras; dict-form `nodes` keyed by id (v1) |
 | **Cytoscape JSON** | Graph is a database record | `data` wrapping on every element; flat-array and grouped forms both exist |
 | **GraphML / GEXF** | Graph is tool interchange with typed schemas | Two-pass XML parsing: resolve `<key>`/`<attribute>` registry, then data references |
 | **CSV** | There is no graph, just rows with columns | Header sniffing maps columns to roles; edges are absent |
 | **STIX 2.1** | Security observables with explicit relationships | Node types drive grouping; SROs become edges; implicit refs also expand |
 
-Blitzoom's internal shape (`{nodes: Map, edges: Array, extraPropNames: string[]}`) is closest to D3's flat-node convention, which is why `parseD3` is the smallest adapter and why the other parsers do more work to translate.
+BlitZoom's internal shape (`{nodes: Map, edges: Array, extraPropNames: string[]}`) is closest to D3's flat-node convention, which is why `parseD3` is the smallest adapter and why the other parsers do more work to translate.
 
 ## Module layout
 
@@ -207,7 +207,7 @@ The heuristic covers the happy path (~95% of real inputs) but has known blind sp
 - **CSV with quoted first cell** — a file starting with `"Smith, John",eng,Go` begins with `"`, which matches none of the first-char checks and falls through to the comma-delimiter count. Works in practice but depends on the delimiter being visible in the first line.
 - **Leading whitespace / BOM** — BOM (`\uFEFF`) is stripped; leading whitespace is skipped. A file that's pure whitespace returns `'unknown'`.
 - **Comment-only preamble** — SNAP detection looks past `#`-prefixed lines to find the first data line. A malformed file where every line starts with `#` produces `'snap'` (via the comment-only fallback) but will produce zero edges when parsed.
-- **Filename hint wins for SNAP** — a file named `.edges` but containing CSV will be parsed as SNAP tab-delimited and produce garbage. This is accepted because `.edges` is a Blitzoom-specific extension that users who rename files to it deserve the consequences.
+- **Filename hint wins for SNAP** — a file named `.edges` but containing CSV will be parsed as SNAP tab-delimited and produce garbage. This is accepted because `.edges` is a BlitZoom-specific extension that users who rename files to it deserve the consequences.
 
 ## Conventions the parsers honor
 

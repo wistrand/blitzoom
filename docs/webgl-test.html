@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blitzoom — WebGL Rendering Test</title>
+<title>BlitZoom — WebGL Rendering Test</title>
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -144,7 +144,7 @@
   </div>
 </div>
 
-<h2>Blitzoom Source — 433 nodes, call graph</h2>
+<h2>BlitZoom Source — 433 nodes, call graph</h2>
 <div class="pair">
   <div class="panel">
     <div class="panel-header">BZ Source · kind:8 group:3 <span class="tag tag-2d">Canvas 2D</span></div>
@@ -181,7 +181,7 @@
 </div>
 
 <script type="module">
-import { createBlitzoomView, isWebGL2Available } from './blitzoom.js';
+import { createBlitZoomView, isWebGL2Available } from './blitzoom.js';
 
 const status = document.getElementById('status');
 const results = [];
@@ -200,8 +200,8 @@ async function loadPair(name, edgesFile, nodesFile, canvasL, canvasR, opts = {})
 
   const baseOpts = { initialLevel: 4, edgeMode: 'lines', heatmapMode: 'density', showLegend: true, showResetBtn: true, ...opts };
 
-  createBlitzoomView(document.getElementById(canvasL), edgesText, nodesText, baseOpts);
-  createBlitzoomView(document.getElementById(canvasR), edgesText, nodesText, { ...baseOpts, webgl: true });
+  createBlitZoomView(document.getElementById(canvasL), edgesText, nodesText, baseOpts);
+  createBlitZoomView(document.getElementById(canvasR), edgesText, nodesText, { ...baseOpts, webgl: true });
 
   const elapsed = Math.round(performance.now() - t0);
   results.push(`${name}: ${elapsed}ms`);
