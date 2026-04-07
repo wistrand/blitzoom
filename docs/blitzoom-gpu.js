@@ -1,9 +1,9 @@
-// bitzoom-gpu.js — WebGPU compute for MinHash + projection.
+// blitzoom-gpu.js — WebGPU compute for MinHash + projection.
 // Takes pre-hashed token values (uint32) and computes signatures + 2D projections.
 // Falls back gracefully: callers should check `await initGPU()` before using.
 
-import { MINHASH_K, LARGE_PRIME, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize } from './bitzoom-algo.js';
-import { tokenizeLabel, tokenizeNumeric, degreeBucket } from './bitzoom-pipeline.js';
+import { MINHASH_K, LARGE_PRIME, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize } from './blitzoom-algo.js';
+import { tokenizeLabel, tokenizeNumeric, degreeBucket } from './blitzoom-pipeline.js';
 
 let device = null;
 let pipeline = null;

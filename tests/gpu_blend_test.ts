@@ -2,9 +2,9 @@
 // Run: deno test --unstable-webgpu --no-check --allow-read tests/gpu_blend_test.ts
 
 import { assert } from 'https://deno.land/std@0.208.0/assert/assert.ts';
-import { initGPU, gpuBlend, gpuUnifiedBlend, setGpuBlendProfiling, getLastBlendProfile } from '../docs/bitzoom-gpu.js';
-import { runPipeline } from '../docs/bitzoom-pipeline.js';
-import { unifiedBlend, gaussianQuantize, MINHASH_K, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN } from '../docs/bitzoom-algo.js';
+import { initGPU, gpuBlend, gpuUnifiedBlend, setGpuBlendProfiling, getLastBlendProfile } from '../docs/blitzoom-gpu.js';
+import { runPipeline } from '../docs/blitzoom-pipeline.js';
+import { unifiedBlend, gaussianQuantize, MINHASH_K, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN } from '../docs/blitzoom-algo.js';
 
 Deno.test('GPU blend init', async () => {
   assert(await initGPU(), 'GPU should be available');
@@ -15,7 +15,7 @@ async function compareBlend(name: string, edgesPath: string, nodesPath: string |
   const nodesText = nodesPath ? Deno.readTextFileSync(nodesPath) : null;
   const result = runPipeline(edgesText, nodesText);
 
-  // Build nodes with projections (same as bitzoom-canvas _hydrateAndLink)
+  // Build nodes with projections (same as blitzoom-canvas _hydrateAndLink)
   const G = result.groupNames.length;
   const nodes = result.nodeArray.map((n: any, i: number) => {
     const projections: Record<string, number[]> = {};
@@ -134,7 +134,7 @@ Deno.test('GPU vs CPU blend: Epstein alpha=0.75', async () => {
 });
 
 Deno.test('GPU vs CPU blend: BZ Source alpha=0.5 weighted', async () => {
-  const { maxDelta } = await compareBlend('BZ Source', 'docs/data/bitzoom-source.edges', 'docs/data/bitzoom-source.nodes', 0.5,
+  const { maxDelta } = await compareBlend('BZ Source', 'docs/data/blitzoom-source.edges', 'docs/data/blitzoom-source.nodes', 0.5,
     { group: 3, label: 0, structure: 0, neighbors: 0, kind: 8, file: 0, lines: 0, bytes: 0, agehours: 0, edgetype: 0 });
   assert(maxDelta < 0.01, `Max delta ${maxDelta} should be < 0.01`);
 });

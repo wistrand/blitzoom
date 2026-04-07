@@ -5,11 +5,11 @@ import { assertEquals } from 'https://deno.land/std@0.208.0/assert/assert_equals
 import { assertAlmostEquals } from 'https://deno.land/std@0.208.0/assert/assert_almost_equals.ts';
 import { assert } from 'https://deno.land/std@0.208.0/assert/assert.ts';
 
-import { initGPU, gpuMinHashProject, destroyGPU } from '../docs/bitzoom-gpu.js';
+import { initGPU, gpuMinHashProject, destroyGPU } from '../docs/blitzoom-gpu.js';
 import {
   MINHASH_K, HASH_PARAMS_A, HASH_PARAMS_B, LARGE_PRIME,
   hashToken, computeMinHashInto, _sig, buildGaussianProjection, projectInto, mulberry32,
-} from '../docs/bitzoom-algo.js';
+} from '../docs/blitzoom-algo.js';
 
 // ─── Helper: build GPU input from string tokens ─────────────────────────────
 

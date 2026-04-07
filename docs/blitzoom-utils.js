@@ -1,7 +1,7 @@
-// bitzoom-utils.js — Utility functions (auto-tune, etc).
-// Depends on bitzoom-algo.js for unifiedBlend and quantization.
+// blitzoom-utils.js — Utility functions (auto-tune, etc).
+// Depends on blitzoom-algo.js for unifiedBlend and quantization.
 
-import { unifiedBlend, normalizeAndQuantize, gaussianQuantize, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN } from './bitzoom-algo.js';
+import { unifiedBlend, normalizeAndQuantize, gaussianQuantize, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN } from './blitzoom-algo.js';
 
 // ─── Auto-tune optimizer ─────────────────────────────────────────────────────
 // Async heuristic search for strengths/alpha/quant that maximize layout quality.

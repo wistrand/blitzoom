@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BitZoom — WebGPU Acceleration</title>
-<meta name="description" content="How BitZoom uses WebGPU compute shaders for MinHash projection and topology blending.">
-<meta property="og:title" content="BitZoom — WebGPU Acceleration">
-<meta property="og:description" content="How BitZoom uses WebGPU compute shaders for MinHash projection and topology blending.">
-<meta property="og:image" content="images/bitzoom-1.png">
+<title>Blitzoom — WebGPU Acceleration</title>
+<meta name="description" content="How Blitzoom uses WebGPU compute shaders for MinHash projection and topology blending.">
+<meta property="og:title" content="Blitzoom — WebGPU Acceleration">
+<meta property="og:description" content="How Blitzoom uses WebGPU compute shaders for MinHash projection and topology blending.">
+<meta property="og:image" content="images/blitzoom-1.png">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BitZoom — WebGPU Acceleration">
+<meta name="twitter:title" content="Blitzoom — WebGPU Acceleration">
 <meta name="twitter:description" content="WebGPU compute shaders for MinHash projection and topology blending.">
-<meta name="twitter:image" content="images/bitzoom-1.png">
+<meta name="twitter:image" content="images/blitzoom-1.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -254,20 +254,20 @@
   <a href="howto.html">Developer Guide</a> &middot;
   <strong>WebGPU</strong> &middot;
   <a href="webgl.html">WebGL</a> &middot;
-  <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+  <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </div>
 
-<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Bit<span>Zoom</span></a></h1>
+<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Blit<span>zoom</span></a></h1>
 <p class="subtitle">Optional WebGPU compute acceleration for MinHash projection and topology blending.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>WebGPU acceleration is entirely optional. BitZoom works fully without it &mdash; the CPU + Web Worker path handles all dataset sizes. When WebGPU is available, BitZoom offloads the two most expensive pipeline stages to compute shaders: <strong>MinHash signature + projection</strong> and <strong>topology blending</strong>. Both are embarrassingly parallel &mdash; each node's computation is independent &mdash; making them ideal for GPU dispatch.</p>
+<p>WebGPU acceleration is entirely optional. Blitzoom works fully without it &mdash; the CPU + Web Worker path handles all dataset sizes. When WebGPU is available, Blitzoom offloads the two most expensive pipeline stages to compute shaders: <strong>MinHash signature + projection</strong> and <strong>topology blending</strong>. Both are embarrassingly parallel &mdash; each node's computation is independent &mdash; making them ideal for GPU dispatch.</p>
 
-<p>The entire GPU implementation lives in a single file: <code>bitzoom-gpu.js</code> (671 lines). No <code>.wgsl</code> files &mdash; both shaders are embedded as tagged template strings for zero-fetch deployment. The GPU path is a drop-in replacement for the CPU path: same inputs, same outputs, transparent fallback when WebGPU is unavailable.</p>
+<p>The entire GPU implementation lives in a single file: <code>blitzoom-gpu.js</code> (671 lines). No <code>.wgsl</code> files &mdash; both shaders are embedded as tagged template strings for zero-fetch deployment. The GPU path is a drop-in replacement for the CPU path: same inputs, same outputs, transparent fallback when WebGPU is unavailable.</p>
 
 <div class="note">
-  WebGPU requires Chrome 113+, Edge 113+, or a recent Chromium-based browser. Firefox requires an explicit flag. Safari has partial support. BitZoom detects availability at runtime and falls back to CPU + Web Workers automatically.
+  WebGPU requires Chrome 113+, Edge 113+, or a recent Chromium-based browser. Firefox requires an explicit flag. Safari has partial support. Blitzoom detects availability at runtime and falls back to CPU + Web Workers automatically.
 </div>
 
 <h2 id="performance">Performance</h2>
@@ -280,7 +280,7 @@
   <tr><th>Dataset</th><th>Nodes</th><th>Groups</th><th>CPU</th><th>GPU</th><th>Speedup</th></tr>
   <tr><td>Karate Club</td><td>34</td><td>4</td><td>1.5ms</td><td>18ms</td><td>0.08x</td></tr>
   <tr><td>Epstein</td><td>364</td><td>5</td><td>20ms</td><td>19ms</td><td>1.1x</td></tr>
-  <tr><td>BitZoom Source</td><td>433</td><td>10</td><td>24ms</td><td>19ms</td><td>1.2x</td></tr>
+  <tr><td>Blitzoom Source</td><td>433</td><td>10</td><td>24ms</td><td>19ms</td><td>1.2x</td></tr>
   <tr><td>Synth Packages</td><td>1,868</td><td>8</td><td>85ms</td><td>22ms</td><td>3.9x</td></tr>
   <tr><td>MITRE ATT&CK</td><td>4,736</td><td>10</td><td>358ms</td><td>61ms</td><td>5.9x</td></tr>
   <tr><td>Amazon</td><td>367,000</td><td>4</td><td>24.1s</td><td>1.7s</td><td>14.3x</td></tr>
@@ -294,7 +294,7 @@
   <tr><th>Dataset</th><th>Nodes</th><th>CPU</th><th>GPU</th><th>Speedup</th></tr>
   <tr><td>Karate Club</td><td>34</td><td>139&micro;s</td><td>13ms</td><td>0.01x</td></tr>
   <tr><td>Epstein</td><td>364</td><td>0.8ms</td><td>14ms</td><td>0.06x</td></tr>
-  <tr><td>BitZoom Source</td><td>433</td><td>1.3ms</td><td>14ms</td><td>0.10x</td></tr>
+  <tr><td>Blitzoom Source</td><td>433</td><td>1.3ms</td><td>14ms</td><td>0.10x</td></tr>
   <tr><td>Synth Packages</td><td>1,868</td><td>2.4ms</td><td>17ms</td><td>0.15x</td></tr>
   <tr><td>MITRE ATT&CK</td><td>4,736</td><td>13ms</td><td>34ms</td><td>0.40x</td></tr>
   <tr><td>Amazon</td><td>367,000</td><td>1.88s</td><td>407ms</td><td>4.6x</td></tr>
@@ -597,7 +597,7 @@ const buf = device.createBuffer({ size, usage, mappedAtCreation: true });</code>
   <tr><th>Dataset</th><th>Nodes</th><th>Groups</th><th>Max &Delta; (projection)</th></tr>
   <tr><td>Karate Club</td><td>34</td><td>4</td><td>0.000031</td></tr>
   <tr><td>Epstein</td><td>364</td><td>5</td><td>0.003945</td></tr>
-  <tr><td>BitZoom Source</td><td>433</td><td>10</td><td>0.000183</td></tr>
+  <tr><td>Blitzoom Source</td><td>433</td><td>10</td><td>0.000183</td></tr>
   <tr><td>MITRE ATT&CK</td><td>4,736</td><td>10</td><td>0.000053</td></tr>
 </table>
 
@@ -613,7 +613,7 @@ const buf = device.createBuffer({ size, usage, mappedAtCreation: true });</code>
 
 <h3>Initialization</h3>
 
-<pre><code>import { initGPU } from './bitzoom-gpu.js';
+<pre><code>import { initGPU } from './blitzoom-gpu.js';
 
 const gpuAvailable = await initGPU();
 // Requests adapter + device, compiles both shader modules.
@@ -623,7 +623,7 @@ const gpuAvailable = await initGPU();
 
 <h3>Projection (Full Pipeline)</h3>
 
-<pre><code>import { computeProjectionsGPU } from './bitzoom-gpu.js';
+<pre><code>import { computeProjectionsGPU } from './blitzoom-gpu.js';
 
 // Same interface as CPU computeProjections:
 const { projBuf, groupNames } = await computeProjectionsGPU(
@@ -636,7 +636,7 @@ const { projBuf, groupNames } = await computeProjectionsGPU(
 
 <h3>Blend (Weight Changes)</h3>
 
-<pre><code>import { gpuUnifiedBlend } from './bitzoom-gpu.js';
+<pre><code>import { gpuUnifiedBlend } from './blitzoom-gpu.js';
 
 // Drop-in for CPU unifiedBlend &mdash; same signature:
 await gpuUnifiedBlend(
@@ -734,7 +734,7 @@ await gpuUnifiedBlend(
 
 <p>As of early 2026, no public WebGPU or WGSL MinHash implementation has been identified in open-source repositories, academic papers, or technical blog posts. The WebGPU compute ecosystem is still young &mdash; the spec reached 1.0 in 2023 and browser support remains incomplete &mdash; so most non-graphics compute work has focused on ML inference and physics simulation.</p>
 
-<p>BitZoom's shader combines MinHash signature computation, OPH densification, z-score normalization, and Gaussian random projection in a single compute dispatch. The CUDA projects above typically separate these into distinct kernel launches.</p>
+<p>Blitzoom's shader combines MinHash signature computation, OPH densification, z-score normalization, and Gaussian random projection in a single compute dispatch. The CUDA projects above typically separate these into distinct kernel launches.</p>
 
 <h2 id="limitations">Limitations</h2>
 

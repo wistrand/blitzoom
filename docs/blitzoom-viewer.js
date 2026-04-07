@@ -1,18 +1,18 @@
-// bitzoom-viewer.js — BitZoom viewer application. Composes BitZoomCanvas with UI, workers, data loading.
+// blitzoom-viewer.js — Blitzoom viewer application. Composes BlitzoomCanvas with UI, workers, data loading.
 
 import {
     MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
     buildGaussianProjection, cellIdAtLevel,
-} from './bitzoom-algo.js';
-import { generateGroupColors } from './bitzoom-colors.js';
-import { autoTuneStrengths, autoTuneBearings } from './bitzoom-utils.js';
-import { initGPU, computeProjectionsGPU, setGpuBlendProfiling } from './bitzoom-gpu.js';
-import { isWebGL2Available } from './bitzoom-gl-renderer.js';
-import { exportSVG } from './bitzoom-svg.js';
+} from './blitzoom-algo.js';
+import { generateGroupColors } from './blitzoom-colors.js';
+import { autoTuneStrengths, autoTuneBearings } from './blitzoom-utils.js';
+import { initGPU, computeProjectionsGPU, setGpuBlendProfiling } from './blitzoom-gpu.js';
+import { isWebGL2Available } from './blitzoom-gl-renderer.js';
+import { exportSVG } from './blitzoom-svg.js';
 
-import { BitZoomCanvas } from './bitzoom-canvas.js';
-import { computeNodeSig, runPipeline, runPipelineGPU, runPipelineFromObjects, runPipelineFromObjectsGPU, parseEdgesFile, parseNodesFile, buildGraph, computeProjections } from './bitzoom-pipeline.js';
-import { parseAny, detectFormat, isObjectFormat, FILE_ACCEPT_ATTR, readFileText, classifyFiles } from './bitzoom-parsers.js';
+import { BlitzoomCanvas } from './blitzoom-canvas.js';
+import { computeNodeSig, runPipeline, runPipelineGPU, runPipelineFromObjects, runPipelineFromObjectsGPU, parseEdgesFile, parseNodesFile, buildGraph, computeProjections } from './blitzoom-pipeline.js';
+import { parseAny, detectFormat, isObjectFormat, FILE_ACCEPT_ATTR, readFileText, classifyFiles } from './blitzoom-parsers.js';
 
 // HTML-escape user-derived strings to prevent XSS from crafted SNAP files.
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -65,7 +65,7 @@ function pickInitialLevel(nodes, zoomLevels, rawLevel) {
 // Dataset definitions. Optional `settings` configures initial strengths and label checkboxes.
 let DATASETS = [];
 
-class BitZoom {
+class Blitzoom {
     constructor() {
         const canvas = document.getElementById('canvas');
 
@@ -86,7 +86,7 @@ class BitZoom {
         if (edgesFile) edgesFile.accept = FILE_ACCEPT_ATTR;
 
         // The canvas view handles all graph state, rendering, interaction primitives
-        this.view = new BitZoomCanvas(canvas, {
+        this.view = new BlitzoomCanvas(canvas, {
             heatmapMode: 'density',
             showLegend: true,
             initialLevel: 0,
@@ -464,7 +464,7 @@ class BitZoom {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `bitzoom-${this._currentDatasetId || 'export'}.svg`;
+            a.download = `blitzoom-${this._currentDatasetId || 'export'}.svg`;
             a.click();
             URL.revokeObjectURL(url);
             return true;
@@ -986,7 +986,7 @@ class BitZoom {
             const progressBar = document.getElementById('loadProgress');
             status.classList.remove('error');
 
-            const worker = new Worker('bitzoom-worker.js', { type: 'module' });
+            const worker = new Worker('blitzoom-worker.js', { type: 'module' });
             this.activeWorker = worker;
 
             worker.onmessage = (e) => {
@@ -2375,7 +2375,7 @@ const ready = document.readyState === 'complete'
   : new Promise(r => window.addEventListener('load', r, { once: true }));
 await ready;
 
-const bz = new BitZoom();
+const bz = new Blitzoom();
 window.bz = bz;
 
 // Load dataset presets, probe WebGPU, then load initial dataset

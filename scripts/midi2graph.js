@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 /**
- * Convert midi.guide CSV data into a BitZoom SNAP graph.
+ * Convert midi.guide CSV data into a Blitzoom SNAP graph.
  *
  * Nodes = devices (synths, drum machines, effects).
  * Edges = shared CC-to-section mappings between devices.

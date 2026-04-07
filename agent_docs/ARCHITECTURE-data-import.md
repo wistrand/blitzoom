@@ -1,6 +1,6 @@
 # Data Import Architecture
 
-BitZoom accepts data in multiple formats through a unified detection-and-dispatch layer. A single drop or URL handles CSV, D3 force JSON, JGF, GraphML, GEXF, Cytoscape JSON, STIX 2.1 bundles, and SNAP text — the parser module detects the format from content and routes it through one of two pipeline paths.
+Blitzoom accepts data in multiple formats through a unified detection-and-dispatch layer. A single drop or URL handles CSV, D3 force JSON, JGF, GraphML, GEXF, Cytoscape JSON, STIX 2.1 bundles, and SNAP text — the parser module detects the format from content and routes it through one of two pipeline paths.
 
 ## Design principles
 
@@ -17,18 +17,18 @@ Each format we accept encodes a different ontology about what a graph is. Unders
 | Format | Worldview | Implication for parser |
 |---|---|---|
 | **SNAP** (`.edges` + optional `.nodes`) | Graph is connectivity; metadata is annotation | Two-file workflow; edges required historically, now made optional |
-| **D3 force JSON** | Nodes are flat property bags, links are peers | Node's top-level keys flatten directly into `extraProps`; closest to BitZoom's internal shape |
+| **D3 force JSON** | Nodes are flat property bags, links are peers | Node's top-level keys flatten directly into `extraProps`; closest to Blitzoom's internal shape |
 | **JGF** | Identity separate from attributes; edges have typed relations | Must flatten `metadata: {}` into extras; dict-form `nodes` keyed by id (v1) |
 | **Cytoscape JSON** | Graph is a database record | `data` wrapping on every element; flat-array and grouped forms both exist |
 | **GraphML / GEXF** | Graph is tool interchange with typed schemas | Two-pass XML parsing: resolve `<key>`/`<attribute>` registry, then data references |
 | **CSV** | There is no graph, just rows with columns | Header sniffing maps columns to roles; edges are absent |
 | **STIX 2.1** | Security observables with explicit relationships | Node types drive grouping; SROs become edges; implicit refs also expand |
 
-BitZoom's internal shape (`{nodes: Map, edges: Array, extraPropNames: string[]}`) is closest to D3's flat-node convention, which is why `parseD3` is the smallest adapter and why the other parsers do more work to translate.
+Blitzoom's internal shape (`{nodes: Map, edges: Array, extraPropNames: string[]}`) is closest to D3's flat-node convention, which is why `parseD3` is the smallest adapter and why the other parsers do more work to translate.
 
 ## Module layout
 
-### [`docs/bitzoom-parsers.js`](../docs/bitzoom-parsers.js)
+### [`docs/blitzoom-parsers.js`](../docs/blitzoom-parsers.js)
 
 The authoritative source for format support. All parsers return the uniform shape:
 
@@ -56,7 +56,7 @@ The authoritative source for format support. All parsers return the uniform shap
 | `FILE_EXTENSIONS` / `FILE_ACCEPT_ATTR` | Extension list + pre-joined accept attribute for HTML file inputs. |
 | `isObjectFormat(fmt)` / `isTextFormat(fmt)` / `isSpecialFormat(fmt)` | Classification helpers the viewer uses instead of inline format lists. |
 
-### [`docs/bitzoom-pipeline.js`](../docs/bitzoom-pipeline.js)
+### [`docs/blitzoom-pipeline.js`](../docs/blitzoom-pipeline.js)
 
 | Export | Purpose |
 |---|---|
@@ -69,14 +69,14 @@ The authoritative source for format support. All parsers return the uniform shap
 | `runPipelineFromObjects(nodesMap, edges, extraPropNames)` | Object-pipeline entry point. Used by CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX loads. Bypasses text parsing entirely — takes the Map+array shape that parsers return. |
 | `runPipelineFromObjectsGPU(...)` | GPU variant of the above. |
 
-### [`docs/bitzoom-viewer.js`](../docs/bitzoom-viewer.js)
+### [`docs/blitzoom-viewer.js`](../docs/blitzoom-viewer.js)
 
 The viewer integrates parsers via `parseAny` and the capability-classification helpers. Key methods:
 
 | Method | Purpose |
 |---|---|
-| `_readFileText(file)` | Delegates to shared `readFileText()` from [bitzoom-parsers.js](../docs/bitzoom-parsers.js). Gzip-aware file reader used by all load paths. |
-| `_stageDroppedFiles(files)` | Delegates to shared `classifyFiles()` from [bitzoom-parsers.js](../docs/bitzoom-parsers.js). Reads files, detects formats, routes SNAP to `pendingEdgesText`/`pendingNodesText` and object formats to `pendingParsed`. |
+| `_readFileText(file)` | Delegates to shared `readFileText()` from [blitzoom-parsers.js](../docs/blitzoom-parsers.js). Gzip-aware file reader used by all load paths. |
+| `_stageDroppedFiles(files)` | Delegates to shared `classifyFiles()` from [blitzoom-parsers.js](../docs/blitzoom-parsers.js). Reads files, detects formats, routes SNAP to `pendingEdgesText`/`pendingNodesText` and object formats to `pendingParsed`. |
 | `_handleFileSelect(file, hintType?)` | Reads file, calls `detectFormat`. Dispatches via `isSpecialFormat`/snap checks/`isObjectFormat`. Populates one of `pendingEdgesText`/`pendingNodesText`/`pendingParsed`. |
 | `loadFromParsed(parsed)` | Executes the object pipeline: calls `runPipelineFromObjects(GPU)` based on current GPU mode, feeds result into `_applyWorkerResult`. Stores `_lastParsed` for rebuild paths. |
 | `_executeCanvasLoad()` | Shared finalizer for canvas-drop loads (both SNAP pair and non-SNAP single-file). Calls the right pipeline, fires `_finalizeLoad(null)`. |
@@ -207,7 +207,7 @@ The heuristic covers the happy path (~95% of real inputs) but has known blind sp
 - **CSV with quoted first cell** — a file starting with `"Smith, John",eng,Go` begins with `"`, which matches none of the first-char checks and falls through to the comma-delimiter count. Works in practice but depends on the delimiter being visible in the first line.
 - **Leading whitespace / BOM** — BOM (`\uFEFF`) is stripped; leading whitespace is skipped. A file that's pure whitespace returns `'unknown'`.
 - **Comment-only preamble** — SNAP detection looks past `#`-prefixed lines to find the first data line. A malformed file where every line starts with `#` produces `'snap'` (via the comment-only fallback) but will produce zero edges when parsed.
-- **Filename hint wins for SNAP** — a file named `.edges` but containing CSV will be parsed as SNAP tab-delimited and produce garbage. This is accepted because `.edges` is a BitZoom-specific extension that users who rename files to it deserve the consequences.
+- **Filename hint wins for SNAP** — a file named `.edges` but containing CSV will be parsed as SNAP tab-delimited and produce garbage. This is accepted because `.edges` is a Blitzoom-specific extension that users who rename files to it deserve the consequences.
 
 ## Conventions the parsers honor
 
@@ -277,7 +277,7 @@ These are current constraints worth knowing about, not bugs:
 
 To add a format (e.g., `gml` or `pajek`):
 
-1. Add a `parseX(data)` function to `bitzoom-parsers.js` returning `{nodes, edges, extraPropNames}`
+1. Add a `parseX(data)` function to `blitzoom-parsers.js` returning `{nodes, edges, extraPropNames}`
 2. Add a case to `parseAny`'s switch dispatching to the new parser
 3. Add detection logic to `detectFormat` (or `detectJsonVariant` for JSON variants)
 4. Add `'x'` to `OBJECT_FORMATS`

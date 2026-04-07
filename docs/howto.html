@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BitZoom — Developer Guide</title>
-<meta name="description" content="Embed BitZoom graph views in your app or run the pipeline offline. ES modules, no dependencies.">
-<meta property="og:title" content="BitZoom — Developer Guide">
-<meta property="og:description" content="Embed BitZoom graph views in your app or run the pipeline offline. ES modules, no dependencies.">
-<meta property="og:image" content="images/bitzoom-2.png">
+<title>Blitzoom — Developer Guide</title>
+<meta name="description" content="Embed Blitzoom graph views in your app or run the pipeline offline. ES modules, no dependencies.">
+<meta property="og:title" content="Blitzoom — Developer Guide">
+<meta property="og:description" content="Embed Blitzoom graph views in your app or run the pipeline offline. ES modules, no dependencies.">
+<meta property="og:image" content="images/blitzoom-2.png">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BitZoom — Developer Guide">
+<meta name="twitter:title" content="Blitzoom — Developer Guide">
 <meta name="twitter:description" content="Embed graph views or run the pipeline offline. ES modules, no dependencies.">
-<meta name="twitter:image" content="images/bitzoom-2.png">
+<meta name="twitter:image" content="images/blitzoom-2.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<script type="module" src="bitzoom.js"></script>
+<script type="module" src="blitzoom.js"></script>
 <script type="module" src="bz-compass.js"></script>
 <style>
   bz-graph:not(:defined), bz-compass:not(:defined) { visibility: hidden; }
@@ -150,21 +150,21 @@
   <strong>Developer Guide</strong> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <a href="webgl.html">WebGL</a> &middot;
-  <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+  <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </div>
 
-<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Bit<span>Zoom</span></a> Developer Guide</h1>
+<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Blit<span>zoom</span></a> Developer Guide</h1>
 <p class="subtitle">Embed interactive graph views or run the pipeline offline.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
 <h2 id="quick-start">Quick Start</h2>
 
-<p>The fastest way to get a BitZoom graph on screen: one import, one function call, done. See the <a href="example.html">JS example</a> or <a href="bz-graph-demo.html">&lt;bz-graph&gt; example</a> for complete working pages.</p>
+<p>The fastest way to get a Blitzoom graph on screen: one import, one function call, done. See the <a href="example.html">JS example</a> or <a href="bz-graph-demo.html">&lt;bz-graph&gt; example</a> for complete working pages.</p>
 
-<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { createBlitzoomView } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
-<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(
+<span class="keyword">const</span> view = <span class="fn">createBlitzoomView</span>(
   document.getElementById(<span class="string">'canvas'</span>),
   edgesText,   <span class="comment">// SNAP .edges file content (string)</span>
   nodesText,  <span class="comment">// SNAP .nodes file content or null</span>
@@ -182,7 +182,7 @@
 
 <h2 id="data-format">Data Format (SNAP)</h2>
 
-<p>BitZoom uses a simple tab-delimited text format based on <a href="https://snap.stanford.edu/data/">SNAP</a>. A dataset consists of an <code>.edges</code> file (required) and an optional <code>.nodes</code> file.</p>
+<p>Blitzoom uses a simple tab-delimited text format based on <a href="https://snap.stanford.edu/data/">SNAP</a>. A dataset consists of an <code>.edges</code> file (required) and an optional <code>.nodes</code> file.</p>
 
 <h3>.edges file (required)</h3>
 
@@ -227,7 +227,7 @@ eve	Eve	management	director	12</pre>
   fetch(<span class="string">'data/epstein.nodes'</span>).then(r => r.text()),
 ]);
 
-<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
+<span class="keyword">const</span> view = <span class="fn">createBlitzoomView</span>(canvas, edges, nodes, {
   initialLevel: 3,
   edgeMode: <span class="string">'lines'</span>,
   heatmapMode: <span class="string">'density'</span>,
@@ -237,15 +237,15 @@ eve	Eve	management	director	12</pre>
   labelProps: [<span class="string">'label'</span>],
 });</pre>
 
-<p>The returned <code>view</code> is a <code>BitZoomCanvas</code> instance with a full API for programmatic control.</p>
+<p>The returned <code>view</code> is a <code>BlitzoomCanvas</code> instance with a full API for programmatic control.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
 <h2 id="from-js">From JS Objects</h2>
 
-<p>If your graph is already in memory as JavaScript objects, skip the SNAP parsing entirely with <code>createBitZoomFromGraph</code>. Pass nodes as plain objects with <code>id</code>, <code>group</code>, <code>label</code>, and any extra properties. Edges are <code>{src, dst}</code> pairs.</p>
+<p>If your graph is already in memory as JavaScript objects, skip the SNAP parsing entirely with <code>createBlitzoomFromGraph</code>. Pass nodes as plain objects with <code>id</code>, <code>group</code>, <code>label</code>, and any extra properties. Edges are <code>{src, dst}</code> pairs.</p>
 
-<pre><span class="keyword">import</span> { createBitZoomFromGraph } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { createBlitzoomFromGraph } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="keyword">const</span> nodes = [
   { id: <span class="string">'alice'</span>,   group: <span class="string">'engineer'</span>, label: <span class="string">'Alice'</span>,   lang: <span class="string">'Go'</span>,     exp: 8 },
@@ -266,7 +266,7 @@ eve	Eve	management	director	12</pre>
   { src: <span class="string">'hank'</span>,  dst: <span class="string">'bob'</span> },   { src: <span class="string">'frank'</span>, dst: <span class="string">'eve'</span> },
 ];
 
-<span class="keyword">const</span> view = <span class="fn">createBitZoomFromGraph</span>(canvas, nodes, edges, {
+<span class="keyword">const</span> view = <span class="fn">createBlitzoomFromGraph</span>(canvas, nodes, edges, {
   initialLevel: 3,
   showLegend: true,
   showResetBtn: true,
@@ -311,10 +311,10 @@ eve	Eve	management	director	12</pre>
 
 <p>Color scheme and theme can also be changed at runtime:</p>
 
-<pre><span class="keyword">import</span> { SCHEME_VIRIDIS, SCHEME_DIVERGING } <span class="keyword">from</span> <span class="string">'./bitzoom-colors.js'</span>;
+<pre><span class="keyword">import</span> { SCHEME_VIRIDIS, SCHEME_DIVERGING } <span class="keyword">from</span> <span class="string">'./blitzoom-colors.js'</span>;
 
 <span class="comment">// Light mode with viridis colors</span>
-<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
+<span class="keyword">const</span> view = <span class="fn">createBlitzoomView</span>(canvas, edges, nodes, {
   colorScheme: SCHEME_VIRIDIS,
   lightMode: <span class="keyword">true</span>,
 });
@@ -344,7 +344,7 @@ console.log(view.colorSchemeName);   <span class="comment">// "thermal"</span></
 
 <p>React to user interaction without touching the DOM:</p>
 
-<pre><span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
+<pre><span class="keyword">const</span> view = <span class="fn">createBlitzoomView</span>(canvas, edges, nodes, {
   <span class="fn">onSelect</span>(hit) {
     <span class="comment">// hit = { type: 'node'|'supernode', item: nodeObj|supernodeObj }</span>
     console.log(<span class="string">'Selected:'</span>, hit.item.id || hit.item.bid);
@@ -426,9 +426,9 @@ view.<span class="fn">setOptions</span>({
 
 <p>Pass <code>autoTune</code> in the options. The view renders immediately with defaults; the optimizer runs in the background and re-renders when done. A progress overlay appears on the canvas during optimization.</p>
 
-<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { createBlitzoomView } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
-<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edgesText, nodesText, {
+<span class="keyword">const</span> view = <span class="fn">createBlitzoomView</span>(canvas, edgesText, nodesText, {
   <span class="comment">// Auto-tune all parameters</span>
   autoTune: { weights: <span class="keyword">true</span>, alpha: <span class="keyword">true</span>, quant: <span class="keyword">true</span> },
 });
@@ -439,7 +439,7 @@ view.<span class="fn">setOptions</span>({
 <p>Control which parameters are tuned:</p>
 
 <pre><span class="comment">// Only tune strengths, keep alpha and quant as specified</span>
-<span class="keyword">const</span> view = <span class="fn">createBitZoomView</span>(canvas, edges, nodes, {
+<span class="keyword">const</span> view = <span class="fn">createBlitzoomView</span>(canvas, edges, nodes, {
   smoothAlpha: 0.5,
   quantMode: <span class="string">'gaussian'</span>,
   autoTune: { strengths: <span class="keyword">true</span>, alpha: <span class="keyword">false</span>, quant: <span class="keyword">false</span> },
@@ -451,7 +451,7 @@ view.<span class="fn">setOptions</span>({
 
 <p>Call <code>autoTuneStrengths</code> directly for full control:</p>
 
-<pre><span class="keyword">import</span> { autoTuneStrengths } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { autoTuneStrengths } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="fn">autoTuneStrengths</span>(
   view.nodes, view.groupNames, view.adjList, view.nodeIndexFull,
@@ -490,7 +490,7 @@ view.setStrengths(result.strengths); <span class="comment">// triggers re-blend 
 
 <p>Export the current graph view as a standalone SVG. In the viewer, press <kbd>S</kbd> to download. Programmatically:</p>
 
-<pre><span class="keyword">import</span> { exportSVG } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { exportSVG } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="keyword">const</span> svgString = <span class="fn">exportSVG</span>(view);
 <span class="comment">// Returns a complete &lt;svg&gt; string with background, grid, edges,</span>
@@ -502,7 +502,7 @@ view.setStrengths(result.strengths); <span class="comment">// triggers re-blend 
 
 <p>Use <code>createSVGView</code> to build a view from pipeline data without any browser APIs &mdash; works in Deno, Node.js, or Web Workers:</p>
 
-<pre><span class="keyword">import</span> { createSVGView, exportSVG } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { createSVGView, exportSVG } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="comment">// After running the pipeline and blending (see Offline Pipeline below)</span>
 <span class="keyword">const</span> view = <span class="fn">createSVGView</span>(nodes, result.edges, {
@@ -521,8 +521,8 @@ Deno.writeTextFileSync(<span class="string">'graph.svg'</span>, svg);</pre>
 
 <p>Run the full pipeline without a canvas, in Node.js or Deno. Useful for batch processing, precomputation, or analysis scripts.</p>
 
-<pre><span class="keyword">import</span> { runPipeline } <span class="keyword">from</span> <span class="string">'./bitzoom-pipeline.js'</span>;
-<span class="keyword">import</span> { unifiedBlend, normalizeAndQuantize, buildLevel } <span class="keyword">from</span> <span class="string">'./bitzoom-algo.js'</span>;
+<pre><span class="keyword">import</span> { runPipeline } <span class="keyword">from</span> <span class="string">'./blitzoom-pipeline.js'</span>;
+<span class="keyword">import</span> { unifiedBlend, normalizeAndQuantize, buildLevel } <span class="keyword">from</span> <span class="string">'./blitzoom-algo.js'</span>;
 
 <span class="comment">// Parse + tokenize + project (no DOM needed)</span>
 <span class="keyword">const</span> result = <span class="fn">runPipeline</span>(edgesText, nodesText);
@@ -574,7 +574,7 @@ console.log(biggest.cachedLabel, biggest.members.length, <span class="string">'m
 
 <h2 id="performance">Performance Guide</h2>
 
-<p>BitZoom scales well because the pipeline is O(n) in node count (MinHash + projection) and rendering uses hierarchical aggregation (only visible supernodes are drawn). Here are typical timings on a modern desktop:</p>
+<p>Blitzoom scales well because the pipeline is O(n) in node count (MinHash + projection) and rendering uses hierarchical aggregation (only visible supernodes are drawn). Here are typical timings on a modern desktop:</p>
 
 <table>
   <tr><th>Scale</th><th>Pipeline</th><th>Render</th><th>Notes</th></tr>
@@ -633,7 +633,7 @@ console.log(biggest.cachedLabel, biggest.members.length, <span class="string">'m
 
 <p>Use MinHash directly to estimate Jaccard similarity between token sets:</p>
 
-<pre><span class="keyword">import</span> { computeMinHash, jaccardEstimate } <span class="keyword">from</span> <span class="string">'./bitzoom-algo.js'</span>;
+<pre><span class="keyword">import</span> { computeMinHash, jaccardEstimate } <span class="keyword">from</span> <span class="string">'./blitzoom-algo.js'</span>;
 
 <span class="keyword">const</span> sigA = <span class="fn">computeMinHash</span>([<span class="string">'group:Person'</span>, <span class="string">'label:jeffrey'</span>, <span class="string">'label:epstein'</span>]);
 <span class="keyword">const</span> sigB = <span class="fn">computeMinHash</span>([<span class="string">'group:Person'</span>, <span class="string">'label:ghislaine'</span>, <span class="string">'label:maxwell'</span>]);
@@ -645,7 +645,7 @@ console.log(<span class="fn">jaccardEstimate</span>(sigA, sigA)); <span class="c
 
 <p>For on-demand signatures of existing nodes (using the same tokenization as the pipeline):</p>
 
-<pre><span class="keyword">import</span> { computeNodeSig } <span class="keyword">from</span> <span class="string">'./bitzoom-pipeline.js'</span>;
+<pre><span class="keyword">import</span> { computeNodeSig } <span class="keyword">from</span> <span class="string">'./blitzoom-pipeline.js'</span>;
 
 <span class="keyword">const</span> sig = <span class="fn">computeNodeSig</span>(node); <span class="comment">// Float64Array[128]</span></pre>
 
@@ -655,7 +655,7 @@ console.log(<span class="fn">jaccardEstimate</span>(sigA, sigA)); <span class="c
 
 <p>The zoom hierarchy is the core trick: 14 aggregation levels from two stored uint16 coordinates per node, derived via bit shifts. You can access any level programmatically.</p>
 
-<pre><span class="keyword">import</span> { cellIdAtLevel, buildLevel } <span class="keyword">from</span> <span class="string">'./bitzoom-algo.js'</span>;
+<pre><span class="keyword">import</span> { cellIdAtLevel, buildLevel } <span class="keyword">from</span> <span class="string">'./blitzoom-algo.js'</span>;
 
 <span class="comment">// Which cell is a node in at level 4? (16x16 grid)</span>
 <span class="keyword">const</span> bid = <span class="fn">cellIdAtLevel</span>(node.gx, node.gy, 4);
@@ -699,15 +699,15 @@ console.log(<span class="fn">jaccardEstimate</span>(sigA, sigA)); <span class="c
   </div>
 </div>
 
-<pre><span class="keyword">import</span> { createBitZoomView } <span class="keyword">from</span> <span class="string">'./bitzoom.js'</span>;
+<pre><span class="keyword">import</span> { createBlitzoomView } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="comment">// Canvas 2D (default)</span>
-<span class="keyword">const</span> view2d = <span class="fn">createBitZoomView</span>(canvas1, edges, nodes, {
+<span class="keyword">const</span> view2d = <span class="fn">createBlitzoomView</span>(canvas1, edges, nodes, {
   edgeMode: <span class="string">'curves'</span>, showLegend: <span class="keyword">true</span>,
 });
 
 <span class="comment">// WebGL2</span>
-<span class="keyword">const</span> viewGL = <span class="fn">createBitZoomView</span>(canvas2, edges, nodes, {
+<span class="keyword">const</span> viewGL = <span class="fn">createBlitzoomView</span>(canvas2, edges, nodes, {
   webgl: <span class="keyword">true</span>,
   edgeMode: <span class="string">'curves'</span>, showLegend: <span class="keyword">true</span>,
 });
@@ -726,7 +726,7 @@ viewGL.useWebGL = <span class="keyword">true</span>;   <span class="comment">// 
 
 <h3>From files</h3>
 
-<pre>&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;
+<pre>&lt;script type="module" src="dist/blitzoom.bundle.js"&gt;&lt;/script&gt;
 &lt;style&gt;bz-graph:not(:defined) { visibility: hidden; }&lt;/style&gt;
 
 &lt;bz-graph edges="data/epstein.edges" nodes="data/epstein.nodes"
@@ -785,7 +785,7 @@ carol	alice
   <tr><td><code>color-by</code></td><td><code>"group"</code></td><td>Override color group (null = auto, highest-strength group)</td></tr>
 </table>
 
-<p>Access the underlying <code>BitZoomCanvas</code> via <code>element.view</code> for programmatic control:</p>
+<p>Access the underlying <code>BlitzoomCanvas</code> via <code>element.view</code> for programmatic control:</p>
 
 <pre><span class="keyword">const</span> el = document.querySelector(<span class="string">'bz-graph'</span>);
 el.view.colorScheme = 3;      <span class="comment">// change at runtime</span>
@@ -849,59 +849,59 @@ compass.addEventListener(<span class="string">'input'</span>, e =&gt; {
 
 <h2 id="files">Required Files</h2>
 
-<p>BitZoom has no build step and no npm package.</p>
+<p>Blitzoom has no build step and no npm package.</p>
 
 <h3>Quickest: single-file bundle</h3>
 
-<p><a href="dist/bitzoom.bundle.js">One file</a>, ~98KB minified (gzipped), includes everything:</p>
+<p><a href="dist/blitzoom.bundle.js">One file</a>, ~98KB minified (gzipped), includes everything:</p>
 
-<pre>&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;</pre>
+<pre>&lt;script type="module" src="dist/blitzoom.bundle.js"&gt;&lt;/script&gt;</pre>
 
-<p>Use <code>&lt;bz-graph&gt;</code> elements or import <code>createBitZoomView</code> from the same file.</p>
+<p>Use <code>&lt;bz-graph&gt;</code> elements or import <code>createBlitzoomView</code> from the same file.</p>
 
 <h3>Unbundled: ES modules</h3>
 
-<p>Copy all <code>.js</code> files from <code>docs/</code> into one directory. Import from <code>bitzoom.js</code> &mdash; it re-exports the full public API:</p>
+<p>Copy all <code>.js</code> files from <code>docs/</code> into one directory. Import from <code>blitzoom.js</code> &mdash; it re-exports the full public API:</p>
 
 <pre>&lt;script type="module"&gt;
-  import { createBitZoomView } from './bitzoom.js';
+  import { createBlitzoomView } from './blitzoom.js';
 &lt;/script&gt;</pre>
 
 <h3>Offline / headless (Deno, Node, Web Worker)</h3>
 
 <p>Only two files needed, zero DOM dependencies:</p>
 
-<pre>import { runPipeline } from './bitzoom-pipeline.js';</pre>
+<pre>import { runPipeline } from './blitzoom-pipeline.js';</pre>
 
-<p>Requires <code>bitzoom-algo.js</code> + <code>bitzoom-pipeline.js</code>.</p>
+<p>Requires <code>blitzoom-algo.js</code> + <code>blitzoom-pipeline.js</code>.</p>
 
 <h3>Full file list</h3>
 
 <table>
   <tr><th>File</th><th>Role</th></tr>
-  <tr><td><code>bitzoom.js</code></td><td>Public API entrypoint (recommended import)</td></tr>
-  <tr><td><code>bitzoom-canvas.js</code></td><td>Canvas component, <code>createBitZoomView()</code> factory</td></tr>
-  <tr><td><code>bitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization</td></tr>
-  <tr><td><code>bitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
-  <tr><td><code>bitzoom-renderer.js</code></td><td>Canvas 2D rendering, hit testing, layout</td></tr>
-  <tr><td><code>bitzoom-utils.js</code></td><td>Auto-tune optimizer</td></tr>
-  <tr><td><code>bitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering</td></tr>
-  <tr><td><code>bitzoom-gpu.js</code></td><td>WebGPU compute acceleration</td></tr>
-  <tr><td><code>bitzoom-svg.js</code></td><td>SVG export (<code>exportSVG</code>, <code>createSVGView</code>)</td></tr>
-  <tr><td><code>bitzoom-colors.js</code></td><td>Color schemes (vivid, viridis, plasma, etc.)</td></tr>
+  <tr><td><code>blitzoom.js</code></td><td>Public API entrypoint (recommended import)</td></tr>
+  <tr><td><code>blitzoom-canvas.js</code></td><td>Canvas component, <code>createBlitzoomView()</code> factory</td></tr>
+  <tr><td><code>blitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization</td></tr>
+  <tr><td><code>blitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
+  <tr><td><code>blitzoom-renderer.js</code></td><td>Canvas 2D rendering, hit testing, layout</td></tr>
+  <tr><td><code>blitzoom-utils.js</code></td><td>Auto-tune optimizer</td></tr>
+  <tr><td><code>blitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering</td></tr>
+  <tr><td><code>blitzoom-gpu.js</code></td><td>WebGPU compute acceleration</td></tr>
+  <tr><td><code>blitzoom-svg.js</code></td><td>SVG export (<code>exportSVG</code>, <code>createSVGView</code>)</td></tr>
+  <tr><td><code>blitzoom-colors.js</code></td><td>Color schemes (vivid, viridis, plasma, etc.)</td></tr>
   <tr><td><code>bz-graph.js</code></td><td><code>&lt;bz-graph&gt;</code> web component</td></tr>
-  <tr><td><code>dist/bitzoom.bundle.js</code></td><td>Minified single-file bundle (all of the above)</td></tr>
+  <tr><td><code>dist/blitzoom.bundle.js</code></td><td>Minified single-file bundle (all of the above)</td></tr>
 </table>
 
 <p style="margin-top:48px;color:var(--text-dim);font-size:13px;text-align:center;">
-  <a href="about.html">How It Works</a> &middot; <a href="viewer.html">Viewer</a> &middot; <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+  <a href="about.html">How It Works</a> &middot; <a href="viewer.html">Viewer</a> &middot; <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </p>
 
 <script type="module">
-import { createBitZoomView, createBitZoomFromGraph } from './bitzoom.js';
+import { createBlitzoomView, createBlitzoomFromGraph } from './blitzoom.js';
 
 // From-JS demo
-createBitZoomFromGraph(document.getElementById('demo-from-js'),
+createBlitzoomFromGraph(document.getElementById('demo-from-js'),
   [
     { id: 'alice',   group: 'engineer', label: 'Alice',   lang: 'Go',     exp: 8 },
     { id: 'bob',     group: 'engineer', label: 'Bob',     lang: 'Go',     exp: 5 },
@@ -925,7 +925,7 @@ createBitZoomFromGraph(document.getElementById('demo-from-js'),
 // Epstein demo
 fetch('data/epstein.edges').then(r => r.text()).then(edges => {
   fetch('data/epstein.nodes').then(r => r.text()).then(nodes => {
-    createBitZoomView(document.getElementById('demo-epstein'), edges, nodes, {
+    createBlitzoomView(document.getElementById('demo-epstein'), edges, nodes, {
       initialLevel: 3, edgeMode: 'lines', heatmapMode: 'density',
       showLegend: true, showResetBtn: true,
       strengths: { group: 8, edgetype: 4 }, labelProps: ['label'],
@@ -933,14 +933,14 @@ fetch('data/epstein.edges').then(r => r.text()).then(edges => {
   });
 });
 
-// BitZoom Source demos: two weight configs side by side
-fetch('data/bitzoom-source.edges').then(r => r.text()).then(edges => {
-  fetch('data/bitzoom-source.nodes').then(r => r.text()).then(nodes => {
-    createBitZoomView(document.getElementById('demo-kind'), edges, nodes, {
+// Blitzoom Source demos: two weight configs side by side
+fetch('data/blitzoom-source.edges').then(r => r.text()).then(edges => {
+  fetch('data/blitzoom-source.nodes').then(r => r.text()).then(nodes => {
+    createBlitzoomView(document.getElementById('demo-kind'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
       strengths: { kind: 8, group: 1 }, labelProps: ['kind'],
     });
-    createBitZoomView(document.getElementById('demo-group'), edges, nodes, {
+    createBlitzoomView(document.getElementById('demo-group'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
       strengths: { kind: 1, group: 8 }, labelProps: ['file'],
     });
@@ -950,10 +950,10 @@ fetch('data/bitzoom-source.edges').then(r => r.text()).then(edges => {
 // Auto-tune demo: Synth Packages, default vs auto-tuned
 fetch('data/synth-packages.edges').then(r => r.text()).then(edges => {
   fetch('data/synth-packages.nodes').then(r => r.text()).then(nodes => {
-    createBitZoomView(document.getElementById('demo-autotune-default'), edges, nodes, {
+    createBlitzoomView(document.getElementById('demo-autotune-default'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
     });
-    createBitZoomView(document.getElementById('demo-autotune-tuned'), edges, nodes, {
+    createBlitzoomView(document.getElementById('demo-autotune-tuned'), edges, nodes, {
       initialLevel: 4, edgeMode: 'lines', showLegend: true, showResetBtn: true,
       autoTune: { strengths: true, alpha: true, quant: true },
     });
@@ -967,14 +967,14 @@ fetch('data/epstein.edges').then(r => r.text()).then(edges => {
       initialLevel: 3, edgeMode: 'curves', showLegend: true, showResetBtn: true,
       strengths: { group: 8, edgetype: 4 }, labelProps: ['label'],
     };
-    createBitZoomView(document.getElementById('demo-gl-canvas2d'), edges, nodes, shared);
-    createBitZoomView(document.getElementById('demo-gl-webgl'), edges, nodes, { ...shared, webgl: true });
+    createBlitzoomView(document.getElementById('demo-gl-canvas2d'), edges, nodes, shared);
+    createBlitzoomView(document.getElementById('demo-gl-webgl'), edges, nodes, { ...shared, webgl: true });
 
     // Color scheme + light mode demos
-    createBitZoomView(document.getElementById('demo-colorscheme'), edges, nodes, {
+    createBlitzoomView(document.getElementById('demo-colorscheme'), edges, nodes, {
       ...shared, colorScheme: 6,
     });
-    createBitZoomView(document.getElementById('demo-lightmode'), edges, nodes, {
+    createBlitzoomView(document.getElementById('demo-lightmode'), edges, nodes, {
       ...shared, colorScheme: 5, lightMode: true,
     });
   });

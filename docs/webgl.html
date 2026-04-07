@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BitZoom — WebGL Rendering</title>
-<meta name="description" content="How BitZoom uses WebGL2 instanced rendering for circles, edges, heatmaps, and grid lines.">
-<meta property="og:title" content="BitZoom — WebGL Rendering">
+<title>Blitzoom — WebGL Rendering</title>
+<meta name="description" content="How Blitzoom uses WebGL2 instanced rendering for circles, edges, heatmaps, and grid lines.">
+<meta property="og:title" content="Blitzoom — WebGL Rendering">
 <meta property="og:description" content="WebGL2 instanced rendering: SDF circles, GPU-tessellated Bezier edges, two-pass density heatmap.">
-<meta property="og:image" content="images/bitzoom-1.png">
+<meta property="og:image" content="images/blitzoom-1.png">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BitZoom — WebGL Rendering">
+<meta name="twitter:title" content="Blitzoom — WebGL Rendering">
 <meta name="twitter:description" content="WebGL2 instanced rendering for large graph visualization.">
-<meta name="twitter:image" content="images/bitzoom-1.png">
+<meta name="twitter:image" content="images/blitzoom-1.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -194,17 +194,17 @@
   <a href="howto.html">Developer Guide</a> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <strong>WebGL</strong> &middot;
-  <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+  <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </div>
 
-<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Bit<span>Zoom</span></a></h1>
+<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Blit<span>zoom</span></a></h1>
 <p class="subtitle">Optional WebGL2 instanced rendering for circles, edges, heatmaps, and grid.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>WebGL rendering is optional. BitZoom's default Canvas 2D renderer handles all dataset sizes. When WebGL2 is available, the viewer can offload geometry rendering (circles, edges, heatmaps, grid) to the GPU while keeping text (labels, legend, member counts) on a Canvas 2D overlay.</p>
+<p>WebGL rendering is optional. Blitzoom's default Canvas 2D renderer handles all dataset sizes. When WebGL2 is available, the viewer can offload geometry rendering (circles, edges, heatmaps, grid) to the GPU while keeping text (labels, legend, member counts) on a Canvas 2D overlay.</p>
 
-<p>The implementation lives in <code>bitzoom-gl-renderer.js</code> (1,187 lines): seven shader programs, instanced draw calls for all geometry, and a two-pass density heatmap. No external dependencies. Toggled via the viewer's GL button or <code>{ webgl: true }</code> in the constructor.</p>
+<p>The implementation lives in <code>blitzoom-gl-renderer.js</code> (1,187 lines): seven shader programs, instanced draw calls for all geometry, and a two-pass density heatmap. No external dependencies. Toggled via the viewer's GL button or <code>{ webgl: true }</code> in the constructor.</p>
 
 <div class="note">
   WebGL2 is supported in all modern browsers (Chrome, Firefox, Safari, Edge). <code>isWebGL2Available()</code> probes support without side effects. If <code>getContext('webgl2')</code> fails, the viewer falls back silently to Canvas 2D.
@@ -212,7 +212,7 @@
 
 <h2 id="dual-canvas">Dual Canvas Layout</h2>
 
-<p>WebGL and Canvas 2D have different strengths: WebGL draws thousands of circles and edges efficiently via instanced rendering; Canvas 2D renders text with correct sub-pixel anti-aliasing and font metrics. BitZoom uses both simultaneously.</p>
+<p>WebGL and Canvas 2D have different strengths: WebGL draws thousands of circles and edges efficiently via instanced rendering; Canvas 2D renders text with correct sub-pixel anti-aliasing and font metrics. Blitzoom uses both simultaneously.</p>
 
 <!-- Dual canvas diagram -->
 <div class="fig">

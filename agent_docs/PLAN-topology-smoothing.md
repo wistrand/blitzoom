@@ -18,12 +18,12 @@ benchmark results from the layout comparison (benchmarks/results/REPORT.md).
 The benchmarks expose two topology weaknesses:
 
 1. **Sparse-graph propagation.** On the US Power Grid (diameter ~46), 5 passes of
-   neighbor averaging propagate signal at most 5 hops. TopoNbrP: BitZoom 0.003 vs
+   neighbor averaging propagate signal at most 5 hops. TopoNbrP: Blitzoom 0.003 vs
    ForceAtlas2 0.197. This is the largest gap in the comparison.
 
-2. **Correlated-dataset property grouping.** On BitZoom Source, topology-based methods
-   outscore BitZoom on PropNbrP (0.21-0.24 vs 0.18) because call-graph adjacency
-   encodes file/kind similarity. BitZoom cannot exploit this correlation as effectively
+2. **Correlated-dataset property grouping.** On Blitzoom Source, topology-based methods
+   outscore Blitzoom on PropNbrP (0.21-0.24 vs 0.18) because call-graph adjacency
+   encodes file/kind similarity. Blitzoom cannot exploit this correlation as effectively
    with only 5 smoothing passes.
 
 Both problems trace to the same root cause: fixed-pass simple neighbor averaging has
@@ -91,7 +91,7 @@ and connectivity correlate.
 
 ### Implementation cost
 
-~10 lines changed in `unifiedBlend` (bitzoom-algo.js). Precompute `invSqrtDeg` array
+~10 lines changed in `unifiedBlend` (blitzoom-algo.js). Precompute `invSqrtDeg` array
 once (O(n)). Change inner loop from simple mean to PPR step with symmetric
 normalization. Increase default passes from 5 to 12.
 

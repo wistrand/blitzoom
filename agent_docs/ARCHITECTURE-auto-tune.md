@@ -1,7 +1,7 @@
 # Auto-Tune: Architecture and Implementation
 
-Heuristic optimizer for BitZoom strength/alpha/quant parameters. Implemented in
-[bitzoom-utils.js](../docs/bitzoom-utils.js). Exploits the O(n) blend+quantize
+Heuristic optimizer for Blitzoom strength/alpha/quant parameters. Implemented in
+[blitzoom-utils.js](../docs/blitzoom-utils.js). Exploits the O(n) blend+quantize
 cost to evaluate many configurations and find a well-structured layout.
 
 ## Objective function
@@ -64,7 +64,7 @@ Per trial, `pickCategoryArray(weights)` returns the cached array for the current
 
 ## Why auto-tune works
 
-The optimizer is effective because it exploits structural properties of the BitZoom layout:
+The optimizer is effective because it exploits structural properties of the Blitzoom layout:
 
 1. **Fixed anchors eliminate most variables.** MinHash + Gaussian projection computes each node's 2D position per group once at load. Strengths linearly blend these fixed points — no force simulation to converge, no embedding to train. Small strength changes produce small layout changes, making the objective smooth and coordinate descent effective.
 
@@ -123,7 +123,7 @@ Every `(weights, alpha)` combination is hashed into a cache key (alpha.toFixed(3
 
 ### Module-level buffer reuse
 
-`unifiedBlend` in [bitzoom-algo.js](../docs/bitzoom-algo.js) pre-allocates four `Float64Array(N)` buffers (`propPx`, `propPy`, `newPx`, `newPy`) in a module-level cache, grown on demand. Previously, each blend call allocated ~12MB at N=367K — for a tune with 25 blends × 5 passes that's ~880MB of allocation + GC churn per session. Now allocation is once per session and reused across all blend calls. Safe because the blend is sequential (not reentrant).
+`unifiedBlend` in [blitzoom-algo.js](../docs/blitzoom-algo.js) pre-allocates four `Float64Array(N)` buffers (`propPx`, `propPy`, `newPx`, `newPy`) in a module-level cache, grown on demand. Previously, each blend call allocated ~12MB at N=367K — for a tune with 25 blends × 5 passes that's ~880MB of allocation + GC churn per session. Now allocation is once per session and reused across all blend calls. Safe because the blend is sequential (not reentrant).
 
 ## Label auto-selection
 
@@ -164,7 +164,7 @@ On abort or timeout, the optimizer returns the best result found so far.
 ## API
 
 ```javascript
-import { autoTuneStrengths } from './bitzoom-utils.js';
+import { autoTuneStrengths } from './blitzoom-utils.js';
 
 const result = await autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFull, {
   weights: true,      // tune property strengths
@@ -182,15 +182,15 @@ const result = await autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFull
 
 ## Integration
 
-### Embedded (createBitZoomView)
+### Embedded (createBlitzoomView)
 
 ```javascript
-const view = createBitZoomView(canvas, edgesText, nodesText, {
+const view = createBlitzoomView(canvas, edgesText, nodesText, {
   autoTune: { weights: true, alpha: true },
 });
 ```
 
-Returns `BitZoomCanvas` synchronously with default weights. The optimizer runs
+Returns `BlitzoomCanvas` synchronously with default weights. The optimizer runs
 async in the background, shows progress overlay on the canvas, and re-renders
 with tuned parameters (including label props) when done. Explicit `weights`,
 `smoothAlpha`, `quantMode`, `labelProps` in opts take precedence.
@@ -224,7 +224,7 @@ The amazon tune dropped from ~32s (pre-optimization) to ~12s — a 2.6× speedup
 
 ## Bearing auto-tune (closed-form trace maximization)
 
-After weight/alpha optimization, `autoTuneBearings(nodes, groupNames, propStrengths)` finds per-group rotations that maximize the total 2D spread of the blended layout. Implemented in [bitzoom-utils.js](../docs/bitzoom-utils.js).
+After weight/alpha optimization, `autoTuneBearings(nodes, groupNames, propStrengths)` finds per-group rotations that maximize the total 2D spread of the blended layout. Implemented in [blitzoom-utils.js](../docs/blitzoom-utils.js).
 
 ### Mathematical basis
 

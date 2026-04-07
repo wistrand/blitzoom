@@ -1,8 +1,8 @@
 // Benchmark: rendering-related computations (no actual canvas).
 // Measures: layoutAll, hitTest, level building phases, edge batching.
 
-import { runPipeline } from '../docs/bitzoom-pipeline.js';
-import { unifiedBlend, buildLevelNodes, buildLevelEdges, cellIdAtLevel, ZOOM_LEVELS, GRID_SIZE, GRID_BITS } from '../docs/bitzoom-algo.js';
+import { runPipeline } from '../docs/blitzoom-pipeline.js';
+import { unifiedBlend, buildLevelNodes, buildLevelEdges, cellIdAtLevel, ZOOM_LEVELS, GRID_SIZE, GRID_BITS } from '../docs/blitzoom-algo.js';
 
 function fmt(ms) { return ms < 1 ? `${(ms * 1000).toFixed(0)}µs` : `${ms.toFixed(1)}ms`; }
 

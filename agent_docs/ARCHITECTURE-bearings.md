@@ -15,7 +15,7 @@ Cost: `cos/sin` looked up once per group per blend, 2 mul + 1 add per (node, gro
 
 ## Implementation
 
-### Blend layer ([bitzoom-algo.js](../docs/bitzoom-algo.js))
+### Blend layer ([blitzoom-algo.js](../docs/blitzoom-algo.js))
 
 `unifiedBlend` accepts an optional `propBearings` parameter (object mapping group name → radians, default `null`). When non-null with any non-zero entry:
 
@@ -23,7 +23,7 @@ Cost: `cos/sin` looked up once per group per blend, 2 mul + 1 add per (node, gro
 2. Uses the rotation branch in the property-anchor loop
 3. Fast path preserved: `null` or all-zero bearings skip rotation entirely
 
-### Canvas state ([bitzoom-canvas.js](../docs/bitzoom-canvas.js))
+### Canvas state ([blitzoom-canvas.js](../docs/blitzoom-canvas.js))
 
 - `this.propBearings = {}` — per-group rotation in radians
 - `setBearing(group, radians)` — sets one group, triggers re-blend + render
@@ -38,7 +38,7 @@ Serialized as a positional array in degrees (2 decimal places): `b=28.65,0,0,0` 
 
 Optional `settings.bearings` field in [datasets.json](../docs/datasets.json). Stored in degrees for human readability, converted to radians on load via `_applyDatasetSettings`.
 
-### Sidebar dial ([bitzoom-viewer.js](../docs/bitzoom-viewer.js))
+### Sidebar dial ([blitzoom-viewer.js](../docs/blitzoom-viewer.js))
 
 Each property group row in the sidebar has a 24×24px bearing dial (`.bearing-dial` + `.bearing-tick`):
 
@@ -49,7 +49,7 @@ Each property group row in the sidebar has a 24×24px bearing dial (`.bearing-di
 - **Keyboard**: arrow keys ±15° (Shift ±45°), PageUp/PageDown ±45°, Home/End, `0` resets.
 - **Accessibility**: `role="slider"`, `aria-valuetext="N degrees"`, focus ring.
 
-### Auto-tune bearings ([bitzoom-utils.js](../docs/bitzoom-utils.js))
+### Auto-tune bearings ([blitzoom-utils.js](../docs/blitzoom-utils.js))
 
 `autoTuneBearings(nodes, groupNames, propStrengths)` — closed-form trace maximization. For each group, finds the rotation θ that maximizes `Var(x) + Var(y)` of the blended point cloud:
 

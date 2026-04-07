@@ -1,4 +1,4 @@
-// bz-controls.js — <bz-controls> web component for BitZoom.
+// bz-controls.js — <bz-controls> web component for Blitzoom.
 // Strength sliders + bearing dials per property group.
 //
 // Declarative usage:

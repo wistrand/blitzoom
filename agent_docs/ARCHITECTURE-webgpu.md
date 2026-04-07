@@ -1,6 +1,6 @@
 # WebGPU Architecture
 
-Implementation of WebGPU compute acceleration for BitZoom's MinHash projection
+Implementation of WebGPU compute acceleration for Blitzoom's MinHash projection
 and topology blend pipelines. Falls back to CPU (Web Workers) when WebGPU is
 unavailable.
 
@@ -8,7 +8,7 @@ unavailable.
 
 | File | Role |
 | --- | --- |
-| [bitzoom-gpu.js](../docs/bitzoom-gpu.js) | WebGPU compute: MinHash+projection, blend, initialization |
+| [blitzoom-gpu.js](../docs/blitzoom-gpu.js) | WebGPU compute: MinHash+projection, blend, initialization |
 | [tests/gpu_test.ts](../tests/gpu_test.ts) | Unit tests: hashSlot precision, OPH, similarity |
 | [tests/gpu_pipeline_test.ts](../tests/gpu_pipeline_test.ts) | Pipeline comparison: GPU vs CPU projections across datasets |
 | [tests/gpu_blend_test.ts](../tests/gpu_blend_test.ts) | Blend comparison: GPU vs CPU across datasets and alpha values |
@@ -17,7 +17,7 @@ unavailable.
 
 ## Initialization
 
-At viewer startup (bootstrap in `bitzoom-viewer.js`):
+At viewer startup (bootstrap in `blitzoom-viewer.js`):
 
 ```
 await initGPU()
@@ -30,7 +30,7 @@ await initGPU()
 If any step fails, `_gpuUnavailable = true`, GPU button shows "N/A", all
 operations use CPU. The probe completes before the first dataset load.
 
-For embedded views, `createBitZoomView` accepts `autoGPU: true` (default) to
+For embedded views, `createBlitzoomView` accepts `autoGPU: true` (default) to
 auto-enable WebGPU when N×G > 2000. The factory returns synchronously; initial
 blend kicks off async (GPU probe → blend → render). GPU kicks in for the
 initial blend and subsequent interactive changes once initialization completes.
@@ -56,7 +56,7 @@ GPU: MinHash signatures → z-score normalize → 2D Gaussian projection
 CPU: unpack Float32Array result into projBuf
 ```
 
-WGSL shader (`WGSL` constant in bitzoom-gpu.js), workgroup size 256:
+WGSL shader (`WGSL` constant in blitzoom-gpu.js), workgroup size 256:
 - `mulMod(a, b)`: overflow-safe `(a*b) mod P` via 16-bit half splitting with
   per-addition `mersMod` reduction. Matches CPU `hashSlot` exactly.
 - Standard MinHash for <12 tokens (k hash evaluations per token)
@@ -140,7 +140,7 @@ loadDataset → loadGraphGPU:
   → _finalizeLoad → await v._blend() (GPU) → resize/render
 ```
 
-### Path C: Embedded (createBitZoomView)
+### Path C: Embedded (createBlitzoomView)
 
 ```
 runPipeline (CPU) → create view → return immediately (sync)
@@ -179,7 +179,7 @@ loadGraphGPU (GPU projection if gaussian) → _finalizeLoad → GPU blend
 ## Auto-tune integration
 
 **Status:** `autoTuneStrengths` accepts a `blendFn` option (defaults to CPU `unifiedBlend`).
-`blendAndScore` ([bitzoom-utils.js](../docs/bitzoom-utils.js):125) calls `blendFn` for each
+`blendAndScore` ([blitzoom-utils.js](../docs/blitzoom-utils.js):125) calls `blendFn` for each
 evaluation. The viewer does not pass a custom `blendFn`, so auto-tune always uses CPU blend.
 
 ### Blend count per auto-tune run
@@ -202,7 +202,7 @@ is essential — CPU auto-tune exceeds the 20s timeout. An adaptive threshold
 
 ### Adaptive GPU/CPU selection
 
-Implemented in `_blend()` (bitzoom-canvas.js) and `loadGraphGPU()` (bitzoom-viewer.js).
+Implemented in `_blend()` (blitzoom-canvas.js) and `loadGraphGPU()` (blitzoom-viewer.js).
 Viewer GPU button cycles Auto → GPU → CPU. Auto uses adaptive thresholds:
 
 | Operation  | Auto GPU when                           | Reason                                              |
@@ -261,7 +261,7 @@ Median of 5 runs after 2 warmup (1 run for Amazon).
 | -------------- | ------: | -----: | ------: | -----: | ------: |
 | Karate Club    |      34 |      4 |  1.5ms  |  18ms  |   0.08x |
 | Epstein        |     364 |      5 |   20ms  |  19ms  |   1.1x  |
-| BitZoom Source |     433 |     10 |   24ms  |  19ms  |   1.2x  |
+| Blitzoom Source |     433 |     10 |   24ms  |  19ms  |   1.2x  |
 | Synth Packages |   1,868 |      8 |   85ms  |  22ms  |   3.9x  |
 | MITRE ATT&CK  |   4,736 |     10 |  358ms  |  61ms  |   5.9x  |
 | Amazon         | 367,000 |      4 | 24.1s   |  1.7s  |  14.3x  |
@@ -274,7 +274,7 @@ GPU crossover ~400 nodes. GPU time includes CPU-side tokenization and hashing.
 | -------------- | ------: | ------: | -----: | ------: |
 | Karate Club    |      34 | 139µs   |  13ms  |   0.01x |
 | Epstein        |     364 |  0.8ms  |  14ms  |   0.06x |
-| BitZoom Source |     433 |  1.3ms  |  14ms  |   0.10x |
+| Blitzoom Source |     433 |  1.3ms  |  14ms  |   0.10x |
 | Synth Packages |   1,868 |  2.4ms  |  17ms  |   0.15x |
 | MITRE ATT&CK  |   4,736 |   13ms  |  34ms  |   0.40x |
 | Amazon         | 367,000 |  1.88s  | 407ms  |   4.6x  |

@@ -1,8 +1,8 @@
 // Benchmark: full pipeline stages on real datasets.
 // Measures: parse, build graph, compute projections, blend+quantize, buildLevel.
 
-import { runPipeline } from '../docs/bitzoom-pipeline.js';
-import { unifiedBlend, buildLevel, normalizeAndQuantize, gaussianQuantize } from '../docs/bitzoom-algo.js';
+import { runPipeline } from '../docs/blitzoom-pipeline.js';
+import { unifiedBlend, buildLevel, normalizeAndQuantize, gaussianQuantize } from '../docs/blitzoom-algo.js';
 
 const DATASETS = [
   { name: 'Epstein', edges: 'docs/data/epstein.edges', nodes: 'docs/data/epstein.nodes' },

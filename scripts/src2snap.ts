@@ -494,7 +494,7 @@ const validEdges = edges.filter(e => symbols.has(e.src) && symbols.has(e.dst));
 
 // Write .edges
 const edgeLines = [
-  "# BitZoom source code graph",
+  "# Blitzoom source code graph",
   `# Nodes: ${symbols.size} Edges: ${validEdges.length}`,
   "# FromId\tToId\tRelationshipType",
 ];

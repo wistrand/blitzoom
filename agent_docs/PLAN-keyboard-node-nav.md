@@ -57,6 +57,6 @@ Both modes share the same sorted neighbor list.
 
 | File | Change |
 |------|--------|
-| `bitzoom-canvas.js` | Add `_navNeighbors` list, `_navIndex`. Add N/Shift+N/Arrow/Home/Enter handlers. Change , / . for level. Build neighbor list on selection change. Pan + select + announce on each step. Update help text. |
-| `bitzoom-renderer.js` | No changes — selected node already renders with full highlight |
-| `bitzoom-viewer.js` | Wire Enter to `_showDetail()`. Change level key handlers from Arrow to , / . |
+| `blitzoom-canvas.js` | Add `_navNeighbors` list, `_navIndex`. Add N/Shift+N/Arrow/Home/Enter handlers. Change , / . for level. Build neighbor list on selection change. Pan + select + announce on each step. Update help text. |
+| `blitzoom-renderer.js` | No changes — selected node already renders with full highlight |
+| `blitzoom-viewer.js` | Wire Enter to `_showDetail()`. Change level key handlers from Arrow to , / . |

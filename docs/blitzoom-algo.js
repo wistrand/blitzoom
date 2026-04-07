@@ -1,4 +1,4 @@
-// bitzoom-algo.js — Pure algorithm functions and constants.
+// blitzoom-algo.js — Pure algorithm functions and constants.
 // No DOM, no canvas, no state. Shared by main thread and conceptually by worker.
 
 // Find key with highest count in an object {key: count} — O(k) instead of sort O(k log k)
@@ -531,7 +531,7 @@ export function buildLevelEdges(levelObj, edges, nodeIndexFull, level) {
   levelObj._edgesReady = true;
 }
 
-// Combined wrapper for backward compatibility (tests, standalone BitZoomCanvas).
+// Combined wrapper for backward compatibility (tests, standalone BlitzoomCanvas).
 export function buildLevel(level, nodes, edges, nodeIndexFull, colorValFn, labelValFn, colorLookup) {
   const lvl = buildLevelNodes(level, nodes, colorValFn, labelValFn, colorLookup);
   buildLevelEdges(lvl, edges, nodeIndexFull, level);

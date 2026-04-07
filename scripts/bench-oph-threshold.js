@@ -1,4 +1,4 @@
-import { MINHASH_K, HASH_PARAMS_A, HASH_PARAMS_B, LARGE_PRIME, hashToken } from '/home/wistrand/private/github/bitzoom/docs/bitzoom-algo.js';
+import { MINHASH_K, HASH_PARAMS_A, HASH_PARAMS_B, LARGE_PRIME, hashToken } from '/home/wistrand/private/github/blitzoom/docs/blitzoom-algo.js';
 
 function mersMod(x) {
   x = (x & LARGE_PRIME) + ((x / 0x80000000) | 0);

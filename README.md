@@ -1,14 +1,14 @@
-# BitZoom
+# Blitzoom
 
 A deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash signatures and Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
 
 ![Datasets](https://img.shields.io/badge/datasets-22-blue) ![Tests](https://img.shields.io/badge/tests-177%20passing-green)
 
-**[Viewer](https://wistrand.github.io/bitzoom/viewer.html)** · [Website](https://wistrand.github.io/bitzoom/) · [Developer Guide](https://wistrand.github.io/bitzoom/howto.html) · [Layout Comparison](https://wistrand.github.io/bitzoom/comparison.html)
+**[Viewer](https://wistrand.github.io/blitzoom/viewer.html)** · [Website](https://wistrand.github.io/blitzoom/) · [Developer Guide](https://wistrand.github.io/blitzoom/howto.html) · [Layout Comparison](https://wistrand.github.io/blitzoom/comparison.html)
 
 <p align="center">
-  <img src="docs/images/bitzoom-1.png" width="48%" alt="BitZoom density heatmap with clustered supernodes">
-  <img src="docs/images/bitzoom-2.png" width="48%" alt="BitZoom zoomed in with node labels visible">
+  <img src="docs/images/blitzoom-1.png" width="48%" alt="Blitzoom density heatmap with clustered supernodes">
+  <img src="docs/images/blitzoom-2.png" width="48%" alt="Blitzoom zoomed in with node labels visible">
 </p>
 <p align="center"><em>Left: density heatmap showing property-based clusters. Right: zoomed in with individual node labels.</em></p>
 
@@ -86,7 +86,7 @@ D	Dave	manager	88
 | ------------------- | ----- | ------ | ------------------- |
 | Karate Club         | 34    | 78     | Zachary 1977        |
 | Epstein Network     | 364   | 534    | Public records      |
-| BitZoom Source      | 433   | 940    | This project's code |
+| Blitzoom Source      | 966   | 2,609  | This project's code |
 | Synth Packages      | 1,868 | 4,044  | Generated           |
 | MITRE ATT&CK       | 4,736 | 25,856 | MITRE ATT&CK v15    |
 | Email EU            | 1,005 | 25,571 | SNAP Stanford       |
@@ -123,13 +123,13 @@ Strength changes only repeat steps 4-5: O(n × G) for anchor recomputation plus 
 ## Architecture
 
 ```
-bitzoom-algo.js        Pure algorithms (MinHash, projection, blend, levels)
-bitzoom-pipeline.js    Parsers, graph building, tokenization pipeline
-bitzoom-renderer.js    Canvas rendering (5-layer: edges → heatmap → hilite → circles → labels)
-bitzoom-canvas.js      Standalone embeddable component — canvas, interaction, rendering
-bitzoom-viewer.js      Application class (composes BitZoomCanvas, UI, workers)
-bitzoom-worker.js      Web Worker coordinator (parse, fan-out)
-bitzoom-proj-worker.js Web Worker (MinHash projection, ×3 parallel)
+blitzoom-algo.js        Pure algorithms (MinHash, projection, blend, levels)
+blitzoom-pipeline.js    Parsers, graph building, tokenization pipeline
+blitzoom-renderer.js    Canvas rendering (5-layer: edges → heatmap → hilite → circles → labels)
+blitzoom-canvas.js      Standalone embeddable component — canvas, interaction, rendering
+blitzoom-viewer.js      Application class (composes BlitzoomCanvas, UI, workers)
+blitzoom-worker.js      Web Worker coordinator (parse, fan-out)
+blitzoom-proj-worker.js Web Worker (MinHash projection, ×3 parallel)
 ```
 
 All ES modules. No build step. No dependencies. See [ARCHITECTURE.md](agent_docs/ARCHITECTURE.md) for details.

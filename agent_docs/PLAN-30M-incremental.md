@@ -33,7 +33,7 @@ The bit-shift hierarchy provides a natural solution: at any zoom level, the view
            │
            ▼
 ┌──────────────────────────────────────────────┐
-│  Viewer: BitZoomTiled                        │
+│  Viewer: BlitzoomTiled                        │
 │  (browser, <500MB memory)                    │
 │                                              │
 │  Fetches tiles by level + viewport           │
@@ -120,7 +120,7 @@ Average 460 nodes per tile at 30M total. ~20KB per tile.
 
 ## Phase 2: Tile Loader Module
 
-### File: `docs/bitzoom-tiles.js`
+### File: `docs/blitzoom-tiles.js`
 
 New module, no DOM dependencies. Manages tile fetching, caching, and viewport tracking.
 
@@ -156,29 +156,29 @@ export class TileManager {
 - Levels 9-14: viewport-filtered — compute visible cell range, fetch only those tiles
 - RAW: always viewport-filtered, 3×3 tile neighborhood around viewport center
 
-### Integration with BitZoomCanvas
+### Integration with BlitzoomCanvas
 
-`BitZoomCanvas` currently expects all data in memory via constructor opts. For tiled mode:
+`BlitzoomCanvas` currently expects all data in memory via constructor opts. For tiled mode:
 
-Option A: Create `BitZoomTiled` that composes `BitZoomCanvas` with `TileManager`.
+Option A: Create `BlitzoomTiled` that composes `BlitzoomCanvas` with `TileManager`.
 - On level change: fetch tile → construct supernodes array → pass to canvas
 - Canvas doesn't know about tiles — it just gets supernodes like before
 
-Option B: Modify `BitZoomCanvas.getLevel()` to accept an async provider.
+Option B: Modify `BlitzoomCanvas.getLevel()` to accept an async provider.
 - More invasive, but cleaner long-term
 
-**Recommendation: Option A.** Keep `BitZoomCanvas` synchronous. `BitZoomTiled` handles async fetching and feeds data to the canvas.
+**Recommendation: Option A.** Keep `BlitzoomCanvas` synchronous. `BlitzoomTiled` handles async fetching and feeds data to the canvas.
 
 ## Phase 3: Tiled Viewer
 
-### File: `docs/bitzoom-tiled.js`
+### File: `docs/blitzoom-tiled.js`
 
 ```
-class BitZoomTiled {
+class BlitzoomTiled {
   constructor(canvas, manifest, opts)
 
-  // Owns a BitZoomCanvas internally
-  this.view = new BitZoomCanvas(canvas, { skipEvents: true, ... })
+  // Owns a BlitzoomCanvas internally
+  this.view = new BlitzoomCanvas(canvas, { skipEvents: true, ... })
 
   // Handles events, delegates to view
   // On level change: fetch tile, update view data, re-render
@@ -189,7 +189,7 @@ class BitZoomTiled {
 
 **Level switch flow:**
 1. User scrolls → auto-level triggers L4 → L5
-2. `BitZoomTiled` calls `tileManager.getLevel(5)`
+2. `BlitzoomTiled` calls `tileManager.getLevel(5)`
 3. Fetch returns (or cache hit): 1024 supernodes, 50K edges
 4. Construct `view.nodes`, `view.edges`, `view.nodeIndexFull` from tile data
 5. Call `view.layoutAll()`, `view.render()`
@@ -197,7 +197,7 @@ class BitZoomTiled {
 
 **RAW level viewport flow:**
 1. User zooms to RAW level
-2. `BitZoomTiled` computes visible tile range from viewport coordinates
+2. `BlitzoomTiled` computes visible tile range from viewport coordinates
 3. Fetches 4-9 tile files (each ~20KB, ~460 nodes)
 4. Merges into `view.nodes`, builds adjList from available edges
 5. Renders ~2-4K individual nodes
@@ -205,9 +205,9 @@ class BitZoomTiled {
 
 **Ego subgraph flow:**
 1. User clicks supernode (bid=42) at L6
-2. `BitZoomTiled` fetches `ego/42.json` (precomputed or on-demand)
+2. `BlitzoomTiled` fetches `ego/42.json` (precomputed or on-demand)
 3. Contains all member nodes + their 1-hop neighbors + internal edges
-4. Creates a nested `createBitZoomFromGraph(detailCanvas, egoNodes, egoEdges)`
+4. Creates a nested `createBlitzoomFromGraph(detailCanvas, egoNodes, egoEdges)`
 5. Shows in detail panel or overlay
 
 ## Phase 4: Weight Changes
@@ -254,8 +254,8 @@ Not practical at 30M nodes client-side. Options:
 scripts/
   bz-precompute.ts        Precomputation CLI
 docs/
-  bitzoom-tiles.js         TileManager (fetch, cache, evict)
-  bitzoom-tiled.js         BitZoomTiled (viewer for tiled datasets)
+  blitzoom-tiles.js         TileManager (fetch, cache, evict)
+  blitzoom-tiled.js         BlitzoomTiled (viewer for tiled datasets)
   tiled.html               Tiled viewer HTML (minimal, like viewer.html)
   tiles/                   Precomputed tile output directory
     <dataset>/
@@ -277,11 +277,11 @@ docs/
    - New: streaming parser variant for >1GB files, tile serialization, manifest generation
    - Verify: run on MITRE (4.7K nodes) first, compare tiles with in-memory buildLevel output
 
-2. **bitzoom-tiles.js** — TileManager with LRU cache
+2. **blitzoom-tiles.js** — TileManager with LRU cache
    - Pure fetch + cache, no DOM
    - Verify: unit test fetching manifest + level tiles
 
-3. **bitzoom-tiled.js** — composes BitZoomCanvas + TileManager
+3. **blitzoom-tiled.js** — composes BlitzoomCanvas + TileManager
    - Same visual result as regular viewer for small datasets
    - Verify: load MITRE via tiles, compare with direct load
 
@@ -315,12 +315,12 @@ docs/
 
 ## What Stays Unchanged
 
-- `bitzoom-algo.js` — all algorithms (used by precompute + client-side reblend)
-- `bitzoom-pipeline.js` — parsers + tokenization (used by precompute)
-- `bitzoom-renderer.js` — rendering (receives supernodes, doesn't care about source)
-- `bitzoom-canvas.js` — canvas component (used by tiled viewer same as regular)
-- `bitzoom.css` — styles
-- Regular viewer (`viewer.html` + `bitzoom-viewer.js`) — unchanged, still works for <500K node datasets
+- `blitzoom-algo.js` — all algorithms (used by precompute + client-side reblend)
+- `blitzoom-pipeline.js` — parsers + tokenization (used by precompute)
+- `blitzoom-renderer.js` — rendering (receives supernodes, doesn't care about source)
+- `blitzoom-canvas.js` — canvas component (used by tiled viewer same as regular)
+- `blitzoom.css` — styles
+- Regular viewer (`viewer.html` + `blitzoom-viewer.js`) — unchanged, still works for <500K node datasets
 
 ## Open Questions
 

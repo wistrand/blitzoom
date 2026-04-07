@@ -1,4 +1,4 @@
-# BitZoom Architecture
+# Blitzoom Architecture
 
 This is the top-level architecture overview. Subsystems have their own docs:
 
@@ -12,7 +12,7 @@ This is the top-level architecture overview. Subsystems have their own docs:
 
 ## Overview
 
-BitZoom is a deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash + Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
+Blitzoom is a deterministic layout and hierarchical aggregation viewer for large property graphs. Nodes are positioned by property similarity using MinHash + Gaussian projection, with stable zoom levels derived from stored uint16 grid coordinates via bit shifts.
 
 ## Project Structure
 
@@ -23,19 +23,19 @@ docs/                    Web application (ES modules, served by Deno)
   about.html               How It Works — interactive explainer with embedded demos
   howto.html               Developer Guide — embedding API, data format, examples
   example.html             Minimal example — two embedded graphs (SNAP + inline)
-  bitzoom.css              Styles — dark theme, responsive, loader, detail panel overlay
-  bitzoom-algo.js          Pure algorithm functions and constants (no DOM)
-  bitzoom-pipeline.js      SNAP parsers, buildGraph, runPipeline(GPU), runPipelineFromObjects(GPU)
-  bitzoom-parsers.js       Format adapters — CSV, D3 JSON, JGF, GraphML, GEXF, Cytoscape, STIX dispatcher
-  bitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing (no state mutation)
-  bitzoom-gl-renderer.js   WebGL2 instanced renderer — 7 shader programs (~1202 lines)
-  bitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, event hub
-  bitzoom-viewer.js        BitZoom app (composes BitZoomCanvas) — UI, workers, data loading, drop zones
-  bitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
+  blitzoom.css              Styles — dark theme, responsive, loader, detail panel overlay
+  blitzoom-algo.js          Pure algorithm functions and constants (no DOM)
+  blitzoom-pipeline.js      SNAP parsers, buildGraph, runPipeline(GPU), runPipelineFromObjects(GPU)
+  blitzoom-parsers.js       Format adapters — CSV, D3 JSON, JGF, GraphML, GEXF, Cytoscape, STIX dispatcher
+  blitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing (no state mutation)
+  blitzoom-gl-renderer.js   WebGL2 instanced renderer — 7 shader programs (~1202 lines)
+  blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, event hub
+  blitzoom-viewer.js        Blitzoom app (composes BlitzoomCanvas) — UI, workers, data loading, drop zones
+  blitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
   stix2snap.js             STIX 2.1 → object pipeline (parseSTIX, browser-compatible)
-  bitzoom-svg.js           SVG export — exportSVG(bz, opts) + createSVGView() headless factory
-  bitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
-  bitzoom-proj-worker.js   Web Worker — imports from algo+pipeline, computes projections
+  blitzoom-svg.js           SVG export — exportSVG(bz, opts) + createSVGView() headless factory
+  blitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
+  blitzoom-proj-worker.js   Web Worker — imports from algo+pipeline, computes projections
   webgl-test.html          Side-by-side Canvas 2D vs WebGL2 visual comparison
 
 tests/pipeline_test.ts     172 Deno tests: algo, pipeline, numeric, undefined, E2E, SVG, parsers, format dispatch, auto-tune
@@ -53,32 +53,32 @@ deno.json                  Tasks: serve, test, stix2snap, csv2snap, src2snap
 
 ## Module System
 
-All JS files use **ES modules** (`import`/`export`). Web Workers use `{ type: 'module' }`. Viewer loads `<script type="module" src="bitzoom-viewer.js">`.
+All JS files use **ES modules** (`import`/`export`). Web Workers use `{ type: 'module' }`. Viewer loads `<script type="module" src="blitzoom-viewer.js">`.
 
 Dependency graph (arrows = "imported by"):
 ```
-bitzoom-algo.js              (no deps — pure functions + constants)
-bitzoom-colors.js            (no deps — color schemes)
+blitzoom-algo.js              (no deps — pure functions + constants)
+blitzoom-colors.js            (no deps — color schemes)
 stix2snap.js                 (no deps — STIX 2.1 bundle → object pipeline shape)
   ↑
-bitzoom-pipeline.js          (algo)
-bitzoom-renderer.js          (algo)
-bitzoom-gl-renderer.js       (algo)
-bitzoom-utils.js             (algo)
-bitzoom-svg.js               (algo, colors)
-bitzoom-gpu.js               (algo, pipeline)
-bitzoom-parsers.js           (pipeline, stix2snap)
+blitzoom-pipeline.js          (algo)
+blitzoom-renderer.js          (algo)
+blitzoom-gl-renderer.js       (algo)
+blitzoom-utils.js             (algo)
+blitzoom-svg.js               (algo, colors)
+blitzoom-gpu.js               (algo, pipeline)
+blitzoom-parsers.js           (pipeline, stix2snap)
   ↑
-bitzoom-canvas.js            (algo, colors, pipeline, renderer, gl-renderer, gpu, utils)
+blitzoom-canvas.js            (algo, colors, pipeline, renderer, gl-renderer, gpu, utils)
   ↑
-bitzoom-viewer.js            (algo, canvas, colors, gl-renderer, gpu, pipeline, parsers, svg, utils)
+blitzoom-viewer.js            (algo, canvas, colors, gl-renderer, gpu, pipeline, parsers, svg, utils)
 bz-graph.js                  (canvas, colors)
 
-bitzoom-worker.js            (pipeline)
-bitzoom-proj-worker.js       (algo, pipeline)
+blitzoom-worker.js            (pipeline)
+blitzoom-proj-worker.js       (algo, pipeline)
 ```
 
-No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in [bitzoom-algo.js](../docs/bitzoom-algo.js). `BitZoom` composes `BitZoomCanvas` (`this.view`) — all graph state, rendering, and interaction primitives live on the canvas component.
+No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in [blitzoom-algo.js](../docs/blitzoom-algo.js). `Blitzoom` composes `BlitzoomCanvas` (`this.view`) — all graph state, rendering, and interaction primitives live on the canvas component.
 
 ## Data Format (SNAP)
 
@@ -94,7 +94,7 @@ No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`
 
 ## Module Responsibilities
 
-### [bitzoom-algo.js](../docs/bitzoom-algo.js) (510 lines)
+### [blitzoom-algo.js](../docs/blitzoom-algo.js) (510 lines)
 
 Pure functions, no DOM. Single source of truth for MinHash/projection.
 
@@ -107,7 +107,7 @@ Pure functions, no DOM. Single source of truth for MinHash/projection.
 - **Level building**: `buildLevelNodes` (phase 1: bucket nodes into supernodes, O(n)) + `buildLevelEdges` (phase 2: aggregate edges, O(|E|), numeric key packing for levels 1-13, string keys for level 14) + `buildLevel` (combined wrapper). Caches `cachedColor`/`cachedLabel` on supernodes.
 - **Helpers**: `maxCountKey` (O(k) max), `generateGroupColors` (golden-angle HSL → hex), `getNodePropValue`, `getSupernodeDominantValue`
 
-### [bitzoom-pipeline.js](../docs/bitzoom-pipeline.js) (455 lines)
+### [blitzoom-pipeline.js](../docs/blitzoom-pipeline.js) (455 lines)
 
 SNAP parsing, graph building, tokenization, pipeline entry points. Imports from algo. No DOM.
 
@@ -118,7 +118,7 @@ SNAP parsing, graph building, tokenization, pipeline entry points. Imports from 
 - **Text pipeline**: `computeProjections` (GC-optimized), `runPipeline(edgesText, nodesText)`, `runPipelineGPU(edgesText, nodesText, computeProjectionsGPU)` — accept null `edgesText` for nodes-only graphs
 - **Object pipeline (new)**: `runPipelineFromObjects(nodesMap, edges, extraPropNames)`, `runPipelineFromObjectsGPU(...)` — bypass text parsing for CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX loads. Shares `buildGraph` + `computeProjections` with the text pipeline.
 
-### [bitzoom-parsers.js](../docs/bitzoom-parsers.js) (965 lines)
+### [blitzoom-parsers.js](../docs/blitzoom-parsers.js) (965 lines)
 
 Format adapters and content-based dispatcher. Imports `parseNodesFile` from pipeline and `parseSTIX` from `stix2snap.js`. All parsers return the unified shape `{nodes: Map, edges: Array|null, extraPropNames: string[]}` consumable by `runPipelineFromObjects`. See [ARCHITECTURE-data-import.md](ARCHITECTURE-data-import.md) for full details.
 
@@ -127,9 +127,9 @@ Format adapters and content-based dispatcher. Imports `parseNodesFile` from pipe
 - **XML formats**: `parseXML` (hand-rolled SAX subset, no deps), `parseGraphML` (key registry), `parseGEXF` (attribute registry)
 - **Dispatch**: `detectFormat(text, filenameHint?)` content sniffer, `parseAny(text, filenameHint?)` unified entry. Exports `OBJECT_FORMATS`, `TEXT_FORMATS`, `FILE_EXTENSIONS`, `FILE_ACCEPT_ATTR`, and classification helpers `isObjectFormat`/`isTextFormat`/`isSpecialFormat` so the viewer has no hardcoded format lists.
 
-### [bitzoom-renderer.js](../docs/bitzoom-renderer.js) (944 lines)
+### [blitzoom-renderer.js](../docs/blitzoom-renderer.js) (944 lines)
 
-Canvas 2D rendering. Reads BitZoom instance, no state mutation (except `n.x`/`n.y` in layout).
+Canvas 2D rendering. Reads Blitzoom instance, no state mutation (except `n.x`/`n.y` in layout).
 When WebGL2 is active (`bz._gl` set), `render()` skips geometry drawing (grid, edges, heatmap,
 circles) and only draws text (labels, counts, legend, reset button) on the transparent overlay.
 
@@ -164,7 +164,7 @@ draws layer 5):
 
 **Other**: cubic bezier edges, Gaussian splat heatmap (additive), KDE density heatmap (1/4 resolution, persistent buffers), hit testing.
 
-### [bitzoom-gl-renderer.js](../docs/bitzoom-gl-renderer.js) (~1235 lines)
+### [blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js) (~1235 lines)
 
 WebGL2 instanced renderer. 7 shader programs compiled at `initGL()`. Geometry only — text stays
 on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for full details.
@@ -180,11 +180,11 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
   `_instanceVBO` with `DYNAMIC_DRAW`.
 - **Exports**: `initGL(gl)`, `renderGL(gl, bz)`, `destroyGL(gl)`, `isWebGL2Available()`
 
-### [bitzoom-canvas.js](../docs/bitzoom-canvas.js) (1688 lines)
+### [blitzoom-canvas.js](../docs/blitzoom-canvas.js) (1688 lines)
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
-**`BitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propStrengths, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Always owns its event handlers (`_bindEvents`). Constructor accepts `onRender`, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, `colorBy`, `clickDelay` (ms, for single/double-click disambiguation), `keyboardTarget` (default canvas element), and extension callbacks (`onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`).
+**`BlitzoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propStrengths, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Always owns its event handlers (`_bindEvents`). Constructor accepts `onRender`, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, `colorBy`, `clickDelay` (ms, for single/double-click disambiguation), `keyboardTarget` (default canvas element), and extension callbacks (`onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`).
 
 **`colorBy`**: getter/setter overrides which property group controls node colors. Default `null` = auto (highest-weight group). Setting to a valid group name pins coloring to that group; setting to `null` returns to auto. In the viewer, clicking a group name label toggles colorBy (underlined = active). `<bz-graph>` supports the `color-by` attribute.
 
@@ -194,15 +194,15 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Level crossfade**: `_snapshotForCrossfade()` captures the current canvas into an absolutely-positioned overlay that fades out over 350ms, providing a smooth visual transition between zoom levels. The overlay is positioned at the canvas's `offsetTop`/`offsetLeft` within its parent container (not fixed at `top:0;left:0`) so it aligns correctly regardless of layout — e.g., in grid layouts where the canvas is not at the container origin.
 
-**`createBitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
+**`createBlitzoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
 
 **Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
 
-### [bitzoom-viewer.js](../docs/bitzoom-viewer.js) (2055 lines)
+### [blitzoom-viewer.js](../docs/blitzoom-viewer.js) (2055 lines)
 
-`BitZoom` class — composes `BitZoomCanvas` as `this.view`. Adds application UI and orchestration.
+`Blitzoom` class — composes `BlitzoomCanvas` as `this.view`. Adds application UI and orchestration.
 
-**Composition**: all graph/view state accessed via `this.view.*`. BitZoom owns app-only state (dataLoaded, presets, workers, hash timers). All canvas-element events (mouse, touch, wheel, keyboard, resize) are handled by `BitZoomCanvas`; the viewer extends via callbacks passed at construction. Viewer-only keys (a, s, S) are handled in `_handleViewerKeys` via the `onKeydown` callback.
+**Composition**: all graph/view state accessed via `this.view.*`. Blitzoom owns app-only state (dataLoaded, presets, workers, hash timers). All canvas-element events (mouse, touch, wheel, keyboard, resize) are handled by `BlitzoomCanvas`; the viewer extends via callbacks passed at construction. Viewer-only keys (a, s, S) are handled in `_handleViewerKeys` via the `onKeydown` callback.
 
 **Navigation**: `switchLevel` (called via `onSwitchLevel` callback from canvas keyboard `,`/`.` — adds UI updates, animates supernodes when both old and new levels have <80 nodes), `zoomToNode` (called via `onZoomToHit` on dblclick — animated 350ms with reselection after level change). Level-change UI updates (`_updateStepperUI`, `_deferUIUpdate`) fire via the `onLevelChange` callback. `wheelZoom` prefers `hitTest` for zoom target (respects visual label placement), falls back to `_nearestItem` by distance. On level change during zoom, the dominant member of the old supernode is tracked to the new level.
 
@@ -216,19 +216,19 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Color-by UI**: clicking a group name label in the sidebar sets `view.colorBy` to that group (underline indicates active). Clicking again returns to auto (highest-weight group). This overrides coloring without affecting layout weights.
 
-### [bitzoom-svg.js](../docs/bitzoom-svg.js) (~601 lines)
+### [blitzoom-svg.js](../docs/blitzoom-svg.js) (~601 lines)
 
 SVG export. Two entry points:
-- `exportSVG(bz, opts)` — renders the current view (BitZoomCanvas or headless view) as an SVG string. Produces background, grid, edges, density heatmap contours, circles, labels, and legend.
+- `exportSVG(bz, opts)` — renders the current view (BlitzoomCanvas or headless view) as an SVG string. Produces background, grid, edges, density heatmap contours, circles, labels, and legend.
 - `createSVGView(nodes, edges, opts)` — builds a lightweight view from plain pipeline data, no DOM required. Suitable for headless/server-side SVG export and testing.
 
-Density heatmap uses kernel density estimation on a coarse grid, global normalization across all color groups (matching the canvas renderer), Moore neighborhood contour tracing, RDP simplification, and Chaikin smoothing. Imports from `bitzoom-algo.js` (levels, constants) and `bitzoom-colors.js` (color schemes).
+Density heatmap uses kernel density estimation on a coarse grid, global normalization across all color groups (matching the canvas renderer), Moore neighborhood contour tracing, RDP simplification, and Chaikin smoothing. Imports from `blitzoom-algo.js` (levels, constants) and `blitzoom-colors.js` (color schemes).
 
 ### Workers (142 + 95 lines)
 
-**[bitzoom-worker.js](../docs/bitzoom-worker.js)**: coordinator. Imports parsers from pipeline. Fans out to up to 3 sub-workers. Merges Float64Array chunks. Passes `numericBins` for numeric tokenization.
+**[blitzoom-worker.js](../docs/blitzoom-worker.js)**: coordinator. Imports parsers from pipeline. Fans out to up to 3 sub-workers. Merges Float64Array chunks. Passes `numericBins` for numeric tokenization.
 
-**[bitzoom-proj-worker.js](../docs/bitzoom-proj-worker.js)**: imports from algo + pipeline — zero duplicated code. Receives node slice + neighbor groups, computes all projections.
+**[blitzoom-proj-worker.js](../docs/blitzoom-proj-worker.js)**: imports from algo + pipeline — zero duplicated code. Receives node slice + neighbor groups, computes all projections.
 
 ## Key Data Flow
 
@@ -237,8 +237,8 @@ Two entry paths into the shared `buildGraph` → `computeProjections` → blend 
 ```
 SNAP text pipeline (worker-backed for large inputs):
   SNAP files (.edges, .nodes)
-    → bitzoom-worker.js: parse (streaming), build graph, detect numeric columns
-      → bitzoom-proj-worker.js (×3): tokenize → MinHash → project → Float64Array
+    → blitzoom-worker.js: parse (streaming), build graph, detect numeric columns
+      → blitzoom-proj-worker.js (×3): tokenize → MinHash → project → Float64Array
     → main thread: unpack → hydrate → unifiedBlend → quantize → render
 
 Object pipeline (main-thread for CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX):
@@ -272,7 +272,7 @@ Level change (auto or manual):
 - Level cache invalidated when weights, labels, or topology alpha change.
 - `renderZoom` compensates for level offset — visual scale never jumps.
 - `switchLevel` adjusts logical zoom so renderZoom stays constant.
-- Renderer never mutates BitZoom state (except `n.x`/`n.y` in `layoutAll`).
+- Renderer never mutates Blitzoom state (except `n.x`/`n.y` in `layoutAll`).
 - `getLevel()` calls `layoutAll()` after building a new level.
 - Empty/undefined property values emit 0 tokens — no false clustering.
 - Numeric columns tokenized at 3 resolution levels for smooth similarity.
@@ -304,8 +304,8 @@ Numeric values emit 3 tokens (coarse/medium/fine bins). Nearby values share coar
 ### WebGL2 optional rendering layer
 
 Geometry rendering (grid, edges, heatmap, circles) can run on WebGL2 via
-[bitzoom-gl-renderer.js](../docs/bitzoom-gl-renderer.js). Text (labels, counts, legend) stays on
-Canvas 2D because GPU text rendering adds complexity with no visual benefit at BitZoom's scale.
+[blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js). Text (labels, counts, legend) stays on
+Canvas 2D because GPU text rendering adds complexity with no visual benefit at Blitzoom's scale.
 
 The dual canvas architecture (GL behind, transparent Canvas 2D on top) keeps all event handling
 unchanged and allows toggling at runtime without re-binding listeners. The GL canvas uses
@@ -317,7 +317,7 @@ buffer management.
 ### Adaptive GPU/CPU selection
 
 GPU tri-state in viewer: **Auto** (default, adaptive thresholds) → **GPU** (always) → **CPU**
-(never). Button cycles on click. `autoGPU` option in `createBitZoomView` auto-enables WebGPU
+(never). Button cycles on click. `autoGPU` option in `createBlitzoomView` auto-enables WebGPU
 when N×G > 2000 (default true).
 
 | Operation  | Auto GPU when                         | Reason                                        |

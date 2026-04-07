@@ -1,7 +1,7 @@
 # WebGL Rendering Architecture
 
-WebGL2 instanced renderer for BitZoom geometry. Text stays on a Canvas 2D
-overlay. Self-contained in BitZoomCanvas — no external HTML changes.
+WebGL2 instanced renderer for Blitzoom geometry. Text stays on a Canvas 2D
+overlay. Self-contained in BlitzoomCanvas — no external HTML changes.
 
 ## Dual Canvas Layout
 
@@ -16,17 +16,17 @@ wrapper div (position: relative, inherits grid/flex slot from canvas)
 - **Wrapper div**: copies border + layout properties from the canvas, replaces it
   in the DOM flow so CSS grid/flex layout is unaffected
 
-Toggled via `view.useWebGL = true/false` (getter/setter on BitZoomCanvas).
+Toggled via `view.useWebGL = true/false` (getter/setter on BlitzoomCanvas).
 Constructor accepts `{ webgl: true }`. Probe: `isWebGL2Available()`.
 
 ## Files
 
 | File | Role |
 | --- | --- |
-| [bitzoom-gl-renderer.js](../docs/bitzoom-gl-renderer.js) | Shaders, programs, VAOs, instance builders, draw calls (~1202 lines) |
-| [bitzoom-canvas.js](../docs/bitzoom-canvas.js) | `_initWebGL`, `_destroyWebGL`, `useWebGL`, wrapper management, resize |
-| [bitzoom-renderer.js](../docs/bitzoom-renderer.js) | `render()` skips geometry when `bz._gl` active, always draws text |
-| [bitzoom-viewer.js](../docs/bitzoom-viewer.js) | GL toggle button, `isWebGL2Available` import, GL wrapper hide/show with loader |
+| [blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js) | Shaders, programs, VAOs, instance builders, draw calls (~1202 lines) |
+| [blitzoom-canvas.js](../docs/blitzoom-canvas.js) | `_initWebGL`, `_destroyWebGL`, `useWebGL`, wrapper management, resize |
+| [blitzoom-renderer.js](../docs/blitzoom-renderer.js) | `render()` skips geometry when `bz._gl` active, always draws text |
+| [blitzoom-viewer.js](../docs/blitzoom-viewer.js) | GL toggle button, `isWebGL2Available` import, GL wrapper hide/show with loader |
 | [webgl-test.html](../docs/webgl-test.html) | Side-by-side Canvas 2D vs WebGL2 visual comparison page |
 
 ## Shaders and Programs
@@ -202,7 +202,7 @@ dismiss the loader and return to the current view. On cancel, the canvas and GL 
 restored and `resize()` is called.
 
 **webgl-test.html**: standalone comparison page that renders the same dataset side-by-side in
-Canvas 2D and WebGL2 using two `createBitZoomView()` instances (one with `webgl: false`, one
+Canvas 2D and WebGL2 using two `createBlitzoomView()` instances (one with `webgl: false`, one
 with `webgl: true`).
 
 ## Buffer Rebuild Triggers
