@@ -57,7 +57,7 @@ Changes:
 
 **Minimal readback. Blend → quantize on GPU → readback quantized uint16 → feed directly to WebGL2 instanced buffer.**
 
-The existing WebGL2 renderer ([bitzoom-gl-renderer.js](../docs/bitzoom-gl-renderer.js)) already does instanced circles, edges, heatmap, and text overlay. It doesn't need replacing. The bottleneck is the **data-packing loop** where the renderer reads `node.gx`, `node.gy`, `node.color`, `node.size` one by one into a Float32Array, then uploads to GL.
+The existing WebGL2 renderer ([blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js)) already does instanced circles, edges, heatmap, and text overlay. It doesn't need replacing. The bottleneck is the **data-packing loop** where the renderer reads `node.gx`, `node.gy`, `node.color`, `node.size` one by one into a Float32Array, then uploads to GL.
 
 Phase C shortcuts this:
 
@@ -95,7 +95,7 @@ Changes:
 
 **Optimization round 2 (implemented):** Profiling infrastructure, interleaved anchor buffer, bind group cache, CSR adjacency cache. These changes reduced Amazon warm-blend from ~290ms to ~51ms in Deno tests. See details below.
 
-Interactive drag responsiveness solved via **adaptive fast mode**: spatial subsampling (>50K nodes), adaptive blend passes (0-2), and edge suppression during drag. See `rebuildProjections(fast)` in `bitzoom-viewer.js`.
+Interactive drag responsiveness solved via **adaptive fast mode**: spatial subsampling (>50K nodes), adaptive blend passes (0-2), and edge suppression during drag. See `rebuildProjections(fast)` in `blitzoom-viewer.js`.
 
 ### Phase A-C findings (historical, 2 topology passes)
 
@@ -111,7 +111,7 @@ The 241ms was measured before buffer caching and `_blending` guard. See revised 
 
 ### Bugs discovered during Phase A-C
 
-- **Concurrent blend stalls**: Multiple `_blend()` calls overlapped when rAF fired while `mapAsync` was pending. Fixed with `_blending` guard in `BitZoomCanvas._blend()`.
+- **Concurrent blend stalls**: Multiple `_blend()` calls overlapped when rAF fired while `mapAsync` was pending. Fixed with `_blending` guard in `BlitzoomCanvas._blend()`.
 - **Shadow DOM event leak**: Native `input` events from `<input type="range">` inside `<bz-controls>` shadow DOM bubble without `e.detail`. Fixed with `if (!e.detail) return`.
 
 ### Optimization round 2: profiling + caching (implemented)

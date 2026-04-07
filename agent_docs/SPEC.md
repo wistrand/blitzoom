@@ -1,4 +1,4 @@
-# BitZoom
+# Blitzoom
 
 A deterministic layout and hierarchical aggregation system for large property graphs. Nodes are positioned in a 2D grid such that similar nodes occupy nearby cells. The hierarchy gives stable zoom levels derived purely from stored coordinates — no layout recomputation on navigation; only level lookup and aggregation.
 
@@ -6,9 +6,9 @@ A deterministic layout and hierarchical aggregation system for large property gr
 
 ## Motivation
 
-Classical graph layout optimises for topological fidelity. For property graphs this is often wrong — meaningful neighbours are frequently semantically similar nodes with no edge between them. BitZoom defaults to property similarity first, topology second. Proximity means semantic similarity, not graph distance. Topology influence is an explicit tunable parameter rather than the primary organising principle.
+Classical graph layout optimises for topological fidelity. For property graphs this is often wrong — meaningful neighbours are frequently semantically similar nodes with no edge between them. Blitzoom defaults to property similarity first, topology second. Proximity means semantic similarity, not graph distance. Topology influence is an explicit tunable parameter rather than the primary organising principle.
 
-Scale is a second motivation. Force-directed is O(n²) without approximation; spectral layout requires eigenvector computation. BitZoom is near-linear preprocessing with O(1) per-node zoom-cell derivation.
+Scale is a second motivation. Force-directed is O(n²) without approximation; spectral layout requires eigenvector computation. Blitzoom is near-linear preprocessing with O(1) per-node zoom-cell derivation.
 
 ---
 
@@ -119,20 +119,20 @@ The system requires empirical evaluation against: semantic neighbourhood preserv
 
 - E. Cohen, "MinHash Sketches: A Brief Survey," *Encyclopedia of Algorithms*, 2016.
   Survey of MinHash sketch variants (k-mins, bottom-k, k-partition), Jaccard
-  estimation, mergeability, and weighted extensions. BitZoom uses k-mins sketches
+  estimation, mergeability, and weighted extensions. Blitzoom uses k-mins sketches
   at k=128 as described in this survey.
 - E. Cohen, "Size-estimation framework with applications to transitive closure and
   reachability," *J. Comput. System Sci.*, 55:441-453, 1997. First application of
   MinHash sketches to estimate set relations in graphs — the foundational technique
-  BitZoom builds on.
+  Blitzoom builds on.
 - E. Cohen, D. Delling, F. Fuchs, A. Goldberg, M. Goldszmidt, and R. Werneck,
   "Scalable similarity estimation in social networks: closeness, node labels, and
   random edge lengths," *COSN*, ACM, 2013. Combines structural (graph distance)
-  and label-based similarity using sketches — conceptually close to BitZoom's
+  and label-based similarity using sketches — conceptually close to Blitzoom's
   property + topology blend.
 - A. Z. Broder, "On the resemblance and containment of documents," *Compression and
   Complexity of Sequences*, IEEE, 1997. Coined the term MinHash; classic application
   for near-duplicate detection via set similarity.
 - P. Li, A. B. Owen, and C-H Zhang, "One permutation hashing," *NIPS*, 2012.
-  OPH with densification, used by BitZoom for nodes with >= 12 tokens to reduce
+  OPH with densification, used by Blitzoom for nodes with >= 12 tokens to reduce
   from k hash evaluations per token to one.

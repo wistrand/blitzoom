@@ -1,7 +1,7 @@
-// bitzoom-renderer.js — Canvas rendering, heatmaps, edge drawing, hit testing.
+// blitzoom-renderer.js — Canvas rendering, heatmaps, edge drawing, hit testing.
 // Optimized to minimize GC pressure: reusable point objects, cached strings.
 
-import { RAW_LEVEL, ZOOM_LEVELS, GRID_SIZE, GRID_BITS, cellIdAtLevel } from './bitzoom-algo.js';
+import { RAW_LEVEL, ZOOM_LEVELS, GRID_SIZE, GRID_BITS, cellIdAtLevel } from './blitzoom-algo.js';
 
 // Theme-aware colors — dark vs light mode
 const THEME = {

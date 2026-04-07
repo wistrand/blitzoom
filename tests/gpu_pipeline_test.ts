@@ -5,17 +5,17 @@ import { assertEquals } from 'https://deno.land/std@0.208.0/assert/assert_equals
 import { assertAlmostEquals } from 'https://deno.land/std@0.208.0/assert/assert_almost_equals.ts';
 import { assert } from 'https://deno.land/std@0.208.0/assert/assert.ts';
 
-import { initGPU, computeProjectionsGPU } from '../docs/bitzoom-gpu.js';
-import { runPipeline, runPipelineGPU } from '../docs/bitzoom-pipeline.js';
-import { MINHASH_K } from '../docs/bitzoom-algo.js';
+import { initGPU, computeProjectionsGPU } from '../docs/blitzoom-gpu.js';
+import { runPipeline, runPipelineGPU } from '../docs/blitzoom-pipeline.js';
+import { MINHASH_K } from '../docs/blitzoom-algo.js';
 
 Deno.test('GPU pipeline init', async () => {
   assert(await initGPU(), 'GPU should be available');
 });
 
-Deno.test('GPU vs CPU pipeline: BitZoom Source dataset', async () => {
-  const edgesText = Deno.readTextFileSync('docs/data/bitzoom-source.edges');
-  const nodesText = Deno.readTextFileSync('docs/data/bitzoom-source.nodes');
+Deno.test('GPU vs CPU pipeline: Blitzoom Source dataset', async () => {
+  const edgesText = Deno.readTextFileSync('docs/data/blitzoom-source.edges');
+  const nodesText = Deno.readTextFileSync('docs/data/blitzoom-source.nodes');
 
   const cpuResult = runPipeline(edgesText, nodesText);
   const gpuResult = await runPipelineGPU(edgesText, nodesText, computeProjectionsGPU);

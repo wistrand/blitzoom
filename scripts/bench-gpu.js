@@ -2,14 +2,14 @@
 // Benchmark: GPU vs CPU for projection and blend.
 // Run: deno run --unstable-webgpu --allow-read scripts/bench-gpu.js
 
-import { computeProjections, buildGraph, parseEdgesFile, parseNodesFile } from '../docs/bitzoom-pipeline.js';
-import { computeProjectionsGPU, initGPU, gpuBlend } from '../docs/bitzoom-gpu.js';
-import { unifiedBlend } from '../docs/bitzoom-algo.js';
+import { computeProjections, buildGraph, parseEdgesFile, parseNodesFile } from '../docs/blitzoom-pipeline.js';
+import { computeProjectionsGPU, initGPU, gpuBlend } from '../docs/blitzoom-gpu.js';
+import { unifiedBlend } from '../docs/blitzoom-algo.js';
 
 const DATASETS = [
   { name: 'Karate',          edges: 'docs/data/karate.edges',          nodes: 'docs/data/karate.nodes' },
   { name: 'Epstein',         edges: 'docs/data/epstein.edges',         nodes: 'docs/data/epstein.nodes' },
-  { name: 'BitZoom Source',  edges: 'docs/data/bitzoom-source.edges',  nodes: 'docs/data/bitzoom-source.nodes' },
+  { name: 'Blitzoom Source',  edges: 'docs/data/blitzoom-source.edges',  nodes: 'docs/data/blitzoom-source.nodes' },
   { name: 'Synth Packages',  edges: 'docs/data/synth-packages.edges',  nodes: 'docs/data/synth-packages.nodes' },
   { name: 'MITRE ATT&CK',   edges: 'docs/data/mitre-attack.edges',    nodes: 'docs/data/mitre-attack.nodes' },
   { name: 'Amazon',          edges: 'docs/data/amazon-copurchase.edges.gz', nodes: 'docs/data/amazon-copurchase.nodes.gz', gz: true },

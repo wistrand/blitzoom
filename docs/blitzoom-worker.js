@@ -1,7 +1,7 @@
-// bitzoom-worker.js — coordinator that fans out projection to sub-workers.
+// blitzoom-worker.js — coordinator that fans out projection to sub-workers.
 // Uses shared pipeline for parsing and graph building.
 
-import { parseEdgesFile, parseNodesFile, buildGraph } from './bitzoom-pipeline.js';
+import { parseEdgesFile, parseNodesFile, buildGraph } from './blitzoom-pipeline.js';
 
 const MAX_WORKERS = 3;
 
@@ -93,7 +93,7 @@ self.onmessage = function(e) {
       const slice = nodeData.slice(start, end);
       const sliceAdj = adjGroups.slice(start, end);
 
-      const worker = new Worker('bitzoom-proj-worker.js', { type: 'module' });
+      const worker = new Worker('blitzoom-proj-worker.js', { type: 'module' });
       workers.push(worker);
 
       worker.onmessage = (msg) => {

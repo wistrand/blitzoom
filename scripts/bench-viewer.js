@@ -3,13 +3,13 @@
 // the viewer executes: parse → project → blend → quantize → level build →
 // strength change → level switch → hit test simulation.
 
-import { runPipeline } from '../docs/bitzoom-pipeline.js';
+import { runPipeline } from '../docs/blitzoom-pipeline.js';
 import {
   MINHASH_K, ZOOM_LEVELS, GRID_SIZE, GRID_BITS,
   unifiedBlend, buildLevelNodes, buildLevelEdges, buildLevel,
   cellIdAtLevel,
-} from '../docs/bitzoom-algo.js';
-import { generateGroupColors } from '../docs/bitzoom-colors.js';
+} from '../docs/blitzoom-algo.js';
+import { generateGroupColors } from '../docs/blitzoom-colors.js';
 
 function fmt(ms) { return ms < 1 ? `${(ms * 1000).toFixed(0)}µs` : `${ms.toFixed(1)}ms`; }
 

@@ -1,8 +1,8 @@
 #!/bin/bash
-# Run full layout comparison: export BitZoom layouts (Deno), then compare (Python in Docker).
+# Run full layout comparison: export Blitzoom layouts (Deno), then compare (Python in Docker).
 #
 # Usage:
-#   cd bitzoom && bash benchmarks/run-comparison.sh
+#   cd blitzoom && bash benchmarks/run-comparison.sh
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -11,9 +11,9 @@ LAYOUTS=benchmarks/layouts
 RESULTS=benchmarks/results
 mkdir -p "$LAYOUTS" "$RESULTS"
 
-# ─── Step 1: Export BitZoom layouts (Deno, native) ───────────────────────────
+# ─── Step 1: Export Blitzoom layouts (Deno, native) ───────────────────────────
 
-echo "=== Exporting BitZoom layouts ==="
+echo "=== Exporting Blitzoom layouts ==="
 
 export_bz() {
   local name="$1" alpha="$2" tag="$3"
@@ -118,24 +118,24 @@ deno run --allow-read --allow-write benchmarks/export-layout.ts \
   --autotune \
   --out "$LAYOUTS/synth-pkg-autotune.tsv"
 
-# BitZoom Source (with properties)
+# Blitzoom Source (with properties)
 deno run --allow-read --allow-write benchmarks/export-layout.ts \
-  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --edges docs/data/blitzoom-source.edges --nodes docs/data/blitzoom-source.nodes \
   --alpha 0 --quant rank \
   --out "$LAYOUTS/bz-source-a000.tsv"
 
 deno run --allow-read --allow-write benchmarks/export-layout.ts \
-  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --edges docs/data/blitzoom-source.edges --nodes docs/data/blitzoom-source.nodes \
   --alpha 0 --quant rank --strength kind=8 --strength group=3 \
   --out "$LAYOUTS/bz-source-a000-weighted.tsv"
 
 deno run --allow-read --allow-write benchmarks/export-layout.ts \
-  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --edges docs/data/blitzoom-source.edges --nodes docs/data/blitzoom-source.nodes \
   --alpha 0.5 --quant rank --strength kind=8 --strength group=3 \
   --out "$LAYOUTS/bz-source-a050-weighted.tsv"
 
 deno run --allow-read --allow-write benchmarks/export-layout.ts \
-  --edges docs/data/bitzoom-source.edges --nodes docs/data/bitzoom-source.nodes \
+  --edges docs/data/blitzoom-source.edges --nodes docs/data/blitzoom-source.nodes \
   --autotune \
   --out "$LAYOUTS/bz-source-autotune.tsv"
 
@@ -145,7 +145,7 @@ echo
 
 echo "=== Running Python comparison (Docker) ==="
 
-DOCKER_IMG="bitzoom-bench"
+DOCKER_IMG="blitzoom-bench"
 
 # Build image if needed
 if ! docker image inspect "$DOCKER_IMG" &>/dev/null; then
@@ -179,21 +179,21 @@ docker_bz() {
 # Epstein (small, properties + edge types)
 run_compare "Epstein" \
   --edges /data/epstein.edges \
-  --bitzoom $(docker_bz epstein) \
+  --blitzoom $(docker_bz epstein) \
   --tokens /bench/layouts/epstein.tokens \
   --out /bench/results/epstein.txt
 
 # Pokemon (nodes-only, multiple property groups)
 run_compare "Pokemon" \
   --edges /data/pokemon.edges \
-  --bitzoom $(docker_bz pokemon) \
+  --blitzoom $(docker_bz pokemon) \
   --tokens /bench/layouts/pokemon.tokens \
   --out /bench/results/pokemon.txt
 
 # Email-EU (with ground truth)
 run_compare "Email-EU" \
   --edges /data/email-eu.edges \
-  --bitzoom $(docker_bz email-eu) \
+  --blitzoom $(docker_bz email-eu) \
   --tokens /bench/layouts/email-eu.tokens \
   --ground-truth /bench/ground-truth/email-eu-departments.txt \
   --out /bench/results/email-eu.txt
@@ -201,7 +201,7 @@ run_compare "Email-EU" \
 # Facebook (skip UMAP — 4K×4K dense adjacency too slow)
 run_compare "Facebook" \
   --edges /data/facebook.edges \
-  --bitzoom $(docker_bz facebook) \
+  --blitzoom $(docker_bz facebook) \
   --tokens /bench/layouts/facebook.tokens \
   --skip-umap \
   --out /bench/results/facebook.txt
@@ -209,7 +209,7 @@ run_compare "Facebook" \
 # Power Grid (skip UMAP — 5K×5K dense adjacency too slow)
 run_compare "Power Grid" \
   --edges /data/powergrid.edges \
-  --bitzoom $(docker_bz powergrid) \
+  --blitzoom $(docker_bz powergrid) \
   --tokens /bench/layouts/powergrid.tokens \
   --skip-umap \
   --out /bench/results/powergrid.txt
@@ -217,7 +217,7 @@ run_compare "Power Grid" \
 # MITRE ATT&CK (skip UMAP — 5K×5K dense adjacency too slow)
 run_compare "MITRE ATT&CK" \
   --edges /data/mitre-attack.edges \
-  --bitzoom $(docker_bz mitre) \
+  --blitzoom $(docker_bz mitre) \
   --tokens /bench/layouts/mitre.tokens \
   --skip-umap \
   --out /bench/results/mitre.txt
@@ -225,15 +225,15 @@ run_compare "MITRE ATT&CK" \
 # Synth Packages (skip UMAP — 2K×2K dense adjacency slow)
 run_compare "Synth Packages" \
   --edges /data/synth-packages.edges \
-  --bitzoom $(docker_bz synth-pkg) \
+  --blitzoom $(docker_bz synth-pkg) \
   --tokens /bench/layouts/synth-pkg.tokens \
   --skip-umap \
   --out /bench/results/synth-pkg.txt
 
-# BitZoom Source (small enough for UMAP)
-run_compare "BitZoom Source" \
-  --edges /data/bitzoom-source.edges \
-  --bitzoom $(docker_bz bz-source) \
+# Blitzoom Source (small enough for UMAP)
+run_compare "Blitzoom Source" \
+  --edges /data/blitzoom-source.edges \
+  --blitzoom $(docker_bz bz-source) \
   --tokens /bench/layouts/bz-source.tokens \
   --out /bench/results/bz-source.txt
 

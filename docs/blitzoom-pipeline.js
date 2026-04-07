@@ -1,7 +1,7 @@
-// bitzoom-pipeline.js — Shared parsing, graph building, and tokenization/projection.
+// blitzoom-pipeline.js — Shared parsing, graph building, and tokenization/projection.
 // No DOM, no Worker API. Usable from Web Workers, Deno, or browser.
 
-import { MINHASH_K, buildGaussianProjection, computeMinHash, computeMinHashInto, _sig, projectInto } from './bitzoom-algo.js';
+import { MINHASH_K, buildGaussianProjection, computeMinHash, computeMinHashInto, _sig, projectInto } from './blitzoom-algo.js';
 
 // ─── SNAP file parsers ───────────────────────────────────────────────────────
 
@@ -362,7 +362,7 @@ export function runPipeline(edgesText, nodesText) {
  * GPU-accelerated pipeline. Parses on CPU, projects on GPU.
  * @param {string|null} edgesText - SNAP .edges text, or null/empty for nodes-only graphs
  * @param {string|null} nodesText - SNAP .nodes text (required when edgesText is empty)
- * @param {function} computeProjectionsGPU - async GPU projection function from bitzoom-gpu.js
+ * @param {function} computeProjectionsGPU - async GPU projection function from blitzoom-gpu.js
  * @returns {Promise<object>} same shape as runPipeline
  */
 export async function runPipelineGPU(edgesText, nodesText, computeProjectionsGPU) {
@@ -443,7 +443,7 @@ export function runPipelineFromObjects(nodesMap, edges, extraPropNames = []) {
 
 /**
  * GPU variant of runPipelineFromObjects.
- * @param {function} computeProjectionsGPU - async GPU projection function from bitzoom-gpu.js
+ * @param {function} computeProjectionsGPU - async GPU projection function from blitzoom-gpu.js
  */
 export async function runPipelineFromObjectsGPU(nodesMap, edges, extraPropNames, computeProjectionsGPU) {
   const parsed = edgesToParsed(edges);

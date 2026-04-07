@@ -4,7 +4,7 @@
 import {
   computeMinHash, computeMinHashInto, _sig, jaccardEstimate,
   buildGaussianProjection, projectWith, projectInto, MINHASH_K,
-} from '../docs/bitzoom-algo.js';
+} from '../docs/blitzoom-algo.js';
 
 function fmt(ms) { return ms < 1 ? `${(ms * 1000).toFixed(0)}µs` : `${ms.toFixed(1)}ms`; }
 

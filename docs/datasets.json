@@ -28,7 +28,7 @@
     "settings": { "strengths": {}, "quantMode": "rank", "smoothAlpha": 1.0 } },
   { "id": "facebook",   "name": "Facebook",         "edges": "data/facebook.edges",                                                     "desc": "4K nodes, edge-only",
     "settings": { "strengths": {}, "initialLevel": 4, "quantMode": "rank", "smoothAlpha": 1.0 } },
-  { "id": "bz-source",  "name": "BitZoom Source",   "edges": "data/bitzoom-source.edges",     "nodes": "data/bitzoom-source.nodes",     "desc": "145 nodes, call graph",
+  { "id": "bz-source",  "name": "Blitzoom Source",   "edges": "data/blitzoom-source.edges",     "nodes": "data/blitzoom-source.nodes",     "desc": "966 nodes, call graph",
     "settings": { "strengths": { "kind": 8, "group": 3 }, "labelProps": ["file", "kind"] } },
   { "id": "mitre",      "name": "MITRE ATT&CK",    "edges": "data/mitre-attack.edges",       "nodes": "data/mitre-attack.nodes",       "desc": "4.7K nodes, kill chains",
     "settings": { "strengths": { "group": 5, "platforms": 6, "killchain": 4 }, "labelProps": ["label"] } },

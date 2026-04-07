@@ -96,7 +96,7 @@ Cleanup: on disconnect or `for` change, restores original `view.render`, removes
 
 ## Viewer integration
 
-In the viewer ([bitzoom-viewer.js](../docs/bitzoom-viewer.js)), the compass lives in a floating draggable panel:
+In the viewer ([blitzoom-viewer.js](../docs/blitzoom-viewer.js)), the compass lives in a floating draggable panel:
 
 - **Toggle**: toolbar button (◎) or R key
 - **Panel**: `#compassPanel` div with `.compass-titlebar` (drag handle) + `<bz-compass>` element
@@ -140,7 +140,7 @@ The A button in the compass triggers `autoTuneBtn.click()` in the viewer, reusin
 | File | Role |
 |------|------|
 | [bz-compass.js](../docs/bz-compass.js) | Web component — rendering, interaction, SVG export, `for` binding |
-| [bitzoom-viewer.js](../docs/bitzoom-viewer.js) | Panel toggle, drag, sync wiring, A button integration |
-| [bitzoom.css](../docs/bitzoom.css) | `.compass-panel`, `.compass-titlebar`, `.compass-close` styles |
+| [blitzoom-viewer.js](../docs/blitzoom-viewer.js) | Panel toggle, drag, sync wiring, A button integration |
+| [blitzoom.css](../docs/blitzoom.css) | `.compass-panel`, `.compass-titlebar`, `.compass-close` styles |
 | [viewer.html](../docs/viewer.html) | Panel markup, toolbar button, script import |
 | [bz-graph-demo.html](../docs/bz-graph-demo.html) | Live examples of declarative `for` binding |

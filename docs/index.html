@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BitZoom</title>
+<title>Blitzoom</title>
 <meta name="description" content="Visualization where nearby nodes share similar properties. Zoom into clusters at any scale.">
-<meta property="og:title" content="BitZoom">
+<meta property="og:title" content="Blitzoom">
 <meta property="og:description" content="Visualization where nearby nodes share similar properties. Zoom into clusters at any scale.">
-<meta property="og:image" content="images/bitzoom-1.png">
+<meta property="og:image" content="images/blitzoom-1.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BitZoom">
+<meta name="twitter:title" content="Blitzoom">
 <meta name="twitter:description" content="Visualization where nearby nodes share similar properties. Zoom into clusters at any scale.">
-<meta name="twitter:image" content="images/bitzoom-1.png">
+<meta name="twitter:image" content="images/blitzoom-1.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -215,7 +215,7 @@
 <body>
 
 <div class="hero">
-  <h1><img src="logo.svg" alt="" style="width:48px;height:48px;vertical-align:-6px;margin-right:12px">Bit<span>Zoom</span></h1>
+  <h1><img src="logo.svg" alt="" style="width:48px;height:48px;vertical-align:-6px;margin-right:12px">Blit<span>zoom</span></h1>
 
   <div class="props">
     <div class="prop">
@@ -237,7 +237,7 @@
     <a href="about.html" class="secondary">How It Works</a>
     <a href="comparison.html" class="secondary">Comparison</a>
     <a href="howto.html" class="secondary">Developer Guide</a>
-    <a href="https://github.com/wistrand/bitzoom" class="secondary">GitHub</a>
+    <a href="https://github.com/wistrand/blitzoom" class="secondary">GitHub</a>
   </div>
 </div>
 
@@ -255,7 +255,7 @@
       <select id="demo-dataset" aria-label="Dataset">
         <option value="epstein">Epstein</option>
         <option value="karate">Karate Club</option>
-        <option value="bitzoom-source">BitZoom Source</option>
+        <option value="blitzoom-source">Blitzoom Source</option>
         <option value="mitre-attack">MITRE ATT&CK</option>
       </select>
     </div>
@@ -273,7 +273,7 @@ import './bz-graph.js';
 const PRESETS = {
   'epstein':        { edges: 'data/epstein.edges', nodes: 'data/epstein.nodes', level: '3', strengths: 'group:8,edgetype:4', labelProps: 'label' },
   'karate':         { edges: 'data/karate.edges', nodes: 'data/karate.nodes', level: '3', strengths: '', labelProps: '' },
-  'bitzoom-source': { edges: 'data/bitzoom-source.edges', nodes: 'data/bitzoom-source.nodes', level: '4', strengths: 'kind:8,group:3', labelProps: 'file,kind' },
+  'blitzoom-source': { edges: 'data/blitzoom-source.edges', nodes: 'data/blitzoom-source.nodes', level: '4', strengths: 'kind:8,group:3', labelProps: 'file,kind' },
   'mitre-attack':   { edges: 'data/mitre-attack.edges', nodes: 'data/mitre-attack.nodes', level: '4', strengths: 'group:5,platforms:6,killchain:4', labelProps: 'label', edgeMode: 'none', quant: 'rank' },
 };
 

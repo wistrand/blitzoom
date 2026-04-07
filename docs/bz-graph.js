@@ -1,4 +1,4 @@
-// bz-graph.js — <bz-graph> web component for BitZoom.
+// bz-graph.js — <bz-graph> web component for Blitzoom.
 //
 // Usage:
 //   <!-- Prevent flash of inline text before component loads -->
@@ -19,9 +19,9 @@
 //     bob	carol
 //   </bz-graph>
 
-import { createBitZoomView, createBitZoomFromGraph } from './bitzoom-canvas.js';
-import { SCHEME_VIVID } from './bitzoom-colors.js';
-import { classifyFiles } from './bitzoom-parsers.js';
+import { createBlitzoomView, createBlitzoomFromGraph } from './blitzoom-canvas.js';
+import { SCHEME_VIVID } from './blitzoom-colors.js';
+import { classifyFiles } from './blitzoom-parsers.js';
 import './bz-compass.js';
 import './bz-controls.js';
 
@@ -117,13 +117,13 @@ class BzGraph extends HTMLElement {
         fetch(edgesUrl).then(r => r.text()),
         nodesUrl ? fetch(nodesUrl).then(r => r.text()).catch(() => null) : Promise.resolve(null),
       ]);
-      this._view = createBitZoomView(this._canvas, edgesText, nodesText, opts);
+      this._view = createBlitzoomView(this._canvas, edgesText, nodesText, opts);
     } else if (inline && format === 'json') {
       // Inline JSON mode
       const data = JSON.parse(inline);
       const nodes = data.nodes || [];
       const edges = data.edges || [];
-      this._view = createBitZoomFromGraph(this._canvas, nodes, edges, opts);
+      this._view = createBlitzoomFromGraph(this._canvas, nodes, edges, opts);
     } else if (inline) {
       // Inline SNAP mode (default for raw text)
       const lines = inline.split('\n');
@@ -135,9 +135,9 @@ class BzGraph extends HTMLElement {
         edgesText = lines.slice(0, sepIdx - 1).join('\n');
         nodesText = lines.slice(sepIdx).join('\n');
       }
-      this._view = createBitZoomView(this._canvas, edgesText, nodesText, opts);
+      this._view = createBlitzoomView(this._canvas, edgesText, nodesText, opts);
     }
-    // a11y debug toggle (handled via canvas keydown — canvas has tabindex from BitZoomCanvas)
+    // a11y debug toggle (handled via canvas keydown — canvas has tabindex from BlitzoomCanvas)
     this._canvas.addEventListener('keydown', e => {
       if (e.key === 'a') this.classList.toggle('a11y-debug');
     });
@@ -172,10 +172,10 @@ class BzGraph extends HTMLElement {
         if (n.extraProps) Object.assign(obj, n.extraProps);
         nodes.push(obj);
       }
-      this._view = createBitZoomFromGraph(this._canvas, nodes, parsed.edges || [], opts);
+      this._view = createBlitzoomFromGraph(this._canvas, nodes, parsed.edges || [], opts);
     } else {
       // SNAP text pipeline
-      this._view = createBitZoomView(this._canvas, edgesText, nodesText, opts);
+      this._view = createBlitzoomView(this._canvas, edgesText, nodesText, opts);
     }
 
     if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
@@ -292,7 +292,7 @@ class BzGraph extends HTMLElement {
     if (this._tuneAbort) { this._tuneAbort.abort(); return; }
     try {
       this._tuneAbort = new AbortController();
-      const { autoTuneStrengths, autoTuneBearings } = await import('./bitzoom-utils.js');
+      const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
       const v = this._view;
       const result = await autoTuneStrengths(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
         strengths: true, alpha: true, signal: this._tuneAbort.signal,
@@ -366,7 +366,7 @@ class BzGraph extends HTMLElement {
 
   _buildOpts() {
     const opts = {};
-    // Panel toggle shortcuts via onKeydown callback (called by BitZoomCanvas before its own handler)
+    // Panel toggle shortcuts via onKeydown callback (called by BlitzoomCanvas before its own handler)
     opts.onKeydown = (e) => {
       if (e.key === 'r' && !e.shiftKey && this._compassPanel) { this._togglePanel(this._compassPanel); return true; }
       if (e.key === 'R' && this._controlsPanel) { this._togglePanel(this._controlsPanel); return true; }
@@ -409,7 +409,7 @@ class BzGraph extends HTMLElement {
     return opts;
   }
 
-  // Public API: access the underlying BitZoomCanvas
+  // Public API: access the underlying BlitzoomCanvas
   get view() { return this._view; }
 
   attributeChangedCallback(name, oldVal, newVal) {

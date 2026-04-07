@@ -1,14 +1,14 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
-// Export BitZoom layout coordinates for comparison benchmarks.
+// Export Blitzoom layout coordinates for comparison benchmarks.
 // Usage: deno run --allow-read --allow-write benchmarks/export-layout.ts \
 //          --edges docs/data/email-eu.edges [--nodes docs/data/email-eu.nodes] \
 //          --alpha 0.75 --quant rank --out benchmarks/layouts/email-eu-a075.tsv
 //
 // Runs the full pipeline: parse → project → blend → quantize → export.
 
-import { runPipeline, tokenizeLabel, tokenizeNumeric, degreeBucket } from '../docs/bitzoom-pipeline.js';
-import { buildGaussianProjection, unifiedBlend, MINHASH_K } from '../docs/bitzoom-algo.js';
-import { autoTuneStrengths, autoTuneBearings } from '../docs/bitzoom-utils.js';
+import { runPipeline, tokenizeLabel, tokenizeNumeric, degreeBucket } from '../docs/blitzoom-pipeline.js';
+import { buildGaussianProjection, unifiedBlend, MINHASH_K } from '../docs/blitzoom-algo.js';
+import { autoTuneStrengths, autoTuneBearings } from '../docs/blitzoom-utils.js';
 
 function parseArgs() {
   const args = Deno.args;
@@ -40,7 +40,7 @@ const nodesText = opts.nodes ? await Deno.readTextFile(opts.nodes) : null;
 const result = runPipeline(edgesText, nodesText);
 const { nodeArray, groupNames, projBuf } = result;
 
-// Build node objects with projections (same as bitzoom-canvas.js _hydrateAndLink)
+// Build node objects with projections (same as blitzoom-canvas.js _hydrateAndLink)
 const G = groupNames.length;
 const groupProjections = {};
 for (let i = 0; i < groupNames.length; i++) {

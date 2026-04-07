@@ -1,4 +1,4 @@
-// bz-compass.js — <bz-compass> web component for BitZoom.
+// bz-compass.js — <bz-compass> web component for Blitzoom.
 // Radial 2D control: each property group is a spoke from center.
 // Radial distance = strength (0–max), angular offset from home = bearing.
 //
@@ -346,7 +346,7 @@ class BzCompass extends HTMLElement {
           tuneAbort = new AbortController();
           const btn = this._shadow.querySelector('[data-action="auto"]');
           if (btn) { btn.textContent = '■'; btn.title = 'Stop auto-tune'; }
-          const { autoTuneStrengths, autoTuneBearings } = await import('./bitzoom-utils.js');
+          const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
           const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, {
             strengths: true, alpha: true, signal: tuneAbort.signal,
           });

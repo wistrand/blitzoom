@@ -1,11 +1,11 @@
-// bitzoom-proj-worker.js — computes MinHash projections for a slice of nodes.
+// blitzoom-proj-worker.js — computes MinHash projections for a slice of nodes.
 // Imports all algo functions from shared modules — no duplication.
 
-import { degreeBucket, tokenizeLabel, tokenizeNumeric } from './bitzoom-pipeline.js';
+import { degreeBucket, tokenizeLabel, tokenizeNumeric } from './blitzoom-pipeline.js';
 import {
   MINHASH_K, buildGaussianProjection,
   computeMinHashInto, _sig, projectInto,
-} from './bitzoom-algo.js';
+} from './blitzoom-algo.js';
 
 self.onmessage = function(e) {
   try {

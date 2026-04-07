@@ -1,7 +1,7 @@
 # SVG Export: Architecture and Implementation
 
-Static SVG rendering of the current BitZoomCanvas state. Implemented in
-[bitzoom-svg.js](../docs/bitzoom-svg.js). Produces a self-contained SVG string
+Static SVG rendering of the current BlitzoomCanvas state. Implemented in
+[blitzoom-svg.js](../docs/blitzoom-svg.js). Produces a self-contained SVG string
 that reproduces the canvas view — background, grid, edges, density heatmap,
 circles, labels, and legend.
 
@@ -10,7 +10,7 @@ circles, labels, and legend.
 ### exportSVG — render view to SVG
 
 ```javascript
-import { exportSVG } from './bitzoom-svg.js';
+import { exportSVG } from './blitzoom-svg.js';
 
 const svg = exportSVG(bz, {
   background: true,   // dark/light background rect
@@ -23,7 +23,7 @@ const svg = exportSVG(bz, {
 });
 ```
 
-`bz` is a `BitZoomCanvas` instance or a `createSVGView()` result. All options
+`bz` is a `BlitzoomCanvas` instance or a `createSVGView()` result. All options
 default to `true` (except `legend`, which follows `bz.showLegend`). Returns an
 SVG string suitable for download or embedding.
 
@@ -32,7 +32,7 @@ In the viewer, press **S** to trigger download.
 ### createSVGView — headless view from pipeline data
 
 ```javascript
-import { createSVGView, exportSVG } from './bitzoom-svg.js';
+import { createSVGView, exportSVG } from './blitzoom-svg.js';
 
 const view = createSVGView(nodes, edges, {
   width: 800,            // canvas width (default 800)

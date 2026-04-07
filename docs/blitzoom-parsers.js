@@ -1,4 +1,4 @@
-// bitzoom-parsers.js — format parsers for alternative input types.
+// blitzoom-parsers.js — format parsers for alternative input types.
 //
 // Exports:
 //   - parseCSV / csvRowsToNodes / parseCSVToNodes — CSV with header sniffing
@@ -7,7 +7,7 @@
 //   - detectFormat — content-based format sniffer
 //   - parseAny   — unified dispatcher returning {nodes, edges, extraPropNames}
 
-import { parseNodesFile } from './bitzoom-pipeline.js';
+import { parseNodesFile } from './blitzoom-pipeline.js';
 import { parseSTIX } from './stix2snap.js';
 
 // ─── CSV parsing ─────────────────────────────────────────────────────────────
@@ -238,7 +238,7 @@ export function parseCSVToNodes(text, opts) {
 /**
  * Parse D3 force-directed JSON into the object shape consumed by
  * runPipelineFromObjects. Accepts both `{nodes, links}` (D3 convention) and
- * `{nodes, edges}` (BitZoom internal convention).
+ * `{nodes, edges}` (Blitzoom internal convention).
  *
  * Node shape: `{id, label?, group?, ...extras}` — any extra top-level keys
  * become property groups.
@@ -308,7 +308,7 @@ export function parseD3(data) {
     edges.push(edge);
   }
 
-  // Top-level metadata: source, description, credits, BitZoom settings, etc.
+  // Top-level metadata: source, description, credits, Blitzoom settings, etc.
   // Passed through to the viewer for display and optional preset application.
   const metadata = data.metadata || null;
 

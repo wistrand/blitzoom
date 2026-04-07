@@ -7,7 +7,7 @@ import {
   MINHASH_K, ZOOM_LEVELS, GRID_SIZE, GRID_BITS,
   unifiedBlend, buildLevelNodes, buildLevelEdges,
   cellIdAtLevel, normalizeAndQuantize, gaussianQuantize,
-} from '../docs/bitzoom-algo.js';
+} from '../docs/blitzoom-algo.js';
 
 function fmt(ms) {
   if (ms < 1) return `${(ms * 1000).toFixed(0)}µs`;

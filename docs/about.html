@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BitZoom — How It Works</title>
-<meta name="description" content="How BitZoom works: MinHash signatures, Gaussian projection, weighted blend, bit-shift zoom hierarchy.">
-<meta property="og:title" content="BitZoom — How It Works">
-<meta property="og:description" content="How BitZoom works: MinHash signatures, Gaussian projection, weighted blend, bit-shift zoom hierarchy.">
-<meta property="og:image" content="images/bitzoom-1.png">
+<title>Blitzoom — How It Works</title>
+<meta name="description" content="How Blitzoom works: MinHash signatures, Gaussian projection, weighted blend, bit-shift zoom hierarchy.">
+<meta property="og:title" content="Blitzoom — How It Works">
+<meta property="og:description" content="How Blitzoom works: MinHash signatures, Gaussian projection, weighted blend, bit-shift zoom hierarchy.">
+<meta property="og:image" content="images/blitzoom-1.png">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BitZoom — How It Works">
+<meta name="twitter:title" content="Blitzoom — How It Works">
 <meta name="twitter:description" content="MinHash signatures, Gaussian projection, weighted blend, bit-shift zoom hierarchy.">
-<meta name="twitter:image" content="images/bitzoom-1.png">
+<meta name="twitter:image" content="images/blitzoom-1.png">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<script type="module" src="bitzoom.js"></script>
+<script type="module" src="blitzoom.js"></script>
 <style>
   bz-graph:not(:defined) { visibility: hidden; }
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -285,10 +285,10 @@
   <a href="howto.html">Developer Guide</a> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <a href="webgl.html">WebGL</a> &middot;
-  <a href="https://github.com/wistrand/bitzoom">GitHub</a>
+  <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </div>
 
-<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Bit<span>Zoom</span></a></h1>
+<h1><a href="/" style="text-decoration:none;color:inherit"><img src="logo.svg" alt="" style="width:36px;height:36px;vertical-align:-4px;margin-right:8px">Blit<span>zoom</span></a></h1>
 <p class="subtitle">Deterministic property-similarity layout with hierarchical bit-shift aggregation.</p>
 
 <!-- Live interactive demo -->
@@ -301,7 +301,7 @@
         <select id="demo-dataset" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;font-family:'JetBrains Mono',monospace">
           <option value="epstein">Epstein</option>
           <option value="karate">Karate Club</option>
-          <option value="bitzoom-source">BitZoom Source</option>
+          <option value="blitzoom-source">Blitzoom Source</option>
           <option value="mitre-attack">MITRE ATT&amp;CK</option>
         </select>
       </label>
@@ -318,9 +318,9 @@
 
 <p>Classical graph layout (<a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing">force-directed</a>, <a href="https://en.wikipedia.org/wiki/Spectral_layout">spectral</a>) optimizes for <em>topological</em> fidelity: connected nodes should be near each other. For property graphs, this is often wrong. Semantically similar nodes frequently share no edge. Two ransomware samples may never connect, but they should be <em>near</em> each other.</p>
 
-<p>BitZoom inverts the priority: <strong>property similarity first, topology second</strong>. Proximity means "these nodes have similar properties," not "these nodes are connected."</p>
+<p>Blitzoom inverts the priority: <strong>property similarity first, topology second</strong>. Proximity means "these nodes have similar properties," not "these nodes are connected."</p>
 
-<p style="font-size:13px;color:var(--text-dim)">BitZoom started as a side project: <a href="https://melker.sh" style="color:var(--accent)">melker.sh</a> (a terminal UI framework for document-based apps) needed a fast graph layout that clusters by properties rather than connectivity. No existing algorithm did this well, so we built one.</p>
+<p style="font-size:13px;color:var(--text-dim)">Blitzoom started as a side project: <a href="https://melker.sh" style="color:var(--accent)">melker.sh</a> (a terminal UI framework for document-based apps) needed a fast graph layout that clusters by properties rather than connectivity. No existing algorithm did this well, so we built one.</p>
 
 <div class="tldr" id="tldr">
   <div class="tldr-title">TL;DR — The Pipeline in 30 Seconds</div>
@@ -498,7 +498,7 @@
 
 <h3>Why does projecting 128D &rarr; 2D work?</h3>
 
-<p>It shouldn't, in the strict mathematical sense. The <a href="https://en.wikipedia.org/wiki/Johnson%E2%80%93Lindenstrauss_lemma">Johnson-Lindenstrauss lemma</a> guarantees distance preservation only for target dimension O(log n / &epsilon;&sup2;), far more than 2. But BitZoom doesn't need distance preservation. It needs <strong>ordering preservation</strong>: if A is more similar to B than to C in 128D, then A should be closer to B than to C in 2D, <em>most of the time</em>.</p>
+<p>It shouldn't, in the strict mathematical sense. The <a href="https://en.wikipedia.org/wiki/Johnson%E2%80%93Lindenstrauss_lemma">Johnson-Lindenstrauss lemma</a> guarantees distance preservation only for target dimension O(log n / &epsilon;&sup2;), far more than 2. But Blitzoom doesn't need distance preservation. It needs <strong>ordering preservation</strong>: if A is more similar to B than to C in 128D, then A should be closer to B than to C in 2D, <em>most of the time</em>.</p>
 
 <div class="fig">
 <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg">
@@ -628,7 +628,7 @@
 </div>
 
 <div class="note">
-  This is an <em>empirical heuristic</em>, not a theorem. MinHash signatures with high Jaccard overlap share most hash values, so their z-normalized vectors tend to be correlated. The fixed random projection tends to place correlated vectors nearer in 2D. For BitZoom's purposes (quantization into grid cells), a stable ordering signal is sufficient. Exact distance preservation is not needed and not provided.
+  This is an <em>empirical heuristic</em>, not a theorem. MinHash signatures with high Jaccard overlap share most hash values, so their z-normalized vectors tend to be correlated. The fixed random projection tends to place correlated vectors nearer in 2D. For Blitzoom's purposes (quantization into grid cells), a stable ordering signal is sufficient. Exact distance preservation is not needed and not provided.
 </div>
 
 <!-- Step 4: Blend -->
@@ -926,7 +926,7 @@
 
 <h2 id="rendering">Rendering Pipeline</h2>
 
-<p>BitZoom renders in <strong>five layers</strong>, back to front. This ordering ensures that edges never obscure nodes, heatmaps provide context without hiding structure, and highlighted connections are always visible.</p>
+<p>Blitzoom renders in <strong>five layers</strong>, back to front. This ordering ensures that edges never obscure nodes, heatmaps provide context without hiding structure, and highlighted connections are always visible.</p>
 
 <div class="fig">
 <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
@@ -1193,7 +1193,7 @@
 
 <h2 id="auto-level">Seamless Zoom &amp; Auto-Level</h2>
 
-<p>BitZoom maintains a <strong>logical zoom</strong> that can exceed the 1:1 grid scale. When logical zoom crosses a threshold, the aggregation level changes automatically while the visual scale stays continuous.</p>
+<p>Blitzoom maintains a <strong>logical zoom</strong> that can exceed the 1:1 grid scale. When logical zoom crosses a threshold, the aggregation level changes automatically while the visual scale stays continuous.</p>
 
 <div class="fig">
 <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
@@ -1399,15 +1399,15 @@
 <table>
   <tr><th>File</th><th>Role</th></tr>
   <tr><td><a href="viewer.html">Interactive viewer</a></td><td>Load datasets, adjust strengths, explore zoom levels</td></tr>
-  <tr><td><a href="bitzoom-algo.js"><code>bitzoom-algo.js</code></a></td><td>Pure algorithm functions: MinHash, projection, blend, quantization, level building</td></tr>
-  <tr><td><a href="bitzoom-pipeline.js"><code>bitzoom-pipeline.js</code></a></td><td>SNAP parsers, graph building, tokenization, full projection pipeline</td></tr>
-  <tr><td><a href="bitzoom-canvas.js"><code>bitzoom-canvas.js</code></a></td><td>Standalone embeddable component: canvas, interaction, rendering</td></tr>
-  <tr><td><a href="bitzoom-viewer.js"><code>bitzoom-viewer.js</code></a></td><td>Viewer application: UI, workers, data loading, detail panel, URL state</td></tr>
-  <tr><td><a href="bitzoom-renderer.js"><code>bitzoom-renderer.js</code></a></td><td>5-layer canvas rendering, heatmaps, edge sampling, hit testing</td></tr>
-  <tr><td><a href="bitzoom-worker.js"><code>bitzoom-worker.js</code></a></td><td>Web Worker coordinator, fans out to projection sub-workers</td></tr>
-  <tr><td><a href="https://github.com/wistrand/bitzoom/blob/main/agent_docs/SPEC.md">SPEC.md</a></td><td>Algorithm specification: similarity model, blend formula, complexity, open questions</td></tr>
+  <tr><td><a href="blitzoom-algo.js"><code>blitzoom-algo.js</code></a></td><td>Pure algorithm functions: MinHash, projection, blend, quantization, level building</td></tr>
+  <tr><td><a href="blitzoom-pipeline.js"><code>blitzoom-pipeline.js</code></a></td><td>SNAP parsers, graph building, tokenization, full projection pipeline</td></tr>
+  <tr><td><a href="blitzoom-canvas.js"><code>blitzoom-canvas.js</code></a></td><td>Standalone embeddable component: canvas, interaction, rendering</td></tr>
+  <tr><td><a href="blitzoom-viewer.js"><code>blitzoom-viewer.js</code></a></td><td>Viewer application: UI, workers, data loading, detail panel, URL state</td></tr>
+  <tr><td><a href="blitzoom-renderer.js"><code>blitzoom-renderer.js</code></a></td><td>5-layer canvas rendering, heatmaps, edge sampling, hit testing</td></tr>
+  <tr><td><a href="blitzoom-worker.js"><code>blitzoom-worker.js</code></a></td><td>Web Worker coordinator, fans out to projection sub-workers</td></tr>
+  <tr><td><a href="https://github.com/wistrand/blitzoom/blob/main/agent_docs/SPEC.md">SPEC.md</a></td><td>Algorithm specification: similarity model, blend formula, complexity, open questions</td></tr>
   <tr><td><a href="bz-graph.js"><code>&lt;bz-graph&gt;</code></a></td><td>Web component: embed a graph with one HTML tag</td></tr>
-  <tr><td><a href="https://github.com/wistrand/bitzoom">GitHub</a></td><td>Source, datasets, tests, SNAP converters</td></tr>
+  <tr><td><a href="https://github.com/wistrand/blitzoom">GitHub</a></td><td>Source, datasets, tests, SNAP converters</td></tr>
 </table>
 
 <p>Embed a graph with a single HTML element:</p>
@@ -1430,7 +1430,7 @@
   </div>
 </div>
 
-<pre style="font-size:11px">&lt;script type="module" src="dist/bitzoom.bundle.js"&gt;&lt;/script&gt;
+<pre style="font-size:11px">&lt;script type="module" src="dist/blitzoom.bundle.js"&gt;&lt;/script&gt;
 
 &lt;bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
           level="2" heatmap="density" legend
@@ -1438,12 +1438,12 @@
 &lt;/bz-graph&gt;</pre>
 
 <script type="module">
-import { createBitZoomView } from './bitzoom.js';
+import { createBlitzoomView } from './blitzoom.js';
 
 const DEMO_PRESETS = {
   'epstein':        { initialLevel: 2, strengths: { group: 8, edgetype: 4 }, labelProps: ['label'] },
   'data-graph-file':{ initialLevel: 3, strengths: {} },
-  'bitzoom-source': { initialLevel: 4, strengths: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] },
+  'blitzoom-source': { initialLevel: 4, strengths: { kind: 8, group: 3 }, labelProps: ['file', 'kind'] },
   'mitre-attack':   { initialLevel: 4, strengths: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'], quantMode: 'rank', edgeMode: 'none' },
 };
 
@@ -1461,7 +1461,7 @@ async function loadDemo(name) {
   if (view) view.destroy();
   const preset = DEMO_PRESETS[name] || {};
   const canvas = document.getElementById('demo-canvas');
-  view = createBitZoomView(canvas, edgesText, nodesText, {
+  view = createBlitzoomView(canvas, edgesText, nodesText, {
     initialLevel: preset.initialLevel || 3,
     edgeMode: preset.edgeMode || 'lines',
     heatmapMode: 'density',
@@ -1527,19 +1527,19 @@ const synthLabels = [
 ].join('\n');
 
 // Property-only view (α=0)
-createBitZoomView(document.getElementById('synth-prop'), synthEdges, synthLabels, {
+createBlitzoomView(document.getElementById('synth-prop'), synthEdges, synthLabels, {
   initialLevel: 3, edgeMode: 'lines', showLegend: true, showResetBtn: true, smoothAlpha: 0,
   strengths: { group: 8, Lang: 3 },
 });
 
 // Topology view (α=0.75)
-createBitZoomView(document.getElementById('synth-topo'), synthEdges, synthLabels, {
+createBlitzoomView(document.getElementById('synth-topo'), synthEdges, synthLabels, {
   initialLevel: 3, edgeMode: 'curves', showLegend: true, showResetBtn: true, smoothAlpha: 0.75,
   strengths: { group: 8, Lang: 3 },
 });
 
 // Zoom hierarchy view — start zoomed out so aggregation is visible
-createBitZoomView(document.getElementById('synth-zoom'), synthEdges, synthLabels, {
+createBlitzoomView(document.getElementById('synth-zoom'), synthEdges, synthLabels, {
   initialLevel: 1, edgeMode: 'lines', showLegend: true, showResetBtn: true, smoothAlpha: 0,
   strengths: { group: 8, Lang: 3 },
 });

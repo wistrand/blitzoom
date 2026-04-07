@@ -1,29 +1,29 @@
-// bitzoom-canvas.js — Standalone embeddable BitZoom graph view.
+// blitzoom-canvas.js — Standalone embeddable Blitzoom graph view.
 // No sidebar, no header, no detail panel, no workers, no file loading.
 // Just a canvas with pan/zoom/select/hover and the full rendering pipeline.
 //
 // Usage:
-//   import { BitZoomCanvas } from './bitzoom-canvas.js';
-//   import { runPipeline } from './bitzoom-pipeline.js';
-//   import { unifiedBlend, buildLevel, ... } from './bitzoom-algo.js';
+//   import { BlitzoomCanvas } from './blitzoom-canvas.js';
+//   import { runPipeline } from './blitzoom-pipeline.js';
+//   import { unifiedBlend, buildLevel, ... } from './blitzoom-algo.js';
 //
 //   const result = runPipeline(edgesText, nodesText);
 //   // ... hydrate nodes with projections, blend ...
-//   const view = new BitZoomCanvas(canvasElement, { nodes, edges, ... });
+//   const view = new BlitzoomCanvas(canvasElement, { nodes, edges, ... });
 
 import {
   MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
   buildGaussianProjection, unifiedBlend, buildLevel,
   buildLevelNodes, buildLevelEdges, cellIdAtLevel,
   getNodePropValue, getSupernodeDominantValue, maxCountKey,
-} from './bitzoom-algo.js';
-import { generateGroupColors, COLOR_SCHEMES, COLOR_SCHEME_NAMES } from './bitzoom-colors.js';
-import { autoTuneStrengths } from './bitzoom-utils.js';
-import { initGL, renderGL } from './bitzoom-gl-renderer.js';
+} from './blitzoom-algo.js';
+import { generateGroupColors, COLOR_SCHEMES, COLOR_SCHEME_NAMES } from './blitzoom-colors.js';
+import { autoTuneStrengths } from './blitzoom-utils.js';
+import { initGL, renderGL } from './blitzoom-gl-renderer.js';
 
-import { layoutAll, render, worldToScreen, screenToWorld, hitTest } from './bitzoom-renderer.js';
+import { layoutAll, render, worldToScreen, screenToWorld, hitTest } from './blitzoom-renderer.js';
 
-export class BitZoomCanvas {
+export class BlitzoomCanvas {
   static _instanceCount = 0;
   /**
    * @param {HTMLCanvasElement} canvas
@@ -1099,7 +1099,7 @@ export class BitZoomCanvas {
     canvas.setAttribute('aria-roledescription', 'interactive graph');
     canvas.setAttribute('aria-label', `Graph visualization, ${this.nodes.length} nodes`);
     // Keyboard help — insert adjacent to canvas so it works in both light DOM and shadow DOM
-    const helpId = 'bz-keys-help-' + (++BitZoomCanvas._instanceCount);
+    const helpId = 'bz-keys-help-' + (++BlitzoomCanvas._instanceCount);
     const help = document.createElement('div');
     help.id = helpId;
     help.className = 'visually-hidden';
@@ -1576,10 +1576,10 @@ export class BitZoomCanvas {
   }
 }
 
-// ─── Factories: create a BitZoomCanvas from data ────────────────────────────
+// ─── Factories: create a BlitzoomCanvas from data ────────────────────────────
 
-import { runPipeline, computeProjections } from './bitzoom-pipeline.js';
-import { initGPU, computeProjectionsGPU, gpuUnifiedBlend } from './bitzoom-gpu.js';
+import { runPipeline, computeProjections } from './blitzoom-pipeline.js';
+import { initGPU, computeProjectionsGPU, gpuUnifiedBlend } from './blitzoom-gpu.js';
 
 // Shared tail: strengths, colors, blend, construct view.
 function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, hasEdgeTypes, opts) {
@@ -1632,7 +1632,7 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
   let smoothAlpha = opts.smoothAlpha || 0;
   let quantMode = opts.quantMode;
 
-  const view = new BitZoomCanvas(canvas, {
+  const view = new BlitzoomCanvas(canvas, {
     nodes, edges, nodeIndexFull, adjList,
     groupNames, propStrengths, propColors,
     groupColors: propColors['group'],
@@ -1714,29 +1714,29 @@ function _hydrateAndLink(nodeArray, projBuf, groupNames, edges) {
 }
 
 /**
- * Create a BitZoomCanvas from SNAP .edges/.nodes text.
+ * Create a BlitzoomCanvas from SNAP .edges/.nodes text.
  * @param {HTMLCanvasElement} canvas
  * @param {string} edgesText
  * @param {string|null} nodesText
- * @param {object} [opts] - additional BitZoomCanvas options
- * @returns {BitZoomCanvas}
+ * @param {object} [opts] - additional BlitzoomCanvas options
+ * @returns {BlitzoomCanvas}
  */
-export function createBitZoomView(canvas, edgesText, nodesText, opts = {}) {
+export function createBlitzoomView(canvas, edgesText, nodesText, opts = {}) {
   const result = runPipeline(edgesText, nodesText);
   const { nodes, nodeIndexFull, adjList } = _hydrateAndLink(result.nodeArray, result.projBuf, result.groupNames, result.edges);
   return _finalize(canvas, nodes, result.edges, nodeIndexFull, adjList, result.groupNames, result.hasEdgeTypes, opts);
 }
 
 /**
- * Create a BitZoomCanvas from JS graph objects (no SNAP parsing).
+ * Create a BlitzoomCanvas from JS graph objects (no SNAP parsing).
  * Nodes: {id, group?, label?, ...extraProps}. Edges: {src, dst}.
  * @param {HTMLCanvasElement} canvas
  * @param {Array} rawNodes
  * @param {Array} rawEdges
- * @param {object} [opts] - additional BitZoomCanvas options
- * @returns {BitZoomCanvas}
+ * @param {object} [opts] - additional BlitzoomCanvas options
+ * @returns {BlitzoomCanvas}
  */
-export function createBitZoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
+export function createBlitzoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
   const nodeIndex = {};
   const tempAdj = {};
   const nodeArray = rawNodes.map(rn => {

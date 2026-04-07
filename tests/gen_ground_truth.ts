@@ -3,8 +3,8 @@
 // Saves px/py/gx/gy per node for comparison after refactoring.
 // Usage: deno run --allow-read --allow-write tests/gen_ground_truth.ts
 
-import { runPipeline } from '../docs/bitzoom-pipeline.js';
-import { unifiedBlend, MINHASH_K, buildGaussianProjection } from '../docs/bitzoom-algo.js';
+import { runPipeline } from '../docs/blitzoom-pipeline.js';
+import { unifiedBlend, MINHASH_K, buildGaussianProjection } from '../docs/blitzoom-algo.js';
 
 interface TestCase {
   name: string;
@@ -29,10 +29,10 @@ const cases: TestCase[] = [
     edges: 'docs/data/epstein.edges', nodes: 'docs/data/epstein.nodes',
     strengths: { group: 5, edgetype: 8 }, alpha: 0.75, quant: 'gaussian' },
   { name: 'bzsource-kind',
-    edges: 'docs/data/bitzoom-source.edges', nodes: 'docs/data/bitzoom-source.nodes',
+    edges: 'docs/data/blitzoom-source.edges', nodes: 'docs/data/blitzoom-source.nodes',
     strengths: { kind: 8, group: 3 }, alpha: 0, quant: 'gaussian' },
   { name: 'bzsource-topo',
-    edges: 'docs/data/bitzoom-source.edges', nodes: 'docs/data/bitzoom-source.nodes',
+    edges: 'docs/data/blitzoom-source.edges', nodes: 'docs/data/blitzoom-source.nodes',
     strengths: { kind: 8, group: 3 }, alpha: 0.5, quant: 'gaussian' },
   { name: 'mitre-weighted',
     edges: 'docs/data/mitre-attack.edges', nodes: 'docs/data/mitre-attack.nodes',
