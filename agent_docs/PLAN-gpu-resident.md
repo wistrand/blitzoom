@@ -128,41 +128,75 @@ Multiple `_blend()` calls can overlap when the rAF gate fires a new blend while 
 
 Native `input` events from `<input type="range">` inside `<bz-controls>` shadow DOM bubble up to the host without `e.detail`, crashing the viewer's input handler. Fixed with `if (!e.detail) return` guard.
 
-### Conclusion
+### Original conclusion (now revised)
 
-16fps at 367K nodes is not achievable on integrated GPUs with the current topology smoothing approach. The GPU compute kernel itself takes 241ms for 2 passes. Options for further improvement:
-- Discrete GPU (would reduce compute time proportionally)
-- Subsample during drag (blend a subset, full blend on release)
-- Skip topology entirely during drag (α=0, property-only, instant)
-- WebGPU→WebGL buffer interop (when browser support lands, eliminates readback + unpack entirely)
+Original assessment: 16fps at 367K not achievable, GPU compute kernel takes 241ms, irreducible. Phases reverted, replaced with adaptive fast mode (subsampling + adaptive passes + edge suppression).
+
+### Revised analysis: the 241ms is likely inflated
+
+The profiling was done during a period of known bugs:
+- **No buffer cache** — 8 buffers created per blend, 1-5ms each on iGPU = 8-40ms overhead
+- **No `_blending` guard** — concurrent `mapAsync` calls serialized the pipeline
+- **Bind groups recreated every blend** — 2 `createBindGroup` calls per blend (still the case)
+
+Back-of-envelope: 2 topology passes over 367K nodes, 988K edges = ~32MB memory traffic. Intel iGPU bandwidth ~30-50 GB/s → theoretical kernel time ~1ms. Even with cache misses from random neighbor access, 5-20ms is expected, not 241ms. The 241ms likely includes driver overhead from buffer allocation and pipeline stalls that the buffer cache and `_blending` guard eliminated.
+
+**The profiling was never re-run after these fixes.**
+
+### Current GPU blend implementation issues
+
+Verified against `bitzoom-gpu.js`:
+
+1. **Separate `propPx`/`propPy` buffers** (lines 503-504). Two storage buffers, two `writeBuffer` calls. The shader already uses interleaved `posIn[j * 2u]` for neighbor reads. Interleaving anchors would halve upload API calls and improve cache locality.
+
+2. **Single read buffer with sync stall** (line 510). One `MAP_READ` buffer, `mapAsync` every blend = full pipeline flush. A ring of 2-3 read buffers would let the GPU work ahead while the CPU reads a completed buffer. The `_blending` guard prevents overlap, so the CPU blocks every time.
+
+3. **Bind groups recreated every blend** (lines 631-654). Two `createBindGroup` calls per blend. Buffers are cached but bind groups aren't — wasted driver allocation. Should be cached alongside buffers.
+
+4. **Non-coalesced neighbor access** (lines 445-449). `adjTargets[e]` → random node index → `posIn[j * 2u]` = random cache-line read. This is the textbook L2-thrashing pattern on integrated GPUs. Partially mitigable by sorting nodes by degree (high-degree hubs first) so heavy gather operations hit warm cache lines.
+
+### Recommended next steps (if revisiting GPU performance)
+
+**Low effort, high impact:**
+
+| # | Change | Effort | Expected impact |
+|---|--------|--------|----------------|
+| 1 | Re-profile with buffer cache + `_blending` guard | 10 min | Establishes true baseline (predicted 80-120ms) |
+| 2 | Interleave `propPx`/`propPy` into single buffer | ~30 lines | Halves anchor upload, better GPU cache |
+| 3 | Cache bind groups alongside buffers | ~20 lines | Eliminates 2 `createBindGroup` per blend |
+| 4 | Read buffer ring (2-deep) | ~40 lines | Eliminates `mapAsync` stall, 1-frame latency |
+
+**Medium effort:**
+
+| # | Change | Effort | Expected impact |
+|---|--------|--------|----------------|
+| 5 | `GPUQuerySet` timestamp profiling | ~50 lines | Isolates kernel time vs dispatch vs sync |
+| 6 | Degree-sorted CSR | ~50 lines | Better cache locality for scatter-gather |
+| 7 | CSR-Adaptive (two pipelines) | ~150 lines | Warp-level reduction for hub nodes; needs `subgroups` (Chrome 128+) |
+
+**Long term:**
+
+| # | Change | Effort | Expected impact |
+|---|--------|--------|----------------|
+| 8 | Single WebGPU render + compute pipeline | ~1200 lines (rewrite GL renderer) | Zero readback, zero interop; eliminates WebGL↔WebGPU split |
+
+Items 1-4 could plausibly bring the GPU path to 60-100ms on the same Intel iGPU, making it competitive with CPU at 50K+ nodes and potentially eliminating the need for fast-mode subsampling on moderate datasets (50K-200K).
+
+### Current shipping solution
+
+Adaptive fast mode is the correct shipping approach today:
+- Spatial subsampling (>50K nodes): 16×16 grid, degree-weighted, ~20-50K sample
+- Adaptive blend passes: 0-2, budget system with ceiling lock
+- Edge suppression: `_skipEdgeBuild` stays true for entire drag session
+- Full 5-pass blend + layout + edge build on mouse release
+- Below 50K: always full blend, no fast mode
 
 ## Dependencies
 
 - Phase A requires WebGPU compute (already available)
 - Phase B requires Phase A
-- Phase C requires Phase A, uses cached μ/σ from first blend
+- Phase C requires Phase A, uses μ/σ recomputed each blend
 - All phases require `device` and `blendPipeline` from existing [bitzoom-gpu.js](../docs/bitzoom-gpu.js)
-
-## Testing
-
-All GPU compute work must be testable via `deno test --unstable-webgpu` (no browser, no DOM). The existing `tests/gpu_blend_test.ts` pattern is the template: run both CPU and GPU paths on the same input, assert output matches within float32 tolerance.
-
-New tests to add to `deno task test:gpu`:
-
-**Phase A — GPU quantization:**
-- `gpuGaussianQuantize` matches CPU `gaussianQuantize` on Karate, Epstein, MITRE (uint16 output, exact match expected)
-- Edge cases: all nodes at same position (degenerate σ), single node, empty dataset
-- μ/σ uniforms match CPU-computed values
-
-**Phase B — GPU cell assignment:**
-- `gpuCellAssign` matches CPU `cellIdAtLevel` for all nodes at levels 3, 5, 7
-- Cell IDs are consistent with `(gx >> shift) * gridK + (gy >> shift)` computed from Phase A output
-
-**Phase C — Direct buffer feed:**
-- Round-trip: GPU blend → GPU quantize → readback uint16 → compare against CPU `unifiedBlend` + `gaussianQuantize` chain
-- Position buffer format matches what the GL renderer expects (interleaved vs separate, byte alignment)
-
-Each phase's tests run independently. Phase A tests don't require Phase B. All tests compare GPU output against CPU reference output — no visual assertions, pure numeric comparison.
 
 ## Risks
 
@@ -172,3 +206,4 @@ Each phase's tests run independently. Phase A tests don't require Phase B. All t
 | Rank quantization needs GPU radix sort | Keep CPU fallback; gaussian is default and more common |
 | Hit testing needs CPU positions | Read back on click only (single node lookup, not full array) |
 | Not all browsers support WebGPU | Existing CPU + WebGL2 paths remain as fallback |
+| `subgroups` not universally available | CSR-Adaptive (#7) is optional; basic kernel works without it |
