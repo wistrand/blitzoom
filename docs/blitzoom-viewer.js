@@ -1951,8 +1951,8 @@ class BlitZoom {
             startDrag(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: false });
         window.addEventListener('touchmove', e => {
-            if (_cdrag) moveDrag(e.touches[0].clientX, e.touches[0].clientY);
-        }, { passive: true });
+            if (_cdrag) { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }
+        }, { passive: false });
         window.addEventListener('touchend', endDrag);
         window.addEventListener('touchcancel', endDrag);
 

@@ -31,7 +31,7 @@ class BzControls extends HTMLElement {
       .row { display: flex; align-items: center; gap: 6px; padding: 3px 0; min-width: 0; }
       .label { width: 70px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; font-size: 11px; }
       .label:hover { color: var(--accent, #5af); }
-      .slider { flex: 1 1 0; min-width: 0; height: 3px; -webkit-appearance: none; appearance: none; background: var(--border, #334); border-radius: 2px; outline: none; cursor: pointer; }
+      .slider { flex: 1 1 0; min-width: 0; height: 3px; -webkit-appearance: none; appearance: none; background: var(--border, #334); border-radius: 2px; outline: none; cursor: pointer; touch-action: none; }
       .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #5af); cursor: pointer; }
       .slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #5af); border: none; cursor: pointer; }
       .val { font-size: 10px; color: var(--accent, #5af); min-width: 18px; text-align: right; font-family: 'JetBrains Mono', monospace; }
