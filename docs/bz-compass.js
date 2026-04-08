@@ -44,7 +44,7 @@ class BzCompass extends HTMLElement {
     this._shadow = this.attachShadow({ mode: 'open' });
     this._shadow.innerHTML = `<style>
       :host { display: block; width: 200px; height: 200px; position: relative; }
-      canvas { width: 100%; height: 100%; display: block; cursor: default; }
+      canvas { width: 100%; height: 100%; display: block; cursor: default; touch-action: none; }
       canvas:focus { outline: 1px solid var(--border, #334); outline-offset: -1px; }
       .visually-hidden { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0; }
       .toolbar { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
