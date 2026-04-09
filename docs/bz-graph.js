@@ -19,7 +19,7 @@
 //     bob	carol
 //   </bz-graph>
 
-import { createBlitZoomView, createBlitZoomFromGraph } from './blitzoom-canvas.js';
+import { createBlitZoomView, createBlitZoomFromGraph } from './blitzoom-factory.js';
 import { SCHEME_VIVID } from './blitzoom-colors.js';
 import { classifyFiles } from './blitzoom-parsers.js';
 import './bz-compass.js';

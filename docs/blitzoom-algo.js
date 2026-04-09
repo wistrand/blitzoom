@@ -283,6 +283,63 @@ export function gaussianQuantize(nodes, stats) {
   }
 }
 
+// ─── Norm-based quantization (order-independent) ────────────────────────────
+// Uses projection matrix norms as scale — no data scan needed.
+// Each node's grid position depends only on its own blended (px, py) and the
+// fixed algorithm parameters (seeds, weights). Adding or removing other nodes
+// never changes an existing node's (gx, gy).
+//
+// Scale derivation: for group g with projection matrix R_g (seeded),
+// Var(proj_g) ≤ ||R_g[row]||² when the input signature is unit-variance.
+// The blend variance upper bound is Σ w²_g × ||R_g[row]||² / W².
+// We use this as σ for the Φ(px/σ) mapping. μ=0 by construction.
+
+// Precomputed norm cache: normSqCache[seed] = [||R[0]||², ||R[1]||²]
+const _normSqCache = new Map();
+function projNormSq(seed) {
+  if (_normSqCache.has(seed)) return _normSqCache.get(seed);
+  const R = buildGaussianProjection(seed, MINHASH_K);
+  let n0 = 0, n1 = 0;
+  for (let j = 0; j < MINHASH_K; j++) { n0 += R[0][j] * R[0][j]; n1 += R[1][j] * R[1][j]; }
+  const result = [n0, n1];
+  _normSqCache.set(seed, result);
+  return result;
+}
+
+export function normQuantize(nodes, groupNames, propStrengths) {
+  // Compute effective weights (same floor logic as unifiedBlend)
+  let maxW = 0;
+  for (const g of groupNames) { const raw = propStrengths[g] || 0; if (raw > maxW) maxW = raw; }
+  const floor = Math.max(maxW * STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN);
+  const effW = {};
+  let totalW = 0;
+  for (let gi = 0; gi < groupNames.length; gi++) {
+    effW[groupNames[gi]] = Math.max(propStrengths[groupNames[gi]] || 0, floor);
+    totalW += effW[groupNames[gi]];
+  }
+
+  // Compute σ from projection matrix norms
+  let varX = 0, varY = 0;
+  for (let gi = 0; gi < groupNames.length; gi++) {
+    const norms = projNormSq(2001 + gi);
+    const w = effW[groupNames[gi]];
+    varX += w * w * norms[0];
+    varY += w * w * norms[1];
+  }
+  const sx = Math.sqrt(varX) / totalW || 1;
+  const sy = Math.sqrt(varY) / totalW || 1;
+
+  const n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    const ux = phiLookup(nodes[i].px / sx);
+    const uy = phiLookup(nodes[i].py / sy);
+    nodes[i].gx = Math.min(GRID_SIZE - 1, Math.floor(ux * GRID_SIZE));
+    nodes[i].gy = Math.min(GRID_SIZE - 1, Math.floor(uy * GRID_SIZE));
+    nodes[i].px = ux * 2 - 1;
+    nodes[i].py = uy * 2 - 1;
+  }
+}
+
 // Iterative topology smoothing via convex combination of property anchors and neighbor mean.
 // At α=0: pure property. At α=1: pure topology (for nodes with neighbors).
 // Each pass blends (1-α)*property + α*neighbor_mean using current positions.
@@ -396,7 +453,7 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
     }
   }
 
-  const doQuant = () => quantMode === 'gaussian' ? gaussianQuantize(nodes, quantStats) : normalizeAndQuantize(nodes);
+  const doQuant = () => quantMode === 'gaussian' ? gaussianQuantize(nodes, quantStats) : quantMode === 'norm' ? normQuantize(nodes, groupNames, propStrengths) : normalizeAndQuantize(nodes);
   if (smoothAlpha === 0 || passes === 0) { doQuant(); return; }
 
   const alpha = Math.max(0, Math.min(1, smoothAlpha)); // clamp to [0,1]
