@@ -4,14 +4,14 @@ Analysis of published techniques applicable to the BlitZoom precomputation pipel
 
 ## Current Bottleneck Profile (30M nodes, 9M edges, 6 groups)
 
-| Stage              | Cost                    | Time (est.) |
-| ------------------ | ----------------------- | ----------- |
-| MinHash (k=128)    | 461B hash slot evals    | ~2 hours    |
-| Topology smoothing | 5 × O(n+\|E\|)         | ~5 min      |
-| Level building     | 14 × O(n) + 14 × O(\|E\|) | ~5 min  |
-| Projection         | 256 mults/node/group    | ~2 min      |
-| Quantization       | O(n log n) rank sort    | ~15s        |
-| Parsing            | O(file) memory          | ~30s        |
+| Stage              | Cost                 | Time (est.) |     |        |
+| ------------------ | -------------------- | ----------- | --- | ------ |
+| MinHash (k=128)    | 461B hash slot evals | ~2 hours    |     |        |
+| Topology smoothing | 5 × O(n+\            | E\          | )   | ~5 min |
+| Level building     | 14 × O(n) + 14 × O(\ | E\          | )   | ~5 min |
+| Projection         | 256 mults/node/group | ~2 min      |     |        |
+| Quantization       | O(n log n) rank sort | ~15s        |     |        |
+| Parsing            | O(file) memory       | ~30s        |     |        |
 
 MinHash dominates at 90%+ of total compute.
 
@@ -158,17 +158,17 @@ Distribute each edge to its split level in one pass: O(|E|). Each level's edges 
 
 ## Combined Impact
 
-| Optimization            | Stage       | Speedup | Source                      |
-| ----------------------- | ----------- | ------- | --------------------------- |
-| One Permutation Hashing | MinHash     | 128x    | Li, Owen, Zhang 2012        |
-| Densified OPH           | MinHash     | (fix)   | Shrivastava, Li 2014        |
-| Very Sparse Projection  | Project     | 11x     | Li, Hastie, Church 2006     |
-| Columnar storage        | Memory      | 7x      | Standard SoA                |
-| Histogram rank          | Quantize    | ~2x     | Standard equi-depth         |
-| Bottom-up levels        | Level build | 10x     | Morton 1966                 |
-| Single-pass edges       | Edge build  | 14x     | Bit-prefix XOR              |
-| Coarse-to-fine smooth   | Topology    | 20x     | Multigrid (Brandt 1977)     |
-| Streaming parse         | Parse       | mem     | Standard                    |
+| Optimization            | Stage       | Speedup | Source                  |
+| ----------------------- | ----------- | ------- | ----------------------- |
+| One Permutation Hashing | MinHash     | 128x    | Li, Owen, Zhang 2012    |
+| Densified OPH           | MinHash     | (fix)   | Shrivastava, Li 2014    |
+| Very Sparse Projection  | Project     | 11x     | Li, Hastie, Church 2006 |
+| Columnar storage        | Memory      | 7x      | Standard SoA            |
+| Histogram rank          | Quantize    | ~2x     | Standard equi-depth     |
+| Bottom-up levels        | Level build | 10x     | Morton 1966             |
+| Single-pass edges       | Edge build  | 14x     | Bit-prefix XOR          |
+| Coarse-to-fine smooth   | Topology    | 20x     | Multigrid (Brandt 1977) |
+| Streaming parse         | Parse       | mem     | Standard                |
 
 **Estimated total at 30M nodes:**
 - Current pipeline: ~2-3 hours

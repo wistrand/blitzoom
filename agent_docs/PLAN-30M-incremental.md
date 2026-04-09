@@ -302,16 +302,16 @@ docs/
 
 ## Memory Budget
 
-| Component | Loaded | Memory |
-| --- | --- | --- |
-| Manifest | Always | <1KB |
-| L1-L4 tiles | Always | <100KB |
-| L5-L8 current level | One at a time | <10MB |
-| L9-L14 visible tiles | Viewport only | <50MB |
-| RAW visible tiles | Viewport only | <20MB |
-| Ego subgraph | One at a time | <100MB |
-| Tile cache (LRU) | Managed | <300MB |
-| **Total** | | **<500MB** |
+| Component            | Loaded        | Memory     |
+| -------------------- | ------------- | ---------- |
+| Manifest             | Always        | <1KB       |
+| L1-L4 tiles          | Always        | <100KB     |
+| L5-L8 current level  | One at a time | <10MB      |
+| L9-L14 visible tiles | Viewport only | <50MB      |
+| RAW visible tiles    | Viewport only | <20MB      |
+| Ego subgraph         | One at a time | <100MB     |
+| Tile cache (LRU)     | Managed       | <300MB     |
+| **Total**            |               | **<500MB** |
 
 ## What Stays Unchanged
 

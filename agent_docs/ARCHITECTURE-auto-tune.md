@@ -28,12 +28,12 @@ The grid level scales with dataset size so the metric has meaningful resolution:
 scoreLevel = clamp(round(log2(n) - 2), 3, 7)
 ```
 
-| Nodes | Level | Grid     | Cells |
-| ----: | ----: | -------- | ----: |
-|    34 |     3 | 8×8      |    64 |
-| 1,000 |     5 | 32×32    | 1,024 |
-| 5,000 |     5 | 32×32    | 1,024 |
-|  367K |     7 | 128×128  | 16,384 |
+| Nodes | Level | Grid    | Cells  |
+| ----: | ----: | ------- | -----: |
+| 34    | 3     | 8×8     | 64     |
+| 1,000 | 5     | 32×32   | 1,024  |
+| 5,000 | 5     | 32×32   | 1,024  |
+| 367K  | 7     | 128×128 | 16,384 |
 
 ## Tunable groups
 
@@ -211,14 +211,14 @@ Each evaluation = `unifiedBlend` (TUNE_PASSES × (n+E)) + quantize + score.
 
 With the post-optimization stack (buffer reuse, TUNE_PASSES=2, memoization):
 
-| Dataset      |    Nodes |    Edges | Per blend | Typical total |
-| ------------ | -------: | -------: | --------: | ------------: |
-| karate       |       34 |       78 |    <0.1ms |         ~10ms |
-| miserables   |       77 |      254 |    <0.1ms |          ~5ms |
-| epstein      |      514 |      534 |      ~0.5ms |        ~20ms |
-| penguins.csv |      344 |        0 |      ~0.1ms |        ~15ms |
-| mitre-attack |    4,736 |   25,856 |      ~3ms |       ~320ms |
-| amazon       |  367,000 |  988,000 |      ~670ms |       ~12s   |
+| Dataset      | Nodes   | Edges   | Per blend | Typical total |
+| ------------ | ------: | ------: | --------: | ------------: |
+| karate       | 34      | 78      | <0.1ms    | ~10ms         |
+| miserables   | 77      | 254     | <0.1ms    | ~5ms          |
+| epstein      | 514     | 534     | ~0.5ms    | ~20ms         |
+| penguins.csv | 344     | 0       | ~0.1ms    | ~15ms         |
+| mitre-attack | 4,736   | 25,856  | ~3ms      | ~320ms        |
+| amazon       | 367,000 | 988,000 | ~670ms    | ~12s          |
 
 The amazon tune dropped from ~32s (pre-optimization) to ~12s — a 2.6× speedup driven primarily by module-level buffer reuse (eliminates ~880MB of GC pressure per tune) and reduced trial passes (2 instead of 5 for topology smoothing).
 
@@ -304,12 +304,12 @@ The dial UI snaps to 0° when within ±5° of north. This prevents jitter near t
 
 Autotune vs hand-tuned and baselines on 5 property datasets (PropNbrP, higher = better):
 
-| Dataset | Hand-tuned | Autotune | Best baseline | Autotune / baseline |
-|---------|----------:|----------:|--------------:|-------------------:|
-| Epstein (514) | 0.118 | **0.116** | 0.090 (t-SNE) | **1.28×** |
-| Pokemon (959) | 0.019 | **0.025** | 0.022 (FA2) | **1.13×** |
-| MITRE (4,736) | 0.034 | 0.013 | 0.026 (t-SNE) | 0.49× |
-| Synth Pkg (1,868) | 0.050 | 0.022 | 0.013 (t-SNE) | **1.76×** |
-| BZ Source (917) | 0.244 | 0.163 | 0.303 (UMAP) | 0.54× |
+| Dataset           | Hand-tuned | Autotune  | Best baseline | Autotune / baseline |
+| ----------------- | ---------: | --------: | ------------: | ------------------: |
+| Epstein (514)     | 0.118      | **0.116** | 0.090 (t-SNE) | **1.28×**           |
+| Pokemon (959)     | 0.019      | **0.025** | 0.022 (FA2)   | **1.13×**           |
+| MITRE (4,736)     | 0.034      | 0.013     | 0.026 (t-SNE) | 0.49×               |
+| Synth Pkg (1,868) | 0.050      | 0.022     | 0.013 (t-SNE) | **1.76×**           |
+| BZ Source (917)   | 0.244      | 0.163     | 0.303 (UMAP)  | 0.54×               |
 
 Autotune beats all baselines on 3 of 5 property datasets (Epstein, Pokemon, Synth Packages). Epstein is the dual-pass showcase — the α=0.5 pass discovers `edgetype:3`, reaching 98% of hand-tuned PropNbrP. MITRE remains the weak spot: the optimal three-group interaction isn't discoverable from coordinate descent. All at 1,000-70,000× faster than FA2/t-SNE/UMAP. See [comparison.html](../docs/comparison.html) for full results.
