@@ -1,0 +1,48 @@
+# BlitZoom Options Reference
+
+All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are optional.
+
+| Option           | Type           | Default       | Description                                                                                                          |
+| ---------------- | -------------- | ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `initialLevel`   | number         | 3             | Starting zoom level index (0=L1, 13=L14, 14=RAW)                                                                    |
+| `edgeMode`       | string         | `'curves'`    | `'curves'`, `'lines'`, or `'none'`                                                                                   |
+| `heatmapMode`    | string         | `'off'`       | `'off'`, `'splat'`, or `'density'`                                                                                   |
+| `quantMode`      | string         | `'gaussian'`  | `'gaussian'` (density-preserving), `'rank'` (uniform), `'norm'` (stable for incremental)                             |
+| `sizeBy`         | string         | `'edges'`     | Node size: `'edges'` (degree) or `'members'` (count)                                                                 |
+| `sizeLog`        | boolean        | false         | Log scale for node size                                                                                              |
+| `smoothAlpha`    | number         | 0             | Topology blend weight, 0 (property only) to 1 (topology only)                                                       |
+| `strengths`      | object         | `{group:3}`   | Override property group strengths. Keys are group names, values are 0-10.                                            |
+| `labelProps`     | array          | []            | Property names to show as node labels                                                                                |
+| `showLegend`     | boolean/number | false         | Draw color legend. 0=off, 1=BR, 2=BL, 3=TL, 4=TR                                                                   |
+| `showResetBtn`   | boolean        | false         | Draw reset button in top-right corner                                                                                |
+| `clickDelay`     | number         | 0             | Milliseconds to delay single-click for double-click disambiguation                                                   |
+| `keyboardTarget` | EventTarget    | canvas        | Element to bind keyboard listener to (e.g. `window`)                                                                 |
+| `webgl`          | boolean        | false         | Use WebGL2 instanced rendering for geometry                                                                          |
+| `useGPU`         | boolean        | false         | Force WebGPU compute for projection and blend                                                                        |
+| `autoGPU`        | boolean        | true          | Auto-enable WebGPU when N*G > 2000                                                                                   |
+| `colorScheme`    | number         | 0             | Color scheme index: 0=vivid, 1=viridis, 2=plasma, 3=inferno, 4=thermal, 5=grayscale, 6=diverging, 7=greens, 8=reds  |
+| `colorBy`        | string         | null          | Override which property group controls node colors. null=auto (highest-strength group).                              |
+| `lightMode`      | boolean        | false         | Light theme                                                                                                          |
+| `autoTune`       | object         | null          | Auto-tune on load: `{ strengths: true, alpha: true, quant: true }`                                                  |
+
+## Callback options
+
+| Option          | Signature          | Description                                                                                |
+| --------------- | ------------------ | ------------------------------------------------------------------------------------------ |
+| `onSelect`      | `(hit) => void`    | Called when a node/supernode is clicked. `hit.item` is the node, `hit.type` is `'node'` or `'supernode'`. |
+| `onDeselect`    | `() => void`       | Called when selection is cleared.                                                           |
+| `onHover`       | `(hit) => void`    | Called on hover change. `hit` is null when leaving a node.                                  |
+| `onLevelChange` | `(level) => void`  | Called after zoom-level auto-switch.                                                       |
+| `onZoomToHit`   | `(hit) => void`    | Called on double-click node. Override to customize zoom behavior.                           |
+| `onSwitchLevel` | `(level) => void`  | Called on manual level change (comma/period keys). Override to customize.                   |
+| `onKeydown`     | `(event) => bool`  | Called before canvas handles keydown. Return true to consume the event.                     |
+| `onRender`      | `() => void`       | Called after each render frame.                                                            |
+| `onAnnounce`    | `(text) => void`   | Accessibility announcement callback.                                                       |
+| `onSummary`     | `(rows) => void`   | Summary table data callback (for screen readers).                                          |
+
+## addNodes / removeNodes / updateNodes options
+
+| Option    | Type    | Default | Description                                                 |
+| --------- | ------- | ------- | ----------------------------------------------------------- |
+| `animate` | boolean | true    | Animate the transition (lerp existing items, fade in new)   |
+| `animMs`  | number  | 400     | Animation duration in milliseconds                          |

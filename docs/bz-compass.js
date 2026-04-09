@@ -37,6 +37,7 @@ class BzCompass extends HTMLElement {
     this._groups = [];
     this._alpha = 0;         // topology alpha (0-1), shown as center handle
     this._colorBy = null;    // which group is color-active (underlined)
+    this._labelProps = new Set(); // which groups are shown as labels (bold)
     this._labelRects = [];   // [{x, y, w, h, idx}] for label click hit testing
     this._maxStrength = 10;
     this._dragIdx = -1;
@@ -130,6 +131,7 @@ class BzCompass extends HTMLElement {
       this._boundBlendHandler = null;
     }
     if (this._onBoundInput) { this.removeEventListener('input', this._onBoundInput); this._onBoundInput = null; }
+    if (this._onBoundChange) { this.removeEventListener('change', this._onBoundChange); this._onBoundChange = null; }
     if (this._onBoundAutotune) { this.removeEventListener('autotune', this._onBoundAutotune); this._onBoundAutotune = null; }
     this._boundView = null;
   }
@@ -194,6 +196,9 @@ class BzCompass extends HTMLElement {
 
   get colorBy() { return this._colorBy; }
   set colorBy(v) { this._colorBy = v; this._scheduleRender(); }
+
+  get labelProps() { return this._labelProps; }
+  set labelProps(s) { this._labelProps = s instanceof Set ? s : new Set(s || []); this._scheduleRender(); }
 
   /** Update a single group by name. */
   update(name, strength, bearing) {
@@ -339,10 +344,14 @@ class BzCompass extends HTMLElement {
 
       // Push compass changes → view
       let _rebuildPending = false;
-      this.addEventListener('input', this._onBoundInput = (e) => {
-        const { name, strength, bearing } = e.detail;
-        view.propStrengths[name] = strength;
-        view.propBearings[name] = bearing;
+      const onCompassChange = (e) => {
+        if (!e.detail) return;
+        if (e.detail.name === '_alpha') {
+          view.smoothAlpha = e.detail.alpha;
+        } else {
+          view.propStrengths[e.detail.name] = e.detail.strength;
+          view.propBearings[e.detail.name] = e.detail.bearing;
+        }
         if (!_rebuildPending) {
           _rebuildPending = true;
           requestAnimationFrame(() => {
@@ -352,6 +361,18 @@ class BzCompass extends HTMLElement {
             view._blend(true).then(() => { view.layoutAll(); view.render(); });
           });
         }
+      };
+      this.addEventListener('input', this._onBoundInput = onCompassChange);
+      this.addEventListener('change', this._onBoundChange = onCompassChange);
+      this.addEventListener('colorby', (e) => {
+        if (!e.detail) return;
+        view.colorBy = (view.colorBy === e.detail.name) ? null : e.detail.name;
+      });
+      this.addEventListener('labelchange', (e) => {
+        if (!e.detail) return;
+        view.labelProps = new Set(e.detail.labelProps);
+        view._refreshPropCache();
+        view.render();
       });
 
       // Auto-tune button — toggle start/stop
@@ -425,6 +446,9 @@ class BzCompass extends HTMLElement {
         this.groups = groups;
       }
     }
+    this.alpha = v.smoothAlpha;
+    this.colorBy = v.colorBy;
+    this.labelProps = v.labelProps;
   }
 
   // ─── Geometry helpers ────��───────────────────────────────────────────────────
@@ -607,10 +631,13 @@ class BzCompass extends HTMLElement {
         if (lx - tw / 2 < margin) lx = margin + tw / 2;
         else if (lx + tw / 2 > w - margin) lx = w - margin - tw / 2;
       }
-      // Highlight active colorBy label
+      // Highlight active colorBy label; bold for labelProps
       const isColorBy = this._colorBy === this._groups[i].name;
-      if (isColorBy) ctx.globalAlpha = 1;
+      const isLabelProp = this._labelProps.has(this._groups[i].name);
+      if (isColorBy || isLabelProp) ctx.globalAlpha = 1;
+      if (isLabelProp) ctx.font = `bold ${fontSize * dpr}px -apple-system, system-ui, sans-serif`;
       ctx.fillText(name, lx, ly);
+      if (isLabelProp) ctx.font = `${fontSize * dpr}px -apple-system, system-ui, sans-serif`;
       // Underline for colorBy
       if (isColorBy) {
         const ulY = ly + fontSize * dpr * 0.55;
@@ -814,9 +841,21 @@ class BzCompass extends HTMLElement {
     if (labelIdx >= 0) {
       e.preventDefault();
       const name = this._groups[labelIdx].name;
-      this._colorBy = this._colorBy === name ? null : name;
-      this._scheduleRender();
-      this.dispatchEvent(new CustomEvent('colorby', { detail: { name }, bubbles: true }));
+      if (e.shiftKey) {
+        // Shift-click: toggle label prop (same as checkbox in bz-controls)
+        if (this._labelProps.has(name)) this._labelProps.delete(name);
+        else this._labelProps.add(name);
+        this._scheduleRender();
+        this.dispatchEvent(new CustomEvent('labelchange', {
+          detail: { name, checked: this._labelProps.has(name), labelProps: [...this._labelProps] },
+          bubbles: true,
+        }));
+      } else {
+        // Regular click: toggle colorBy
+        this._colorBy = this._colorBy === name ? null : name;
+        this._scheduleRender();
+        this.dispatchEvent(new CustomEvent('colorby', { detail: { name }, bubbles: true }));
+      }
       return;
     }
 

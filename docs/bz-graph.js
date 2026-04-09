@@ -272,6 +272,7 @@ class BzGraph extends HTMLElement {
       else compass.groups = groups;
       compass.alpha = v.smoothAlpha;
       compass.colorBy = v.colorBy;
+      compass.labelProps = v.labelProps;
     };
     this._canvas.addEventListener('statechange', sync);
     sync(); // initial sync — statechange already fired during init
@@ -303,6 +304,15 @@ class BzGraph extends HTMLElement {
     compass.addEventListener('colorby', (e) => {
       if (!this._view || !e.detail) return;
       this._view.colorBy = (this._view.colorBy === e.detail.name) ? null : e.detail.name;
+    });
+    compass.addEventListener('labelchange', (e) => {
+      if (!this._view || !e.detail) return;
+      this._view.labelProps = new Set(e.detail.labelProps);
+      this._view._refreshPropCache();
+      this._view.render();
+      // Sync controls checkboxes
+      const ctrl = this._controlsPanel?.querySelector('bz-controls');
+      if (ctrl) ctrl.labelProps = this._view.labelProps;
     });
     compass.addEventListener('autotune', () => this._runAutotune());
   }
@@ -375,6 +385,9 @@ class BzGraph extends HTMLElement {
       this._view.labelProps = new Set(e.detail.labelProps);
       this._view._refreshPropCache();
       this._view.render();
+      // Sync compass bold labels
+      const comp = this._compassPanel?.querySelector('bz-compass');
+      if (comp) comp.labelProps = this._view.labelProps;
     });
     controls.addEventListener('colorby', e => {
       const v = this._view;

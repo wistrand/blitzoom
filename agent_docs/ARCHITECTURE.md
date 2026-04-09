@@ -343,11 +343,11 @@ GPU tri-state in viewer: **Auto** (default, adaptive thresholds) → **GPU** (al
 (never). Button cycles on click. `autoGPU` option in `createBlitZoomView` auto-enables WebGPU
 when N×G > 2000 (default true).
 
-| Operation  | Auto GPU when                         | Reason                                        |
-| ---------- | ------------------------------------- | --------------------------------------------- |
-| Projection | N × G > 2000 and quantMode != rank   | GPU crossover ~400 nodes; rank needs float64   |
-| Blend      | N > 50,000                            | GPU has ~13ms fixed overhead; faster at scale  |
-| Auto-tune  | always CPU (via `blendFn` default)    | 50-80 blend evals faster on CPU except Amazon  |
+| Operation  | Auto GPU when                      | Reason                                        |
+| ---------- | ---------------------------------- | --------------------------------------------- |
+| Projection | N × G > 2000 and quantMode != rank | GPU crossover ~400 nodes; rank needs float64  |
+| Blend      | N > 50,000                         | GPU has ~13ms fixed overhead; faster at scale |
+| Auto-tune  | always CPU (via `blendFn` default) | 50-80 blend evals faster on CPU except Amazon |
 
 ## Known Limitations
 
