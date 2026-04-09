@@ -335,20 +335,30 @@ class BzGraph extends HTMLElement {
       this._tuneAbort = new AbortController();
       const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
       const v = this._view;
+      v.showProgress('Auto-tuning...');
       const result = await autoTuneStrengths(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
         strengths: true, alpha: true, signal: this._tuneAbort.signal,
+        onProgress: (info) => {
+          const pct = Math.round(100 * info.step / Math.max(1, info.total));
+          const phase = info.phase === 'presets' ? 'scanning presets'
+            : info.phase === 'done' ? 'done' : 'refining';
+          v.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
+        },
       });
       for (const g of v.groupNames) v.propStrengths[g] = result.strengths[g] ?? 0;
       v.smoothAlpha = result.alpha;
-      v.quantMode = result.quantMode;
+      if (v.quantMode !== 'norm') v.quantMode = result.quantMode;
       v._quantStats = {};
       const bearings = autoTuneBearings(v.nodes, v.groupNames, result.strengths);
       v.propBearings = bearings;
       v.levels = new Array(v.levels.length).fill(null);
       await v._blend();
       v.layoutAll();
-      v.render();
-    } catch (e) { console.warn('[bz-graph] autotune failed:', e.message); }
+      v.showProgress(null);
+    } catch (e) {
+      if (this._view) this._view.showProgress(null);
+      if (e.name !== 'AbortError') console.warn('[bz-graph] autotune failed:', e.message);
+    }
     this._tuneAbort = null;
   }
 
