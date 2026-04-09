@@ -960,6 +960,8 @@ class BlitZoom {
         } else {
             widget.groups = groups;
         }
+        widget.alpha = v.smoothAlpha;
+        widget.colorBy = v.colorBy;
     }
 
 
@@ -1623,11 +1625,12 @@ class BlitZoom {
 
         // Quantization mode toggle
         const quantBtn = document.getElementById('quantModeBtn');
-        const QUANT_MODES = ['rank', 'gaussian'];
-        const QUANT_LABELS = { rank: 'Q:R', gaussian: 'Q:G' };
+        const QUANT_MODES = ['gaussian', 'rank', 'norm'];
+        const QUANT_LABELS = { rank: 'Q:R', gaussian: 'Q:G', norm: 'Q:N' };
+        const QUANT_COLORS = { gaussian: 'var(--accent)', rank: '', norm: 'var(--accent3, #6af7c8)' };
         const updateQuantBtn = () => {
             quantBtn.textContent = QUANT_LABELS[v.quantMode];
-            quantBtn.style.background = v.quantMode !== 'rank' ? 'var(--accent)' : '';
+            quantBtn.style.background = QUANT_COLORS[v.quantMode] || '';
             quantBtn.style.color = v.quantMode !== 'rank' ? '#fff' : '';
         };
         this._updateQuantBtn = updateQuantBtn;
@@ -1683,7 +1686,7 @@ class BlitZoom {
         this._applyTuneResult = async (result) => {
             for (const g of v.groupNames) v.propStrengths[g] = result.strengths[g] ?? 0;
             v.smoothAlpha = result.alpha;
-            v.quantMode = result.quantMode;
+            // Preserve user's quant mode — auto-tune optimizes strengths/alpha/bearings, not quantization.
             v._quantStats = {};
             if (result.labelProps) {
                 v.labelProps.clear();
@@ -1960,6 +1963,13 @@ class BlitZoom {
         const compassWidget = document.getElementById('compassWidget');
         const onCompassInput = (e) => {
             if (!e.detail) return;
+            if (e.detail.name === '_alpha') {
+                v.smoothAlpha = e.detail.alpha;
+                document.getElementById('nudgeSlider').value = v.smoothAlpha;
+                document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
+                this._scheduleRebuild();
+                return;
+            }
             const { name, strength, bearing } = e.detail;
             v.propStrengths[name] = strength;
             v.propBearings[name] = bearing;
@@ -1967,7 +1977,12 @@ class BlitZoom {
         };
         compassWidget.addEventListener('input', onCompassInput);
         compassWidget.addEventListener('change', (e) => {
-            if (e.detail) {
+            if (!e.detail) return;
+            if (e.detail.name === '_alpha') {
+                v.smoothAlpha = e.detail.alpha;
+                document.getElementById('nudgeSlider').value = v.smoothAlpha;
+                document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
+            } else {
                 v.propStrengths[e.detail.name] = e.detail.strength;
                 v.propBearings[e.detail.name] = e.detail.bearing;
             }

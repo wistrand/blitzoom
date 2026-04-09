@@ -21,11 +21,13 @@
 
 const TAU = Math.PI * 2;
 const HANDLE_RADIUS = 7;
+const ALPHA_HANDLE_RADIUS = 9;
 const HIT_RADIUS = 14;        // generous hit area
 const SNAP_ANGLE_DEG = 5;     // ±5° bearing dead zone near home
 const SNAP_CENTER_FRAC = 0.08; // radius fraction for strength→0 snap
 const FLOOR_FRAC = 0.25;      // strength 0 displays at 25% radius
 const LABEL_PAD = 14;         // px outside outer ring for labels
+const ALPHA_IDX = -2;         // sentinel index for the center alpha handle
 
 class BzCompass extends HTMLElement {
   static get observedAttributes() { return ['max-strength', 'for']; }
@@ -33,6 +35,9 @@ class BzCompass extends HTMLElement {
   constructor() {
     super();
     this._groups = [];
+    this._alpha = 0;         // topology alpha (0-1), shown as center handle
+    this._colorBy = null;    // which group is color-active (underlined)
+    this._labelRects = [];   // [{x, y, w, h, idx}] for label click hit testing
     this._maxStrength = 10;
     this._dragIdx = -1;
     this._dragConstraint = null; // null | 'radial' | 'angular'
@@ -142,6 +147,7 @@ class BzCompass extends HTMLElement {
       g.strength = 0;
       g.bearing = 0;
     }
+    this._alpha = 0;
     this._scheduleRender();
     // Fire change for each group so listeners can sync
     for (const g of this._groups) {
@@ -150,6 +156,10 @@ class BzCompass extends HTMLElement {
         bubbles: true,
       }));
     }
+    this.dispatchEvent(new CustomEvent('change', {
+      detail: { name: '_alpha', alpha: 0 },
+      bubbles: true,
+    }));
   }
 
   _announceHandle(i) {
@@ -178,6 +188,12 @@ class BzCompass extends HTMLElement {
 
   get maxStrength() { return this._maxStrength; }
   set maxStrength(v) { this._maxStrength = v; this._scheduleRender(); }
+
+  get alpha() { return this._alpha; }
+  set alpha(v) { this._alpha = Math.max(0, Math.min(1, v)); this._scheduleRender(); }
+
+  get colorBy() { return this._colorBy; }
+  set colorBy(v) { this._colorBy = v; this._scheduleRender(); }
 
   /** Update a single group by name. */
   update(name, strength, bearing) {
@@ -455,15 +471,34 @@ class BzCompass extends HTMLElement {
     return { strength, bearing };
   }
 
-  /** Hit test: return group index at (x, y) or -1. */
+  /** Hit test: return group index at (x, y), ALPHA_IDX for center handle, or -1. */
   _hitTest(x, y) {
     const dpr = window.devicePixelRatio || 1;
     const px = x * dpr, py = y * dpr;
+    // Check group handles first (they may overlap center area)
     for (let i = this._groups.length - 1; i >= 0; i--) {
       const [hx, hy] = this._handleXY(this._groups[i], i);
       if (Math.hypot(px - hx, py - hy) < HIT_RADIUS * dpr) return i;
     }
+    // Check center alpha handle
+    const alphaR = this._alphaHandleRadius();
+    if (Math.hypot(px - this._cx, py - this._cy) < Math.max(HIT_RADIUS * dpr, alphaR + 4 * dpr)) return ALPHA_IDX;
     return -1;
+  }
+
+  /** Hit test labels: return group index at CSS (x, y), or -1. */
+  _labelHitTest(x, y) {
+    for (const r of this._labelRects) {
+      if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return r.idx;
+    }
+    return -1;
+  }
+
+  /** Radius of the alpha center handle in canvas pixels. */
+  _alphaHandleRadius() {
+    const dpr = window.devicePixelRatio || 1;
+    const maxR = FLOOR_FRAC * this._radius * 0.8; // max radius = 80% of the floor ring
+    return Math.max(ALPHA_HANDLE_RADIUS * dpr, this._alpha * maxR);
   }
 
   // ─── Rendering ───────���───────────────────────────────────────────────────────
@@ -529,6 +564,7 @@ class BzCompass extends HTMLElement {
     ctx.setLineDash([]);
 
     // Spokes + labels
+    this._labelRects = [];
     const fontSize = Math.max(8, Math.min(11, R / (G + 1)));
     ctx.font = `${fontSize * dpr}px -apple-system, system-ui, sans-serif`;
     ctx.textBaseline = 'middle';
@@ -571,8 +607,32 @@ class BzCompass extends HTMLElement {
         if (lx - tw / 2 < margin) lx = margin + tw / 2;
         else if (lx + tw / 2 > w - margin) lx = w - margin - tw / 2;
       }
+      // Highlight active colorBy label
+      const isColorBy = this._colorBy === this._groups[i].name;
+      if (isColorBy) ctx.globalAlpha = 1;
       ctx.fillText(name, lx, ly);
+      // Underline for colorBy
+      if (isColorBy) {
+        const ulY = ly + fontSize * dpr * 0.55;
+        let ulX1, ulX2;
+        if (ctx.textAlign === 'left') { ulX1 = lx; ulX2 = lx + tw; }
+        else if (ctx.textAlign === 'right') { ulX1 = lx - tw; ulX2 = lx; }
+        else { ulX1 = lx - tw / 2; ulX2 = lx + tw / 2; }
+        ctx.strokeStyle = fg;
+        ctx.lineWidth = 1 * dpr;
+        ctx.beginPath();
+        ctx.moveTo(ulX1, ulY);
+        ctx.lineTo(ulX2, ulY);
+        ctx.stroke();
+      }
       ctx.globalAlpha = 1;
+      // Store label rect for click hit testing (in CSS px for pointer events)
+      const fh = fontSize * dpr;
+      let rx;
+      if (ctx.textAlign === 'left') rx = lx;
+      else if (ctx.textAlign === 'right') rx = lx - tw;
+      else rx = lx - tw / 2;
+      this._labelRects.push({ x: rx / dpr, y: (ly - fh / 2) / dpr, w: tw / dpr, h: fh / dpr, idx: i });
     }
 
     // Polygon fill
@@ -662,13 +722,42 @@ class BzCompass extends HTMLElement {
       }
     }
 
+    // Center alpha handle
+    const accent2 = style.getPropertyValue('--accent2').trim() || '#f76a8c';
+    const alphaR = this._alphaHandleRadius();
+    const alphaActive = this._dragIdx === ALPHA_IDX;
+    const alphaHover = this._hoverIdx === ALPHA_IDX;
+    // Filled circle showing alpha level
+    if (this._alpha > 0) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, alphaR, 0, TAU);
+      ctx.fillStyle = accent2;
+      ctx.globalAlpha = 0.15 + this._alpha * 0.2;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    // Handle ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(ALPHA_HANDLE_RADIUS * dpr, alphaR), 0, TAU);
+    ctx.strokeStyle = accent2;
+    ctx.lineWidth = (alphaActive ? 2.5 : 1.5) * dpr;
+    ctx.globalAlpha = alphaActive ? 1 : alphaHover ? 0.85 : 0.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
     // Center dot
     ctx.beginPath();
     ctx.arc(cx, cy, 3 * dpr, 0, TAU);
-    ctx.fillStyle = fg;
-    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = this._alpha > 0 ? accent2 : fg;
+    ctx.globalAlpha = this._alpha > 0 ? 0.9 : 0.4;
     ctx.fill();
     ctx.globalAlpha = 1;
+    // Value label on hover/drag
+    if (alphaActive || alphaHover) {
+      ctx.font = `bold ${10 * dpr}px -apple-system, system-ui, sans-serif`;
+      ctx.fillStyle = fg;
+      ctx.textAlign = 'center';
+      ctx.fillText(`α ${this._alpha.toFixed(2)}`, cx, cy - (Math.max(ALPHA_HANDLE_RADIUS * dpr, alphaR) + 8 * dpr));
+    }
 
     // Help overlay
     if (this._showHelp) {
@@ -720,14 +809,35 @@ class BzCompass extends HTMLElement {
       return;
     }
 
+    // Check label click first (before handle hit test)
+    const labelIdx = this._labelHitTest(x, y);
+    if (labelIdx >= 0) {
+      e.preventDefault();
+      const name = this._groups[labelIdx].name;
+      this._colorBy = this._colorBy === name ? null : name;
+      this._scheduleRender();
+      this.dispatchEvent(new CustomEvent('colorby', { detail: { name }, bubbles: true }));
+      return;
+    }
+
     const idx = this._hitTest(x, y);
-    if (idx < 0) return;
+    if (idx === -1) return;
 
     e.preventDefault();
     this._canvas.focus();
     this._dragIdx = idx;
-    this._focusIdx = idx;
-    this._dragConstraint = e.shiftKey ? 'radial' : e.altKey ? 'angular' : null;
+    if (idx !== ALPHA_IDX) this._focusIdx = idx;
+    this._dragConstraint = (idx === ALPHA_IDX) ? 'radial' : e.shiftKey ? 'radial' : e.altKey ? 'angular' : null;
+    if (idx === ALPHA_IDX) {
+      const dpr = window.devicePixelRatio || 1;
+      const dx = x * dpr - this._cx, dy = y * dpr - this._cy;
+      this._alphaDragStartDist = Math.hypot(dx, dy);
+      // Store the unit radial direction at drag start (for signed projection)
+      // Default to upward if clicking exactly at center (zero vector)
+      const len = this._alphaDragStartDist;
+      this._alphaDragDir = len > 1 ? [dx / len, dy / len] : [0, -1];
+      this._alphaDragStartVal = this._alpha;
+    }
     this._canvas.setPointerCapture(e.pointerId);
     this._canvas.style.cursor = 'grabbing';
     this._scheduleRender();
@@ -736,7 +846,20 @@ class BzCompass extends HTMLElement {
   _onPointerMove(e) {
     const [x, y] = this._canvasXY(e);
 
-    if (this._dragIdx >= 0) {
+    if (this._dragIdx === ALPHA_IDX) {
+      // Alpha center handle: signed projection onto drag start direction
+      // Moving through center and out the other side gives negative delta → reaches zero
+      const dpr = window.devicePixelRatio || 1;
+      const dx = x * dpr - this._cx, dy = y * dpr - this._cy;
+      const signedDist = dx * this._alphaDragDir[0] + dy * this._alphaDragDir[1];
+      const delta = (signedDist - this._alphaDragStartDist) / this._radius;
+      this._alpha = Math.max(0, Math.min(1, this._alphaDragStartVal + delta));
+      this._scheduleRender();
+      this.dispatchEvent(new CustomEvent('input', {
+        detail: { name: '_alpha', alpha: this._alpha },
+        bubbles: true,
+      }));
+    } else if (this._dragIdx >= 0) {
       // Update constraint if modifier changed mid-drag
       this._dragConstraint = e.shiftKey ? 'radial' : e.altKey ? 'angular' : null;
 
@@ -761,13 +884,24 @@ class BzCompass extends HTMLElement {
       // Hover detection
       const oldHover = this._hoverIdx;
       this._hoverIdx = this._hitTest(x, y);
-      this._canvas.style.cursor = this._hoverIdx >= 0 ? 'grab' : 'default';
+      const onLabel = this._labelHitTest(x, y) >= 0;
+      this._canvas.style.cursor = onLabel ? 'pointer' : (this._hoverIdx >= 0 || this._hoverIdx === ALPHA_IDX) ? 'grab' : 'default';
       if (this._hoverIdx !== oldHover) this._scheduleRender();
     }
   }
 
   _onPointerUp(e) {
-    if (this._dragIdx >= 0) {
+    if (this._dragIdx === ALPHA_IDX) {
+      this.dispatchEvent(new CustomEvent('change', {
+        detail: { name: '_alpha', alpha: this._alpha },
+        bubbles: true,
+      }));
+      this._dragIdx = -1;
+      this._alphaDragDir = null;
+      try { this._canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      this._canvas.style.cursor = 'default';
+      this._scheduleRender();
+    } else if (this._dragIdx >= 0) {
       const g = this._groups[this._dragIdx];
       this.dispatchEvent(new CustomEvent('change', {
         detail: { name: g.name, strength: g.strength, bearing: g.bearing },
@@ -782,9 +916,10 @@ class BzCompass extends HTMLElement {
   }
 
   _onPointerCancel(e) {
-    if (this._dragIdx >= 0) {
+    if (this._dragIdx >= 0 || this._dragIdx === ALPHA_IDX) {
       this._dragIdx = -1;
       this._dragConstraint = null;
+      this._alphaDragDir = null;
       try { this._canvas.releasePointerCapture(e.pointerId); } catch (_) {}
       this._canvas.style.cursor = 'default';
       this._scheduleRender();
@@ -794,8 +929,17 @@ class BzCompass extends HTMLElement {
   _onDblClick(e) {
     const [x, y] = this._canvasXY(e);
     const idx = this._hitTest(x, y);
-    if (idx < 0) return;
+    if (idx === -1) return;
     e.preventDefault();
+    if (idx === ALPHA_IDX) {
+      this._alpha = this._alpha > 0 ? 0 : 1;
+      this._scheduleRender();
+      this.dispatchEvent(new CustomEvent('change', {
+        detail: { name: '_alpha', alpha: this._alpha },
+        bubbles: true,
+      }));
+      return;
+    }
     const g = this._groups[idx];
     g.strength = 0;
     g.bearing = 0;
