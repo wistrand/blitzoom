@@ -91,9 +91,9 @@ el.addEventListener('ready', () => {
 <bz-controls for="g"></bz-controls>
 ```
 
-`<bz-compass>` — radial 2D control for strengths + bearings + alpha (center handle).
-`<bz-controls>` — strength sliders + bearing dials + label checkboxes.
-Both bind declaratively via `for` attribute.
+`<bz-compass>` — radial 2D control for strengths + bearings + alpha (center handle). Click a label to set colorBy; shift-click to toggle label display.
+`<bz-controls>` — strength sliders + bearing dials + label checkboxes. Checkboxes control which property groups appear as node labels (`labelProps`).
+Both bind declaratively via `for` attribute and dispatch `input`, `change`, `colorby`, and `labelchange` events.
 
 ## Incremental Updates
 
@@ -143,7 +143,9 @@ el.addEventListener('nodesremoved', e => console.log(`-${e.detail.count}`));
 el.addEventListener('nodesupdated', e => console.log(`~${e.detail.count}`));
 ```
 
-All events include `e.detail.total` (current node count).
+All mutation events include `e.detail.total` (current node count).
+
+Other events on the canvas: `statechange` (after any state mutation), `blend` (after blend completes), `ready` (on `<bz-graph>` after initial load). On companion components: `colorby` (label click, `e.detail.name`), `labelchange` (shift-click label or checkbox toggle, `e.detail.labelProps` array).
 
 ## Canvas API
 
