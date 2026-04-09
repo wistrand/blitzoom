@@ -13,11 +13,14 @@ BlitZoom is a deterministic graph layout that positions nodes by property simila
 Simplest way — a single HTML element with the bundle loaded directly from GitHub:
 
 ```html
+<style>bz-graph:not(:defined) { visibility: hidden; }</style>
 <script type="module" src="https://wistrand.github.io/blitzoom/dist/blitzoom.bundle.js"></script>
 <bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
           level="3" heatmap="density" legend>
 </bz-graph>
 ```
+
+The `<style>` rule prevents a flash of raw text before the component loads. Always include it before any `<bz-graph>` element.
 
 Or from a local copy:
 
