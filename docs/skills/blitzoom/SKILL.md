@@ -13,7 +13,7 @@ BlitZoom is a deterministic graph layout that positions nodes by property simila
 Simplest way — a single HTML element with the bundle loaded directly from GitHub:
 
 ```html
-<script type="module" src="https://raw.githubusercontent.com/wistrand/blitzoom/main/docs/dist/blitzoom.bundle.js"></script>
+<script type="module" src="https://wistrand.github.io/blitzoom/dist/blitzoom.bundle.js"></script>
 <bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
           level="3" heatmap="density" legend>
 </bz-graph>
@@ -153,7 +153,7 @@ For lower-level control without the web component. Import from the bundle URL or
 
 ```js
 // From GitHub (no install needed):
-import { createBlitZoomView } from 'https://raw.githubusercontent.com/wistrand/blitzoom/main/docs/dist/blitzoom.bundle.js';
+import { createBlitZoomView } from 'https://wistrand.github.io/blitzoom/dist/blitzoom.bundle.js';
 // Or local:
 // import { createBlitZoomView } from './blitzoom.bundle.js';
 
