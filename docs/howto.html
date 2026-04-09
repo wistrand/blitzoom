@@ -824,19 +824,25 @@ viewGL.useWebGL = <span class="keyword">true</span>;   <span class="comment">// 
 
 <h3>Inline JSON</h3>
 
-<pre>&lt;bz-graph format="json" level="2" legend color-scheme="6"&gt;
-{
-  "nodes": [
-    {"id": "alice", "group": "eng", "label": "Alice", "lang": "Go"},
-    {"id": "bob",   "group": "eng", "label": "Bob",   "lang": "Go"},
-    {"id": "carol", "group": "des", "label": "Carol", "lang": "JS"}
-  ],
-  "edges": [
-    {"src": "alice", "dst": "bob"},
-    {"src": "bob", "dst": "carol"}
-  ]
-}
+<p>Wrap data in <code>&lt;script type="application/json"&gt;</code> to avoid any flash of raw text &mdash; no <code>:not(:defined)</code> CSS needed. Format is auto-detected from the script type:</p>
+
+<pre>&lt;bz-graph level="2" legend color-scheme="6"&gt;
+  &lt;script type="application/json"&gt;
+  {
+    "nodes": [
+      {"id": "alice", "group": "eng", "label": "Alice", "lang": "Go"},
+      {"id": "bob",   "group": "eng", "label": "Bob",   "lang": "Go"},
+      {"id": "carol", "group": "des", "label": "Carol", "lang": "JS"}
+    ],
+    "edges": [
+      {"src": "alice", "dst": "bob"},
+      {"src": "bob", "dst": "carol"}
+    ]
+  }
+  &lt;/script&gt;
 &lt;/bz-graph&gt;</pre>
+
+<p>You can also use raw text with <code>format="json"</code> (requires the <code>:not(:defined)</code> CSS rule to prevent FOUC).</p>
 
 <h3>Inline SNAP</h3>
 

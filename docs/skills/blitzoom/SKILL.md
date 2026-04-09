@@ -58,7 +58,20 @@ The bundle is a single minified file (~98KB gzipped) that includes everything â€
 | `incremental`       | (boolean)               | Enable norm quantization for stable incremental updates   |
 | `rebuild-threshold` | `"0.10"`                | Full rebuild trigger (fraction of original N)            |
 
-### Inline JSON
+### Inline JSON (recommended: `<script>` wrapper)
+
+Wrap data in `<script type="application/json">` to avoid any flash of raw text â€” no `:not(:defined)` CSS needed:
+
+```html
+<bz-graph level="2" legend>
+  <script type="application/json">
+    {"nodes":[{"id":"a","group":"x"},{"id":"b","group":"y"}],
+     "edges":[{"src":"a","dst":"b"}]}
+  </script>
+</bz-graph>
+```
+
+The format is auto-detected from the script type. You can also use raw text with `format="json"` (requires the `:not(:defined)` CSS rule):
 
 ```html
 <bz-graph format="json" level="2" legend>
@@ -68,6 +81,17 @@ The bundle is a single minified file (~98KB gzipped) that includes everything â€
 ```
 
 ### Inline SNAP
+
+```html
+<bz-graph level="2" legend>
+  <script type="text/plain">
+alice	bob
+bob	carol
+  </script>
+</bz-graph>
+```
+
+Or as raw text (requires `:not(:defined)` CSS):
 
 ```html
 <bz-graph level="2" legend>

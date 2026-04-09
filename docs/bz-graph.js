@@ -8,6 +8,14 @@
 //             level="3" heatmap="density" legend color-scheme="viridis">
 //   </bz-graph>
 //
+//   <!-- Inline JSON: use <script> to avoid FOUC (no :not(:defined) CSS needed) -->
+//   <bz-graph>
+//     <script type="application/json">
+//       {"nodes":[{"id":"a","group":"x"}], "edges":[]}
+//     </script>
+//   </bz-graph>
+//
+//   <!-- Or raw text (needs :not(:defined) CSS to avoid flash) -->
 //   <bz-graph format="json">
 //     {"nodes":[{"id":"a","group":"x"},{"id":"b","group":"y"}],
 //      "edges":[{"src":"a","dst":"b"}]}
@@ -109,7 +117,11 @@ class BzGraph extends HTMLElement {
     const edgesUrl = this.getAttribute('edges');
     const nodesUrl = this.getAttribute('nodes');
     const format = this.getAttribute('format');
-    const inline = this.textContent.trim();
+    // Check for <script> child first (no FOUC), fall back to raw textContent
+    const scriptEl = this.querySelector('script[type="application/json"], script[type="text/plain"], script[type="text/xml"]');
+    const inline = scriptEl ? scriptEl.textContent.trim() : this.textContent.trim();
+    // Infer format from script type if not explicitly set
+    const effectiveFormat = format || (scriptEl?.type === 'application/json' ? 'json' : null);
 
     if (edgesUrl) {
       // File mode: fetch SNAP files
@@ -118,8 +130,8 @@ class BzGraph extends HTMLElement {
         nodesUrl ? fetch(nodesUrl).then(r => r.text()).catch(() => null) : Promise.resolve(null),
       ]);
       this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
-    } else if (inline && format === 'json') {
-      // Inline JSON mode
+    } else if (inline && (effectiveFormat === 'json')) {
+      // Inline JSON mode (from format attribute, or inferred from <script type="application/json">)
       const data = JSON.parse(inline);
       const nodes = data.nodes || [];
       const edges = data.edges || [];
