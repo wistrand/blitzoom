@@ -12,7 +12,7 @@
 //   const view = new BlitZoomCanvas(canvasElement, { nodes, edges, ... });
 
 import {
-  MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
+  MINHASH_K, PROJECTION_SEED_BASE, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
   buildGaussianProjection, unifiedBlend, buildLevel,
   buildLevelNodes, buildLevelEdges, cellIdAtLevel,
   getNodePropValue, getSupernodeDominantValue, maxCountKey,
@@ -83,7 +83,7 @@ export class BlitZoomCanvas {
 
     // Build projection matrices
     for (let i = 0; i < this.groupNames.length; i++) {
-      this.groupProjections[this.groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
+      this.groupProjections[this.groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
     }
 
     // Compute max degree

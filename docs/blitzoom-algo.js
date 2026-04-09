@@ -20,6 +20,7 @@ export const RAW_LEVEL = 14; // index into LEVEL_LABELS for the raw (individual 
 export const LEVEL_LABELS = ['L1','L2','L3','L4','L5','L6','L7','L8','L9','L10','L11','L12','L13','L14','RAW'];
 export const STRENGTH_FLOOR_RATIO = 0.10; // adaptive floor: 10% of max strength — prevents low-entropy collapse
 export const STRENGTH_FLOOR_MIN = 0.10;   // absolute minimum floor — gives equal blend when all strengths are zero
+export const PROJECTION_SEED_BASE = 2001; // seed offset for per-group Gaussian projection matrices
 
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
@@ -304,22 +305,18 @@ function projNormSq(seed) {
   return result;
 }
 
-export function normQuantize(nodes, groupNames, propStrengths) {
-  // Compute effective weights (same floor logic as unifiedBlend)
-  let maxW = 0;
-  for (const g of groupNames) { const raw = propStrengths[g] || 0; if (raw > maxW) maxW = raw; }
-  const floor = Math.max(maxW * STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN);
-  const effW = {};
-  let totalW = 0;
-  for (let gi = 0; gi < groupNames.length; gi++) {
-    effW[groupNames[gi]] = Math.max(propStrengths[groupNames[gi]] || 0, floor);
-    totalW += effW[groupNames[gi]];
-  }
-
+/**
+ * Norm-based quantization using pre-computed effective weights from unifiedBlend.
+ * @param {Array} nodes
+ * @param {string[]} groupNames
+ * @param {object} effW - { groupName: effectiveWeight } (from unifiedBlend's floor logic)
+ * @param {number} totalW - sum of effective weights
+ */
+export function normQuantize(nodes, groupNames, effW, totalW) {
   // Compute σ from projection matrix norms
   let varX = 0, varY = 0;
   for (let gi = 0; gi < groupNames.length; gi++) {
-    const norms = projNormSq(2001 + gi);
+    const norms = projNormSq(PROJECTION_SEED_BASE + gi);
     const w = effW[groupNames[gi]];
     varX += w * w * norms[0];
     varY += w * w * norms[1];
@@ -336,6 +333,21 @@ export function normQuantize(nodes, groupNames, propStrengths) {
     nodes[i].px = ux * 2 - 1;
     nodes[i].py = uy * 2 - 1;
   }
+}
+
+/** Compute effective weights with adaptive floor. Shared by unifiedBlend and GPU blend.
+ *  @returns {{ effW: object, totalW: number }} */
+export function computeEffectiveWeights(groupNames, propStrengths) {
+  let maxW = 0;
+  for (const g of groupNames) { const raw = propStrengths[g] || 0; if (raw > maxW) maxW = raw; }
+  const floor = Math.max(maxW * STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN);
+  const effW = {};
+  let totalW = 0;
+  for (const g of groupNames) {
+    effW[g] = Math.max(propStrengths[g] || 0, floor);
+    totalW += effW[g];
+  }
+  return { effW, totalW };
 }
 
 // Iterative topology smoothing via convex combination of property anchors and neighbor mean.
@@ -377,20 +389,7 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
   const w = propStrengths;
   // Adaptive strength floor: max(10% of max strength, absolute minimum of 0.10).
   // Prevents low-entropy collapse: zero-strength high-entropy groups always contribute 10% spreading.
-  // At all-zero strengths the absolute minimum gives equal blend (no discontinuity).
-  // As strengths grow, the ratio-based floor scales with the user's range.
-  let maxW = 0;
-  for (const g of groupNames) {
-    const raw = w[g] || 0;
-    if (raw > maxW) maxW = raw;
-  }
-  const floor = Math.max(maxW * STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN);
-  let propTotal = 0;
-  const effW = {};
-  for (const g of groupNames) {
-    effW[g] = Math.max(w[g] || 0, floor);
-    propTotal += effW[g];
-  }
+  const { effW, totalW: propTotal } = computeEffectiveWeights(groupNames, w);
 
   // Precompute per-group cos/sin for bearings. Fast path when no bearings: skip
   // both the precompute and the rotation branch in the per-node loop.
@@ -451,7 +450,11 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
     }
   }
 
-  const doQuant = () => quantMode === 'gaussian' ? gaussianQuantize(nodes, quantStats) : quantMode === 'norm' ? normQuantize(nodes, groupNames, propStrengths) : normalizeAndQuantize(nodes);
+  const doQuant = () => {
+    if (quantMode === 'gaussian') gaussianQuantize(nodes, quantStats);
+    else if (quantMode === 'norm') normQuantize(nodes, groupNames, effW, propTotal);
+    else normalizeAndQuantize(nodes);
+  };
   if (smoothAlpha === 0 || passes === 0) { doQuant(); return; }
 
   const alpha = Math.max(0, Math.min(1, smoothAlpha)); // clamp to [0,1]

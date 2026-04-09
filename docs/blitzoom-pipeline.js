@@ -1,7 +1,7 @@
 // blitzoom-pipeline.js — Shared parsing, graph building, and tokenization/projection.
 // No DOM, no Worker API. Usable from Web Workers, Deno, or browser.
 
-import { MINHASH_K, buildGaussianProjection, computeMinHash, computeMinHashInto, _sig, projectInto } from './blitzoom-algo.js';
+import { MINHASH_K, PROJECTION_SEED_BASE, buildGaussianProjection, computeMinHash, computeMinHashInto, _sig, projectInto } from './blitzoom-algo.js';
 
 // ─── SNAP file parsers ───────────────────────────────────────────────────────
 
@@ -366,7 +366,7 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
   numericBins = numericBins || {};
   const groupProjections = {};
   for (let i = 0; i < groupNames.length; i++) {
-    groupProjections[groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
+    groupProjections[groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
   }
 
   const N = nodeArray.length;

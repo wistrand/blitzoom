@@ -1,7 +1,7 @@
 // blitzoom-viewer.js — BlitZoom viewer application. Composes BlitZoomCanvas with UI, workers, data loading.
 
 import {
-    MINHASH_K, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
+    MINHASH_K, PROJECTION_SEED_BASE, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
     buildGaussianProjection, cellIdAtLevel,
 } from './blitzoom-algo.js';
 import { generateGroupColors } from './blitzoom-colors.js';
@@ -1204,7 +1204,7 @@ class BlitZoom {
 
         v.groupProjections = {};
         for (let i = 0; i < v.groupNames.length; i++) {
-            v.groupProjections[v.groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
+            v.groupProjections[v.groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
         }
 
         const G = groupNames.length;

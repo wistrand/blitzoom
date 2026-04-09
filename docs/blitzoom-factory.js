@@ -2,7 +2,7 @@
 // Extracted from blitzoom-canvas.js to separate construction logic from the component.
 
 import { BlitZoomCanvas } from './blitzoom-canvas.js';
-import { MINHASH_K, ZOOM_LEVELS, buildGaussianProjection } from './blitzoom-algo.js';
+import { ZOOM_LEVELS } from './blitzoom-algo.js';
 import { generateGroupColors } from './blitzoom-colors.js';
 import { autoTuneStrengths } from './blitzoom-utils.js';
 import { runPipeline, computeProjections, computeNumericBins, computeAdjGroups } from './blitzoom-pipeline.js';
