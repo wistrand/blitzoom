@@ -378,26 +378,36 @@ class BzCompass extends HTMLElement {
       // Auto-tune button — toggle start/stop
       let tuneAbort = null;
       this.addEventListener('autotune', this._onBoundAutotune = async () => {
-        if (tuneAbort) { tuneAbort.abort(); return; }
+        if (tuneAbort) { tuneAbort.abort(); view.showProgress(null); return; }
         try {
           tuneAbort = new AbortController();
           const btn = this._shadow.querySelector('[data-action="auto"]');
           if (btn) { btn.textContent = '■'; btn.title = 'Stop auto-tune'; }
+          view.showProgress('Auto-tuning...');
           const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
           const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, {
             strengths: true, alpha: true, signal: tuneAbort.signal,
+            onProgress: (info) => {
+              const pct = Math.round(100 * info.step / Math.max(1, info.total));
+              const phase = info.phase === 'presets' ? 'scanning presets'
+                : info.phase === 'done' ? 'done' : 'refining';
+              view.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
+            },
           });
           for (const g of view.groupNames) view.propStrengths[g] = result.strengths[g] ?? 0;
           view.smoothAlpha = result.alpha;
-          view.quantMode = result.quantMode;
+          if (view.quantMode !== 'norm') view.quantMode = result.quantMode;
           view._quantStats = {};
           const bearings = autoTuneBearings(view.nodes, view.groupNames, result.strengths);
           view.propBearings = bearings;
           view.levels = new Array(view.levels.length).fill(null);
           await view._blend();
           view.layoutAll();
-          view.render();
-        } catch (e) { console.warn('[bz-compass] autotune failed:', e.message); }
+          view.showProgress(null);
+        } catch (e) {
+          view.showProgress(null);
+          if (e.name !== 'AbortError') console.warn('[bz-compass] autotune failed:', e.message);
+        }
         tuneAbort = null;
         const btn = this._shadow.querySelector('[data-action="auto"]');
         if (btn) { btn.textContent = 'A'; btn.title = 'Auto-tune strengths and bearings'; }

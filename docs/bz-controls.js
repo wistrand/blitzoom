@@ -290,6 +290,10 @@ class BzControls extends HTMLElement {
       this._boundTarget = null;
     }
     if (this._onBoundInput) { this.removeEventListener('input', this._onBoundInput); this._onBoundInput = null; }
+    if (this._onBoundChange) { this.removeEventListener('change', this._onBoundChange); this._onBoundChange = null; }
+    if (this._onBoundColorby) { this.removeEventListener('colorby', this._onBoundColorby); this._onBoundColorby = null; }
+    if (this._onBoundLabelchange) { this.removeEventListener('labelchange', this._onBoundLabelchange); this._onBoundLabelchange = null; }
+    if (this._onBoundAutotune) { this.removeEventListener('autotune', this._onBoundAutotune); this._onBoundAutotune = null; }
     this._boundView = null;
   }
 
@@ -308,10 +312,10 @@ class BzControls extends HTMLElement {
 
       // Push control changes → view
       let _rebuildPending = false;
-      this.addEventListener('input', this._onBoundInput = (e) => {
-        const { name, strength, bearing } = e.detail;
-        view.propStrengths[name] = strength;
-        view.propBearings[name] = bearing;
+      const onControlChange = (e) => {
+        if (!e.detail) return;
+        view.propStrengths[e.detail.name] = e.detail.strength;
+        view.propBearings[e.detail.name] = e.detail.bearing;
         if (!_rebuildPending) {
           _rebuildPending = true;
           requestAnimationFrame(() => {
@@ -321,6 +325,54 @@ class BzControls extends HTMLElement {
             view._blend(true).then(() => { view.layoutAll(); view.render(); });
           });
         }
+      };
+      this.addEventListener('input', this._onBoundInput = onControlChange);
+      this.addEventListener('change', this._onBoundChange = onControlChange);
+
+      this.addEventListener('colorby', this._onBoundColorby = (e) => {
+        if (!e.detail) return;
+        view.colorBy = (view.colorBy === e.detail.name) ? null : e.detail.name;
+      });
+
+      this.addEventListener('labelchange', this._onBoundLabelchange = (e) => {
+        if (!e.detail) return;
+        view.labelProps = new Set(e.detail.labelProps);
+        view._refreshPropCache();
+        view.render();
+      });
+
+      // Auto-tune button
+      let tuneAbort = null;
+      this.addEventListener('autotune', this._onBoundAutotune = async () => {
+        if (tuneAbort) { tuneAbort.abort(); view.showProgress(null); return; }
+        try {
+          tuneAbort = new AbortController();
+          view.showProgress('Auto-tuning...');
+          const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
+          const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, {
+            strengths: true, alpha: true, signal: tuneAbort.signal,
+            onProgress: (info) => {
+              const pct = Math.round(100 * info.step / Math.max(1, info.total));
+              const phase = info.phase === 'presets' ? 'scanning presets'
+                : info.phase === 'done' ? 'done' : 'refining';
+              view.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
+            },
+          });
+          for (const g of view.groupNames) view.propStrengths[g] = result.strengths[g] ?? 0;
+          view.smoothAlpha = result.alpha;
+          if (view.quantMode !== 'norm') view.quantMode = result.quantMode;
+          view._quantStats = {};
+          const bearings = autoTuneBearings(view.nodes, view.groupNames, result.strengths);
+          view.propBearings = bearings;
+          view.levels = new Array(view.levels.length).fill(null);
+          await view._blend();
+          view.layoutAll();
+          view.showProgress(null);
+        } catch (e) {
+          view.showProgress(null);
+          if (e.name !== 'AbortError') console.warn('[bz-controls] autotune failed:', e.message);
+        }
+        tuneAbort = null;
       });
 
       // Pull view changes → controls
@@ -350,11 +402,12 @@ class BzControls extends HTMLElement {
         const o = this._groups[i];
         return o && o.name === g.name && o.strength === g.strength && o.bearing === g.bearing;
       });
-      if (same) return;
-      this.updateAll(groups);
+      if (!same) this.updateAll(groups);
     } else {
       this.groups = groups;
     }
+    this.colorBy = v.colorBy;
+    this.labelProps = v.labelProps;
   }
 }
 
