@@ -78,16 +78,16 @@ Changes:
 
 ### What each phase preserves
 
-| Capability | Phase A | Phase B | Phase C |
-|-----------|---------|---------|---------|
-| Canvas 2D renderer | ✓ | ✓ | ✓ |
-| WebGL2 renderer | ✓ | ✓ | ✓ (direct buffer feed) |
-| CPU fallback | ✓ | ✓ | ✓ |
-| Rank quantization | CPU fallback | CPU fallback | CPU fallback or GPU sort |
-| Level building | CPU | CPU (faster input) | CPU or GPU |
-| Node labels/text | ✓ | ✓ | Canvas 2D overlay |
-| Hit testing | CPU | CPU | CPU (readback on click only) |
-| SVG export | ✓ | ✓ | ✓ (readback on export only) |
+| Capability         | Phase A      | Phase B            | Phase C                      |
+| ------------------ | ------------ | ------------------ | ---------------------------- |
+| Canvas 2D renderer | ✓            | ✓                  | ✓                            |
+| WebGL2 renderer    | ✓            | ✓                  | ✓ (direct buffer feed)       |
+| CPU fallback       | ✓            | ✓                  | ✓                            |
+| Rank quantization  | CPU fallback | CPU fallback       | CPU fallback or GPU sort     |
+| Level building     | CPU          | CPU (faster input) | CPU or GPU                   |
+| Node labels/text   | ✓            | ✓                  | Canvas 2D overlay            |
+| Hit testing        | CPU          | CPU                | CPU (readback on click only) |
+| SVG export         | ✓            | ✓                  | ✓ (readback on export only)  |
 
 ## Implementation status
 
@@ -99,13 +99,13 @@ Interactive drag responsiveness solved via **adaptive fast mode**: spatial subsa
 
 ### Phase A-C findings (historical, 2 topology passes)
 
-| Component | Time |
-|-----------|-----:|
-| Anchor computation (CPU, O(N×G)) | 31ms |
-| GPU blend dispatch + fence wait | 241ms |
-| GPU quantize + uint16 readback | 18ms |
+| Component                                | Time  |
+| ---------------------------------------- | ----: |
+| Anchor computation (CPU, O(N×G))         | 31ms  |
+| GPU blend dispatch + fence wait          | 241ms |
+| GPU quantize + uint16 readback           | 18ms  |
 | Float32 readback (eliminated by Phase C) | ~15ms |
-| Node unpack loop (367K × 4 writes) | 108ms |
+| Node unpack loop (367K × 4 writes)       | 108ms |
 
 The 241ms was measured before buffer caching and `_blending` guard. See revised analysis below.
 
@@ -125,29 +125,29 @@ Fine-grained profiling added to `gpuBlend` (`setGpuBlendProfiling(true)`) with p
 
 ### Deno test results (Amazon, 367K nodes, 988K edges, 5 passes, Intel iGPU)
 
-| Component | Cold | Warm |
-|-----------|-----:|-----:|
-| Anchor compute | 32ms | 30ms |
-| CSR build | 246ms | **0ms** |
-| Buffer upload | 7ms | 4ms |
-| Bind group create | 0.1ms | **0ms** |
-| GPU dispatch | 4ms | 2ms |
-| GPU fence | 15ms | 14ms |
-| Map (DMA) | 17ms | 16ms |
-| Deinterleave | 1ms | 1ms |
-| **Total** | **309ms** | **53ms** |
+| Component         | Cold      | Warm     |
+| ----------------- | --------: | -------: |
+| Anchor compute    | 32ms      | 30ms     |
+| CSR build         | 246ms     | **0ms**  |
+| Buffer upload     | 7ms       | 4ms      |
+| Bind group create | 0.1ms     | **0ms**  |
+| GPU dispatch      | 4ms       | 2ms      |
+| GPU fence         | 15ms      | 14ms     |
+| Map (DMA)         | 17ms      | 16ms     |
+| Deinterleave      | 1ms       | 1ms      |
+| **Total**         | **309ms** | **53ms** |
 
 ### Browser results (Amazon, Firefox, Intel iGPU, Canvas 2D rendering)
 
 Browser `mapAsync` is significantly slower than Deno due to driver overhead:
 
-| Component | Typical | GPU stall | Best case |
-|-----------|--------:|----------:|----------:|
-| Anchor compute | 20-40ms | 20-40ms | 20ms |
-| CSR build | **0ms** | **0ms** | **0ms** |
-| GPU fence | 40-90ms | 451-482ms | 19ms |
-| Map (DMA) | **~104ms** | 15-28ms | **104ms** |
-| **Total** | 160-260ms | 490-540ms | 130ms |
+| Component      | Typical    | GPU stall | Best case |
+| -------------- | ---------: | --------: | --------: |
+| Anchor compute | 20-40ms    | 20-40ms   | 20ms      |
+| CSR build      | **0ms**    | **0ms**   | **0ms**   |
+| GPU fence      | 40-90ms    | 451-482ms | 19ms      |
+| Map (DMA)      | **~104ms** | 15-28ms   | **104ms** |
+| **Total**      | 160-260ms  | 490-540ms | 130ms     |
 
 **Key finding: browser `mapAsync` has a ~104ms floor** regardless of GPU kernel time. When the fence wait is long (GPU backed up), map is fast (work already done). When fence is fast, map is slow. The fence+map sum is roughly constant at ~130-170ms in typical cases, with spikes to 500ms during GPU contention. This 104ms floor does not exist in Deno (15ms) — it's browser WebGPU driver overhead (likely an extra DMA synchronization step).
 
@@ -155,11 +155,11 @@ Browser `mapAsync` is significantly slower than Deno due to driver overhead:
 
 ### Practical implications
 
-| Scale | GPU blend (browser) | CPU fast mode | Winner |
-|-------|--------------------:|--------------:|--------|
-| <50K nodes | ~130ms | ~22ms (full 5-pass) | CPU — fast mode not needed |
-| 50-200K | ~150ms | ~22ms (subsample) | CPU fast mode for drag, GPU for release |
-| 367K (Amazon) | 160-540ms | ~22ms (subsample) | CPU fast mode for drag, GPU for release |
+| Scale         | GPU blend (browser) | CPU fast mode       | Winner                                  |
+| ------------- | ------------------: | ------------------: | --------------------------------------- |
+| <50K nodes    | ~130ms              | ~22ms (full 5-pass) | CPU — fast mode not needed              |
+| 50-200K       | ~150ms              | ~22ms (subsample)   | CPU fast mode for drag, GPU for release |
+| 367K (Amazon) | 160-540ms           | ~22ms (subsample)   | CPU fast mode for drag, GPU for release |
 
 The 104ms `mapAsync` floor makes GPU blend non-competitive for interactive drag at any scale in current browsers. GPU blend is best used for the final full-quality blend on mouse release.
 
@@ -168,17 +168,17 @@ The 104ms `mapAsync` floor makes GPU blend non-competitive for interactive drag 
 
 **Medium effort:**
 
-| # | Change | Effort | Expected impact |
-|---|--------|--------|----------------|
+| #   | Change | Effort | Expected impact |
+| --- | ------ | ------ | --------------- |
 **Remaining optimizations (not yet implemented):**
 
-| # | Change | Effort | Expected impact |
-|---|--------|--------|----------------|
-| 5 | `GPUQuerySet` timestamp profiling | ~50 lines | Hardware-level kernel timing, more precise than `onSubmittedWorkDone` |
-| 6 | Degree-sorted CSR | ~50 lines | Better cache locality for scatter-gather |
-| 7 | CSR-Adaptive (two pipelines) | ~150 lines | Warp-level reduction for hub nodes; needs `subgroups` (Chrome 128+) |
-| 8 | GPU anchor computation | ~100 lines | Move 20-40ms CPU anchor loop to GPU compute shader |
-| 9 | Single WebGPU render + compute pipeline | ~1200 lines | Zero readback; eliminates the 104ms `mapAsync` floor entirely |
+| #   | Change                                  | Effort      | Expected impact                                                       |
+| --- | --------------------------------------- | ----------- | --------------------------------------------------------------------- |
+| 5   | `GPUQuerySet` timestamp profiling       | ~50 lines   | Hardware-level kernel timing, more precise than `onSubmittedWorkDone` |
+| 6   | Degree-sorted CSR                       | ~50 lines   | Better cache locality for scatter-gather                              |
+| 7   | CSR-Adaptive (two pipelines)            | ~150 lines  | Warp-level reduction for hub nodes; needs `subgroups` (Chrome 128+)   |
+| 8   | GPU anchor computation                  | ~100 lines  | Move 20-40ms CPU anchor loop to GPU compute shader                    |
+| 9   | Single WebGPU render + compute pipeline | ~1200 lines | Zero readback; eliminates the 104ms `mapAsync` floor entirely         |
 
 Item 9 is the only way to eliminate the browser `mapAsync` bottleneck. All other optimizations are bounded by the ~104ms DMA floor.
 
@@ -194,8 +194,8 @@ Adaptive fast mode for interactive drag (correct approach given browser WebGPU o
 
 ## Risks
 
-| Risk | Mitigation |
-|------|-----------|
-| Browser `mapAsync` overhead (~104ms floor) | CPU fast mode for interactive drag; GPU only on release |
-| Not all browsers support WebGPU | Existing CPU + WebGL2 paths remain as fallback |
-| `subgroups` not universally available | CSR-Adaptive (#7) is optional; basic kernel works without it |
+| Risk                                       | Mitigation                                                   |
+| ------------------------------------------ | ------------------------------------------------------------ |
+| Browser `mapAsync` overhead (~104ms floor) | CPU fast mode for interactive drag; GPU only on release      |
+| Not all browsers support WebGPU            | Existing CPU + WebGL2 paths remain as fallback               |
+| `subgroups` not universally available      | CSR-Adaptive (#7) is optional; basic kernel works without it |

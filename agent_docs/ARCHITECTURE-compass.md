@@ -30,20 +30,20 @@ center ·─────────── alignment (strength 5, bearing 0°)
 
 ## Interaction
 
-| Gesture | Effect |
-|---------|--------|
-| Drag handle | Set strength + bearing from polar coordinates |
-| Shift+drag | Strength only (bearing locked) |
-| Alt+drag | Bearing only (strength locked) |
-| Double-click handle | Reset to strength 0, bearing 0 |
-| Right-click handle | Reset bearing only (keep strength) |
-| Tab / Shift+Tab | Cycle focus between handles |
-| ↑↓ | Strength ±1 (Shift ±0.5) |
-| ←→ | Bearing ±15° (Shift ±5°) |
-| Home / 0 | Reset handle |
-| Enter | Toggle colorBy for focused group |
-| 0 button | Zero all strengths and bearings |
-| A button | Start/stop auto-tune |
+| Gesture             | Effect                                        |
+| ------------------- | --------------------------------------------- |
+| Drag handle         | Set strength + bearing from polar coordinates |
+| Shift+drag          | Strength only (bearing locked)                |
+| Alt+drag            | Bearing only (strength locked)                |
+| Double-click handle | Reset to strength 0, bearing 0                |
+| Right-click handle  | Reset bearing only (keep strength)            |
+| Tab / Shift+Tab     | Cycle focus between handles                   |
+| ↑↓                  | Strength ±1 (Shift ±0.5)                      |
+| ←→                  | Bearing ±15° (Shift ±5°)                      |
+| Home / 0            | Reset handle                                  |
+| Enter               | Toggle colorBy for focused group              |
+| 0 button            | Zero all strengths and bearings               |
+| A button            | Start/stop auto-tune                          |
 
 Dead zones: ±5° angular snap to 0 bearing near home angle. 8% radial snap to 0 strength near center (within the floor ring).
 
@@ -51,10 +51,10 @@ Dead zones: ±5° angular snap to 0 bearing near home angle. 8% radial snap to 0
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `for` | string | — | ID of a `<bz-graph>` to bind to (declarative, no JS) |
-| `max-strength` | number | 10 | Maximum strength value |
+| Attribute      | Type   | Default | Description                                          |
+| -------------- | ------ | ------- | ---------------------------------------------------- |
+| `for`          | string | —       | ID of a `<bz-graph>` to bind to (declarative, no JS) |
+| `max-strength` | number | 10      | Maximum strength value                               |
 
 ### Properties
 
@@ -69,12 +69,12 @@ Dead zones: ±5° angular snap to 0 bearing near home angle. 8% radial snap to 0
 
 ### Events
 
-| Event | Detail | When |
-|-------|--------|------|
-| `input` | `{name, strength, bearing}` | Continuous during drag |
-| `change` | `{name, strength, bearing}` | On drag end |
-| `colorby` | `{name}` | Enter key on focused handle |
-| `autotune` | — | A button clicked |
+| Event      | Detail                      | When                        |
+| ---------- | --------------------------- | --------------------------- |
+| `input`    | `{name, strength, bearing}` | Continuous during drag      |
+| `change`   | `{name, strength, bearing}` | On drag end                 |
+| `colorby`  | `{name}`                    | Enter key on focused handle |
+| `autotune` | —                           | A button clicked            |
 
 ## Declarative binding (`for` attribute)
 
@@ -137,10 +137,10 @@ The A button in the compass triggers `autoTuneBtn.click()` in the viewer, reusin
 
 ## File structure
 
-| File | Role |
-|------|------|
-| [bz-compass.js](../docs/bz-compass.js) | Web component — rendering, interaction, SVG export, `for` binding |
-| [blitzoom-viewer.js](../docs/blitzoom-viewer.js) | Panel toggle, drag, sync wiring, A button integration |
-| [blitzoom.css](../docs/blitzoom.css) | `.compass-panel`, `.compass-titlebar`, `.compass-close` styles |
-| [viewer.html](../docs/viewer.html) | Panel markup, toolbar button, script import |
-| [bz-graph-demo.html](../docs/bz-graph-demo.html) | Live examples of declarative `for` binding |
+| File                                             | Role                                                              |
+| ------------------------------------------------ | ----------------------------------------------------------------- |
+| [bz-compass.js](../docs/bz-compass.js)           | Web component — rendering, interaction, SVG export, `for` binding |
+| [blitzoom-viewer.js](../docs/blitzoom-viewer.js) | Panel toggle, drag, sync wiring, A button integration             |
+| [blitzoom.css](../docs/blitzoom.css)             | `.compass-panel`, `.compass-titlebar`, `.compass-close` styles    |
+| [viewer.html](../docs/viewer.html)               | Panel markup, toolbar button, script import                       |
+| [bz-graph-demo.html](../docs/bz-graph-demo.html) | Live examples of declarative `for` binding                        |

@@ -21,36 +21,36 @@ Constructor accepts `{ webgl: true }`. Probe: `isWebGL2Available()`.
 
 ## Files
 
-| File | Role |
-| --- | --- |
-| [blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js) | Shaders, programs, VAOs, instance builders, draw calls (~1202 lines) |
-| [blitzoom-canvas.js](../docs/blitzoom-canvas.js) | `_initWebGL`, `_destroyWebGL`, `useWebGL`, wrapper management, resize |
-| [blitzoom-renderer.js](../docs/blitzoom-renderer.js) | `render()` skips geometry when `bz._gl` active, always draws text |
-| [blitzoom-viewer.js](../docs/blitzoom-viewer.js) | GL toggle button, `isWebGL2Available` import, GL wrapper hide/show with loader |
-| [webgl-test.html](../docs/webgl-test.html) | Side-by-side Canvas 2D vs WebGL2 visual comparison page |
+| File                                                       | Role                                                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js) | Shaders, programs, VAOs, instance builders, draw calls (~1202 lines)           |
+| [blitzoom-canvas.js](../docs/blitzoom-canvas.js)           | `_initWebGL`, `_destroyWebGL`, `useWebGL`, wrapper management, resize          |
+| [blitzoom-renderer.js](../docs/blitzoom-renderer.js)       | `render()` skips geometry when `bz._gl` active, always draws text              |
+| [blitzoom-viewer.js](../docs/blitzoom-viewer.js)           | GL toggle button, `isWebGL2Available` import, GL wrapper hide/show with loader |
+| [webgl-test.html](../docs/webgl-test.html)                 | Side-by-side Canvas 2D vs WebGL2 visual comparison page                        |
 
 ## Shaders and Programs
 
 Seven shader programs, all compiled and linked in `initGL()`:
 
-| Program | Vertex shader | Draw mode | Purpose |
-| --- | --- | --- | --- |
-| `_circleProgram` | `CIRCLE_VS` | instanced TRIANGLE_STRIP (4 verts) | SDF circles with fill + stroke |
-| `_circleProgram._glow` | `GLOW_VS` | instanced TRIANGLE_STRIP (4 verts) | Selection/hover radial glow |
-| `_edgeLineProgram` | `EDGE_LINE_VS` | instanced TRIANGLE_STRIP (4 verts) | Straight line edges |
-| `_edgeCurveProgram` | `EDGE_CURVE_VS` | instanced TRIANGLE_STRIP (34 verts) | Bezier curve edges (GPU tessellation) |
-| `_heatSplatProg` | `HEAT_SPLAT_VS` | instanced TRIANGLE_STRIP (4 verts) | Density splats to FBO |
-| `_heatResolveProg` | `HEAT_RESOLVE_VS` | TRIANGLE_STRIP (4 verts) | Fullscreen quad: FBO → screen |
-| `_gridProgram` | `GRID_VS` | TRIANGLE_STRIP (4 verts) | Fullscreen quad: procedural grid |
+| Program                | Vertex shader     | Draw mode                           | Purpose                               |
+| ---------------------- | ----------------- | ----------------------------------- | ------------------------------------- |
+| `_circleProgram`       | `CIRCLE_VS`       | instanced TRIANGLE_STRIP (4 verts)  | SDF circles with fill + stroke        |
+| `_circleProgram._glow` | `GLOW_VS`         | instanced TRIANGLE_STRIP (4 verts)  | Selection/hover radial glow           |
+| `_edgeLineProgram`     | `EDGE_LINE_VS`    | instanced TRIANGLE_STRIP (4 verts)  | Straight line edges                   |
+| `_edgeCurveProgram`    | `EDGE_CURVE_VS`   | instanced TRIANGLE_STRIP (34 verts) | Bezier curve edges (GPU tessellation) |
+| `_heatSplatProg`       | `HEAT_SPLAT_VS`   | instanced TRIANGLE_STRIP (4 verts)  | Density splats to FBO                 |
+| `_heatResolveProg`     | `HEAT_RESOLVE_VS` | TRIANGLE_STRIP (4 verts)            | Fullscreen quad: FBO → screen         |
+| `_gridProgram`         | `GRID_VS`         | TRIANGLE_STRIP (4 verts)            | Fullscreen quad: procedural grid      |
 
 ## Static VBOs
 
-| Buffer | Contents | Vertices |
-| --- | --- | --- |
-| `_quadVBO` | Unit quad `[-1,1]²` | 4 (circle/glow/heatmap instances) |
-| `_edgeLineQuadVBO` | Line quad `[0..1] × [-1,1]` | 4 (straight edge instances) |
-| `_edgeCurveVBO` | Curve strip `t ∈ [0,1]` × `[-1,1]` | 34 (16 segments × 2 sides + 2) |
-| `_fsQuadVBO` | Clip-space fullscreen quad | 4 (grid, heatmap resolve) |
+| Buffer             | Contents                           | Vertices                          |
+| ------------------ | ---------------------------------- | --------------------------------- |
+| `_quadVBO`         | Unit quad `[-1,1]²`                | 4 (circle/glow/heatmap instances) |
+| `_edgeLineQuadVBO` | Line quad `[0..1] × [-1,1]`        | 4 (straight edge instances)       |
+| `_edgeCurveVBO`    | Curve strip `t ∈ [0,1]` × `[-1,1]` | 34 (16 segments × 2 sides + 2)    |
+| `_fsQuadVBO`       | Clip-space fullscreen quad         | 4 (grid, heatmap resolve)         |
 
 All static, uploaded once at init.
 
@@ -73,12 +73,12 @@ All instance data written to `_instanceVBO` (shared, dynamic) per draw call.
 
 ## VAOs
 
-| VAO | Quad VBO (loc 0) | Instance VBO (loc 1-4) |
-| --- | --- | --- |
-| `_circleVAO` | `_quadVBO` | 11-float circle layout |
-| `_edgeLineVAO` | `_edgeLineQuadVBO` | 8-float edge layout |
-| `_edgeCurveVAO` | `_edgeCurveVBO` | 8-float edge layout |
-| `_heatResolveVAO` | `_fsQuadVBO` | (none) |
+| VAO               | Quad VBO (loc 0)   | Instance VBO (loc 1-4) |
+| ----------------- | ------------------ | ---------------------- |
+| `_circleVAO`      | `_quadVBO`         | 11-float circle layout |
+| `_edgeLineVAO`    | `_edgeLineQuadVBO` | 8-float edge layout    |
+| `_edgeCurveVAO`   | `_edgeCurveVBO`    | 8-float edge layout    |
+| `_heatResolveVAO` | `_fsQuadVBO`       | (none)                 |
 
 ## Render Order
 
@@ -207,12 +207,12 @@ with `webgl: true`).
 
 ## Buffer Rebuild Triggers
 
-| Trigger | Edges | Circles | Heatmap |
-| --- | --- | --- | --- |
-| Zoom/pan | rebuild (screen coords) | rebuild | rebuild |
-| Level change | rebuild | rebuild | rebuild |
-| Selection change | hilite pass only | glow + alpha | no |
-| Weight/blend change | rebuild | rebuild | rebuild |
+| Trigger             | Edges                   | Circles      | Heatmap |
+| ------------------- | ----------------------- | ------------ | ------- |
+| Zoom/pan            | rebuild (screen coords) | rebuild      | rebuild |
+| Level change        | rebuild                 | rebuild      | rebuild |
+| Selection change    | hilite pass only        | glow + alpha | no      |
+| Weight/blend change | rebuild                 | rebuild      | rebuild |
 
 Instance data uses persistent typed-array buffers that grow as needed (zero
 per-frame GC after warmup). `visibleCount` and `maxSizeVal` are cached to avoid

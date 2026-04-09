@@ -144,9 +144,9 @@ are identified and boundaries traced clockwise:
 
 | Band | Threshold | Dark mode | Light mode |
 | ---: | --------: | --------: | ---------: |
-|    0 |      0.08 |      0.12 |       0.18 |
-|    1 |      0.25 |      0.24 |       0.30 |
-|    2 |      0.50 |      0.36 |       0.42 |
+| 0    | 0.08      | 0.12      | 0.18       |
+| 1    | 0.25      | 0.24      | 0.30       |
+| 2    | 0.50      | 0.36      | 0.42       |
 
 Outer bands (low threshold) are drawn first → larger, fainter. Inner bands
 (high threshold) overlay → smaller, more opaque. Combined with `fill-rule="evenodd"`.
@@ -187,24 +187,24 @@ corners). Shows up to 12 entries sorted by frequency, with `+N more` overflow.
 
 ## Exports
 
-| Function              | Purpose                                            |
-| --------------------- | -------------------------------------------------- |
-| `exportSVG(bz, opts)` | Render view to SVG string                         |
+| Function                            | Purpose                                |
+| ----------------------------------- | -------------------------------------- |
+| `exportSVG(bz, opts)`               | Render view to SVG string              |
 | `createSVGView(nodes, edges, opts)` | Build headless view from pipeline data |
 
 ## Internal functions
 
-| Function              | Purpose                                            |
-| --------------------- | -------------------------------------------------- |
-| `esc(s)`              | XML-escape for text content                        |
-| `scaleSize(val, bz)`  | Applies log2 scaling when `bz.sizeLog` is true     |
-| `edgeHash(i)`         | Deterministic [0,1) hash for edge sampling         |
-| `maxEdgesToDraw(N)`   | Edge count cap: `clamp(N*3, 200, 5000)`            |
-| `traceThresholdRegions` | Moore neighbor contour tracing                   |
-| `simplifyRDP`         | Ramer-Douglas-Peucker line simplification          |
-| `smoothChaikin`       | Chaikin corner-cutting subdivision                 |
-| `polyToSVGPath`       | Polygon → SVG `M...L...Z` path string              |
-| `buildDensityContours` | Full heatmap pipeline: grid → contours → SVG      |
+| Function                | Purpose                                        |
+| ----------------------- | ---------------------------------------------- |
+| `esc(s)`                | XML-escape for text content                    |
+| `scaleSize(val, bz)`    | Applies log2 scaling when `bz.sizeLog` is true |
+| `edgeHash(i)`           | Deterministic [0,1) hash for edge sampling     |
+| `maxEdgesToDraw(N)`     | Edge count cap: `clamp(N*3, 200, 5000)`        |
+| `traceThresholdRegions` | Moore neighbor contour tracing                 |
+| `simplifyRDP`           | Ramer-Douglas-Peucker line simplification      |
+| `smoothChaikin`         | Chaikin corner-cutting subdivision             |
+| `polyToSVGPath`         | Polygon → SVG `M...L...Z` path string          |
+| `buildDensityContours`  | Full heatmap pipeline: grid → contours → SVG   |
 
 ## Limitations
 

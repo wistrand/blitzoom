@@ -6,14 +6,14 @@ unavailable.
 
 ## Files
 
-| File | Role |
-| --- | --- |
-| [blitzoom-gpu.js](../docs/blitzoom-gpu.js) | WebGPU compute: MinHash+projection, blend, initialization |
-| [tests/gpu_test.ts](../tests/gpu_test.ts) | Unit tests: hashSlot precision, OPH, similarity |
-| [tests/gpu_pipeline_test.ts](../tests/gpu_pipeline_test.ts) | Pipeline comparison: GPU vs CPU projections across datasets |
-| [tests/gpu_blend_test.ts](../tests/gpu_blend_test.ts) | Blend comparison: GPU vs CPU across datasets and alpha values |
-| [gpu-test.html](../docs/gpu-test.html) | Visual side-by-side comparison page |
-| [scripts/bench-gpu.js](../scripts/bench-gpu.js) | GPU vs CPU performance benchmark |
+| File                                                        | Role                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------------- |
+| [blitzoom-gpu.js](../docs/blitzoom-gpu.js)                  | WebGPU compute: MinHash+projection, blend, initialization     |
+| [tests/gpu_test.ts](../tests/gpu_test.ts)                   | Unit tests: hashSlot precision, OPH, similarity               |
+| [tests/gpu_pipeline_test.ts](../tests/gpu_pipeline_test.ts) | Pipeline comparison: GPU vs CPU projections across datasets   |
+| [tests/gpu_blend_test.ts](../tests/gpu_blend_test.ts)       | Blend comparison: GPU vs CPU across datasets and alpha values |
+| [gpu-test.html](../docs/gpu-test.html)                      | Visual side-by-side comparison page                           |
+| [scripts/bench-gpu.js](../scripts/bench-gpu.js)             | GPU vs CPU performance benchmark                              |
 
 ## Initialization
 
@@ -39,10 +39,10 @@ initial blend and subsequent interactive changes once initialization completes.
 
 The quantization mode determines which projection path is used:
 
-| quantMode | Projection | Reason |
-| --- | --- | --- |
-| gaussian (default) | GPU (float32) | Gaussian maps continuously; float32 precision sufficient |
-| rank | CPU (float64) | Rank sort is sensitive to tiny ordering changes; float32 causes visible cell jumps |
+| quantMode          | Projection    | Reason                                                                             |
+| ------------------ | ------------- | ---------------------------------------------------------------------------------- |
+| gaussian (default) | GPU (float32) | Gaussian maps continuously; float32 precision sufficient                           |
+| rank               | CPU (float64) | Rank sort is sensitive to tiny ordering changes; float32 causes visible cell jumps |
 
 Decision is made per-dataset at load time in `loadGraphGPU()`, based on
 `dataset.settings.quantMode`. File uploads (no dataset settings) default to
@@ -68,12 +68,12 @@ WGSL shader (`WGSL` constant in blitzoom-gpu.js), workgroup size 256:
 
 ### Verified precision
 
-| Dataset | Nodes | Groups | Max delta | Mismatches |
-| --- | ---: | ---: | ---: | ---: |
-| Karate | 34 | 4 | 0.000031 | 0 |
-| Epstein | 364 | 5 | 0.003945 | 0 |
-| BZ Source | 433 | 10 | 0.000183 | 0 |
-| MITRE | 4,736 | 10 | 0.000053 | 0 |
+| Dataset   | Nodes | Groups | Max delta | Mismatches |
+| --------- | ----: | -----: | --------: | ---------: |
+| Karate    | 34    | 4      | 0.000031  | 0          |
+| Epstein   | 364   | 5      | 0.003945  | 0          |
+| BZ Source | 433   | 10     | 0.000183  | 0          |
+| MITRE     | 4,736 | 10     | 0.000053  | 0          |
 
 ## Blend
 
@@ -109,15 +109,15 @@ single-buffer implementation.
 
 ### Verified precision
 
-| Dataset | Alpha | Max delta | Mismatches |
-| --- | ---: | ---: | ---: |
-| Karate | 0.0 | 0.000000 | 0 |
-| Karate | 0.5 | 0.000001 | 0 |
-| Karate | 1.0 | 0.000001 | 0 |
-| Epstein | 0.75 | 0.000001 | 0 |
-| BZ Source | 0.5 | 0.000001 | 0 |
-| MITRE | 0.5 | 0.000001 | 0 |
-| Email-EU | 0.75 | 0.000004 | 0 |
+| Dataset   | Alpha | Max delta | Mismatches |
+| --------- | ----: | --------: | ---------: |
+| Karate    | 0.0   | 0.000000  | 0          |
+| Karate    | 0.5   | 0.000001  | 0          |
+| Karate    | 1.0   | 0.000001  | 0          |
+| Epstein   | 0.75  | 0.000001  | 0          |
+| BZ Source | 0.5   | 0.000001  | 0          |
+| MITRE     | 0.5   | 0.000001  | 0          |
+| Email-EU  | 0.75  | 0.000004  | 0          |
 
 ## Data loading paths
 
@@ -191,10 +191,10 @@ With G tunable groups, 4 weight values (`[0,3,8,10]`), 5 alpha values:
 
 ### GPU blend impact on auto-tune
 
-| Dataset        | Nodes   | Blends | CPU total | GPU total | Effect    |
-| -------------- | ------: | -----: | --------: | --------: | --------- |
-| MITRE ATT&CK  |   4,736 |    ~70 |    ~0.9s  |    ~2.4s  | 2.7x slower |
-| Amazon         | 367,000 |    ~50 |     ~94s  |     ~20s  | 4.7x faster |
+| Dataset      | Nodes   | Blends | CPU total | GPU total | Effect      |
+| ------------ | ------: | -----: | --------: | --------: | ----------- |
+| MITRE ATT&CK | 4,736   | ~70    | ~0.9s     | ~2.4s     | 2.7x slower |
+| Amazon       | 367,000 | ~50    | ~94s      | ~20s      | 4.7x faster |
 
 At MITRE scale, GPU blend would hurt auto-tune. At Amazon scale, GPU blend
 is essential — CPU auto-tune exceeds the 20s timeout. An adaptive threshold
@@ -205,10 +205,10 @@ is essential — CPU auto-tune exceeds the 20s timeout. An adaptive threshold
 Implemented in `_blend()` (blitzoom-canvas.js) and `loadGraphGPU()` (blitzoom-viewer.js).
 Viewer GPU button cycles Auto → GPU → CPU. Auto uses adaptive thresholds:
 
-| Operation  | Auto GPU when                           | Reason                                              |
-| ---------- | --------------------------------------- | --------------------------------------------------- |
-| Projection | N×G > 2000 and quantMode ≠ rank        | GPU crossover ~400 nodes; rank quant needs float64   |
-| Blend      | N > 50,000                              | GPU has ~13ms fixed overhead; only faster at scale   |
+| Operation  | Auto GPU when                   | Reason                                             |
+| ---------- | ------------------------------- | -------------------------------------------------- |
+| Projection | N×G > 2000 and quantMode ≠ rank | GPU crossover ~400 nodes; rank quant needs float64 |
+| Blend      | N > 50,000                      | GPU has ~13ms fixed overhead; only faster at scale |
 
 Auto-tune always uses CPU blend (synchronous `blendAndScore`). The `blendFn`
 option is available for future async GPU auto-tune but not wired up — CPU is
@@ -257,27 +257,27 @@ Median of 5 runs after 2 warmup (1 run for Amazon).
 
 ### Projection (tokenize + MinHash + project)
 
-| Dataset        | Nodes   | Groups | CPU     | GPU    | Speedup |
-| -------------- | ------: | -----: | ------: | -----: | ------: |
-| Karate Club    |      34 |      4 |  1.5ms  |  18ms  |   0.08x |
-| Epstein        |     364 |      5 |   20ms  |  19ms  |   1.1x  |
-| BlitZoom Source |     433 |     10 |   24ms  |  19ms  |   1.2x  |
-| Synth Packages |   1,868 |      8 |   85ms  |  22ms  |   3.9x  |
-| MITRE ATT&CK  |   4,736 |     10 |  358ms  |  61ms  |   5.9x  |
-| Amazon         | 367,000 |      4 | 24.1s   |  1.7s  |  14.3x  |
+| Dataset         | Nodes   | Groups | CPU   | GPU  | Speedup |
+| --------------- | ------: | -----: | ----: | ---: | ------: |
+| Karate Club     | 34      | 4      | 1.5ms | 18ms | 0.08x   |
+| Epstein         | 364     | 5      | 20ms  | 19ms | 1.1x    |
+| BlitZoom Source | 433     | 10     | 24ms  | 19ms | 1.2x    |
+| Synth Packages  | 1,868   | 8      | 85ms  | 22ms | 3.9x    |
+| MITRE ATT&CK    | 4,736   | 10     | 358ms | 61ms | 5.9x    |
+| Amazon          | 367,000 | 4      | 24.1s | 1.7s | 14.3x   |
 
 GPU crossover ~400 nodes. GPU time includes CPU-side tokenization and hashing.
 
 ### Blend (α=0.5, 5 passes, gaussian)
 
-| Dataset        | Nodes   | CPU     | GPU    | Speedup |
-| -------------- | ------: | ------: | -----: | ------: |
-| Karate Club    |      34 | 139µs   |  13ms  |   0.01x |
-| Epstein        |     364 |  0.8ms  |  14ms  |   0.06x |
-| BlitZoom Source |     433 |  1.3ms  |  14ms  |   0.10x |
-| Synth Packages |   1,868 |  2.4ms  |  17ms  |   0.15x |
-| MITRE ATT&CK  |   4,736 |   13ms  |  34ms  |   0.40x |
-| Amazon         | 367,000 |  1.88s  | 407ms  |   4.6x  |
+| Dataset         | Nodes   | CPU   | GPU   | Speedup |
+| --------------- | ------: | ----: | ----: | ------: |
+| Karate Club     | 34      | 139µs | 13ms  | 0.01x   |
+| Epstein         | 364     | 0.8ms | 14ms  | 0.06x   |
+| BlitZoom Source | 433     | 1.3ms | 14ms  | 0.10x   |
+| Synth Packages  | 1,868   | 2.4ms | 17ms  | 0.15x   |
+| MITRE ATT&CK    | 4,736   | 13ms  | 34ms  | 0.40x   |
+| Amazon          | 367,000 | 1.88s | 407ms | 4.6x    |
 
 GPU blend warm overhead: ~30ms on iGPU (anchor compute + upload + dispatch + readback). CSR build ~200ms on first call, 0ms on subsequent (cached). See [PLAN-gpu-resident.md](PLAN-gpu-resident.md) for full profiling breakdown.
 Crossover between 5K and 367K nodes. Projection benefits first; blend benefits

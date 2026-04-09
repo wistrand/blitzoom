@@ -2,15 +2,15 @@
 
 ## Key Map
 
-| Key | Action |
-|-----|--------|
+| Key                          | Action                                                        |
+| ---------------------------- | ------------------------------------------------------------- |
 | **Arrow Up/Down/Left/Right** | Spatial: jump to nearest connected neighbor in that direction |
-| **N** | Graph walk: next neighbor in sorted order |
-| **Shift+N** | Graph walk: previous neighbor in sorted order |
-| **Enter** | Open detail panel |
-| **, / .** | Zoom level down / up (replaces Arrow Left/Right) |
-| **Escape** | Deselect, exit node nav |
-| **Home** | Select highest-degree visible node (entry point) |
+| **N**                        | Graph walk: next neighbor in sorted order                     |
+| **Shift+N**                  | Graph walk: previous neighbor in sorted order                 |
+| **Enter**                    | Open detail panel                                             |
+| **, / .**                    | Zoom level down / up (replaces Arrow Left/Right)              |
+| **Escape**                   | Deselect, exit node nav                                       |
+| **Home**                     | Select highest-degree visible node (entry point)              |
 
 ## Neighbor Sort Order
 
@@ -55,8 +55,8 @@ Both modes share the same sorted neighbor list.
 
 ## Files to Change
 
-| File | Change |
-|------|--------|
-| `blitzoom-canvas.js` | Add `_navNeighbors` list, `_navIndex`. Add N/Shift+N/Arrow/Home/Enter handlers. Change , / . for level. Build neighbor list on selection change. Pan + select + announce on each step. Update help text. |
-| `blitzoom-renderer.js` | No changes — selected node already renders with full highlight |
-| `blitzoom-viewer.js` | Wire Enter to `_showDetail()`. Change level key handlers from Arrow to , / . |
+| File                   | Change                                                                                                                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blitzoom-canvas.js`   | Add `_navNeighbors` list, `_navIndex`. Add N/Shift+N/Arrow/Home/Enter handlers. Change , / . for level. Build neighbor list on selection change. Pan + select + announce on each step. Update help text. |
+| `blitzoom-renderer.js` | No changes — selected node already renders with full highlight                                                                                                                                           |
+| `blitzoom-viewer.js`   | Wire Enter to `_showDetail()`. Change level key handlers from Arrow to , / .                                                                                                                             |

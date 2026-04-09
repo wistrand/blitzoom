@@ -95,37 +95,37 @@ Drop any of these files onto the canvas or loader panel, or load them via URL �
 
 **SNAP pairs** (curated with presets in `datasets.json`):
 
-| Name             | Nodes | Edges  | Properties                            |
-| ---------------- | ----- | ------ | ------------------------------------- |
-| Karate Club      | 34    | 78     | group                                 |
-| Epstein          | 364   | 534    | group, edge types                     |
-| BlitZoom Source   | 966   | 2,609  | kind, file, lines, bytes, age         |
-| Marvel Comics    | 327   | —      | alignment, gender, alive, eye, hair   |
-| Porsche          | 297   | —      | body, drivetrain, weight, generation  |
-| Pokemon          | 959   | —      | type1, type2, generation, stats       |
-| Vadonland        | 512   | —      | government, type, biome, religion     |
-| Synth Packages   | 2,000 | 4,044  | downloads, license, version, depcount |
-| MITRE ATT&CK     | 4,736 | 25,856 | kill chain, platforms, aliases        |
-| Ransomware       | 27K   | —      | group, year, raas, victims, sector    |
-| Email EU         | 1,005 | 25,571 | (edge-only)                           |
-| Facebook         | 4,039 | 88,234 | (edge-only)                           |
-| Power Grid       | 4,941 | 6,594  | (edge-only)                           |
-| Amazon           | 367K  | 988K   | product category                      |
+| Name            | Nodes | Edges  | Properties                            |
+| --------------- | ----- | ------ | ------------------------------------- |
+| Karate Club     | 34    | 78     | group                                 |
+| Epstein         | 364   | 534    | group, edge types                     |
+| BlitZoom Source | 966   | 2,609  | kind, file, lines, bytes, age         |
+| Marvel Comics   | 327   | —      | alignment, gender, alive, eye, hair   |
+| Porsche         | 297   | —      | body, drivetrain, weight, generation  |
+| Pokemon         | 959   | —      | type1, type2, generation, stats       |
+| Vadonland       | 512   | —      | government, type, biome, religion     |
+| Synth Packages  | 2,000 | 4,044  | downloads, license, version, depcount |
+| MITRE ATT&CK    | 4,736 | 25,856 | kill chain, platforms, aliases        |
+| Ransomware      | 27K   | —      | group, year, raas, victims, sector    |
+| Email EU        | 1,005 | 25,571 | (edge-only)                           |
+| Facebook        | 4,039 | 88,234 | (edge-only)                           |
+| Power Grid      | 4,941 | 6,594  | (edge-only)                           |
+| Amazon          | 367K  | 988K   | product category                      |
 
 **Object-pipeline samples**:
 
-| File                      | Format     | Nodes | Notes                                 |
-| ------------------------- | ---------- | ----- | ------------------------------------- |
-| miserables.json           | D3 JSON    | 77    | Canonical Mike Bostock D3 example     |
-| miserables.jgf.json       | JGF v1     | 77    | Dict-form `graph.nodes`               |
-| miserables.gexf           | GEXF       | 74    | Gender attribute                      |
-| miserables.cyjs.json      | Cytoscape  | 77    | Grouped form                          |
-| karate.graphml            | GraphML    | 34    | Faction attribute                     |
-| graphml-sample.xml        | GraphML    | 6     | Prefuse canonical example             |
-| penguins.csv              | CSV        | 344   | Palmer Penguins with species/sex      |
-| titanic.csv               | CSV        | 891   | Titanic passengers — class, sex, age  |
-| ics-attack.json.gz        | STIX 2.1   | 464   | MITRE ATT&CK for ICS                  |
-| mobile-attack.json.gz     | STIX 2.1   | 738   | MITRE ATT&CK for Mobile               |
+| File                  | Format    | Nodes | Notes                                |
+| --------------------- | --------- | ----- | ------------------------------------ |
+| miserables.json       | D3 JSON   | 77    | Canonical Mike Bostock D3 example    |
+| miserables.jgf.json   | JGF v1    | 77    | Dict-form `graph.nodes`              |
+| miserables.gexf       | GEXF      | 74    | Gender attribute                     |
+| miserables.cyjs.json  | Cytoscape | 77    | Grouped form                         |
+| karate.graphml        | GraphML   | 34    | Faction attribute                    |
+| graphml-sample.xml    | GraphML   | 6     | Prefuse canonical example            |
+| penguins.csv          | CSV       | 344   | Palmer Penguins with species/sex     |
+| titanic.csv           | CSV       | 891   | Titanic passengers — class, sex, age |
+| ics-attack.json.gz    | STIX 2.1  | 464   | MITRE ATT&CK for ICS                 |
+| mobile-attack.json.gz | STIX 2.1  | 738   | MITRE ATT&CK for Mobile              |
 
 ## Key Design Decisions
 

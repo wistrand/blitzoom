@@ -26,12 +26,12 @@ New nodes are projected against the parameters cached at initial load (numeric b
 
 ### What moves to `blitzoom-factory.js` (~210 lines)
 
-| Function | Lines | Why it's separate |
-|----------|-------|-------------------|
-| `_hydrateAndLink` | 1694-1714 | Pure data transform — builds node objects from `projBuf`, constructs `adjList`. No canvas dependency. |
-| `_finalize` | 1585-1692 | Factory logic — computes default strengths, builds color maps, constructs `BlitZoomCanvas`, kicks off async GPU probe + blend. Only touches canvas via `new BlitZoomCanvas()` at the end. |
-| `createBlitZoomView` | 1724-1728 | Public API — calls `runPipeline` then `_finalize`. |
-| `createBlitZoomFromGraph` | 1739-1794 | Public API — builds nodeArray from raw objects then `_finalize`. |
+| Function                  | Lines     | Why it's separate                                                                                                                                                                         |
+| ------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_hydrateAndLink`         | 1694-1714 | Pure data transform — builds node objects from `projBuf`, constructs `adjList`. No canvas dependency.                                                                                     |
+| `_finalize`               | 1585-1692 | Factory logic — computes default strengths, builds color maps, constructs `BlitZoomCanvas`, kicks off async GPU probe + blend. Only touches canvas via `new BlitZoomCanvas()` at the end. |
+| `createBlitZoomView`      | 1724-1728 | Public API — calls `runPipeline` then `_finalize`.                                                                                                                                        |
+| `createBlitZoomFromGraph` | 1739-1794 | Public API — builds nodeArray from raw objects then `_finalize`.                                                                                                                          |
 
 ### What stays in `blitzoom-canvas.js`
 
@@ -127,13 +127,13 @@ Store the parameters needed for incremental projection on the canvas instance, c
 
 ### What to persist
 
-| Parameter | Source | Currently stored? | Needed for |
-|-----------|--------|-------------------|------------|
-| `numericBins` | `buildGraph` return | No — discarded | Numeric tokenization in `projectNode` |
-| `extraPropNames` | `parseNodesFile` / `runPipelineFromObjects` | No — discarded | Token generation |
-| `hasEdgeTypes` | `buildGraph` return | Yes (`this.hasEdgeTypes`) | Edge type tokenization |
-| `groupNames` | Pipeline return | Yes (`this.groupNames`) | Group iteration |
-| `adjList` | `_hydrateAndLink` | Yes (`this.adjList`) | Structure/neighbor tokens |
+| Parameter        | Source                                      | Currently stored?         | Needed for                            |
+| ---------------- | ------------------------------------------- | ------------------------- | ------------------------------------- |
+| `numericBins`    | `buildGraph` return                         | No — discarded            | Numeric tokenization in `projectNode` |
+| `extraPropNames` | `parseNodesFile` / `runPipelineFromObjects` | No — discarded            | Token generation                      |
+| `hasEdgeTypes`   | `buildGraph` return                         | Yes (`this.hasEdgeTypes`) | Edge type tokenization                |
+| `groupNames`     | Pipeline return                             | Yes (`this.groupNames`)   | Group iteration                       |
+| `adjList`        | `_hydrateAndLink`                           | Yes (`this.adjList`)      | Structure/neighbor tokens             |
 
 ### Changes
 

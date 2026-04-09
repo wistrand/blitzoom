@@ -31,21 +31,21 @@ The viewer loads the default dataset and renders immediately. Use the dataset pi
 
 ## Interaction
 
-| Action              | Effect                                         |
-| ------------------- | ---------------------------------------------- |
-| Scroll wheel        | Zoom in/out (auto-switches aggregation level)  |
-| Drag                | Pan                                            |
-| Click node          | Select, show detail panel                      |
-| Ctrl+Click          | Multi-select                                   |
-| Double-click node   | Animated zoom to node                          |
-| Double-click empty  | Zoom in at point                               |
-| Shift+Double-click  | Zoom out                                       |
-| Arrow Left/Right    | Manual level change                            |
-| +/- keys            | Zoom in/out                                    |
-| H button            | Cycle heatmap: off → splat → density           |
-| n/e buttons         | Size by member count or edge count             |
-| Label dropdown      | Override label source property                 |
-| Strength sliders    | Adjust property group influence                |
+| Action             | Effect                                        |
+| ------------------ | --------------------------------------------- |
+| Scroll wheel       | Zoom in/out (auto-switches aggregation level) |
+| Drag               | Pan                                           |
+| Click node         | Select, show detail panel                     |
+| Ctrl+Click         | Multi-select                                  |
+| Double-click node  | Animated zoom to node                         |
+| Double-click empty | Zoom in at point                              |
+| Shift+Double-click | Zoom out                                      |
+| Arrow Left/Right   | Manual level change                           |
+| +/- keys           | Zoom in/out                                   |
+| H button           | Cycle heatmap: off → splat → density          |
+| n/e buttons        | Size by member count or edge count            |
+| Label dropdown     | Override label source property                |
+| Strength sliders   | Adjust property group influence               |
 
 ## Data Format (SNAP)
 
@@ -82,17 +82,17 @@ D	Dave	manager	88
 
 ## Included Datasets
 
-| Dataset             | Nodes | Edges  | Source              |
-| ------------------- | ----- | ------ | ------------------- |
-| Karate Club         | 34    | 78     | Zachary 1977        |
-| Epstein Network     | 364   | 534    | Public records      |
-| BlitZoom Source      | 966   | 2,609  | This project's code |
-| Synth Packages      | 1,868 | 4,044  | Generated           |
+| Dataset            | Nodes | Edges  | Source              |
+| ------------------ | ----- | ------ | ------------------- |
+| Karate Club        | 34    | 78     | Zachary 1977        |
+| Epstein Network    | 364   | 534    | Public records      |
+| BlitZoom Source    | 966   | 2,609  | This project's code |
+| Synth Packages     | 1,868 | 4,044  | Generated           |
 | MITRE ATT&CK       | 4,736 | 25,856 | MITRE ATT&CK v15    |
-| Email EU            | 1,005 | 25,571 | SNAP Stanford       |
-| Facebook            | 4,039 | 88,234 | SNAP Stanford       |
-| Power Grid          | 4,941 | 6,594  | KONECT              |
-| Amazon Co-purchase  | 367K  | 988K   | SNAP Stanford       |
+| Email EU           | 1,005 | 25,571 | SNAP Stanford       |
+| Facebook           | 4,039 | 88,234 | SNAP Stanford       |
+| Power Grid         | 4,941 | 6,594  | KONECT              |
+| Amazon Co-purchase | 367K  | 988K   | SNAP Stanford       |
 
 ## Converters
 

@@ -74,12 +74,12 @@ px_i^(t+1) = β · property_i + (1-β) · Σ_j (A_ij / √(d_i · d_j)) · px_j^
 Benchmark predictions (based on PPR theory and comparable GNN results):
 
 | Dataset    | Current TopoNbrP | Estimated TopoNbrP | Current PropNbrP | Estimated PropNbrP |
-| ---------- | ---------------: | ------------------: | ---------------: | -----------------: |
-| Power Grid |            0.003 |          0.02-0.06  |            0.002 |              0.002 |
-| Facebook   |            0.110 |          0.12-0.14  |            0.003 |              0.003 |
-| Email-EU   |            0.056 |          0.06-0.08  |            0.007 |              0.007 |
-| MITRE      |            0.002 |          0.003-0.005 |           0.034 |              0.034 |
-| BZ Source  |            0.032 |          0.04-0.07  |            0.179 |          0.18-0.20 |
+| ---------- | ---------------: | -----------------: | ---------------: | -----------------: |
+| Power Grid | 0.003            | 0.02-0.06          | 0.002            | 0.002              |
+| Facebook   | 0.110            | 0.12-0.14          | 0.003            | 0.003              |
+| Email-EU   | 0.056            | 0.06-0.08          | 0.007            | 0.007              |
+| MITRE      | 0.002            | 0.003-0.005        | 0.034            | 0.034              |
+| BZ Source  | 0.032            | 0.04-0.07          | 0.179            | 0.18-0.20          |
 
 Power grid sees the largest improvement because the propagation horizon is the
 binding constraint. Dense graphs (Facebook) see moderate gains from more passes without
