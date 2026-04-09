@@ -94,20 +94,20 @@ No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`
 
 ## Module Responsibilities
 
-### [blitzoom-algo.js](../docs/blitzoom-algo.js) (510 lines)
+### [blitzoom-algo.js](../docs/blitzoom-algo.js) (623 lines)
 
-Pure functions, no DOM. Single source of truth for MinHash/projection.
+Pure functions, no DOM. Single source of truth for MinHash/projection/quantization.
 
-- **Constants**: `MINHASH_K=128`, `GRID_BITS=16`, `GRID_SIZE=65536`, `ZOOM_LEVELS[1..14]`, `RAW_LEVEL=14`, `LEVEL_LABELS`
+- **Constants**: `MINHASH_K=128`, `GRID_BITS=16`, `GRID_SIZE=65536`, `ZOOM_LEVELS[1..14]`, `RAW_LEVEL=14`, `LEVEL_LABELS`, `STRENGTH_FLOOR_RATIO=0.10`, `STRENGTH_FLOOR_MIN=0.10`
 - **MinHash** (GC-optimized): `HASH_PARAMS_A/B` (Int32Array), `computeMinHashInto` → reusable `_sig` Float64Array (NaN sentinel for empty tokens), `computeMinHash` (allocating wrapper). Universal hash via Mersenne fast-mod (`hashSlot` + `mersMod`) — split 16-bit halves to stay within safe integer range.
 - **Projection** (GC-optimized): `projectInto(sig, ROT, buf, offset)` → writes to buffer, `projectWith` (convenience wrapper returning `[px, py]`). NaN sentinel check: `sig[0] !== sig[0]`.
 - **Blend**: `unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings)`
-- **Quantization**: `normalizeAndQuantize(nodes)` (rank-based, O(n log n)), `gaussianQuantize(nodes, stats)` (Φ(z) via precomputed lookup table, O(n)). Default: Gaussian. Reasonable fit when blended coordinates are roughly bell-shaped; an approximation, not a guarantee.
+- **Quantization**: `normalizeAndQuantize(nodes)` (rank-based, O(n log n)), `gaussianQuantize(nodes, stats)` (Φ(z) via precomputed lookup table, O(n)), `normQuantize(nodes, groupNames, propStrengths)` (projection-matrix norms as σ, zero data dependency — stable for incremental updates). Norm cache: `_normSqCache` maps seed → `[||R[0]||², ||R[1]||²]`.
 - **Grid**: `cellIdAtLevel(gx, gy, level)`
 - **Level building**: `buildLevelNodes` (phase 1: bucket nodes into supernodes, O(n)) + `buildLevelEdges` (phase 2: aggregate edges, O(|E|), numeric key packing for levels 1-13, string keys for level 14) + `buildLevel` (combined wrapper). Caches `cachedColor`/`cachedLabel` on supernodes.
-- **Helpers**: `maxCountKey` (O(k) max), `generateGroupColors` (golden-angle HSL → hex), `getNodePropValue`, `getSupernodeDominantValue`
+- **Helpers**: `maxCountKey` (O(k) max), `getNodePropValue`, `getSupernodeDominantValue`
 
-### [blitzoom-pipeline.js](../docs/blitzoom-pipeline.js) (455 lines)
+### [blitzoom-pipeline.js](../docs/blitzoom-pipeline.js) (509 lines)
 
 SNAP parsing, graph building, tokenization, pipeline entry points. Imports from algo. No DOM.
 
@@ -115,8 +115,22 @@ SNAP parsing, graph building, tokenization, pipeline entry points. Imports from 
 - **Graph building**: `buildGraph` — nodes, edges, adjacency, neighbor groups, numeric column auto-detection (`numericBins`). Unions node ids from `parsed.nodeIds` AND `nodesMap.keys()` so nodes-only inputs and orphaned metadata rows are preserved.
 - **Tokenization**: `degreeBucket`, `tokenizeLabel` (inline word scanner), `tokenizeNumeric` (3-level for numeric, categorical fallback, 0 tokens for empty/undefined)
 - **Signature**: `computeNodeSig(node)` — on-demand signature computation (signatures not stored on nodes)
-- **Text pipeline**: `computeProjections` (GC-optimized), `runPipeline(edgesText, nodesText)`, `runPipelineGPU(edgesText, nodesText, computeProjectionsGPU)` — accept null `edgesText` for nodes-only graphs
-- **Object pipeline (new)**: `runPipelineFromObjects(nodesMap, edges, extraPropNames)`, `runPipelineFromObjectsGPU(...)` — bypass text parsing for CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX loads. Shares `buildGraph` + `computeProjections` with the text pipeline.
+- **Per-node projection**: `projectNode(node, neighborGroups, groupProjections, groupNames, hasEdgeTypes, extraPropNames, numericBins)` — projects a single node for incremental adds. Uses module-level `_tokenBuf` (non-reentrant, same pattern as `_sig`).
+- **Shared utilities**: `computeNumericBins(nodeArray, extraPropNames)` — detects numeric columns, computes bin boundaries. `computeAdjGroups(nodeArray, adjList, nodeIndex)` — builds per-node neighbor group arrays. Both used by `buildGraph`, `createBlitZoomFromGraph`, and `_fullRebuild` — single implementation, no duplication.
+- **Text pipeline**: `computeProjections` (delegates to `projectNode` per node), `runPipeline(edgesText, nodesText)`, `runPipelineGPU(edgesText, nodesText, computeProjectionsGPU)` — accept null `edgesText` for nodes-only graphs
+- **Object pipeline**: `runPipelineFromObjects(nodesMap, edges, extraPropNames)`, `runPipelineFromObjectsGPU(...)` — bypass text parsing for CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX loads. Shares `buildGraph` + `computeProjections` with the text pipeline.
+
+### [blitzoom-mutations.js](../docs/blitzoom-mutations.js) (392 lines)
+
+Incremental graph mutation functions. Standalone functions that operate on a BlitZoomCanvas instance. Extracted from blitzoom-canvas.js.
+
+- **`addNodes(view, nodes, edges, opts)`** — project new nodes, register, extend colors, blend, animate. Queues concurrent calls; drains queue after completion. Triggers `_fullRebuild` after 10% cumulative growth.
+- **`removeNodes(view, ids, opts)`** — filter edges, clean adjList, recompute maxDegree, blend, animate.
+- **`updateNodes(view, updates, opts)`** — merge properties, re-project only changed nodes, extend colors, blend, animate.
+- **`fullRebuild(view)`** — recompute numeric bins + adjGroups + all projections. Animated transition.
+- **`snapshotPositions(view)`** — capture supernode/node positions keyed by bid/id.
+- **`animateTransition(view, prevPositions, durationMs)`** — lerp existing items, fade in new items. Stores cleanup function on `view._animCleanup` for cancellation.
+- **Shared helpers**: `cancelAnimation`, `waitForMutex`, `extendColorMaps`, `blendAndAnimate`.
 
 ### [blitzoom-parsers.js](../docs/blitzoom-parsers.js) (965 lines)
 
@@ -180,11 +194,13 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
   `_instanceVBO` with `DYNAMIC_DRAW`.
 - **Exports**: `initGL(gl)`, `renderGL(gl, bz)`, `destroyGL(gl)`, `isWebGL2Available()`
 
-### [blitzoom-canvas.js](../docs/blitzoom-canvas.js) (1688 lines)
+### [blitzoom-canvas.js](../docs/blitzoom-canvas.js) (1600 lines)
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
 **`BlitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propStrengths, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Always owns its event handlers (`_bindEvents`). Constructor accepts `onRender`, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, `colorBy`, `clickDelay` (ms, for single/double-click disambiguation), `keyboardTarget` (default canvas element), and extension callbacks (`onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`).
+
+**Incremental API**: `addNodes(nodes, edges, opts)`, `removeNodes(ids, opts)`, `updateNodes(updates, opts)` — thin delegators to [blitzoom-mutations.js](../docs/blitzoom-mutations.js). Constructor stores `_numericBins`, `_extraPropNames`, `_insertsSinceRebuild`, `_rebuildThreshold` for the mutation functions.
 
 **`colorBy`**: getter/setter overrides which property group controls node colors. Default `null` = auto (highest-weight group). Setting to a valid group name pins coloring to that group; setting to `null` returns to auto. In the viewer, clicking a group name label toggles colorBy (underlined = active). `<bz-graph>` supports the `color-by` attribute.
 
@@ -194,9 +210,16 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Level crossfade**: `_snapshotForCrossfade()` captures the current canvas into an absolutely-positioned overlay that fades out over 350ms, providing a smooth visual transition between zoom levels. The overlay is positioned at the canvas's `offsetTop`/`offsetLeft` within its parent container (not fixed at `top:0;left:0`) so it aligns correctly regardless of layout — e.g., in grid layouts where the canvas is not at the container origin.
 
-**`createBlitZoomView(canvas, edgesText, nodesText, opts)`**: convenience factory — parses SNAP data, hydrates nodes, returns a canvas view synchronously. Initial blend kicks off async (GPU probe → blend → render). Accepts `webgl: true` to enable WebGL2 and `autoGPU: true` (default) to auto-enable WebGPU when N×G > 2000.
+**Public API**: `setStrengths()`, `setAlpha()`, `setOptions()`, `addNodes()`, `removeNodes()`, `updateNodes()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
 
-**Public API**: `setWeights()`, `setAlpha()`, `setOptions()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
+### [blitzoom-factory.js](../docs/blitzoom-factory.js) (215 lines)
+
+Factory functions for creating BlitZoomCanvas instances. Extracted from blitzoom-canvas.js.
+
+- **`createBlitZoomView(canvas, edgesText, nodesText, opts)`** — parses SNAP data via `runPipeline`, hydrates nodes, constructs a `BlitZoomCanvas`. Initial blend kicks off async (GPU probe → blend → render).
+- **`createBlitZoomFromGraph(canvas, rawNodes, rawEdges, opts)`** — builds graph from JS objects, computes projections, constructs a `BlitZoomCanvas`. No SNAP parsing.
+- **`hydrateAndLink(nodeArray, projBuf, groupNames, edges)`** — hydrates nodes with projections from projBuf, builds adjList. Exported for reuse by demos.
+- **Shared tail `_finalize`** — computes default strengths (group=3 if multi-valued, first useful categorical extra prop otherwise), builds color maps, constructs the view, kicks off async GPU probe + optional auto-tune + initial blend.
 
 ### [blitzoom-viewer.js](../docs/blitzoom-viewer.js) (2055 lines)
 
@@ -362,3 +385,90 @@ Individual components (MinHash, random projection, hierarchical grids, graph smo
 **Undefined** (6): empty/null emit 0 tokens, neutral projection, no false clustering, parser preservation, numeric detection ignoring empties.
 
 **E2E** (2): Epstein full pipeline + multi-level + bit-prefix verification. Topology alpha comparison.
+
+---
+
+## Incremental Updates
+
+BlitZoom supports runtime graph mutation via three methods on `BlitZoomCanvas`:
+
+- **`addNodes(nodes, edges, opts)`** — insert new nodes and edges
+- **`removeNodes(ids, opts)`** — remove nodes and their edges
+- **`updateNodes(updates, opts)`** — change existing nodes' properties
+
+All three are also available on `<bz-graph>`.
+
+### addNodes Pipeline
+
+1. **Project** each new node on the fly via `projectNode()` — uses cached `numericBins` and `groupProjections` from initial load. O(K) per node per group.
+2. **Register** — append to `nodes`, `nodeIndexFull`, `adjList`. Update degrees for new edges.
+3. **Extend color maps** — only generate colors for new property values; existing value→color mappings are never changed (stable colors across insertions).
+4. **Blend + quantize** — re-run `unifiedBlend` on the full (now larger) node array.
+5. **Animate** — lerp existing supernodes/nodes from old to new positions, fade in new items.
+6. **Periodic rebuild** — when cumulative inserts exceed 10% of original N, `_fullRebuild()` re-runs `computeProjections` on all nodes to refresh stale numeric bins and topology tokens.
+
+### removeNodes Pipeline
+
+1. **Filter edges** — remove edges touching removed nodes, decrement `degree` on surviving endpoints.
+2. **Clean adjList** — remove removed IDs from all neighbors' adjacency lists.
+3. **Remove** from `nodes`, `nodeIndexFull`, `adjList`. Recompute `maxDegree`.
+4. **Blend + animate** — supernodes that lose all members disappear; others lerp to new positions.
+5. **Dispatch** `nodesremoved` event.
+
+### updateNodes Pipeline
+
+1. **Merge** changed properties (`group`, `label`, extra props) into existing node objects.
+2. **Re-project only changed nodes** via `projectNode()` — unchanged nodes keep their projections.
+3. **Extend color maps** for any new property values.
+4. **Blend + animate** — affected supernodes lerp to new positions.
+5. **Dispatch** `nodesupdated` event.
+
+### Norm Quantization (`quantMode: 'norm'`)
+
+`normQuantize` in [blitzoom-algo.js](docs/blitzoom-algo.js) uses projection matrix norms as σ instead of data-derived μ/σ. Each node's grid position depends only on its own blended `px/py` and fixed algorithm parameters. Adding nodes never changes existing nodes' `gx/gy` — zero displacement.
+
+Scale derivation: `σ = √(Σ w²_g × ||R_g[row]||²) / W`, where `R_g` is the seeded Gaussian projection matrix for group g. The norm cache (`_normSqCache`) computes `||R_g[row]||²` once per seed and reuses it.
+
+Tradeoff: norm mode has ~5-30% worse grid utilization than gaussian on datasets where property diversity is low (single-valued group, edge-only graphs). Works well on property-rich datasets (within 5% of gaussian).
+
+### Animation
+
+`_animateTransition(prevPositions, durationMs)` matches items before/after update by `bid` (supernodes) or `id` (raw nodes):
+- **Existing items** (key found): cubic ease-out lerp from old to new screen position
+- **New items** (key not found): fade in at final position via `_animProgress` on the bz object
+- Renderer checks `_isNew && bz._animProgress` in both `renderNodes` and `renderSupernodes` circle passes
+- Uses `renderNow()` (synchronous) in the animation loop to avoid rAF coalescing with the deferred `render()`
+
+### `<bz-graph>` Integration
+
+```html
+<bz-graph id="g" edges="data/base.edges" nodes="data/base.nodes" incremental>
+</bz-graph>
+<script>
+  g.addEventListener('ready', async () => {
+    await g.addNodes([{id: 'n1', group: 'analyst', label: 'New'}]);
+    await g.updateNodes([{id: 'n1', group: 'manager'}]);
+    await g.removeNodes(['n1']);
+  });
+</script>
+```
+
+The `incremental` attribute sets `quantMode: 'norm'` automatically. `rebuild-threshold` attribute configures the periodic rebuild fraction (default 0.10).
+
+### Concurrency
+
+All three mutation methods share a guard (`_addNodesRunning`). If a call arrives while one is in progress, `addNodes` merges the new nodes/edges into a queue and drains it after the current operation completes. `removeNodes` and `updateNodes` return immediately if busy. In-flight animations are cancelled (snapped to final positions) when a new mutation starts.
+
+### Data Flow
+
+```
+addNodes(rawNodes, edges)             removeNodes(ids)                updateNodes(updates)
+  → projectNode() per node              → filter edges, update degrees    → merge properties
+  → register in nodes/adjList           → clean adjList                   → re-project changed nodes
+  → extend propColors                   → remove from nodes/index         → extend propColors
+  → snapshot positions                  → recompute maxDegree             → snapshot positions
+  → _blend() → layoutAll()             → snapshot → _blend() → layout    → _blend() → layoutAll()
+  → _animateTransition()               → _animateTransition()            → _animateTransition()
+  → dispatch 'nodesadded'              → dispatch 'nodesremoved'         → dispatch 'nodesupdated'
+  → check _rebuildThreshold
+```

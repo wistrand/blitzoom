@@ -127,6 +127,7 @@
   <a href="#data-format">Data Format</a>
   <a href="#embed">Embed a View</a>
   <a href="#from-js">From JS Objects</a>
+  <a href="#incremental">Incremental Updates</a>
   <a href="#options">Options</a>
   <a href="#callbacks">Callbacks</a>
   <a href="#strengths">Strength Tuning</a>
@@ -239,6 +240,13 @@ eve	Eve	management	director	12</pre>
 
 <p>The returned <code>view</code> is a <code>BlitZoomCanvas</code> instance with a full API for programmatic control.</p>
 
+<div class="note" style="margin:20px 0;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(124,106,247,0.06);border-radius:0 6px 6px 0;font-size:13px">
+  <strong>Prefer HTML?</strong> Use the <code>&lt;bz-graph&gt;</code> <a href="#webcomponent">web component</a> — no JavaScript needed for basic use:
+  <pre style="margin:8px 0 0;font-size:12px">&lt;bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
+          level="3" heatmap="density" legend&gt;
+&lt;/bz-graph&gt;</pre>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
 <h2 id="from-js">From JS Objects</h2>
@@ -282,6 +290,76 @@ eve	Eve	management	director	12</pre>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
+<h2 id="incremental">Incremental Updates</h2>
+
+<p>Add, remove, and update nodes at runtime. The <code>incremental</code> attribute on <code>&lt;bz-graph&gt;</code> enables norm quantization — existing nodes never shift when data changes.</p>
+
+<pre>&lt;bz-graph id="g" edges="data/karate.edges" nodes="data/karate.nodes" incremental&gt;
+&lt;/bz-graph&gt;
+
+&lt;script&gt;
+  <span class="keyword">const</span> g = document.getElementById(<span class="string">'g'</span>);
+  g.addEventListener(<span class="string">'ready'</span>, <span class="keyword">async</span> () =&gt; {
+
+    <span class="comment">// Add nodes + edges</span>
+    <span class="keyword">await</span> g.<span class="fn">addNodes</span>(
+      [{id: <span class="string">'new1'</span>, group: <span class="string">'analyst'</span>}, {id: <span class="string">'new2'</span>, group: <span class="string">'admin'</span>}],
+      [{src: <span class="string">'new1'</span>, dst: <span class="string">'new2'</span>}]
+    );
+
+    <span class="comment">// Update properties (only changed nodes are re-projected)</span>
+    <span class="keyword">await</span> g.<span class="fn">updateNodes</span>([{id: <span class="string">'new1'</span>, group: <span class="string">'manager'</span>}]);
+
+    <span class="comment">// Remove by ID (edges cleaned up automatically)</span>
+    <span class="keyword">await</span> g.<span class="fn">removeNodes</span>([<span class="string">'new2'</span>]);
+  });
+&lt;/script&gt;
+</pre>
+
+<p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly. A periodic full rebuild triggers automatically after 10% cumulative growth to refresh stale numeric bins and topology tokens.</p>
+
+<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);margin:24px 0">
+  <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">
+    <span>Live: incremental API with norm quantization.</span>
+    <button id="demo-incr-add" style="font:inherit;background:var(--accent);color:#fff;border:none;padding:2px 10px;border-radius:3px;cursor:pointer">Add 3</button>
+    <button id="demo-incr-remove" style="font:inherit;background:var(--accent2, #f76a8c);color:#fff;border:none;padding:2px 10px;border-radius:3px;cursor:pointer">Remove 1</button>
+    <button id="demo-incr-reset" style="font:inherit;background:var(--bg);color:var(--text-dim);border:1px solid var(--border);padding:2px 10px;border-radius:3px;cursor:pointer">Reset</button>
+    <span id="demo-incr-status" style="margin-left:auto"></span>
+  </div>
+  <bz-graph id="demo-incremental" incremental format="json"
+            edge-mode="lines" legend strengths="group:5,lang:8"
+            style="height:280px;display:block">
+    {"nodes":[],"edges":[]}
+  </bz-graph>
+</div>
+
+<h3>Events</h3>
+
+<p>Each mutation dispatches an event on the canvas:</p>
+
+<pre><span class="keyword">const</span> el = document.querySelector(<span class="string">'bz-graph'</span>);
+el.addEventListener(<span class="string">'nodesadded'</span>, e =&gt; console.log(<span class="string">`+${e.detail.count}, total: ${e.detail.total}`</span>));
+el.addEventListener(<span class="string">'nodesremoved'</span>, e =&gt; console.log(<span class="string">`-${e.detail.count}, total: ${e.detail.total}`</span>));
+el.addEventListener(<span class="string">'nodesupdated'</span>, e =&gt; console.log(<span class="string">`~${e.detail.count}`</span>));
+</pre>
+
+<h3>Canvas API</h3>
+
+<p>The same methods are available directly on <code>BlitZoomCanvas</code> for lower-level control:</p>
+
+<pre><span class="keyword">import</span> { createBlitZoomFromGraph } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
+
+<span class="keyword">const</span> view = <span class="fn">createBlitZoomFromGraph</span>(canvas,
+  [{id: <span class="string">'a'</span>, group: <span class="string">'x'</span>}], [], { quantMode: <span class="string">'norm'</span> }
+);
+
+<span class="keyword">await</span> view.<span class="fn">addNodes</span>([{id: <span class="string">'b'</span>, group: <span class="string">'y'</span>}], [{src: <span class="string">'a'</span>, dst: <span class="string">'b'</span>}]);
+<span class="keyword">await</span> view.<span class="fn">updateNodes</span>([{id: <span class="string">'b'</span>, group: <span class="string">'z'</span>}]);
+<span class="keyword">await</span> view.<span class="fn">removeNodes</span>([<span class="string">'b'</span>]);
+</pre>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
 <h2 id="options">Options Reference</h2>
 
 <p>All options are optional. Sensible defaults are applied.</p>
@@ -291,7 +369,7 @@ eve	Eve	management	director	12</pre>
   <tr><td><code>initialLevel</code></td><td>number</td><td>3</td><td>Starting zoom level index (0=L1, 13=L14, 14=RAW)</td></tr>
   <tr><td><code>edgeMode</code></td><td>string</td><td><code>'curves'</code></td><td><code>'curves'</code>, <code>'lines'</code>, or <code>'none'</code></td></tr>
   <tr><td><code>heatmapMode</code></td><td>string</td><td><code>'off'</code></td><td><code>'off'</code>, <code>'splat'</code>, or <code>'density'</code></td></tr>
-  <tr><td><code>quantMode</code></td><td>string</td><td><code>'gaussian'</code></td><td><code>'gaussian'</code> (density-preserving) or <code>'rank'</code> (uniform)</td></tr>
+  <tr><td><code>quantMode</code></td><td>string</td><td><code>'gaussian'</code></td><td><code>'gaussian'</code> (density-preserving), <code>'rank'</code> (uniform), or <code>'norm'</code> (order-independent, stable for incremental updates)</td></tr>
   <tr><td><code>sizeBy</code></td><td>string</td><td><code>'edges'</code></td><td>Node size: <code>'edges'</code> (degree) or <code>'members'</code> (count)</td></tr>
   <tr><td><code>sizeLog</code></td><td>boolean</td><td>false</td><td>Log scale for node size</td></tr>
   <tr><td><code>smoothAlpha</code></td><td>number</td><td>0</td><td>Topology blend weight, 0 (property only) to 1 (topology only)</td></tr>
@@ -979,6 +1057,95 @@ fetch('data/epstein.edges').then(r => r.text()).then(edges => {
     });
   });
 });
+
+// Incremental demo
+{
+  const GROUPS = ['engineer', 'designer', 'manager', 'analyst', 'intern'];
+  const LANGS = ['Go', 'JS', 'Python', 'Rust', 'Java', 'C++', 'Ruby', 'Swift'];
+  const NAMES = [
+    'Alice', 'Bob', 'Carol', 'Dave', 'Eve', 'Frank', 'Grace', 'Hank',
+    'Iris', 'Jack', 'Kim', 'Leo', 'Mia', 'Noah', 'Olga', 'Pete',
+    'Quinn', 'Rosa', 'Sam', 'Tina', 'Uma', 'Vic', 'Wendy', 'Xena',
+    'Yuri', 'Zara', 'Ari', 'Bea', 'Cal', 'Dee', 'Eli', 'Fay',
+  ];
+
+  let nodeCount = 0;
+  let allNodes = [];
+  const el = document.getElementById('demo-incremental');
+  const statusEl = document.getElementById('demo-incr-status');
+
+  function makeNode() {
+    const i = nodeCount++;
+    const name = i < NAMES.length ? NAMES[i] : `Node${i}`;
+    return {
+      id: name.toLowerCase(),
+      group: GROUPS[i % GROUPS.length],
+      label: name,
+      lang: LANGS[Math.floor(Math.random() * LANGS.length)],
+      exp: Math.floor(Math.random() * 15) + 1,
+    };
+  }
+
+  function makeEdges(newNode) {
+    const edges = [];
+    if (allNodes.length > 0) {
+      const count = Math.min(allNodes.length, 1 + Math.floor(Math.random() * 2));
+      const picked = new Set();
+      while (picked.size < count) picked.add(Math.floor(Math.random() * allNodes.length));
+      for (const idx of picked) edges.push({ src: newNode.id, dst: allNodes[idx].id });
+    }
+    return edges;
+  }
+
+  // Seed the graph with 3 initial nodes on ready
+  el.addEventListener('ready', async () => {
+    const seeds = [makeNode(), makeNode(), makeNode()];
+    const seedEdges = [
+      { src: seeds[0].id, dst: seeds[1].id },
+      { src: seeds[1].id, dst: seeds[2].id },
+    ];
+    allNodes.push(...seeds);
+    await el.addNodes(seeds, seedEdges);
+    statusEl.textContent = `${allNodes.length} nodes`;
+  });
+
+  document.getElementById('demo-incr-add').addEventListener('click', async () => {
+    if (!el.view) return;
+    const newNodes = [];
+    const newEdges = [];
+    for (let i = 0; i < 3; i++) {
+      const n = makeNode();
+      newEdges.push(...makeEdges(n));
+      newNodes.push(n);
+      allNodes.push(n);
+    }
+    await el.addNodes(newNodes, newEdges);
+    statusEl.textContent = `${allNodes.length} nodes`;
+  });
+
+  document.getElementById('demo-incr-remove').addEventListener('click', async () => {
+    if (!el.view || allNodes.length <= 3) return;
+    const removed = allNodes.pop();
+    await el.removeNodes([removed.id]);
+    statusEl.textContent = `${allNodes.length} nodes`;
+  });
+
+  document.getElementById('demo-incr-reset').addEventListener('click', async () => {
+    if (!el.view || allNodes.length === 0) return;
+    await el.removeNodes(allNodes.map(n => n.id));
+    nodeCount = 0;
+    allNodes = [];
+    // Re-seed
+    const seeds = [makeNode(), makeNode(), makeNode()];
+    const seedEdges = [
+      { src: seeds[0].id, dst: seeds[1].id },
+      { src: seeds[1].id, dst: seeds[2].id },
+    ];
+    allNodes.push(...seeds);
+    await el.addNodes(seeds, seedEdges);
+    statusEl.textContent = `${allNodes.length} nodes`;
+  });
+}
 
 // TOC scroll sync
 const tocLinks = document.querySelectorAll('#toc a');

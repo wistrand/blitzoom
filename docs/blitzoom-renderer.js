@@ -391,6 +391,8 @@ function renderSupernodes(bz, pass) {
         ctx.fill();
       }
 
+      const snFadeIn = sn._isNew && bz._animProgress !== undefined;
+      if (snFadeIn) ctx.globalAlpha = bz._animProgress;
       ctx.fillStyle = col + (isSelected ? 'ff' : isHovered ? 'cc' : _hexAlpha[Math.round(importance * 0x99)]);
       ctx.beginPath();
       ctx.arc(px, py, r, 0, Math.PI * 2);
@@ -398,7 +400,7 @@ function renderSupernodes(bz, pass) {
 
       ctx.strokeStyle = isSelected ? '#fff' : col;
       ctx.lineWidth = isSelected ? 2 : 1;
-      ctx.globalAlpha = isSelected || isHovered ? 1 : importance;
+      ctx.globalAlpha = (snFadeIn ? bz._animProgress : 1) * (isSelected || isHovered ? 1 : importance);
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
@@ -620,10 +622,13 @@ function renderNodes(bz, pass) {
         ctx.fill();
       }
 
+      const fadeIn = n._isNew && bz._animProgress !== undefined;
+      if (fadeIn) ctx.globalAlpha = bz._animProgress;
       ctx.fillStyle = col + (isSelected ? 'ff' : 'bb');
       ctx.beginPath();
       ctx.arc(px, py, r, 0, Math.PI*2);
       ctx.fill();
+      ctx.globalAlpha = 1;
 
       if (isSelected) {
         ctx.strokeStyle = '#fff';

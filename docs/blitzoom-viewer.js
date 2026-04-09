@@ -960,6 +960,8 @@ class BlitZoom {
         } else {
             widget.groups = groups;
         }
+        widget.alpha = v.smoothAlpha;
+        widget.colorBy = v.colorBy;
     }
 
 
@@ -1961,6 +1963,13 @@ class BlitZoom {
         const compassWidget = document.getElementById('compassWidget');
         const onCompassInput = (e) => {
             if (!e.detail) return;
+            if (e.detail.name === '_alpha') {
+                v.smoothAlpha = e.detail.alpha;
+                document.getElementById('nudgeSlider').value = v.smoothAlpha;
+                document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
+                this._scheduleRebuild();
+                return;
+            }
             const { name, strength, bearing } = e.detail;
             v.propStrengths[name] = strength;
             v.propBearings[name] = bearing;
@@ -1968,7 +1977,12 @@ class BlitZoom {
         };
         compassWidget.addEventListener('input', onCompassInput);
         compassWidget.addEventListener('change', (e) => {
-            if (e.detail) {
+            if (!e.detail) return;
+            if (e.detail.name === '_alpha') {
+                v.smoothAlpha = e.detail.alpha;
+                document.getElementById('nudgeSlider').value = v.smoothAlpha;
+                document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
+            } else {
                 v.propStrengths[e.detail.name] = e.detail.strength;
                 v.propBearings[e.detail.name] = e.detail.bearing;
             }

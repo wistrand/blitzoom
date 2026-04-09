@@ -156,14 +156,25 @@ export function buildGraph(parsed, nodesMap, extraPropNames) {
   for (let i = 0; i < nodeArray.length; i++) groupSet.add(nodeArray[i].group);
   const uniqueGroups = [...groupSet].sort();
 
-  // Detect numeric extra property columns and compute bin boundaries
-  // A column is numeric if >80% of non-empty values parse as finite numbers
-  const numericBins = {}; // propName → { min, max, coarse: count, medium: count, fine: count }
+  const numericBins = computeNumericBins(nodeArray, extraPropNames);
+
+  return { nodeArray, nodeIndex, edges, adjList, adjGroups, groupNames, uniqueGroups, hasEdgeTypes, numericBins };
+}
+
+/**
+ * Detect numeric extra property columns and compute bin boundaries.
+ * A column is numeric if >80% of non-empty values parse as finite numbers.
+ * @param {Array} nodeArray - node objects with .extraProps
+ * @param {string[]} extraPropNames
+ * @returns {object} { propName: { min, max, coarse, medium, fine } }
+ */
+export function computeNumericBins(nodeArray, extraPropNames) {
+  const numericBins = {};
   for (const ep of extraPropNames) {
     let numCount = 0, total = 0;
     let min = Infinity, max = -Infinity;
     for (let i = 0; i < nodeArray.length; i++) {
-      const v = nodeArray[i].extraProps[ep];
+      const v = nodeArray[i].extraProps && nodeArray[i].extraProps[ep];
       if (!v || v === 'unknown') continue;
       total++;
       const num = Number(v);
@@ -177,8 +188,23 @@ export function buildGraph(parsed, nodesMap, extraPropNames) {
       numericBins[ep] = { min, max, coarse: 5, medium: 50, fine: 500 };
     }
   }
+  return numericBins;
+}
 
-  return { nodeArray, nodeIndex, edges, adjList, adjGroups, groupNames, uniqueGroups, hasEdgeTypes, numericBins };
+/**
+ * Compute per-node neighbor group arrays from an adjacency list and node index.
+ * @param {Array} nodeArray - node objects with .id and .group
+ * @param {object} adjList - { id: [neighborIds] }
+ * @param {object} nodeIndex - { id: node }
+ * @returns {Array} adjGroups[i] = [group values of node i's neighbors]
+ */
+export function computeAdjGroups(nodeArray, adjList, nodeIndex) {
+  const adjGroups = new Array(nodeArray.length);
+  for (let i = 0; i < nodeArray.length; i++) {
+    const nbrIds = adjList[nodeArray[i].id] || [];
+    adjGroups[i] = nbrIds.map(nid => (nodeIndex[nid]?.group) || 'unknown');
+  }
+  return adjGroups;
 }
 
 // ─── Tokenization helpers ────────────────────────────────────────────────────
@@ -249,6 +275,93 @@ export function tokenizeNumeric(propName, value, bins, tokenBuf, offset) {
 // Computes all MinHash projections for all nodes. GC-optimized: uses
 // computeMinHashInto/_sig/projectInto to avoid per-node allocations.
 
+// Module-level shared token buffer for projection (non-reentrant, same as _sig).
+const _tokenBuf = new Array(200);
+
+/**
+ * Project a single node's properties into 2D per-group coordinates.
+ * Returns { groupName: [px, py], ... }. Optionally writes into a flat projBuf.
+ * Uses module-level _tokenBuf and _sig — not reentrant (safe because pipeline is sequential).
+ *
+ * @param {object} node - { group, label, id, degree, edgeTypes, extraProps }
+ * @param {string[]} neighborGroups - group values of this node's neighbors (e.g. ['analyst', 'admin'])
+ * @param {object} groupProjections - { groupName: R_matrix } (from buildGaussianProjection)
+ * @param {string[]} groupNames - ordered group names
+ * @param {boolean} hasEdgeTypes
+ * @param {string[]} extraPropNames
+ * @param {object} numericBins - { propName: { min, max, coarse, medium, fine } }
+ * @param {Float64Array} [projBuf] - optional output buffer
+ * @param {number} [baseOff=0] - offset into projBuf
+ * @returns {object} projections - { groupName: [px, py], ... }
+ */
+export function projectNode(node, neighborGroups, groupProjections, groupNames, hasEdgeTypes, extraPropNames, numericBins, projBuf, baseOff) {
+  const G = groupNames.length;
+  const gIdx = {};
+  for (let i = 0; i < G; i++) gIdx[groupNames[i]] = i;
+
+  // Temp buffer for reading back projections
+  const tmpBuf = projBuf || new Float64Array(G * 2);
+  const off = projBuf ? baseOff : 0;
+
+  // group
+  _tokenBuf[0] = 'group:' + node.group;
+  computeMinHashInto(_tokenBuf, 1);
+  projectInto(_sig, groupProjections.group, tmpBuf, off + gIdx.group * 2);
+
+  // label
+  const labelEnd = tokenizeLabel(node.label, node.id, _tokenBuf, 0);
+  computeMinHashInto(_tokenBuf, labelEnd);
+  projectInto(_sig, groupProjections.label, tmpBuf, off + gIdx.label * 2);
+
+  // structure
+  _tokenBuf[0] = 'deg:' + degreeBucket(node.degree);
+  _tokenBuf[1] = 'leaf:' + (node.degree === 0);
+  computeMinHashInto(_tokenBuf, 2);
+  projectInto(_sig, groupProjections.structure, tmpBuf, off + gIdx.structure * 2);
+
+  // neighbors
+  let tc = 0;
+  if (neighborGroups.length > 0) {
+    for (let ai = 0; ai < neighborGroups.length; ai++) _tokenBuf[tc++] = 'ngroup:' + neighborGroups[ai];
+  } else {
+    _tokenBuf[0] = 'ngroup:isolated'; tc = 1;
+  }
+  computeMinHashInto(_tokenBuf, tc);
+  projectInto(_sig, groupProjections.neighbors, tmpBuf, off + gIdx.neighbors * 2);
+
+  // edge types
+  if (hasEdgeTypes && gIdx.edgetype !== undefined) {
+    tc = 0;
+    if (node.edgeTypes && node.edgeTypes.length > 0) {
+      for (let ei = 0; ei < node.edgeTypes.length; ei++) _tokenBuf[tc++] = 'etype:' + node.edgeTypes[ei];
+    } else {
+      _tokenBuf[0] = 'etype:none'; tc = 1;
+    }
+    computeMinHashInto(_tokenBuf, tc);
+    projectInto(_sig, groupProjections.edgetype, tmpBuf, off + gIdx.edgetype * 2);
+  }
+
+  // extra props (with multi-resolution numeric tokenization)
+  for (let epi = 0; epi < extraPropNames.length; epi++) {
+    const ep = extraPropNames[epi];
+    const val = node.extraProps && node.extraProps[ep];
+    const epEnd = tokenizeNumeric(ep, val, numericBins[ep], _tokenBuf, 0);
+    if (epEnd > 0) {
+      computeMinHashInto(_tokenBuf, epEnd);
+      projectInto(_sig, groupProjections[ep], tmpBuf, off + gIdx[ep] * 2);
+    }
+    // else: tmpBuf already initialized to 0,0
+  }
+
+  // Build projections object
+  const projections = {};
+  for (let g = 0; g < G; g++) {
+    const o = off + g * 2;
+    projections[groupNames[g]] = [tmpBuf[o], tmpBuf[o + 1]];
+  }
+  return projections;
+}
+
 export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins) {
   numericBins = numericBins || {};
   const groupProjections = {};
@@ -260,67 +373,8 @@ export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeType
   const G = groupNames.length;
   const projBuf = new Float64Array(N * G * 2);
 
-  const gIdx = {};
-  for (let i = 0; i < G; i++) gIdx[groupNames[i]] = i;
-
-  const tokenBuf = new Array(200);
-
   for (let idx = 0; idx < N; idx++) {
-    const n = nodeArray[idx];
-    const baseOff = idx * G * 2;
-
-    // group
-    tokenBuf[0] = 'group:' + n.group;
-    computeMinHashInto(tokenBuf, 1);
-    projectInto(_sig, groupProjections.group, projBuf, baseOff + gIdx.group * 2);
-
-    // label
-    const labelEnd = tokenizeLabel(n.label, n.id, tokenBuf, 0);
-    computeMinHashInto(tokenBuf, labelEnd);
-    projectInto(_sig, groupProjections.label, projBuf, baseOff + gIdx.label * 2);
-
-    // structure
-    tokenBuf[0] = 'deg:' + degreeBucket(n.degree);
-    tokenBuf[1] = 'leaf:' + (n.degree === 0);
-    computeMinHashInto(tokenBuf, 2);
-    projectInto(_sig, groupProjections.structure, projBuf, baseOff + gIdx.structure * 2);
-
-    // neighbors
-    const adj = adjGroups[idx];
-    let tc = 0;
-    if (adj.length > 0) {
-      for (let ai = 0; ai < adj.length; ai++) tokenBuf[tc++] = 'ngroup:' + adj[ai];
-    } else {
-      tokenBuf[0] = 'ngroup:isolated'; tc = 1;
-    }
-    computeMinHashInto(tokenBuf, tc);
-    projectInto(_sig, groupProjections.neighbors, projBuf, baseOff + gIdx.neighbors * 2);
-
-    // edge types
-    if (hasEdgeTypes) {
-      tc = 0;
-      if (n.edgeTypes && n.edgeTypes.length > 0) {
-        for (let ei = 0; ei < n.edgeTypes.length; ei++) tokenBuf[tc++] = 'etype:' + n.edgeTypes[ei];
-      } else {
-        tokenBuf[0] = 'etype:none'; tc = 1;
-      }
-      computeMinHashInto(tokenBuf, tc);
-      projectInto(_sig, groupProjections.edgetype, projBuf, baseOff + gIdx.edgetype * 2);
-    }
-
-    // extra props (with multi-resolution numeric tokenization)
-    // Empty/undefined values emit 0 tokens → projection stays at [0,0] (neutral)
-    for (let epi = 0; epi < extraPropNames.length; epi++) {
-      const ep = extraPropNames[epi];
-      const val = n.extraProps && n.extraProps[ep];
-      const epEnd = tokenizeNumeric(ep, val, numericBins[ep], tokenBuf, 0);
-      if (epEnd > 0) {
-        computeMinHashInto(tokenBuf, epEnd);
-        projectInto(_sig, groupProjections[ep], projBuf, baseOff + gIdx[ep] * 2);
-      }
-      // else: projBuf already initialized to 0,0
-    }
-
+    projectNode(nodeArray[idx], adjGroups[idx], groupProjections, groupNames, hasEdgeTypes, extraPropNames, numericBins, projBuf, idx * G * 2);
   }
 
   return { projBuf, groupNames };

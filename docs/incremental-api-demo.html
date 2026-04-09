@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlitZoom — Incremental API Demo</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent2: #f76a8c;
+    --accent3: #6af7c8;
+    --text: #c8c8d8;
+    --text-dim: #8888a0;
+    --text-bright: #eeeef8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    padding: 24px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  h1 span { color: var(--accent); }
+
+  .subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; max-width: 800px; }
+
+  .canvases {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .canvas-wrap {
+    flex: 1;
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 450px;
+    touch-action: none;
+  }
+
+  .canvas-label {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .canvas-label.gauss { background: var(--accent); color: #fff; }
+  .canvas-label.norm { background: var(--accent3); color: #111; }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .controls button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .controls button:hover { border-color: var(--accent); color: var(--accent); }
+
+  .controls select, .controls input[type="range"] {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .controls input[type="range"] { width: 80px; accent-color: var(--accent); }
+
+  .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-bright);
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .stat {
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .stat b { font-weight: 600; }
+  .gauss-stat { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .norm-stat { color: var(--accent3); border-color: color-mix(in srgb, var(--accent3) 30%, transparent); }
+
+  .footer {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 16px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h1><img src="logo.svg" alt="" style="width:32px;height:32px;vertical-align:-4px;margin-right:8px">Blit<span>Zoom</span> Incremental API Demo</h1>
+<p class="subtitle">
+  Uses the real <code>BlitZoomCanvas.addNodes()</code> API. Both canvases are full interactive views
+  (zoom, pan, select). Gaussian recomputes μ/σ on each batch; Norm uses fixed projection-matrix scale.
+</p>
+
+<div class="controls">
+  <button id="playBtn">▶ Play</button>
+  <button id="stepBtn">Step</button>
+  <button id="resetBtn">Reset</button>
+  <span class="status" id="status">0 / 0 nodes</span>
+  <label>Speed</label>
+  <input type="range" id="speedSlider" min="1" max="10" value="3">
+  <label>Batch</label>
+  <select id="batchSelect">
+    <option value="1">1</option>
+    <option value="10" selected>10</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+    <option value="500">500</option>
+    <option value="1000">1K</option>
+    <option value="5000">5K</option>
+    <option value="10000">10K</option>
+  </select>
+  <label title="Run auto-tune periodically to discover better property strengths as data arrives">
+    <input type="checkbox" id="autoTuneCheck"> Tune every
+  </label>
+  <select id="tuneIntervalSelect">
+    <option value="50">50</option>
+    <option value="100" selected>100</option>
+    <option value="250">250</option>
+    <option value="500">500</option>
+    <option value="1000">1K</option>
+    <option value="5000">5K</option>
+    <option value="10000">10K</option>
+  </select>
+  <span style="color:var(--text-dim)">nodes</span>
+  <label>Dataset</label>
+  <select id="datasetSelect">
+    <option value="marvel">Marvel (327)</option>
+    <option value="epstein">Epstein (514)</option>
+    <option value="pokemon">Pokemon (959)</option>
+    <option value="bz-source">BlitZoom Source (966)</option>
+    <option value="mitre">MITRE ATT&amp;CK (4.7K)</option>
+    <option value="ransomware">Ransomware (27K)</option>
+    <option value="amazon">Amazon (367K)</option>
+  </select>
+</div>
+
+<div class="canvases">
+  <div class="canvas-wrap">
+    <canvas id="gaussCanvas"></canvas>
+    <div class="canvas-label gauss">Gaussian Q:G — addNodes API</div>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="normCanvas"></canvas>
+    <div class="canvas-label norm">Norm Q:N — addNodes API</div>
+  </div>
+</div>
+
+<div class="stats">
+  <span id="gaussCount" class="stat gauss-stat">Gaussian: <b>0</b> nodes</span>
+  <span id="normCount" class="stat norm-stat">Norm: <b>0</b> nodes</span>
+  <span id="tuneInfo" class="stat" style="color:var(--text-dim);display:none"></span>
+</div>
+
+<div class="footer">
+  <a href="viewer.html">Viewer</a> · <a href="about.html">How It Works</a> · <a href="https://github.com/wistrand/blitzoom">GitHub</a>
+</div>
+
+<script type="module">
+import { createBlitZoomFromGraph } from './blitzoom-factory.js';
+import { runPipeline } from './blitzoom-pipeline.js';
+import { autoTuneStrengths } from './blitzoom-utils.js';
+
+const DATASETS = {
+  'marvel':     { edges: 'data/marvel.edges',              nodes: 'data/marvel.nodes',              strengths: { group: 5, alignment: 3, gender: 2 } },
+  'epstein':    { edges: 'data/epstein.edges',             nodes: 'data/epstein.nodes',             strengths: { group: 5, edgetype: 8 } },
+  'pokemon':    { edges: 'data/pokemon.edges',             nodes: 'data/pokemon.nodes',             strengths: { group: 3 } },
+  'bz-source':  { edges: 'data/blitzoom-source.edges',     nodes: 'data/blitzoom-source.nodes',     strengths: { kind: 8, group: 3 } },
+  'mitre':      { edges: 'data/mitre-attack.edges',        nodes: 'data/mitre-attack.nodes',        strengths: { group: 5, platforms: 6, killchain: 4 } },
+  'ransomware': { edges: 'data/ransomware.edges.gz',      nodes: 'data/ransomware.nodes.gz',      strengths: { group: 3 } },
+  'amazon':     { edges: 'data/amazon-copurchase.edges.gz', nodes: 'data/amazon-copurchase.nodes.gz', strengths: { group: 3 } },
+};
+
+// ─── State ──────────────────────────────────────────────────────────────────
+
+let allRawNodes = null;    // [{id, group, label, ...extras}] from pipeline
+let allRawEdges = null;    // [{src, dst}]
+let shuffledOrder = null;  // shuffled indices
+let batchIndex = 0;
+let playing = false;
+let playTimer = null;
+let viewGauss = null;      // BlitZoomCanvas instances
+let viewNorm = null;
+let currentStrengths = {};
+
+const gaussCanvas = document.getElementById('gaussCanvas');
+const normCanvas = document.getElementById('normCanvas');
+const statusEl = document.getElementById('status');
+
+// ─── Load dataset ───────────────────────────────────────────────────────────
+
+async function fetchText(url) {
+  const resp = await fetch(url);
+  if (!url.endsWith('.gz')) return resp.text();
+  const ds = new DecompressionStream('gzip');
+  const reader = resp.body.pipeThrough(ds).getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(await new Blob(chunks).arrayBuffer());
+}
+
+async function loadDataset(id) {
+  const ds = DATASETS[id];
+  statusEl.textContent = `Fetching ${id}...`;
+  const [edgesText, nodesText] = await Promise.all([
+    fetchText(ds.edges),
+    ds.nodes ? fetchText(ds.nodes) : Promise.resolve(null),
+  ]);
+
+  statusEl.textContent = `Parsing ${id}...`;
+  await new Promise(r => requestAnimationFrame(r)); // flush UI
+  const result = runPipeline(edgesText, nodesText);
+  currentStrengths = { ...ds.strengths };
+
+  statusEl.textContent = `Preparing ${result.nodeArray.length} nodes...`;
+  await new Promise(r => requestAnimationFrame(r));
+  allRawNodes = result.nodeArray.map(n => {
+    const raw = { id: n.id, group: n.group, label: n.label };
+    if (n.extraProps) Object.assign(raw, n.extraProps);
+    return raw;
+  });
+  allRawEdges = result.edges.map(e => ({ src: e.src, dst: e.dst }));
+
+  // Shuffle insertion order
+  shuffledOrder = Array.from({ length: allRawNodes.length }, (_, i) => i);
+  for (let i = shuffledOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
+  }
+
+  statusEl.textContent = `Shuffled ${allRawNodes.length} nodes, ${allRawEdges.length} edges`;
+  console.log(`[api-demo] Loaded ${id}: ${allRawNodes.length} nodes, ${allRawEdges.length} edges`);
+}
+
+// ─── Create views with seed data ────────────────────────────────────────────
+
+const SEED_FRAC = 0.10; // start with 10% of nodes as seed
+
+async function createViews() {
+  const seedCount = Math.max(10, Math.floor(allRawNodes.length * SEED_FRAC));
+  statusEl.textContent = `Seeding ${seedCount} nodes...`;
+  const seedIndices = shuffledOrder.slice(0, seedCount);
+  const seedIds = new Set(seedIndices.map(i => allRawNodes[i].id));
+  const seedNodes = seedIndices.map(i => allRawNodes[i]);
+  const seedEdges = allRawEdges.filter(e => seedIds.has(e.src) && seedIds.has(e.dst));
+  batchIndex = seedCount;
+
+  // Destroy old views
+  if (viewGauss) { viewGauss.destroy(); viewGauss = null; }
+  if (viewNorm) { viewNorm.destroy(); viewNorm = null; }
+
+  // Wait for initial blend to complete before allowing addNodes
+  const waitForBlend = (canvas) => new Promise(resolve => {
+    canvas.addEventListener('blend', resolve, { once: true });
+  });
+
+  viewGauss = createBlitZoomFromGraph(gaussCanvas, seedNodes, seedEdges, {
+    strengths: currentStrengths,
+    quantMode: 'gaussian',
+    heatmapMode: 'off',
+    edgeMode: 'none',
+  });
+
+  viewNorm = createBlitZoomFromGraph(normCanvas, seedNodes, seedEdges, {
+    strengths: currentStrengths,
+    quantMode: 'norm',
+    heatmapMode: 'off',
+    edgeMode: 'none',
+  });
+
+  statusEl.textContent = `Blending seed (${seedCount} nodes)...`;
+  // Wait for both factory async blends to finish
+  await Promise.all([waitForBlend(gaussCanvas), waitForBlend(normCanvas)]);
+  statusEl.textContent = `Ready — ${seedCount} / ${allRawNodes.length} nodes`;
+  updateStatus();
+}
+
+// ─── Incremental insertion ──────────────────────────────────────────────────
+
+async function addBatch(count) {
+  if (!allRawNodes || batchIndex >= allRawNodes.length) return false;
+  const end = Math.min(batchIndex + count, allRawNodes.length);
+
+  // Collect batch nodes and their edges
+  const batchIndices = shuffledOrder.slice(batchIndex, end);
+  const batchNodes = batchIndices.map(i => allRawNodes[i]);
+  const activeIds = new Set([
+    ...viewGauss.nodes.map(n => n.id),
+    ...batchNodes.map(n => n.id),
+  ]);
+  // Only add edges where both endpoints are now active
+  const newEdges = [];
+  const existingEdgeSet = new Set(viewGauss.edges.map(e => e.src + '→' + e.dst));
+  for (const e of allRawEdges) {
+    const key = e.src + '→' + e.dst;
+    if (activeIds.has(e.src) && activeIds.has(e.dst) && !existingEdgeSet.has(key)) {
+      newEdges.push(e);
+    }
+  }
+
+  batchIndex = end;
+
+  // addNodes on both views — this is the real API call
+  await Promise.all([
+    viewGauss.addNodes(batchNodes, newEdges, { animate: true, animMs: 350 }),
+    viewNorm.addNodes(batchNodes, newEdges, { animate: true, animMs: 350 }),
+  ]);
+
+  updateStatus();
+  return batchIndex < allRawNodes.length;
+}
+
+function updateStatus() {
+  const total = allRawNodes ? allRawNodes.length : 0;
+  statusEl.textContent = `${batchIndex} / ${total} nodes`;
+  document.getElementById('gaussCount').innerHTML = `Gaussian: <b>${viewGauss ? viewGauss.nodes.length : 0}</b> nodes`;
+  document.getElementById('normCount').innerHTML = `Norm: <b>${viewNorm ? viewNorm.nodes.length : 0}</b> nodes`;
+}
+
+// ─── Playback ───────────────────────────────────────────────────────────────
+
+// ─── Auto-tune ──────────────────────────────────────────────────────────────
+
+let lastTuneAt = 0;
+
+function shouldAutoTune() {
+  if (!document.getElementById('autoTuneCheck').checked) return false;
+  const interval = parseInt(document.getElementById('tuneIntervalSelect').value, 10);
+  return batchIndex - lastTuneAt >= interval && viewGauss && viewGauss.nodes.length >= 20;
+}
+
+async function runAutoTune() {
+  if (!viewGauss || viewGauss.nodes.length < 20) return;
+  statusEl.textContent += ' (tuning...)';
+
+  const activeIds = new Set(viewGauss.nodes.map(n => n.id));
+  const tuneAdj = {};
+  const tuneIndex = {};
+  for (const n of viewGauss.nodes) {
+    tuneIndex[n.id] = n;
+    tuneAdj[n.id] = (viewGauss.adjList[n.id] || []).filter(nid => activeIds.has(nid));
+  }
+
+  try {
+    const result = await autoTuneStrengths(viewGauss.nodes, viewGauss.groupNames, tuneAdj, tuneIndex, {
+      strengths: true, alpha: false, quant: false, timeout: 5000,
+    });
+
+    lastTuneAt = batchIndex;
+
+    // Snapshot → apply strengths → blend → animate for both views
+    const prevG = viewGauss._snapshotPositions();
+    const prevN = viewNorm._snapshotPositions();
+
+    // Apply strengths and blend (setStrengths triggers async blend + render)
+    Object.assign(viewGauss.propStrengths, result.strengths);
+    viewGauss._quantStats = {};
+    viewGauss.levels = new Array(viewGauss.levels.length).fill(null);
+    await viewGauss._blend();
+    viewGauss._refreshPropCache();
+    viewGauss.layoutAll();
+
+    Object.assign(viewNorm.propStrengths, result.strengths);
+    viewNorm._quantStats = {};
+    viewNorm.levels = new Array(viewNorm.levels.length).fill(null);
+    await viewNorm._blend();
+    viewNorm._refreshPropCache();
+    viewNorm.layoutAll();
+
+    // Animate both
+    await Promise.all([
+      viewGauss._animateTransition(prevG, 500),
+      viewNorm._animateTransition(prevN, 500),
+    ]);
+
+    const active = Object.entries(result.strengths).filter(([, v]) => v > 0).map(([k, v]) => `${k}:${v}`).join(', ');
+    console.log(`[api-demo] auto-tune at ${batchIndex} nodes — strengths: ${active}`);
+    const tuneEl = document.getElementById('tuneInfo');
+    tuneEl.style.display = '';
+    tuneEl.innerHTML = `Tuned at ${batchIndex}: <b>${active}</b>`;
+  } catch (e) {
+    console.warn('[api-demo] auto-tune failed:', e);
+  }
+  updateStatus();
+}
+
+// ─── Playback ───────────────────────────────────────────────────────────────
+
+function getBatchSize() { return parseInt(document.getElementById('batchSelect').value, 10); }
+function getSpeed() { return 0.5 + (parseInt(document.getElementById('speedSlider').value, 10) - 1) * 0.5; }
+
+function stopPlayback() {
+  playing = false;
+  clearTimeout(playTimer);
+  playTimer = null;
+  document.getElementById('playBtn').textContent = '▶ Play';
+}
+
+function startPlayback() {
+  if (!allRawNodes || batchIndex >= allRawNodes.length) return;
+  playing = true;
+  document.getElementById('playBtn').textContent = '⏸ Pause';
+  scheduleNext();
+}
+
+function scheduleNext() {
+  if (!playing) return;
+  const delay = Math.max(50, 1000 / getSpeed() - 350);
+  playTimer = setTimeout(async () => {
+    if (!playing) return;
+    if (shouldAutoTune()) await runAutoTune();
+    if (!playing) return;
+    const hasMore = await addBatch(getBatchSize());
+    if (hasMore && playing) scheduleNext();
+    else stopPlayback();
+  }, delay);
+}
+
+// ─── Init & controls ────────────────────────────────────────────────────────
+
+async function init() {
+  stopPlayback();
+  lastTuneAt = 0;
+  document.getElementById('tuneInfo').style.display = 'none';
+  const dsId = document.getElementById('datasetSelect').value;
+  await loadDataset(dsId);
+  await createViews();
+}
+
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (playing) stopPlayback(); else startPlayback();
+});
+
+document.getElementById('stepBtn').addEventListener('click', async () => {
+  stopPlayback();
+  await addBatch(getBatchSize());
+});
+
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  stopPlayback();
+  // Re-shuffle
+  for (let i = shuffledOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
+  }
+  await createViews();
+});
+
+document.getElementById('datasetSelect').addEventListener('change', () => init());
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if (e.key === ' ') { e.preventDefault(); playing ? stopPlayback() : startPlayback(); }
+  else if (e.key === 'ArrowRight') { stopPlayback(); addBatch(getBatchSize()); }
+  else if (e.key === 'r' || e.key === 'R') { document.getElementById('resetBtn').click(); }
+});
+
+init();
+</script>
+</body>
+</html>

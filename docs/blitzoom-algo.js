@@ -20,9 +20,7 @@ export const RAW_LEVEL = 14; // index into LEVEL_LABELS for the raw (individual 
 export const LEVEL_LABELS = ['L1','L2','L3','L4','L5','L6','L7','L8','L9','L10','L11','L12','L13','L14','RAW'];
 export const STRENGTH_FLOOR_RATIO = 0.10; // adaptive floor: 10% of max strength — prevents low-entropy collapse
 export const STRENGTH_FLOOR_MIN = 0.10;   // absolute minimum floor — gives equal blend when all strengths are zero
-// Deprecated aliases — remove after one release
-export const WEIGHT_FLOOR_RATIO = STRENGTH_FLOOR_RATIO;
-export const WEIGHT_FLOOR_MIN = STRENGTH_FLOOR_MIN;
+
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
 

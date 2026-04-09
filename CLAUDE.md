@@ -34,13 +34,15 @@ docs/                    Web app (ES modules, no build step)
   example.html             Minimal example — two graphs, linked from developer guide (53 lines)
   bz-graph-demo.html       Web component demo — <bz-graph> + <bz-compass> + <bz-controls> examples (110 lines)
   blitzoom.css              Styles (673 lines)
-  blitzoom-algo.js          Pure algorithm functions and constants (~568 lines)
-  blitzoom-pipeline.js      SNAP parsers, buildGraph, runPipeline(GPU), runPipelineFromObjects(GPU) (455 lines)
+  blitzoom-algo.js          Pure algorithm functions, constants, normQuantize (623 lines)
+  blitzoom-pipeline.js      SNAP parsers, buildGraph, runPipeline(GPU), projectNode, computeNumericBins, computeAdjGroups (509 lines)
   blitzoom-parsers.js       Format adapters — CSV, D3 JSON, JGF, GraphML, GEXF, Cytoscape; parseAny dispatcher, readFileText, classifyFiles (1023 lines)
   stix2snap.js             STIX 2.1 bundle parser (parseSTIX, browser-compatible)
   blitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing, FPS counter (1111 lines)
   blitzoom-gl-renderer.js   WebGL2 rendering — shaders, instanced draw, GPU heatmap (1249 lines)
-  blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, statechange/blend events (1794 lines)
+  blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, statechange/blend events (1600 lines)
+  blitzoom-mutations.js     Incremental graph mutations — addNodes, removeNodes, updateNodes, fullRebuild, animation (392 lines)
+  blitzoom-factory.js       Factory functions — createBlitZoomView, createBlitZoomFromGraph, hydrateAndLink (215 lines)
   blitzoom-viewer.js        BlitZoom app (composes BlitZoomCanvas) — UI, workers, data loading, <bz-controls> sidebar, compass panel, auto-tune-on-load (2444 lines)
   blitzoom-utils.js         Auto-tune optimizer — dual-pass search, bearing autotune, portable async, memoization (629 lines)
   blitzoom-svg.js           SVG export — exportSVG(bz, opts), createSVGView() for headless (622 lines)
@@ -48,10 +50,11 @@ docs/                    Web app (ES modules, no build step)
   blitzoom-gpu.js           WebGPU compute acceleration (763 lines)
   blitzoom-worker.js        Web Worker coordinator (142 lines)
   blitzoom-proj-worker.js   Web Worker projection (95 lines)
-  bz-graph.js              <bz-graph> web component — data loading, drop zone, built-in compass/controls panels (433 lines)
-  bz-compass.js            <bz-compass> web component — radial strength/bearing control (887 lines)
+  bz-graph.js              <bz-graph> web component — data loading, drop zone, addNodes/removeNodes/updateNodes, incremental attribute (491 lines)
+  incremental-api-demo.html  Side-by-side Gaussian vs Norm incremental insertion demo (uses real addNodes API)
+  bz-compass.js            <bz-compass> web component — radial strength/bearing/alpha control, colorBy label click (1035 lines)
   bz-controls.js           <bz-controls> web component — strength sliders + bearing dials + label checkboxes (362 lines)
-  blitzoom.js               Public API entrypoint (re-exports createBlitZoomView, exportSVG, createSVGView, autoTuneStrengths, parseAny, etc.)
+  blitzoom.js               Public API entrypoint (re-exports createBlitZoomView, exportSVG, createSVGView, autoTuneStrengths, projectNode, etc.)
   webgl-test.html          Side-by-side Canvas 2D vs WebGL2 comparison page (246 lines)
 
 docs/dist/                 Bundled distribution
@@ -139,6 +142,9 @@ Drop any of these files onto the canvas or loader panel, or load them via URL �
 - **Canvas drop zone** — files dropped onto the canvas (mid-session) immediately load via `parseAny` → `runPipelineFromObjects`. Two sequential SNAP drops (edges + nodes within 600ms) debounce and load as a pair; any non-SNAP drop shows loader screen with progress ("Reading file..." → "Parsing..." → "Building graph...") before heavy work.
 - **Default strengths** — `group` gets strength 3 if it has >1 distinct value. If single-valued (e.g. CSV without a "group" column → all "unknown"), the first categorical extra property with 2-50 distinct values gets strength 3 instead, preventing layout collapse to a single point.
 - **Determinism** — seeded Gaussian projection + bit-prefix quantization give same-input-same-pixels forever. Load-bearing for URL-hash state, bookmarks, and `replaceState`-based shared views. No force-directed relaxation, no randomized t-SNE/UMAP iterations.
+- **Norm quantization** — `quantMode: 'norm'` uses projection matrix norms as scale instead of data-derived μ/σ. Each node's grid position depends only on its own properties and fixed algorithm parameters. Adding or removing other nodes never changes an existing node's `gx/gy`. Toggle via Q button in viewer (cycles Gaussian → Rank → Norm). Auto-tune preserves the user's quant mode choice.
+- **Incremental updates** — Full CRUD API on `BlitZoomCanvas`: `addNodes(nodes, edges, opts)` inserts and projects new nodes on the fly via `projectNode()`; `removeNodes(ids, opts)` removes nodes and their edges, updating neighbor degrees; `updateNodes(updates, opts)` merges property changes and re-projects only the affected nodes. All three re-blend, animate (lerp existing, fade-in/out), and dispatch events (`nodesadded`, `nodesremoved`, `nodesupdated`). With `quantMode: 'norm'`, existing nodes have zero displacement. Periodic full rebuild (`_fullRebuild`) triggers after 10% growth to refresh stale numeric bins and topology tokens. `<bz-graph incremental>` enables norm mode automatically. See [agent_docs/PLAN-incremental-api.md](agent_docs/PLAN-incremental-api.md).
+- **Factory extraction** — `createBlitZoomView` and `createBlitZoomFromGraph` live in [blitzoom-factory.js](docs/blitzoom-factory.js), separate from the canvas component. The public entrypoint [blitzoom.js](docs/blitzoom.js) re-exports both.
 - **Web Workers** — coordinator fans out to up to 3 projection sub-workers. Transferable Float64Array buffers.
 - **Supernode color/label cached at build time** — not recomputed per frame. `_refreshPropCache()` invalidates level cache.
 - **Two-zoom system** — logical zoom triggers level changes; `renderZoom = max(1, zoom * 2^levelOffset)` keeps visual scale continuous. Level crossfade overlay positioned at canvas `offsetTop`/`offsetLeft` (not `top:0;left:0`) to align in any layout.
@@ -157,8 +163,11 @@ Drop any of these files onto the canvas or loader panel, or load them via URL �
 
 ## Important Invariants
 
-- Per-node projections computed once at load, never change.
+- Per-node projections are node-independent — computed from the node's own properties only. `projectNode()` produces identical results whether called alone or in a batch.
 - Strength changes trigger blend + quantize only (no re-projection).
+- `normQuantize` uses projection matrix norms as σ — zero data dependency. `addNodes()`, `removeNodes()`, and `updateNodes()` with `quantMode: 'norm'` never change unaffected nodes' `gx/gy`.
+- `addNodes()` triggers `_fullRebuild()` when cumulative inserts exceed `_rebuildThreshold` × `_originalN`. With norm mode, rebuild is transparent (deterministic projections → identical gx/gy).
+- `removeNodes()` cleans up edges, adjList, and degrees for surviving neighbors. `updateNodes()` re-projects only the changed nodes — unchanged nodes keep their exact projections.
 - Bit-prefix containment: level L cell is always a sub-cell of level L-1.
 - Renderer never mutates BlitZoom state (except `n.x`/`n.y` in layoutAll).
 - `_refreshPropCache()` must be called when strengths or label selection change.
