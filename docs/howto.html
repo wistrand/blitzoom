@@ -242,9 +242,11 @@ eve	Eve	management	director	12</pre>
 
 <div class="note" style="margin:20px 0;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(124,106,247,0.06);border-radius:0 6px 6px 0;font-size:13px">
   <strong>Prefer HTML?</strong> Use the <code>&lt;bz-graph&gt;</code> <a href="#webcomponent">web component</a> — no JavaScript needed for basic use:
-  <pre style="margin:8px 0 0;font-size:12px">&lt;bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
+  <pre style="margin:8px 0 0;font-size:12px">&lt;style&gt;bz-graph:not(:defined) { visibility: hidden; }&lt;/style&gt;
+&lt;bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
           level="3" heatmap="density" legend&gt;
 &lt;/bz-graph&gt;</pre>
+  <span style="font-size:11px;color:var(--text-dim)">The <code>:not(:defined)</code> rule prevents a flash of raw text before the component loads.</span>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -802,7 +804,7 @@ viewGL.useWebGL = <span class="keyword">true</span>;   <span class="comment">// 
 
 <h2 id="webcomponent">&lt;bz-graph&gt; Web Component</h2>
 
-<p>Embed a graph with a single HTML element &mdash; no JavaScript needed for basic use. Include <code>bz-graph.js</code> in your page and use the <code>&lt;bz-graph&gt;</code> tag.</p>
+<p>Embed a graph with a single HTML element &mdash; no JavaScript needed for basic use. Include <code>bz-graph.js</code> in your page and use the <code>&lt;bz-graph&gt;</code> tag. Always add the <code>:not(:defined)</code> CSS rule to prevent a flash of raw text content before the component loads &mdash; especially important for inline JSON/SNAP data.</p>
 
 <h3>From files</h3>
 
