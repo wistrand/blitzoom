@@ -38,25 +38,27 @@
 &lt;/bz-graph&gt;
 &lt;bz-compass for="epstein"&gt;&lt;/bz-compass&gt;</pre>
 
-<h2>Inline JSON + Compass</h2>
-<p>Graph data embedded in HTML. Compass auto-discovers groups on load.</p>
+<h2>Inline JSON via &lt;script&gt; + Compass</h2>
+<p>Data in <code>&lt;script type="application/json"&gt;</code> — no FOUC, no CSS needed. Format auto-detected.</p>
 <div class="row">
-  <bz-graph id="team" format="json" level="2" legend color-scheme="6">
-  {
-    "nodes": [
-      {"id": "alice",  "group": "eng", "label": "Alice",  "lang": "Go"},
-      {"id": "bob",    "group": "eng", "label": "Bob",    "lang": "Go"},
-      {"id": "carol",  "group": "des", "label": "Carol",  "lang": "JS"},
-      {"id": "dave",   "group": "des", "label": "Dave",   "lang": "JS"},
-      {"id": "eve",    "group": "mgr", "label": "Eve",    "lang": "Py"},
-      {"id": "frank",  "group": "eng", "label": "Frank",  "lang": "Rust"}
-    ],
-    "edges": [
-      {"src": "alice", "dst": "bob"},   {"src": "alice", "dst": "carol"},
-      {"src": "bob",   "dst": "frank"}, {"src": "carol", "dst": "dave"},
-      {"src": "eve",   "dst": "alice"}, {"src": "eve",   "dst": "dave"}
-    ]
-  }
+  <bz-graph id="team" level="2" legend color-scheme="6">
+    <script type="application/json">
+    {
+      "nodes": [
+        {"id": "alice",  "group": "eng", "label": "Alice",  "lang": "Go"},
+        {"id": "bob",    "group": "eng", "label": "Bob",    "lang": "Go"},
+        {"id": "carol",  "group": "des", "label": "Carol",  "lang": "JS"},
+        {"id": "dave",   "group": "des", "label": "Dave",   "lang": "JS"},
+        {"id": "eve",    "group": "mgr", "label": "Eve",    "lang": "Py"},
+        {"id": "frank",  "group": "eng", "label": "Frank",  "lang": "Rust"}
+      ],
+      "edges": [
+        {"src": "alice", "dst": "bob"},   {"src": "alice", "dst": "carol"},
+        {"src": "bob",   "dst": "frank"}, {"src": "carol", "dst": "dave"},
+        {"src": "eve",   "dst": "alice"}, {"src": "eve",   "dst": "dave"}
+      ]
+    }
+    </script>
   </bz-graph>
   <bz-compass for="team"></bz-compass>
 </div>
@@ -86,15 +88,17 @@
           strengths="group:5,edgetype:8" label-props="label"&gt;
 &lt;/bz-graph&gt;</pre>
 
-<h2>Inline SNAP</h2>
-<p>Tab-delimited edges as raw text</p>
+<h2>Inline SNAP via &lt;script&gt;</h2>
+<p>Tab-delimited edges in <code>&lt;script type="text/plain"&gt;</code> — no FOUC.</p>
 <bz-graph level="2" legend edge-mode="lines" heatmap="splat">
+  <script type="text/plain">
 a	b
 b	c
 c	d
 d	a
 a	c
 b	d
+  </script>
 </bz-graph>
 
 <h2 class="light">Light mode with viridis</h2>
