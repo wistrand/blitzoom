@@ -9,8 +9,11 @@ export { createBlitZoomView, createBlitZoomFromGraph } from './blitzoom-factory.
 // Web component (<bz-graph> custom element, auto-registers on import)
 export { BzGraph } from './bz-graph.js';
 
+// Pipeline
+export { projectNode } from './blitzoom-pipeline.js';
+
 // Utilities
-export { autoTuneStrengths, autoTuneStrengths as autoTuneWeights, autoTuneBearings } from './blitzoom-utils.js';
+export { autoTuneStrengths, autoTuneBearings } from './blitzoom-utils.js';
 export { exportSVG, createSVGView } from './blitzoom-svg.js';
 
 // Feature probes

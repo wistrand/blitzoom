@@ -42,7 +42,7 @@ const ATTR_MAP = {
   'auto-tune':    { prop: 'autoTune',     type: 'json', default: null },
 };
 
-const BOOL_ATTRS = ['legend', 'reset-btn', 'light-mode', 'size-log', 'webgl', 'auto-gpu', 'compass', 'controls'];
+const BOOL_ATTRS = ['legend', 'reset-btn', 'light-mode', 'size-log', 'webgl', 'auto-gpu', 'compass', 'controls', 'incremental'];
 
 function parseAttr(value, type) {
   if (value === null || value === undefined) return undefined;
@@ -147,7 +147,12 @@ class BzGraph extends HTMLElement {
     if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
     if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
 
+    // Apply custom rebuild threshold
+    const rt = this.getAttribute('rebuild-threshold');
+    if (rt && this._view) this._view._rebuildThreshold = parseFloat(rt) || 0.10;
+
     this.dispatchEvent(new Event('ready'));
+    this._flushPendingAdds();
   }
 
   /** Tear down current view and panels, rebuild with new data. */
@@ -180,7 +185,10 @@ class BzGraph extends HTMLElement {
 
     if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
     if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
+    const rt = this.getAttribute('rebuild-threshold');
+    if (rt && this._view) this._view._rebuildThreshold = parseFloat(rt) || 0.10;
     this.dispatchEvent(new Event('ready'));
+    this._flushPendingAdds();
   }
 
   /** Handle dropped files — classifies via shared utility, then reloads. */
@@ -262,6 +270,8 @@ class BzGraph extends HTMLElement {
       }));
       if (compass.groups.length === groups.length) compass.updateAll(groups);
       else compass.groups = groups;
+      compass.alpha = v.smoothAlpha;
+      compass.colorBy = v.colorBy;
     };
     this._canvas.addEventListener('statechange', sync);
     sync(); // initial sync — statechange already fired during init
@@ -269,9 +279,14 @@ class BzGraph extends HTMLElement {
     // Push compass changes → view
     let pending = false;
     const onCompassChange = (e) => {
-      const { name, strength, bearing } = e.detail;
-      this._view.propStrengths[name] = strength;
-      this._view.propBearings[name] = bearing;
+      if (!e.detail) return;
+      if (e.detail.name === '_alpha') {
+        this._view.smoothAlpha = e.detail.alpha;
+      } else {
+        const { name, strength, bearing } = e.detail;
+        this._view.propStrengths[name] = strength;
+        this._view.propBearings[name] = bearing;
+      }
       if (!pending) {
         pending = true;
         requestAnimationFrame(() => {
@@ -285,6 +300,10 @@ class BzGraph extends HTMLElement {
     };
     compass.addEventListener('input', onCompassChange);
     compass.addEventListener('change', onCompassChange);
+    compass.addEventListener('colorby', (e) => {
+      if (!this._view || !e.detail) return;
+      this._view.colorBy = (this._view.colorBy === e.detail.name) ? null : e.detail.name;
+    });
     compass.addEventListener('autotune', () => this._runAutotune());
   }
 
@@ -406,11 +425,61 @@ class BzGraph extends HTMLElement {
     if (this.hasAttribute('reset-btn')) opts.showResetBtn = true;
     if (this.hasAttribute('light-mode')) opts.lightMode = true;
     if (this.hasAttribute('size-log')) opts.sizeLog = true;
+    // incremental attribute implies norm quantization (unless explicit quant attribute overrides)
+    if (this.hasAttribute('incremental') && !this.hasAttribute('quant')) opts.quantMode = 'norm';
     return opts;
   }
 
   // Public API: access the underlying BlitZoomCanvas
   get view() { return this._view; }
+
+  async _flushPendingAdds() {
+    if (!this._pendingAdds || !this._view) return;
+    const pending = this._pendingAdds;
+    this._pendingAdds = null;
+    for (const { nodes, edges, opts } of pending) {
+      await this._view.addNodes(nodes, edges, opts);
+    }
+  }
+
+  /**
+   * Add nodes (and optionally edges) incrementally.
+   * Delegates to BlitZoomCanvas.addNodes(). If the view isn't ready yet,
+   * queues the call and applies it after the next 'ready' event.
+   * @param {Array} nodes - [{id, group?, label?, ...extraProps}]
+   * @param {Array} [edges=[]] - [{src, dst}]
+   * @param {object} [opts] - { animate: true, animMs: 400 }
+   * @returns {Promise}
+   */
+  addNodes(nodes, edges, opts) {
+    if (this._view) return this._view.addNodes(nodes, edges, opts);
+    // Queue for when view is ready
+    if (!this._pendingAdds) this._pendingAdds = [];
+    this._pendingAdds.push({ nodes, edges, opts });
+    return Promise.resolve();
+  }
+
+  /**
+   * Remove nodes by ID.
+   * @param {string[]} ids - node IDs to remove
+   * @param {object} [opts] - { animate: true, animMs: 400 }
+   * @returns {Promise}
+   */
+  removeNodes(ids, opts) {
+    if (this._view) return this._view.removeNodes(ids, opts);
+    return Promise.resolve();
+  }
+
+  /**
+   * Update existing nodes' properties and re-project.
+   * @param {Array} updates - [{id, group?, label?, ...extraProps}]
+   * @param {object} [opts] - { animate: true, animMs: 400 }
+   * @returns {Promise}
+   */
+  updateNodes(updates, opts) {
+    if (this._view) return this._view.updateNodes(updates, opts);
+    return Promise.resolve();
+  }
 
   attributeChangedCallback(name, oldVal, newVal) {
     if (!this._view || oldVal === newVal) return;

@@ -19,6 +19,11 @@ import {
 } from './blitzoom-algo.js';
 import { generateGroupColors, COLOR_SCHEMES, COLOR_SCHEME_NAMES } from './blitzoom-colors.js';
 import { gpuUnifiedBlend } from './blitzoom-gpu.js';
+import {
+  addNodes as _addNodes, removeNodes as _removeNodes, updateNodes as _updateNodes,
+  snapshotPositions as _snapshotPositions, animateTransition as _animateTransition,
+  fullRebuild as _fullRebuild,
+} from './blitzoom-mutations.js';
 import { initGL, renderGL } from './blitzoom-gl-renderer.js';
 
 import { layoutAll, render, worldToScreen, screenToWorld, hitTest } from './blitzoom-renderer.js';
@@ -65,6 +70,16 @@ export class BlitZoomCanvas {
     this.smoothAlpha = opts.smoothAlpha || 0;
     this.maxDegree = 1;
     this.hasEdgeTypes = opts.hasEdgeTypes || false;
+    this._numericBins = opts._numericBins || {};
+    this._extraPropNames = opts._extraPropNames || [];
+    this._insertsSinceRebuild = 0;
+    this._originalN = this.nodes.length;
+    this._rebuildThreshold = 0.10; // trigger full rebuild after 10% growth
+    this._addNodesQueue = null;    // queued addNodes call while one is in progress
+    this._addNodesRunning = false; // true while addNodes is executing
+    this._animRaf = null;          // rAF handle for in-flight addNodes animation
+    this._animCleanup = null;      // cleanup function for cancelling animation
+    this._animProgress = undefined; // animation progress (0-1) read by renderer for fade-in
 
     // Build projection matrices
     for (let i = 0; i < this.groupNames.length; i++) {
@@ -856,9 +871,6 @@ export class BlitZoomCanvas {
     this._refreshPropCache();
     this._blend().then(() => { this.layoutAll(); this.render(); });
   }
-  /** @deprecated Use setStrengths() */
-  setWeights(w) { this.setStrengths(w); }
-
   /** Update the bearing (rotation, in radians) for a single group and re-blend.
    *  Triggers the same quantize + level-invalidation path as a strength change. */
   setBearing(group, radians) {
@@ -885,6 +897,16 @@ export class BlitZoomCanvas {
     this.levels = new Array(ZOOM_LEVELS.length).fill(null);
     this._blend().then(() => { this.layoutAll(); this.render(); });
   }
+
+  /** Add nodes and edges incrementally. See blitzoom-mutations.js. */
+  addNodes(newNodes, newEdges, opts) { return _addNodes(this, newNodes, newEdges, opts); }
+  /** Remove nodes by ID. See blitzoom-mutations.js. */
+  removeNodes(ids, opts) { return _removeNodes(this, ids, opts); }
+  /** Update existing nodes' properties. See blitzoom-mutations.js. */
+  updateNodes(updates, opts) { return _updateNodes(this, updates, opts); }
+  /** @internal */ _snapshotPositions() { return _snapshotPositions(this); }
+  /** @internal */ _animateTransition(prev, ms) { return _animateTransition(this, prev, ms); }
+  /** @internal */ _fullRebuild() { return _fullRebuild(this); }
 
   /** Set display options */
   setOptions(opts) {
