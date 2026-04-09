@@ -962,6 +962,7 @@ class BlitZoom {
         }
         widget.alpha = v.smoothAlpha;
         widget.colorBy = v.colorBy;
+        widget.labelProps = v.labelProps;
     }
 
 
@@ -1993,6 +1994,12 @@ class BlitZoom {
             v.colorBy = (v.colorBy === e.detail.name) ? null : e.detail.name;
             this._updateColorByUI();
         });
+        compassWidget.addEventListener('labelchange', (e) => {
+            v.labelProps = new Set(e.detail.labelProps);
+            v._refreshPropCache();
+            v.render();
+            this._syncControls();
+        });
         compassWidget.addEventListener('autotune', () => {
             // Trigger the same autotune flow as the Auto button
             const autoBtn2 = document.getElementById('autoTuneBtn');
@@ -2039,6 +2046,7 @@ class BlitZoom {
                 v.labelProps = new Set(e.detail.labelProps);
                 v._refreshPropCache();
                 v.render();
+                this._syncCompass();
             });
         }
 
