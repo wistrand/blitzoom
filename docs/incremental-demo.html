@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlitZoom — Incremental Insertion Demo</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent2: #f76a8c;
+    --accent3: #6af7c8;
+    --text: #c8c8d8;
+    --text-dim: #8888a0;
+    --text-bright: #eeeef8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    padding: 24px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  h1 span { color: var(--accent); }
+
+  .subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; max-width: 800px; }
+
+  .canvases {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .canvas-wrap {
+    flex: 1;
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 400px;
+  }
+
+  .canvas-label {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  .canvas-label.gauss { background: var(--accent); color: #fff; }
+  .canvas-label.norm { background: var(--accent3); color: #111; }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .controls button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .controls button:hover { border-color: var(--accent); color: var(--accent); }
+  .controls button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .controls select {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .controls input[type="range"] {
+    width: 80px;
+    accent-color: var(--accent);
+  }
+
+  .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-bright);
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .controls label { color: var(--text-dim); }
+
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .stat {
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .stat b { font-weight: 600; }
+  .gauss-stat { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .norm-stat { color: var(--accent3); border-color: color-mix(in srgb, var(--accent3) 30%, transparent); }
+
+  .footer {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 16px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h1><img src="logo.svg" alt="" style="width:32px;height:32px;vertical-align:-4px;margin-right:8px">Blit<span>Zoom</span> Incremental Demo</h1>
+<p class="subtitle">
+  Side-by-side comparison of Gaussian vs Norm quantization under incremental node insertion.
+  Gaussian recomputes global statistics on each batch — every existing node shifts.
+  Norm uses fixed scale from projection matrices — existing nodes never move.
+</p>
+
+<div class="controls">
+  <button id="playBtn">▶ Play</button>
+  <button id="stepBtn">Step</button>
+  <button id="resetBtn">Reset</button>
+  <span class="status" id="status">0 / 0 nodes</span>
+  <label>Speed</label>
+  <input type="range" id="speedSlider" min="1" max="10" value="3">
+  <label>Batch</label>
+  <select id="batchSelect">
+    <option value="1">1</option>
+    <option value="10" selected>10</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select>
+  <label title="Run auto-tune periodically to discover better property strengths as data arrives">
+    <input type="checkbox" id="autoTuneCheck"> Tune every
+  </label>
+  <select id="tuneIntervalSelect">
+    <option value="50">50</option>
+    <option value="100" selected>100</option>
+    <option value="250">250</option>
+    <option value="500">500</option>
+  </select>
+  <span style="color:var(--text-dim)">nodes</span>
+  <label>Dataset</label>
+  <select id="datasetSelect">
+    <option value="marvel">Marvel (327)</option>
+    <option value="epstein">Epstein (514)</option>
+    <option value="pokemon">Pokemon (959)</option>
+    <option value="bz-source">BlitZoom Source (966)</option>
+    <option value="mitre">MITRE ATT&amp;CK (4.7K)</option>
+    <option value="ransomware">Ransomware (27K)</option>
+  </select>
+</div>
+
+<div class="canvases">
+  <div class="canvas-wrap">
+    <canvas id="gaussCanvas"></canvas>
+    <div class="canvas-label gauss">Gaussian Q:G</div>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="normCanvas"></canvas>
+    <div class="canvas-label norm">Norm Q:N</div>
+  </div>
+</div>
+
+<div class="stats">
+  <span id="gaussDisp" class="stat gauss-stat">Gaussian displacement: <b>0</b> grid units</span>
+  <span id="normDisp" class="stat norm-stat">Norm displacement: <b>0</b> grid units</span>
+  <span id="tuneInfo" class="stat" style="color:var(--text-dim);display:none"></span>
+</div>
+
+<div class="footer">
+  <a href="viewer.html">Viewer</a> · <a href="about.html">How It Works</a> · <a href="https://github.com/wistrand/blitzoom">GitHub</a>
+</div>
+
+<script type="module">
+import { runPipeline } from './blitzoom-pipeline.js';
+import { unifiedBlend, normQuantize, gaussianQuantize, RAW_LEVEL } from './blitzoom-algo.js';
+import { generateGroupColors } from './blitzoom-colors.js';
+import { layoutAll } from './blitzoom-renderer.js';
+import { autoTuneStrengths } from './blitzoom-utils.js';
+
+const DATASETS = {
+  'marvel':     { edges: 'data/marvel.edges',              nodes: 'data/marvel.nodes',              strengths: { group: 5, alignment: 3, gender: 2 } },
+  'epstein':    { edges: 'data/epstein.edges',            nodes: 'data/epstein.nodes',            strengths: { group: 5, edgetype: 8 } },
+  'pokemon':    { edges: 'data/pokemon.edges',            nodes: 'data/pokemon.nodes',            strengths: { group: 3 } },
+  'bz-source':  { edges: 'data/blitzoom-source.edges',    nodes: 'data/blitzoom-source.nodes',    strengths: { kind: 8, group: 3 } },
+  'mitre':      { edges: 'data/mitre-attack.edges',       nodes: 'data/mitre-attack.nodes',       strengths: { group: 5, platforms: 6, killchain: 4 } },
+  'ransomware': { edges: 'data/ransomware.edges.gz',      nodes: 'data/ransomware.nodes.gz',      strengths: { group: 3 } },
+};
+
+// ─── State ──────────────────────────────────────────────────────────────────
+
+let pipeline = null;         // runPipeline result
+let allNodes = null;         // hydrated node array (full dataset, with projections)
+let allEdges = null;         // edge array
+let adjList = null;          // full adjacency list
+let nodeIndexFull = null;    // id → node
+let groupNames = null;
+let strengths = null;
+let colorMap = null;
+let shuffledOrder = null;    // shuffled indices for insertion order
+let fixedBounds = null;      // { minX, maxX, minY, maxY } from full dataset norm blend
+
+// ─── Load dataset ───────────────────────────────────────────────────────────
+
+async function fetchText(url) {
+  const resp = await fetch(url);
+  if (!url.endsWith('.gz')) return resp.text();
+  const ds = new DecompressionStream('gzip');
+  const reader = resp.body.pipeThrough(ds).getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(await new Blob(chunks).arrayBuffer());
+}
+
+async function loadDataset(id) {
+  const ds = DATASETS[id];
+  const [edgesText, nodesText] = await Promise.all([
+    fetchText(ds.edges),
+    ds.nodes ? fetchText(ds.nodes) : Promise.resolve(null),
+  ]);
+
+  pipeline = runPipeline(edgesText, nodesText);
+  groupNames = pipeline.groupNames;
+  allEdges = pipeline.edges;
+  strengths = {};
+  for (const g of groupNames) strengths[g] = ds.strengths[g] || 0;
+
+  // Hydrate nodes with projections (same pattern as gen_ground_truth.ts)
+  const G = groupNames.length;
+  allNodes = pipeline.nodeArray.map((n, i) => {
+    const projections = {};
+    for (let g = 0; g < G; g++) {
+      const off = (i * G + g) * 2;
+      projections[groupNames[g]] = [pipeline.projBuf[off], pipeline.projBuf[off + 1]];
+    }
+    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
+  });
+
+  // Build adjList and nodeIndexFull
+  adjList = {};
+  nodeIndexFull = {};
+  for (const n of allNodes) { adjList[n.id] = []; nodeIndexFull[n.id] = n; }
+  for (const e of allEdges) {
+    if (adjList[e.src] && adjList[e.dst]) {
+      adjList[e.src].push(e.dst);
+      adjList[e.dst].push(e.src);
+    }
+  }
+
+  // Color map from group values
+  const groupValues = [...new Set(allNodes.map(n => n.group))];
+  colorMap = generateGroupColors(groupValues, 0);
+
+  // Shuffle insertion order
+  shuffledOrder = Array.from({ length: allNodes.length }, (_, i) => i);
+  for (let i = shuffledOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
+  }
+
+  // Pre-compute fixed layout bounds from full dataset with norm quantization
+  const boundsNodes = allNodes.map(n => ({ ...n }));
+  const boundsAdj = adjList;
+  const boundsIndex = {};
+  for (const n of boundsNodes) boundsIndex[n.id] = n;
+  unifiedBlend(boundsNodes, groupNames, strengths, 0, boundsAdj, boundsIndex, 0, 'norm', {});
+
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const n of boundsNodes) {
+    if (n.px < minX) minX = n.px;
+    if (n.px > maxX) maxX = n.px;
+    if (n.py < minY) minY = n.py;
+    if (n.py > maxY) maxY = n.py;
+  }
+  // Clip to ±3σ (matching layoutAll)
+  fixedBounds = {
+    minX: Math.max(-3, minX),
+    maxX: Math.min(3, maxX),
+    minY: Math.max(-3, minY),
+    maxY: Math.min(3, maxY),
+  };
+
+  console.log(`[incremental-demo] Loaded ${id}: ${allNodes.length} nodes, ${allEdges.length} edges, groups: [${groupNames.join(', ')}]`);
+  console.log(`[incremental-demo] Fixed bounds: x=[${fixedBounds.minX.toFixed(3)}, ${fixedBounds.maxX.toFixed(3)}] y=[${fixedBounds.minY.toFixed(3)}, ${fixedBounds.maxY.toFixed(3)}]`);
+}
+
+// ─── Rendering ──────────────────────────────────────────────────────────────
+
+// Build a minimal bz-like state object for the renderer
+function makeBz(canvas, nodes, edges) {
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width;
+  const H = rect.height;
+  const ctx = canvas.getContext('2d');
+  const nodeIndex = {};
+  for (const n of nodes) nodeIndex[n.id] = n;
+
+  return {
+    W, H, ctx,
+    renderZoom: 1,
+    pan: { x: 0, y: 0 },
+    currentLevel: RAW_LEVEL,
+    nodes,
+    edges,
+    nodeIndexFull: nodeIndex,
+    selectedIds: new Set(),
+    hoveredId: null,
+    zoomTargetId: null,
+    sizeBy: 'nodes',
+    sizeLog: false,
+    edgeMode: 'none',
+    heatmapMode: 'off',
+    showLegend: false,
+    showResetBtn: false,
+    labelProps: new Set(['label']),
+    _lightMode: false,
+    _gl: null,
+    _nodeColor: n => colorMap[n.group] || '#888888',
+    _nodeLabel: n => n.label || n.id,
+    _nodeColorVal: n => n.group || '',
+    _cachedColorMap: null,  // set after colorMap is ready
+    _cachedDominant: 'group',
+    getLevel() { return { supernodes: [], snEdges: [] }; },
+  };
+}
+
+// Layout using fixed pre-computed bounds instead of data-derived min/max
+function layoutFixed(bz) {
+  if (!fixedBounds || bz.nodes.length === 0) return;
+  const { minX, maxX, minY, maxY } = fixedBounds;
+  const rangeX = maxX - minX || 1;
+  const rangeY = maxY - minY || 1;
+  const pad = Math.max(40, Math.min(100, Math.min(bz.W, bz.H) * 0.08));
+  const availW = bz.W - pad * 2;
+  const availH = bz.H - pad * 2;
+  const scale = Math.min(availW / rangeX, availH / rangeY);
+  const offsetX = pad + (availW - rangeX * scale) / 2;
+  const offsetY = pad + (availH - rangeY * scale) / 2;
+
+  for (const n of bz.nodes) {
+    const ax = Math.max(minX, Math.min(maxX, n.px));
+    const ay = Math.max(minY, Math.min(maxY, n.py));
+    n.x = offsetX + (ax - minX) * scale;
+    n.y = offsetY + (ay - minY) * scale;
+  }
+}
+
+let showEdges = false;  // toggled by pause/play
+
+// Simple circle renderer — no heatmap, no supernodes, no hit testing
+function renderSimple(bz) {
+  const ctx = bz.ctx;
+  const W = bz.W, H = bz.H;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#12122a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(60,60,100,0.3)';
+  ctx.lineWidth = 0.5;
+  const gridSize = 40;
+  ctx.beginPath();
+  for (let x = 0; x < W; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+  for (let y = 0; y < H; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+  ctx.stroke();
+
+  // Edges (only when paused and edges toggled on)
+  if (showEdges && allEdges && bz.nodeIndexFull) {
+    ctx.strokeStyle = 'rgba(100,100,140,0.25)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    let drawn = 0;
+    for (let i = 0; i < allEdges.length && drawn < 5000; i++) {
+      const e = allEdges[i];
+      const a = bz.nodeIndexFull[e.src], b = bz.nodeIndexFull[e.dst];
+      if (!a || !b) continue;
+      const ax = a._drawX !== undefined ? a._drawX : a.x;
+      const ay = a._drawY !== undefined ? a._drawY : a.y;
+      const bx = b._drawX !== undefined ? b._drawX : b.x;
+      const by = b._drawY !== undefined ? b._drawY : b.y;
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      drawn++;
+    }
+    ctx.stroke();
+  }
+
+  // Nodes
+  const nodes = bz.nodes;
+  const N = nodes.length;
+  const r = N < 100 ? 5 : N < 500 ? 3.5 : N < 2000 ? 2.5 : 1.8;
+
+  for (let i = 0; i < N; i++) {
+    const n = nodes[i];
+    const alpha = n._drawAlpha !== undefined ? n._drawAlpha : 1;
+    if (alpha <= 0) continue;
+    const x = n._drawX !== undefined ? n._drawX : n.x;
+    const y = n._drawY !== undefined ? n._drawY : n.y;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = bz._nodeColor(n);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Labels for small datasets
+  if (N <= 80) {
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(220,220,255,0.7)';
+    for (let i = 0; i < N; i++) {
+      const n = nodes[i];
+      const alpha = n._drawAlpha !== undefined ? n._drawAlpha : 1;
+      if (alpha <= 0) continue;
+      const x = n._drawX !== undefined ? n._drawX : n.x;
+      const y = n._drawY !== undefined ? n._drawY : n.y;
+      ctx.globalAlpha = alpha * 0.7;
+      const label = bz._nodeLabel(n);
+      ctx.fillText(label.length > 12 ? label.slice(0, 11) + '…' : label, x, y - r - 3);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Node count overlay
+  ctx.font = '11px JetBrains Mono, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(136,136,160,0.6)';
+  ctx.fillText(`${N} nodes`, W - 10, H - 10);
+}
+
+// Clone a node for independent mutation by blend
+function cloneNode(n) {
+  return { ...n, projections: n.projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
+}
+
+// ─── Incremental insertion state ────────────────────────────────────────────
+
+let gaussActive = [];    // active node arrays (grow each batch)
+let normActive = [];
+let gaussIndex = {};     // id → node for active sets
+let normIndex = {};
+let batchIndex = 0;      // how many nodes inserted so far
+let playing = false;
+let playTimer = null;
+let gaussTotalDisp = 0;  // cumulative Σ|Δgx|+|Δgy| for gaussian
+let normTotalDisp = 0;   // cumulative for norm (should always be 0)
+let lastTuneAt = 0;      // batchIndex when last auto-tune ran
+let tuning = false;      // true while auto-tune is in progress
+
+function resetInsertion() {
+  batchIndex = 0;
+  gaussActive = [];
+  normActive = [];
+  gaussIndex = {};
+  normIndex = {};
+  gaussTotalDisp = 0;
+  normTotalDisp = 0;
+  lastTuneAt = 0;
+  tuning = false;
+  showEdges = false;
+  updateDisplacementDisplay();
+  document.getElementById('tuneInfo').style.display = 'none';
+
+  bzGauss = makeBz(gaussCanvas, gaussActive, []);
+  bzNorm = makeBz(normCanvas, normActive, []);
+  bzGauss._cachedColorMap = colorMap;
+  bzNorm._cachedColorMap = colorMap;
+
+  renderSimple(bzGauss);
+  renderSimple(bzNorm);
+  updateStatus();
+}
+
+const ANIM_MS = 400;
+let animating = false;
+let animRaf = null;
+
+function ease(t) { return 1 - Math.pow(1 - t, 3); } // cubic ease-out
+
+// Set _drawX/_drawY/_drawAlpha on all nodes for the current animation frame
+function applyAnimFrame(nodes, t) {
+  const e = ease(t);
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (n._isNew) {
+      n._drawX = n.x;
+      n._drawY = n.y;
+      n._drawAlpha = e;
+    } else if (n._prevX !== undefined) {
+      n._drawX = n._prevX + (n.x - n._prevX) * e;
+      n._drawY = n._prevY + (n.y - n._prevY) * e;
+      n._drawAlpha = 1;
+    } else {
+      n._drawX = n.x;
+      n._drawY = n.y;
+      n._drawAlpha = 1;
+    }
+  }
+}
+
+function clearAnimState(nodes) {
+  for (const n of nodes) {
+    delete n._drawX; delete n._drawY; delete n._drawAlpha;
+    delete n._prevX; delete n._prevY; delete n._prevGx; delete n._prevGy; delete n._isNew;
+  }
+}
+
+// Add a batch and animate the transition. Calls onDone() when animation finishes.
+function addBatch(count, onDone) {
+  if (!allNodes || batchIndex >= allNodes.length) { if (onDone) onDone(false); return; }
+  showEdges = false;
+
+  // Snapshot current positions and grid coords for existing nodes
+  for (const n of gaussActive) { n._prevX = n.x; n._prevY = n.y; n._prevGx = n.gx; n._prevGy = n.gy; }
+  for (const n of normActive) { n._prevX = n.x; n._prevY = n.y; n._prevGx = n.gx; n._prevGy = n.gy; }
+
+  const end = Math.min(batchIndex + count, allNodes.length);
+  for (let i = batchIndex; i < end; i++) {
+    const srcNode = allNodes[shuffledOrder[i]];
+    const gn = cloneNode(srcNode);
+    const nn = cloneNode(srcNode);
+    gn._isNew = true;
+    nn._isNew = true;
+    gaussActive.push(gn);
+    normActive.push(nn);
+    gaussIndex[gn.id] = gn;
+    normIndex[nn.id] = nn;
+  }
+  batchIndex = end;
+
+  // Blend each side with its quant mode (α=0, fresh stats for gaussian)
+  unifiedBlend(gaussActive, groupNames, strengths, 0, adjList, gaussIndex, 0, 'gaussian', {});
+  unifiedBlend(normActive, groupNames, strengths, 0, adjList, normIndex, 0, 'norm', {});
+
+  // Update bz objects
+  bzGauss.nodes = gaussActive;
+  bzGauss.nodeIndexFull = gaussIndex;
+  bzNorm.nodes = normActive;
+  bzNorm.nodeIndexFull = normIndex;
+
+  // Compute displacement for existing nodes (before layout, after blend+quantize)
+  let gd = 0, nd = 0;
+  for (const n of gaussActive) {
+    if (n._isNew || n._prevGx === undefined) continue;
+    gd += Math.abs(n.gx - n._prevGx) + Math.abs(n.gy - n._prevGy);
+  }
+  for (const n of normActive) {
+    if (n._isNew || n._prevGx === undefined) continue;
+    nd += Math.abs(n.gx - n._prevGx) + Math.abs(n.gy - n._prevGy);
+  }
+  gaussTotalDisp += gd;
+  normTotalDisp += nd;
+  updateDisplacementDisplay();
+
+  // Layout with fixed bounds (sets final n.x, n.y)
+  layoutFixed(bzGauss);
+  layoutFixed(bzNorm);
+  updateStatus();
+
+  // Animate
+  const hasMore = batchIndex < allNodes.length;
+  animating = true;
+  const startTime = performance.now();
+
+  const animate = (now) => {
+    const t = Math.min(1, (now - startTime) / ANIM_MS);
+    applyAnimFrame(gaussActive, t);
+    applyAnimFrame(normActive, t);
+    renderSimple(bzGauss);
+    renderSimple(bzNorm);
+    if (t < 1) {
+      animRaf = requestAnimationFrame(animate);
+    } else {
+      animating = false;
+      animRaf = null;
+      clearAnimState(gaussActive);
+      clearAnimState(normActive);
+      // Show edges after animation settles when not playing
+      if (!playing && batchIndex > 0) {
+        showEdges = true;
+        renderSimple(bzGauss);
+        renderSimple(bzNorm);
+      }
+      if (onDone) onDone(hasMore);
+    }
+  };
+  animRaf = requestAnimationFrame(animate);
+}
+
+function cancelAnim() {
+  if (animRaf) { cancelAnimationFrame(animRaf); animRaf = null; }
+  animating = false;
+  // Snap to final positions
+  clearAnimState(gaussActive);
+  clearAnimState(normActive);
+  if (bzGauss) renderSimple(bzGauss);
+  if (bzNorm) renderSimple(bzNorm);
+}
+
+function updateStatus() {
+  const total = allNodes ? allNodes.length : 0;
+  statusEl.textContent = `${batchIndex} / ${total} nodes`;
+}
+
+function updateDisplacementDisplay() {
+  document.getElementById('gaussDisp').innerHTML =
+    `Gaussian displacement: <b>${gaussTotalDisp.toLocaleString()}</b> grid units`;
+  document.getElementById('normDisp').innerHTML =
+    `Norm displacement: <b>${normTotalDisp.toLocaleString()}</b> grid units`;
+}
+
+function shouldAutoTune() {
+  if (!document.getElementById('autoTuneCheck').checked) return false;
+  const interval = parseInt(document.getElementById('tuneIntervalSelect').value, 10);
+  return batchIndex - lastTuneAt >= interval && gaussActive.length >= 20;
+}
+
+async function runAutoTune() {
+  if (tuning || gaussActive.length < 20) return;
+  tuning = true;
+  statusEl.textContent += ' (tuning...)';
+
+  // Build adjList for active subset only
+  const activeIds = new Set(gaussActive.map(n => n.id));
+  const tuneAdj = {};
+  const tuneIndex = {};
+  for (const n of gaussActive) {
+    tuneIndex[n.id] = n;
+    tuneAdj[n.id] = (adjList[n.id] || []).filter(nid => activeIds.has(nid));
+  }
+
+  try {
+    const result = await autoTuneStrengths(gaussActive, groupNames, tuneAdj, tuneIndex, {
+      strengths: true, alpha: false, quant: false, timeout: 5000,
+    });
+
+    // Apply new strengths to shared state
+    for (const g of groupNames) strengths[g] = result.strengths[g] ?? 0;
+    lastTuneAt = batchIndex;
+
+    // Snapshot current positions before re-blend
+    for (const n of gaussActive) { n._prevX = n.x; n._prevY = n.y; }
+    for (const n of normActive) { n._prevX = n.x; n._prevY = n.y; }
+
+    // Re-blend both sides with new strengths
+    unifiedBlend(gaussActive, groupNames, strengths, 0, adjList, gaussIndex, 0, 'gaussian', {});
+    unifiedBlend(normActive, groupNames, strengths, 0, adjList, normIndex, 0, 'norm', {});
+    layoutFixed(bzGauss);
+    layoutFixed(bzNorm);
+
+    const active = Object.entries(strengths).filter(([, v]) => v > 0).map(([k, v]) => `${k}:${v}`).join(', ');
+    console.log(`[auto-tune] ${batchIndex} nodes — strengths: ${active}`);
+    const tuneEl = document.getElementById('tuneInfo');
+    tuneEl.style.display = '';
+    tuneEl.innerHTML = `Tuned at ${batchIndex}: <b>${active}</b>`;
+
+    // Animate the strength change transition
+    await new Promise(resolve => {
+      animating = true;
+      const startTime = performance.now();
+      const animateTune = (now) => {
+        const t = Math.min(1, (now - startTime) / (ANIM_MS * 1.5));
+        applyAnimFrame(gaussActive, t);
+        applyAnimFrame(normActive, t);
+        renderSimple(bzGauss);
+        renderSimple(bzNorm);
+        if (t < 1) {
+          animRaf = requestAnimationFrame(animateTune);
+        } else {
+          animating = false;
+          animRaf = null;
+          clearAnimState(gaussActive);
+          clearAnimState(normActive);
+          resolve();
+        }
+      };
+      animRaf = requestAnimationFrame(animateTune);
+    });
+  } catch (e) {
+    console.warn('[auto-tune] failed:', e);
+  }
+  tuning = false;
+  updateStatus();
+}
+
+function getBatchSize() {
+  return parseInt(document.getElementById('batchSelect').value, 10);
+}
+
+function getSpeed() {
+  // slider 1-10 → 0.5 to 5 batches/sec
+  return 0.5 + (parseInt(document.getElementById('speedSlider').value, 10) - 1) * 0.5;
+}
+
+function stopPlayback() {
+  playing = false;
+  clearTimeout(playTimer);
+  playTimer = null;
+  document.getElementById('playBtn').textContent = '▶ Play';
+  // Show edges when paused with data
+  if (batchIndex > 0 && !animating) {
+    showEdges = true;
+    if (bzGauss) { renderSimple(bzGauss); renderSimple(bzNorm); }
+  }
+}
+
+function startPlayback() {
+  if (animating) return; // don't start new batch while animating
+  if (!allNodes || batchIndex >= allNodes.length) return;
+  playing = true;
+  showEdges = false;
+  document.getElementById('playBtn').textContent = '⏸ Pause';
+  scheduleNext();
+}
+
+function scheduleNext() {
+  if (!playing) return;
+  const delay = Math.max(50, 1000 / getSpeed() - ANIM_MS);
+  playTimer = setTimeout(async () => {
+    if (!playing) return;
+    // Check if auto-tune is due before next batch
+    if (shouldAutoTune()) await runAutoTune();
+    if (!playing) return;
+    addBatch(getBatchSize(), (hasMore) => {
+      if (hasMore && playing) scheduleNext();
+      else stopPlayback();
+    });
+  }, delay);
+}
+
+// ─── Init & controls ────────────────────────────────────────────────────────
+
+const gaussCanvas = document.getElementById('gaussCanvas');
+const normCanvas = document.getElementById('normCanvas');
+const statusEl = document.getElementById('status');
+
+let bzGauss = null;
+let bzNorm = null;
+
+function resizeCanvases() {
+  for (const c of [gaussCanvas, normCanvas]) {
+    const rect = c.getBoundingClientRect();
+    c.width = rect.width * devicePixelRatio;
+    c.height = rect.height * devicePixelRatio;
+    c.getContext('2d').scale(devicePixelRatio, devicePixelRatio);
+  }
+}
+
+async function init() {
+  stopPlayback();
+  resizeCanvases();
+  const dsId = document.getElementById('datasetSelect').value;
+  await loadDataset(dsId);
+  resetInsertion();
+}
+
+// Controls
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (playing) stopPlayback();
+  else startPlayback();
+});
+
+document.getElementById('stepBtn').addEventListener('click', () => {
+  stopPlayback();
+  cancelAnim();
+  addBatch(getBatchSize(), () => {});
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  stopPlayback();
+  cancelAnim();
+  // Re-shuffle on reset for variety
+  for (let i = shuffledOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
+  }
+  resetInsertion();
+});
+
+document.getElementById('datasetSelect').addEventListener('change', () => init());
+
+window.addEventListener('resize', () => {
+  resizeCanvases();
+  if (bzGauss) { renderSimple(bzGauss); renderSimple(bzNorm); }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); playing ? stopPlayback() : startPlayback(); }
+  else if (e.key === 'ArrowRight') { stopPlayback(); addBatch(getBatchSize()); }
+  else if (e.key === 'r' || e.key === 'R') { document.getElementById('resetBtn').click(); }
+});
+
+init();
+</script>
+</body>
+</html>
