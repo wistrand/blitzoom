@@ -318,6 +318,8 @@ eve	Eve	management	director	12</pre>
 
 <p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly. A periodic full rebuild triggers automatically after 10% cumulative growth to refresh stale numeric bins and topology tokens.</p>
 
+<p><strong>Why norm mode?</strong> There's a fundamental tradeoff: you can't have data-independent scale, optimal grid utilization, <em>and</em> zero displacement on insertion. Gaussian adapts its scale to the data (best grids, but every node shifts when new data arrives). Norm uses a fixed scale derived from the projection matrices (stable positions, but 5-30% worse grid utilization on datasets with low property diversity). Use <code>norm</code> for incremental/streaming use cases; use <code>gaussian</code> for static datasets where you load once and explore.</p>
+
 <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);margin:24px 0">
   <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">
     <span>Live: incremental API with norm quantization.</span>

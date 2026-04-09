@@ -1729,6 +1729,151 @@ Deno.test("E2E: Epstein with topology alpha > 0", async () => {
   assert(anyDiff, "Topology alpha should change node positions");
 });
 
+// ─── Norm quantization ──────────────────────────────────────────────────────────
+
+Deno.test("normQuantize: zero displacement on incremental insertion", async () => {
+  const edgesText = await Deno.readTextFile("docs/data/epstein.edges");
+  const nodesText = await Deno.readTextFile("docs/data/epstein.nodes");
+  const result = runPipeline(edgesText, nodesText);
+
+  const G = result.groupNames.length;
+  const allNodes = result.nodeArray.map((n: any, i: number) => {
+    const projections: Record<string, number[]> = {};
+    for (let g = 0; g < G; g++) {
+      const off = (i * G + g) * 2;
+      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
+    }
+    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
+  });
+  const adjList: Record<string, string[]> = {};
+  const nodeIndex: Record<string, any> = {};
+  for (const n of allNodes) { adjList[n.id] = []; nodeIndex[n.id] = n; }
+  for (const e of result.edges) {
+    if (adjList[e.src] && adjList[e.dst]) {
+      adjList[e.src].push(e.dst);
+      adjList[e.dst].push(e.src);
+    }
+  }
+
+  const strengths: Record<string, number> = { group: 5, edgetype: 8 };
+  for (const g of result.groupNames) if (!strengths[g]) strengths[g] = 0;
+
+  // Blend first 100 nodes with norm mode
+  const first100 = allNodes.slice(0, 100);
+  const idx100: Record<string, any> = {};
+  for (const n of first100) idx100[n.id] = n;
+  unifiedBlend(first100, result.groupNames, strengths, 0, adjList, idx100, 0, 'norm', {});
+
+  // Record their gx/gy
+  const savedGx = first100.map(n => n.gx);
+  const savedGy = first100.map(n => n.gy);
+
+  // Now blend ALL nodes with norm mode (simulating incremental add)
+  for (const n of allNodes) { n.px = 0; n.py = 0; n.gx = 0; n.gy = 0; }
+  unifiedBlend(allNodes, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'norm', {});
+
+  // The first 100 nodes should have identical gx/gy
+  let displaced = 0;
+  for (let i = 0; i < 100; i++) {
+    if (allNodes[i].gx !== savedGx[i] || allNodes[i].gy !== savedGy[i]) displaced++;
+  }
+  assertEquals(displaced, 0, `Norm quantization displaced ${displaced}/100 existing nodes after adding ${allNodes.length - 100} more`);
+});
+
+Deno.test("normQuantize: insertion order independence", async () => {
+  const edgesText = await Deno.readTextFile("docs/data/karate.edges");
+  const nodesText = await Deno.readTextFile("docs/data/karate.nodes");
+  const result = runPipeline(edgesText, nodesText);
+
+  const G = result.groupNames.length;
+  const makeNodes = () => result.nodeArray.map((n: any, i: number) => {
+    const projections: Record<string, number[]> = {};
+    for (let g = 0; g < G; g++) {
+      const off = (i * G + g) * 2;
+      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
+    }
+    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
+  });
+
+  const adjList: Record<string, string[]> = {};
+  const nodeIndex: Record<string, any> = {};
+  const nodes1 = makeNodes();
+  for (const n of nodes1) { adjList[n.id] = []; nodeIndex[n.id] = n; }
+  for (const e of result.edges) {
+    if (adjList[e.src] && adjList[e.dst]) {
+      adjList[e.src].push(e.dst);
+      adjList[e.dst].push(e.src);
+    }
+  }
+
+  const strengths: Record<string, number> = { group: 3 };
+  for (const g of result.groupNames) if (!strengths[g]) strengths[g] = 0;
+
+  // Blend in natural order
+  unifiedBlend(nodes1, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'norm', {});
+
+  // Blend in reversed order
+  const nodes2 = makeNodes().reverse();
+  const idx2: Record<string, any> = {};
+  for (const n of nodes2) idx2[n.id] = n;
+  unifiedBlend(nodes2, result.groupNames, strengths, 0, adjList, idx2, 0, 'norm', {});
+
+  // Every node should have the same gx/gy regardless of order
+  const map1 = Object.fromEntries(nodes1.map((n: any) => [n.id, { gx: n.gx, gy: n.gy }]));
+  const map2 = Object.fromEntries(nodes2.map((n: any) => [n.id, { gx: n.gx, gy: n.gy }]));
+  let mismatches = 0;
+  for (const id of Object.keys(map1)) {
+    if (map1[id].gx !== map2[id].gx || map1[id].gy !== map2[id].gy) mismatches++;
+  }
+  assertEquals(mismatches, 0, `Norm quantization produced different gx/gy for ${mismatches}/${nodes1.length} nodes when insertion order changed`);
+});
+
+Deno.test("normQuantize: gaussian mode DOES shift on insertion (control test)", async () => {
+  const edgesText = await Deno.readTextFile("docs/data/karate.edges");
+  const nodesText = await Deno.readTextFile("docs/data/karate.nodes");
+  const result = runPipeline(edgesText, nodesText);
+
+  const G = result.groupNames.length;
+  const allNodes = result.nodeArray.map((n: any, i: number) => {
+    const projections: Record<string, number[]> = {};
+    for (let g = 0; g < G; g++) {
+      const off = (i * G + g) * 2;
+      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
+    }
+    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
+  });
+  const adjList: Record<string, string[]> = {};
+  const nodeIndex: Record<string, any> = {};
+  for (const n of allNodes) { adjList[n.id] = []; nodeIndex[n.id] = n; }
+  for (const e of result.edges) {
+    if (adjList[e.src] && adjList[e.dst]) {
+      adjList[e.src].push(e.dst);
+      adjList[e.dst].push(e.src);
+    }
+  }
+
+  const strengths: Record<string, number> = { group: 3 };
+  for (const g of result.groupNames) if (!strengths[g]) strengths[g] = 0;
+
+  // Blend first half with gaussian
+  const firstHalf = allNodes.slice(0, 17);
+  const idx17: Record<string, any> = {};
+  for (const n of firstHalf) idx17[n.id] = n;
+  unifiedBlend(firstHalf, result.groupNames, strengths, 0, adjList, idx17, 0, 'gaussian', {});
+  const savedGx = firstHalf.map(n => n.gx);
+
+  // Blend all with gaussian
+  for (const n of allNodes) { n.px = 0; n.py = 0; n.gx = 0; n.gy = 0; }
+  unifiedBlend(allNodes, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'gaussian', {});
+
+  // Some nodes should have shifted (gaussian depends on data distribution)
+  let displaced = 0;
+  for (let i = 0; i < 17; i++) {
+    if (allNodes[i].gx !== savedGx[i]) displaced++;
+  }
+  assert(displaced > 0, `Gaussian should displace some nodes when data is added, but 0/${firstHalf.length} moved`);
+});
+
 // ─── Statistical MinHash accuracy ─────────────────────────────────────────────
 
 Deno.test("MinHash Jaccard estimates converge to true Jaccard", () => {

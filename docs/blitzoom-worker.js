@@ -2,6 +2,7 @@
 // Uses shared pipeline for parsing and graph building.
 
 import { parseEdgesFile, parseNodesFile, buildGraph } from './blitzoom-pipeline.js';
+import { PROJECTION_SEED_BASE } from './blitzoom-algo.js';
 
 const MAX_WORKERS = 3;
 
@@ -30,7 +31,7 @@ self.onmessage = function(e) {
     const { nodeArray, edges, adjGroups, groupNames, uniqueGroups, hasEdgeTypes, numericBins } = graph;
 
     // Projection matrix seeds (deterministic, sub-workers rebuild from these)
-    const groupProjectionSeeds = groupNames.map((_, i) => 2001 + i);
+    const groupProjectionSeeds = groupNames.map((_, i) => PROJECTION_SEED_BASE + i);
 
     // ── Fan out to sub-workers ──
     const N = nodeArray.length;

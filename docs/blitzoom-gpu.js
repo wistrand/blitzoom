@@ -2,7 +2,7 @@
 // Takes pre-hashed token values (uint32) and computes signatures + 2D projections.
 // Falls back gracefully: callers should check `await initGPU()` before using.
 
-import { MINHASH_K, LARGE_PRIME, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize, normQuantize } from './blitzoom-algo.js';
+import { MINHASH_K, LARGE_PRIME, PROJECTION_SEED_BASE, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize, normQuantize, computeEffectiveWeights } from './blitzoom-algo.js';
 import { tokenizeLabel, tokenizeNumeric, degreeBucket } from './blitzoom-pipeline.js';
 
 let device = null;
@@ -305,7 +305,7 @@ export async function computeProjectionsGPU(nodeArray, adjGroups, groupNames, ha
   // Build projection matrices (same seeds as CPU)
   const projMatrices = new Float32Array(G * 2 * MINHASH_K);
   for (let g = 0; g < G; g++) {
-    const R = buildGaussianProjection(2001 + g, MINHASH_K);
+    const R = buildGaussianProjection(PROJECTION_SEED_BASE + g, MINHASH_K);
     for (let i = 0; i < MINHASH_K; i++) {
       projMatrices[g * 2 * MINHASH_K + i] = R[0][i];
       projMatrices[g * 2 * MINHASH_K + MINHASH_K + i] = R[1][i];
@@ -747,9 +747,14 @@ export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAl
   }
 
   // Quantize on CPU
-  if (quantMode === 'gaussian') gaussianQuantize(nodes, quantStats || {});
-  else if (quantMode === 'norm') normQuantize(nodes, groupNames, propStrengths);
-  else normalizeAndQuantize(nodes);
+  if (quantMode === 'gaussian') {
+    gaussianQuantize(nodes, quantStats || {});
+  } else if (quantMode === 'norm') {
+    const { effW, totalW } = computeEffectiveWeights(groupNames, propStrengths);
+    normQuantize(nodes, groupNames, effW, totalW);
+  } else {
+    normalizeAndQuantize(nodes);
+  }
 }
 
 export function destroyGPU() {
