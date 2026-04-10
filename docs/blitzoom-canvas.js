@@ -32,6 +32,14 @@ export class BlitZoomCanvas {
   static _instanceCount = 0;
 
   /**
+   * Node-count threshold above which `fastRebuild()` swaps in a spatial-grid
+   * subsample for layout + render during drag-style interactions. Below this,
+   * fastRebuild is equivalent to a regular blend + layout + render with the
+   * adaptive (reduced topology pass) blend variant.
+   */
+  static FAST_NODE_THRESHOLD = 50000;
+
+  /**
    * Keys that the canvas claims as canvas-level shortcuts. Companion
    * components (compass, controls) use this set indirectly via
    * `forwardKeyEvent(e)` to delegate matching keys to the canvas while
@@ -99,6 +107,10 @@ export class BlitZoomCanvas {
     this._animRaf = null;          // rAF handle for in-flight addNodes animation
     this._animCleanup = null;      // cleanup function for cancelling animation
     this._animProgress = undefined; // animation progress (0-1) read by renderer for fade-in
+    this._sampleNodes = null;      // spatial-grid subsample for fast-mode drag updates (see fastRebuild)
+    this._sampleNodesN = 0;        // nodes.length at the time _sampleNodes was built — used for staleness detection after addNodes/removeNodes
+    this._skipEdgeBuild = false;   // true while in fast mode — suppresses level edge build scheduling
+    this._fastRebuildPromise = null; // in-flight fastRebuild promise — endFastRebuild awaits it before cleanup
 
     // Build projection matrices
     for (let i = 0; i < this.groupNames.length; i++) {
@@ -163,6 +175,7 @@ export class BlitZoomCanvas {
     this._primarySelectedId = null;
     this.hoveredId = null;
     this.zoomTargetId = null;
+    this._zoomTargetTimer = null; // debounce timer that clears zoomTargetId after wheel inactivity
 
     // Callbacks
     this._onSelect = opts.onSelect || null;
@@ -968,6 +981,127 @@ export class BlitZoomCanvas {
     this._blend().then(() => { this.layoutAll(); this.render(); });
   }
 
+  /**
+   * Fast incremental update for drag-style interactions (compass/controls
+   * sliders). Re-blends, then runs `layoutAll()` + `render()` against a
+   * spatial-grid subsample of the nodes when N > FAST_NODE_THRESHOLD. The
+   * blend itself runs on all nodes so positions stay correct; only the level
+   * cache build and the per-supernode render iterate over the smaller subset.
+   *
+   * Below the threshold, this is equivalent to a regular fast blend +
+   * layoutAll + render — there's no benefit from subsampling small graphs.
+   *
+   * The subsample is built lazily on the first call and cached across
+   * subsequent fastRebuild calls (so dragging doesn't rebuild it per tick).
+   * Call `endFastRebuild()` once at drag release to drop the cache and run a
+   * full-quality blend + render.
+   *
+   * Callers (companion components, viewer) typically rAF-coalesce repeated
+   * fastRebuild calls so the work happens at most once per frame.
+   */
+  async fastRebuild() {
+    // Skip if another fastRebuild is in flight — the rAF coalescing in
+    // callers already drops to one per frame, but be defensive in case of
+    // out-of-band calls. Returning the in-flight promise lets callers await
+    // a single in-progress operation if they need to.
+    if (this._fastRebuildPromise) return this._fastRebuildPromise;
+    let resolveDone;
+    this._fastRebuildPromise = new Promise(r => { resolveDone = r; });
+    try {
+      this._quantStats = {}; // refreeze Gaussian boundaries from new strength distribution
+      this._refreshPropCache(); // updates dominant prop and invalidates the level cache
+
+      const useSubsample = this.nodes.length > BlitZoomCanvas.FAST_NODE_THRESHOLD;
+      await this._blend(useSubsample);
+
+      if (!useSubsample) {
+        this.layoutAll();
+        this.render();
+        return;
+      }
+
+      // Rebuild the sample if it's stale: nodes were added or removed since
+      // it was built. Without this check, dragging the compass during a
+      // streaming `addNodes` loop would render the snapshot of the cluster
+      // from when the sample was first built, missing all later batches.
+      // `removeNodes` is the symmetric case — the sample would still hold
+      // references to nodes that no longer exist in `view.nodes`.
+      if (!this._sampleNodes || this._sampleNodesN !== this.nodes.length) {
+        this._buildFastSample();
+      }
+
+      // Swap in the subsample for layoutAll + render only. The blend already
+      // ran on the full node set, so gx/gy is correct on every node — the
+      // subsample just controls which ones the level builder sees.
+      const fullNodes = this.nodes;
+      const savedEdgeMode = this.edgeMode;
+      this.nodes = this._sampleNodes;
+      this.edgeMode = 'none';
+      this._skipEdgeBuild = true;
+      this.layoutAll();
+      this.render();
+      if (this._edgeBuildRaf) { cancelAnimationFrame(this._edgeBuildRaf); this._edgeBuildRaf = null; }
+      this.edgeMode = savedEdgeMode;
+      this.nodes = fullNodes;
+    } finally {
+      this._fastRebuildPromise = null;
+      resolveDone();
+    }
+  }
+
+  /**
+   * Drop the fast-mode subsample and run a full-quality blend + layout +
+   * render. Call once after a drag-style interaction ends (e.g., on the
+   * `change` event from a slider, or pointerup). Idempotent — calling
+   * without a preceding `fastRebuild()` is just a normal full rebuild.
+   *
+   * Awaits any in-flight fastRebuild before running cleanup, so the two
+   * cannot interleave on shared state (`view.nodes`, `_sampleNodes`,
+   * `_skipEdgeBuild`).
+   */
+  async endFastRebuild() {
+    // If a fastRebuild is in flight, wait for it before tearing down its
+    // state. Cancel-on-rAF in the caller handles the "rAF queued but not
+    // yet fired" case; this handles the "rAF already fired, fastRebuild
+    // partway through its blend" case.
+    if (this._fastRebuildPromise) {
+      try { await this._fastRebuildPromise; } catch {}
+    }
+    this._sampleNodes = null;
+    this._sampleNodesN = 0;
+    this._skipEdgeBuild = false;
+    this._quantStats = {};
+    this._refreshPropCache();
+    await this._blend();
+    this.layoutAll();
+    this.render();
+  }
+
+  /**
+   * Build the spatial-grid degree-weighted subsample used by `fastRebuild()`.
+   * Buckets nodes by their gx/gy coordinates into a 16×16 grid (using the
+   * top 4 bits of each 16-bit grid coordinate), takes a degree-sorted prefix
+   * from each occupied cell, and produces a subsample of size ~20 000–50 000.
+   * Result stored on `this._sampleNodes`.
+   */
+  _buildFastSample() {
+    const targetN = Math.max(20000, Math.min(50000, this.nodes.length));
+    const shift = 16 - 4;
+    const cells = new Map();
+    for (const n of this.nodes) {
+      const key = ((n.gx >> shift) << 4) | (n.gy >> shift);
+      if (!cells.has(key)) cells.set(key, []);
+      cells.get(key).push(n);
+    }
+    for (const arr of cells.values()) arr.sort((a, b) => b.degree - a.degree);
+    this._sampleNodes = [];
+    for (const [, arr] of cells) {
+      const take = Math.max(1, Math.round(arr.length * targetN / this.nodes.length));
+      for (let i = 0; i < Math.min(take, arr.length); i++) this._sampleNodes.push(arr[i]);
+    }
+    this._sampleNodesN = this.nodes.length;
+  }
+
   /** Add nodes and edges incrementally. See blitzoom-mutations.js. */
   addNodes(newNodes, newEdges, opts) { return _addNodes(this, newNodes, newEdges, opts); }
   /** Remove nodes by ID. See blitzoom-mutations.js. */
@@ -1266,6 +1400,7 @@ export class BlitZoomCanvas {
     clearTimeout(this._hoverAnnounceTimer);
     clearTimeout(this._crossfadeTimer);
     clearTimeout(this._clickTimer);
+    clearTimeout(this._zoomTargetTimer);
     if (this._crossfadeOverlay?.parentElement) this._crossfadeOverlay.parentElement.removeChild(this._crossfadeOverlay);
     const helpEl = this.canvas.getAttribute('aria-describedby');
     if (helpEl) { const el = (this.canvas.getRootNode() || document).getElementById?.(helpEl) || document.getElementById(helpEl); if (el) el.remove(); }
@@ -1613,6 +1748,23 @@ export class BlitZoomCanvas {
       const nsy = nearest.y * newRZ + this.pan.y;
       this.pan.x += (mx - nsx) * 0.08;
       this.pan.y += (my - nsy) * 0.08;
+    }
+
+    // Debounce-clear the zoom target highlight after wheel inactivity. The
+    // DOM has no `wheelend` event, so we use a timer reset on every wheel
+    // tick — when scrolling stops, the timer fires once after ~300ms and
+    // drops the highlight. Without this the most recent zoomTargetId would
+    // stay highlighted until the user explicitly scrolled out (which clears
+    // it via `nearest = null` above).
+    if (this._zoomTargetTimer) clearTimeout(this._zoomTargetTimer);
+    if (this.zoomTargetId) {
+      this._zoomTargetTimer = setTimeout(() => {
+        this._zoomTargetTimer = null;
+        this.zoomTargetId = null;
+        this.render();
+      }, 300);
+    } else {
+      this._zoomTargetTimer = null;
     }
   }
 

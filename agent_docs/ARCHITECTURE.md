@@ -159,7 +159,7 @@ SNAP parsing, graph building, tokenization, pipeline entry points. Imports from 
 - **Text pipeline**: `computeProjections` (delegates to `projectNode` per node), `runPipeline(edgesText, nodesText)`, `runPipelineGPU(edgesText, nodesText, computeProjectionsGPU)` — accept null `edgesText` for nodes-only graphs
 - **Object pipeline**: `runPipelineFromObjects(nodesMap, edges, extraPropNames)`, `runPipelineFromObjectsGPU(...)` — bypass text parsing for CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX loads. Shares `buildGraph` + `computeProjections` with the text pipeline.
 
-### [blitzoom-mutations.js](../docs/blitzoom-mutations.js) (392 lines)
+### [blitzoom-mutations.js](../docs/blitzoom-mutations.js) (527 lines)
 
 Incremental graph mutation functions. Standalone functions that operate on a BlitZoomCanvas instance. Extracted from blitzoom-canvas.js.
 
@@ -170,6 +170,7 @@ Incremental graph mutation functions. Standalone functions that operate on a Bli
 - **`snapshotPositions(view)`** — capture supernode/node positions keyed by bid/id.
 - **`animateTransition(view, prevPositions, durationMs)`** — lerp existing items, fade in new items. Stores cleanup function on `view._animCleanup` for cancellation.
 - **Shared helpers**: `cancelAnimation`, `waitForMutex`, `extendColorMaps`, `blendAndAnimate`.
+- **`_yieldFrame()`**: yields to the browser between mutation calls so streaming loops (`for await (const batch of batches) await g.addNodes(batch, ...)`) stay interactive. Two-stage yield: `requestAnimationFrame` (paint opportunity) + `scheduler.yield()` if available (Chrome 129+) or `setTimeout(0)` fallback (real macrotask boundary so the browser can dispatch queued input events). Headless environments (Deno tests, jsdom-without-rAF) collapse to a resolved promise.
 
 ### [blitzoom-parsers.js](../docs/blitzoom-parsers.js) (965 lines)
 
@@ -180,7 +181,7 @@ Format adapters and content-based dispatcher. Imports `parseNodesFile` from pipe
 - **XML formats**: `parseXML` (hand-rolled SAX subset, no deps), `parseGraphML` (key registry), `parseGEXF` (attribute registry)
 - **Dispatch**: `detectFormat(text, filenameHint?)` content sniffer, `parseAny(text, filenameHint?)` unified entry. Exports `OBJECT_FORMATS`, `TEXT_FORMATS`, `FILE_EXTENSIONS`, `FILE_ACCEPT_ATTR`, and classification helpers `isObjectFormat`/`isTextFormat`/`isSpecialFormat` so the viewer has no hardcoded format lists.
 
-### [blitzoom-renderer.js](../docs/blitzoom-renderer.js) (944 lines)
+### [blitzoom-renderer.js](../docs/blitzoom-renderer.js) (1233 lines)
 
 Canvas 2D rendering. Reads BlitZoom instance, no state mutation (except `n.x`/`n.y` in layout).
 When WebGL2 is active (`bz._gl` set), `render()` skips geometry drawing (grid, edges, heatmap,
@@ -211,11 +212,13 @@ draws layer 5):
 
 **Label truncation**: non-highlighted labels are truncated to `maxChars = max(3, snappedCellPx / charW)` where `snappedCellPx` is quantized to 4px steps to prevent jitter during smooth zoom. Selected, hovered, and zoom-target nodes always show the full untruncated label.
 
-**Zoom target highlight**: during scroll-wheel zoom, the nearest node/supernode that attracts the zoom (`zoomTargetId`) is rendered with the same highlight treatment as hovered nodes (full label, glow, full opacity). Cleared on zoom-out.
+**Zoom target highlight**: during scroll-wheel zoom-in, the nearest node/supernode that attracts the zoom (`zoomTargetId`) is rendered with the same highlight treatment as hovered nodes (full label, glow, full opacity). Cleared by `_zoomTargetTimer` — a 300ms debounce timer reset on every wheel tick. When wheel events stop arriving (the DOM has no `wheelend` event), the timer fires once and drops the highlight + re-renders. Also cleared by an explicit zoom-out wheel tick (which sets `nearest = null`).
 
 **Edge sampling**: `maxEdgesToDraw = min(5000, max(200, nodeCount × 3))`. Short-edge bias in probabilistic sampling.
 
 **Other**: cubic bezier edges, Gaussian splat heatmap (additive), KDE density heatmap (1/4 resolution, persistent buffers), hit testing.
+
+**KDE density heatmap normalization**: per-cell weight is normalized against the **95th percentile** of non-zero cell weights (`_densityNorm`), not the absolute maximum. The percentile is computed via a 256-bin histogram pass alongside the existing maxW scan, walked from the top to find the bin containing 5% of non-zero cells. Cells at or above p95 saturate to full color; cells below render at intensity proportional to `weight / p95`. Adapts to distribution shape: at fine levels with sharp peaks, p95 << max so densest cores still pop; at coarse levels with few uniformly-spread supernodes, p95 ≈ max so saturation stays restricted to the genuine top ~5% instead of blanket-coloring most of the cluster footprint. Lerped over a 200ms time constant. Cache key includes `_blendGen` so incremental adds invalidate the cached normalization base.
 
 ### [blitzoom-gl-renderer.js](../docs/blitzoom-gl-renderer.js) (~1235 lines)
 
@@ -233,13 +236,15 @@ on Canvas 2D overlay. See [`ARCHITECTURE-webgl.md`](ARCHITECTURE-webgl.md) for f
   `_instanceVBO` with `DYNAMIC_DRAW`.
 - **Exports**: `initGL(gl)`, `renderGL(gl, bz)`, `destroyGL(gl)`, `isWebGL2Available()`
 
-### [blitzoom-canvas.js](../docs/blitzoom-canvas.js) (1600 lines)
+### [blitzoom-canvas.js](../docs/blitzoom-canvas.js) (1822 lines)
 
 Standalone embeddable canvas component. No external DOM dependencies beyond a `<canvas>` element.
 
 **`BlitZoomCanvas`**: holds all graph state (nodes, edges, adjList, groupNames, propStrengths, propColors), view state (zoom, pan, level, selection), property caching, level building, rendering delegates. Always owns its event handlers (`_bindEvents`). Constructor accepts `onRender`, `showLegend`, `showResetBtn`, `webgl`, `autoGPU`, `colorBy`, `clickDelay` (ms, for single/double-click disambiguation), `keyboardTarget` (default canvas element), and extension callbacks (`onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`).
 
 **Incremental API**: `addNodes(nodes, edges, opts)`, `removeNodes(ids, opts)`, `updateNodes(updates, opts)` — thin delegators to [blitzoom-mutations.js](../docs/blitzoom-mutations.js). Constructor stores `_numericBins`, `_extraPropNames`, `_insertsSinceRebuild`, `_rebuildThreshold` for the mutation functions.
+
+**Fast-mode interaction API**: `fastRebuild()` and `endFastRebuild()` — public methods used by drag-style interactions (compass/controls sliders) to subsample the layout/render path for large graphs (> `BlitZoomCanvas.FAST_NODE_THRESHOLD = 50_000` nodes). `fastRebuild()` re-blends with the adaptive (reduced topology pass) variant, then if above the threshold swaps `view.nodes` for a cached spatial-grid subsample (`_sampleNodes`, ~20K–50K nodes) and runs `layoutAll()` + `render()` on the swapped set before restoring. `endFastRebuild()` drops the cache and runs a full-quality blend + render. The two are serialized via `_fastRebuildPromise` so they can't interleave on shared state. Sample staleness (after streaming `addNodes`/`removeNodes` calls) is detected by tracking `_sampleNodesN` (the node count when the sample was built); a length mismatch triggers a rebuild on the next `fastRebuild`. Companions (`<bz-compass>`, `<bz-controls>`, `<bz-graph>` panels) call these via rAF-coalesced `input` handlers and cancel any pending rAF in `change` handlers before invoking `endFastRebuild()`.
 
 **`colorBy`**: getter/setter overrides which property group controls node colors. Default `null` = auto (highest-weight group). Setting to a valid group name pins coloring to that group; setting to `null` returns to auto. In the viewer, clicking a group name label toggles colorBy (underlined = active). `<bz-graph>` supports the `color-by` attribute.
 
@@ -249,7 +254,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Level crossfade**: `_snapshotForCrossfade()` captures the current canvas into an absolutely-positioned overlay that fades out over 350ms, providing a smooth visual transition between zoom levels. The overlay is positioned at the canvas's `offsetTop`/`offsetLeft` within its parent container (not fixed at `top:0;left:0`) so it aligns correctly regardless of layout — e.g., in grid layouts where the canvas is not at the container origin.
 
-**Public API**: `setStrengths()`, `setAlpha()`, `setOptions()`, `addNodes()`, `removeNodes()`, `updateNodes()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
+**Public API**: `setStrengths()`, `setBearing()`, `setAlpha()`, `setOptions()`, `addNodes()`, `removeNodes()`, `updateNodes()`, `fastRebuild()`, `endFastRebuild()`, `forwardKeyEvent()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
 
 ### [blitzoom-factory.js](../docs/blitzoom-factory.js) (215 lines)
 
@@ -260,7 +265,7 @@ Factory functions for creating BlitZoomCanvas instances. Extracted from blitzoom
 - **`hydrateAndLink(nodeArray, projBuf, groupNames, edges)`** — hydrates nodes with projections from projBuf, builds adjList. Exported for reuse by demos.
 - **Shared tail `_finalize`** — computes default strengths (group=3 if multi-valued, first useful categorical extra prop otherwise), builds color maps, constructs the view, kicks off async GPU probe + optional auto-tune + initial blend.
 
-### [blitzoom-viewer.js](../docs/blitzoom-viewer.js) (2055 lines)
+### [blitzoom-viewer.js](../docs/blitzoom-viewer.js) (2446 lines)
 
 `BlitZoom` class — composes `BlitZoomCanvas` as `this.view`. Adds application UI and orchestration.
 

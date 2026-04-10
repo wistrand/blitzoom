@@ -327,30 +327,39 @@ class BzGraph extends HTMLElement {
     this._canvas.addEventListener('statechange', sync);
     sync(); // initial sync — statechange already fired during init
 
-    // Push compass changes → view
-    let pending = false;
-    const onCompassChange = (e) => {
-      if (!e.detail) return;
-      if (e.detail.name === '_alpha') {
-        this._view.smoothAlpha = e.detail.alpha;
+    // Push compass changes → view. Same fast/full-rebuild split as the
+    // standalone bz-compass binding: input → fastRebuild (subsamples for
+    // large graphs); change → endFastRebuild (full quality on release).
+    const applyDetail = (detail) => {
+      if (detail.name === '_alpha') {
+        this._view.smoothAlpha = detail.alpha;
       } else {
-        const { name, strength, bearing } = e.detail;
-        this._view.propStrengths[name] = strength;
-        this._view.propBearings[name] = bearing;
-      }
-      if (!pending) {
-        pending = true;
-        requestAnimationFrame(() => {
-          pending = false;
-          const v = this._view;
-          v._quantStats = {};
-          v.levels = new Array(v.levels.length).fill(null);
-          v._blend(true).then(() => { v.layoutAll(); v.render(); });
-        });
+        this._view.propStrengths[detail.name] = detail.strength;
+        this._view.propBearings[detail.name] = detail.bearing;
       }
     };
-    compass.addEventListener('input', onCompassChange);
-    compass.addEventListener('change', onCompassChange);
+    let rebuildRaf = null;
+    compass.addEventListener('input', (e) => {
+      if (!e.detail) return;
+      applyDetail(e.detail);
+      if (rebuildRaf == null) {
+        rebuildRaf = requestAnimationFrame(() => {
+          rebuildRaf = null;
+          this._view.fastRebuild();
+        });
+      }
+    });
+    compass.addEventListener('change', (e) => {
+      if (!e.detail) return;
+      applyDetail(e.detail);
+      // Cancel any rAF that hasn't fired yet — otherwise it would re-engage
+      // fast mode AFTER endFastRebuild() ran.
+      if (rebuildRaf != null) {
+        cancelAnimationFrame(rebuildRaf);
+        rebuildRaf = null;
+      }
+      this._view.endFastRebuild();
+    });
     compass.addEventListener('colorby', (e) => {
       if (!this._view || !e.detail) return;
       this._view.colorBy = (this._view.colorBy === e.detail.name) ? null : e.detail.name;
@@ -422,25 +431,35 @@ class BzGraph extends HTMLElement {
     this._canvas.addEventListener('statechange', sync);
     sync(); // initial sync — statechange already fired during init
 
-    // Push changes → view
-    let pending = false;
-    const onControlsChange = (e) => {
-      const { name, strength, bearing } = e.detail;
-      this._view.propStrengths[name] = strength;
-      this._view.propBearings[name] = bearing;
-      if (!pending) {
-        pending = true;
-        requestAnimationFrame(() => {
-          pending = false;
-          const v = this._view;
-          v._quantStats = {};
-          v.levels = new Array(v.levels.length).fill(null);
-          v._blend(true).then(() => { v.layoutAll(); v.render(); });
+    // Push changes → view. Same fast/full-rebuild split as the standalone
+    // bz-controls binding: input → fastRebuild (subsamples for large graphs);
+    // change → endFastRebuild (full quality on release).
+    const applyDetail = (detail) => {
+      this._view.propStrengths[detail.name] = detail.strength;
+      this._view.propBearings[detail.name] = detail.bearing;
+    };
+    let rebuildRaf = null;
+    controls.addEventListener('input', (e) => {
+      if (!e.detail) return;
+      applyDetail(e.detail);
+      if (rebuildRaf == null) {
+        rebuildRaf = requestAnimationFrame(() => {
+          rebuildRaf = null;
+          this._view.fastRebuild();
         });
       }
-    };
-    controls.addEventListener('input', onControlsChange);
-    controls.addEventListener('change', onControlsChange);
+    });
+    controls.addEventListener('change', (e) => {
+      if (!e.detail) return;
+      applyDetail(e.detail);
+      // Cancel any rAF that hasn't fired yet — otherwise it would re-engage
+      // fast mode AFTER endFastRebuild() ran.
+      if (rebuildRaf != null) {
+        cancelAnimationFrame(rebuildRaf);
+        rebuildRaf = null;
+      }
+      this._view.endFastRebuild();
+    });
     controls.addEventListener('labelchange', e => {
       this._view.labelProps = new Set(e.detail.labelProps);
       this._view._refreshPropCache();

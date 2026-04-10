@@ -285,55 +285,11 @@ class BlitZoom {
   // ─── Algorithm wrappers ────────────────────────────────────────────────────
 
   async rebuildProjections(fast = false) {
-    const v = this.view;
-    v._quantStats = {}; // refreeze Gaussian boundaries from new distribution
-    v._refreshPropCache(); // also invalidates levels
-
-    // Blend ALL nodes — valid topology even at α > 0.
-    // Only use fast (adaptive passes) for large datasets where blend is expensive.
-    const useFast = fast && v.nodes.length > 50000;
-    await v._blend(useFast);
-
-    if (useFast) {
-      // Level build is the bottleneck (~330ms at 367K). Subsample for
-      // level build + render only — the blend already ran on all nodes
-      // so gx/gy are correct. Fewer nodes → fewer supernodes → fast frame.
-      if (!v._sampleNodes) {
-        const targetN = Math.max(20000, Math.min(50000, v.nodes.length));
-        // Spatial grid sampling from current gx/gy: 16×16 grid,
-        // degree-weighted within each cell, min 1 per occupied cell.
-        const shift = 16 - 4;
-        const cells = new Map();
-        for (const n of v.nodes) {
-          const key = ((n.gx >> shift) << 4) | (n.gy >> shift);
-          if (!cells.has(key)) cells.set(key, []);
-          cells.get(key).push(n);
-        }
-        for (const arr of cells.values()) arr.sort((a, b) => b.degree - a.degree);
-        v._sampleNodes = [];
-        for (const [, arr] of cells) {
-          const take = Math.max(1, Math.round(arr.length * targetN / v.nodes.length));
-          for (let i = 0; i < Math.min(take, arr.length); i++) v._sampleNodes.push(arr[i]);
-        }
-      }
-      // Swap nodes for level build + render only; skip edges entirely.
-      // Suppress edge build scheduling during getLevel by setting a flag.
-      const fullNodes = v.nodes;
-      const savedEdgeMode = v.edgeMode;
-      v.nodes = v._sampleNodes;
-      v.edgeMode = 'none';
-      v._skipEdgeBuild = true; // stays true until full rebuild on release
-      v.layoutAll();
-      v.render();
-      // Cancel any edge build that snuck through
-      if (v._edgeBuildRaf) { cancelAnimationFrame(v._edgeBuildRaf); v._edgeBuildRaf = null; }
-      v.edgeMode = savedEdgeMode;
-      v.nodes = fullNodes;
-    } else {
-      v.layoutAll();
-      v.render();
-      if (!fast) { v._sampleNodes = null; v._skipEdgeBuild = false; }
-    }
+    // Delegate to the canvas-owned fast-mode methods. The canvas owns the
+    // subsample logic so the same fast path is available to <bz-graph> and
+    // standalone <bz-compass>/<bz-controls> bindings, not just the viewer.
+    if (fast) await this.view.fastRebuild();
+    else await this.view.endFastRebuild();
   }
 
   // ─── Navigation ─────────────────────────────────────────────────────────────

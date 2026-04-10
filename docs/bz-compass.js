@@ -342,27 +342,42 @@ class BzCompass extends HTMLElement {
       this._boundView = view;
       this._syncFromView();
 
-      // Push compass changes → view
-      let _rebuildPending = false;
-      const onCompassChange = (e) => {
-        if (!e.detail) return;
-        if (e.detail.name === '_alpha') {
-          view.smoothAlpha = e.detail.alpha;
+      // Push compass changes → view. `input` events fire continuously during
+      // a drag — coalesce per animation frame and call view.fastRebuild()
+      // (subsamples the layout/render for large graphs). `change` events fire
+      // on release — call view.endFastRebuild() to drop the subsample and run
+      // a full-quality rebuild.
+      const applyDetail = (detail) => {
+        if (detail.name === '_alpha') {
+          view.smoothAlpha = detail.alpha;
         } else {
-          view.propStrengths[e.detail.name] = e.detail.strength;
-          view.propBearings[e.detail.name] = e.detail.bearing;
+          view.propStrengths[detail.name] = detail.strength;
+          view.propBearings[detail.name] = detail.bearing;
         }
-        if (!_rebuildPending) {
-          _rebuildPending = true;
-          requestAnimationFrame(() => {
-            _rebuildPending = false;
-            view._quantStats = {};
-            view.levels = new Array(view.levels.length).fill(null);
-            view._blend(true).then(() => { view.layoutAll(); view.render(); });
+      };
+      let _rebuildRaf = null;
+      const onCompassInput = (e) => {
+        if (!e.detail) return;
+        applyDetail(e.detail);
+        if (_rebuildRaf == null) {
+          _rebuildRaf = requestAnimationFrame(() => {
+            _rebuildRaf = null;
+            view.fastRebuild();
           });
         }
       };
-      this.addEventListener('input', this._onBoundInput = onCompassChange);
+      const onCompassChange = (e) => {
+        if (!e.detail) return;
+        applyDetail(e.detail);
+        // Cancel any rAF that hasn't fired yet — otherwise it would run
+        // fastRebuild() AFTER endFastRebuild() and re-engage fast mode.
+        if (_rebuildRaf != null) {
+          cancelAnimationFrame(_rebuildRaf);
+          _rebuildRaf = null;
+        }
+        view.endFastRebuild();
+      };
+      this.addEventListener('input', this._onBoundInput = onCompassInput);
       this.addEventListener('change', this._onBoundChange = onCompassChange);
       this.addEventListener('colorby', (e) => {
         if (!e.detail) return;
