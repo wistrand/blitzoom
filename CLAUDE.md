@@ -172,6 +172,7 @@ Drop any of these files onto the canvas or loader panel, or load them via URL �
 
 ## Important Invariants
 
+- **Static import DAG.** The module import graph is a strict DAG with **no cycles**, organized into layers (see [agent_docs/ARCHITECTURE.md#module-system](agent_docs/ARCHITECTURE.md)). A module may only `import` from strictly lower layers; cross-layer access from higher → lower is by parameter passing (`view`, `bz`, `state`), not by importing the upper module. The runtime coupling between `canvas`, `mutations`, and `renderer` is intentionally tight via the shared `view` parameter, but the static imports stay one-directional. **`bz-compass.js` and `bz-controls.js` have zero imports** — they're leaf modules and accessing the bound view is via runtime properties only. Adding any import to either is a regression. Enforced by [tests/import_cycle_test.ts](tests/import_cycle_test.ts).
 - Per-node projections are node-independent — computed from the node's own properties only. `projectNode()` produces identical results whether called alone or in a batch.
 - Strength changes trigger blend + quantize only (no re-projection).
 - `normQuantize` uses projection matrix norms as σ — zero data dependency. `addNodes()`, `removeNodes()`, and `updateNodes()` with `quantMode: 'norm'` never change unaffected nodes' `gx/gy`.

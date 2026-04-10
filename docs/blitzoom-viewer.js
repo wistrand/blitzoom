@@ -1374,6 +1374,21 @@ class BlitZoom {
             if (this._autoTuneOnLoad !== false && !dataset?.settings && !hasHashSettings && v.nodes && v.nodes.length > 0) {
                 await this._autoTuneFresh();
             }
+
+            // First-visit welcome dialog: show once after the first successful
+            // default load. Stored as a localStorage flag so it never reappears
+            // on subsequent visits. Skipped when the user arrived via a URL
+            // hash (hashMatchesDataset) — they already chose this dataset
+            // explicitly and don't need the introduction.
+            if (dataset && !hashMatchesDataset && !localStorage.getItem('bz-welcome-seen')) {
+                const dlg = document.getElementById('welcomeDialog');
+                const nameEl = document.getElementById('welcomeDatasetName');
+                if (dlg && nameEl && typeof dlg.showModal === 'function') {
+                    nameEl.textContent = dataset.name || 'current';
+                    dlg.showModal();
+                    localStorage.setItem('bz-welcome-seen', '1');
+                }
+            }
         });
     }
 

@@ -65,28 +65,57 @@ deno.json                  Tasks: serve, test, stix2snap, csv2snap, src2snap
 
 All JS files use **ES modules** (`import`/`export`). Web Workers use `{ type: 'module' }`. Viewer loads `<script type="module" src="blitzoom-viewer.js">`.
 
-Dependency graph (arrows = "imported by"):
-```
-blitzoom-algo.js              (no deps — pure functions + constants)
-blitzoom-colors.js            (no deps — color schemes)
-stix2snap.js                 (no deps — STIX 2.1 bundle → object pipeline shape)
-  ↑
-blitzoom-pipeline.js          (algo)
-blitzoom-renderer.js          (algo)
-blitzoom-gl-renderer.js       (algo)
-blitzoom-utils.js             (algo)
-blitzoom-svg.js               (algo, colors)
-blitzoom-gpu.js               (algo, pipeline)
-blitzoom-parsers.js           (pipeline, stix2snap)
-  ↑
-blitzoom-canvas.js            (algo, colors, pipeline, renderer, gl-renderer, gpu, utils)
-  ↑
-blitzoom-viewer.js            (algo, canvas, colors, gl-renderer, gpu, pipeline, parsers, svg, utils)
-bz-graph.js                  (canvas, colors)
+The static import graph is a **strict DAG with zero cycles**, organized into layers. Each layer may only import from layers below it. New modules must fit into an existing layer or extend the top of the chain.
 
-blitzoom-worker.js            (pipeline)
-blitzoom-proj-worker.js       (algo, pipeline)
 ```
+Layer 0 (no local deps):
+  blitzoom-algo.js              pure functions + constants (MinHash, projection, blend, quantize, levels)
+  blitzoom-colors.js            color schemes
+  bz-compass.js                 web component (no imports — uses runtime-only access via _boundView)
+  bz-controls.js                web component (no imports — uses runtime-only access via _boundView)
+  stix2snap.js                  STIX 2.1 bundle → object pipeline shape
+
+Layer 1 (→ algo only, plus colors for svg):
+  blitzoom-pipeline.js          (algo)         SNAP parsers, runPipeline, projectNode, numericBins, adjGroups
+  blitzoom-renderer.js          (algo)         Canvas2D draw, hit testing
+  blitzoom-gl-renderer.js       (algo)         WebGL2 instanced renderer
+  blitzoom-utils.js             (algo)         Auto-tune optimizer
+  blitzoom-svg.js               (algo, colors) SVG export
+
+Layer 2 (→ layer 1):
+  blitzoom-mutations.js         (algo, pipeline, colors)        addNodes/removeNodes/updateNodes, fullRebuild, bootstrapEmptyGraph
+  blitzoom-gpu.js               (algo, pipeline)                WebGPU compute
+  blitzoom-parsers.js           (pipeline, stix2snap)           CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX dispatcher
+
+Layer 3:
+  blitzoom-canvas.js            (algo, colors, gpu, mutations, gl-renderer, renderer)   BlitZoomCanvas class
+
+Layer 4:
+  blitzoom-factory.js           (algo, colors, utils, pipeline, gpu, canvas)            createBlitZoomView, applyIncrementalPreset
+
+Layer 5:
+  bz-graph.js                   (factory, colors, parsers; side-effect bz-compass, bz-controls)   <bz-graph> custom element
+  blitzoom-viewer.js            (algo, canvas, colors, utils, gpu, gl-renderer, svg, pipeline, parsers)   Viewer app
+
+Layer 6 (entry point):
+  blitzoom.js                   (canvas, factory, bz-graph, pipeline, utils, svg, gpu, gl-renderer, colors)   Public API re-exports
+
+Workers (separate top-level — loaded via `new Worker()`, not by main code):
+  blitzoom-worker.js            (pipeline)             Coordinator
+  blitzoom-proj-worker.js       (algo, pipeline)       Per-shard projection
+```
+
+### Static import DAG invariant
+
+The graph above is **load-bearing**, not just descriptive. The following invariants must hold for any change to the codebase:
+
+1. **No cycles.** No module may import (directly or transitively) anything that imports it. Enforced by [tests/import_cycle_test.ts](../tests/import_cycle_test.ts).
+2. **Layered access.** A module may only import from strictly lower layers. Cross-layer access from a higher layer to a lower one is by **parameter passing** (the lower module receives an instance, state object, or plain values from above), never by importing the upper module.
+3. **Tight runtime coupling, one-way static imports.** The runtime coupling between `canvas`, `mutations`, and `renderer` is intentionally tight — they share `BlitZoomCanvas` instance state via a `view`/`bz` parameter. The static imports remain one-directional: `canvas` imports `mutations`/`renderer`/`gl-renderer`; the others never import `canvas`. The functions in `mutations` and `renderer` take a `view` parameter and accept whatever shape the canvas hands them.
+4. **Companion components stay leaf modules.** `bz-compass.js` and `bz-controls.js` have **zero imports** on purpose. They access the bound view via runtime properties (`this._boundView.someMethod()`) and dispatch DOM events. Adding an import to either component is a regression — the right pattern is to add a public method on `BlitZoomCanvas` that the companions call (see `forwardKeyEvent` for an example).
+5. **Workers are separate roots.** `blitzoom-worker.js` and `blitzoom-proj-worker.js` are loaded via `new Worker(..., { type: 'module' })` from the main thread, not via `import`. They form their own DAG roots and may only import from layers 0-1 (algo, pipeline) since they run in a context with no DOM, canvas, or factory.
+
+These rules are not stylistic — they preserve a property that makes the project reasoner-friendly: **any module can be understood by reading itself plus the strict subset of code below it in the layer chain.** A `bz-compass` author never needs to read `blitzoom-canvas.js` to understand what they're working with. A `mutations.js` author reads `algo`, `pipeline`, `colors`, and the public surface of the `view` parameter — nothing more. Cycles destroy this property by making the "below" set unbounded.
 
 No code duplication. GC-optimized MinHash variants (`computeMinHashInto`, `_sig`, `projectInto`, typed-array `HASH_PARAMS_A/B`) live once in [blitzoom-algo.js](../docs/blitzoom-algo.js). `BlitZoom` composes `BlitZoomCanvas` (`this.view`) — all graph state, rendering, and interaction primitives live on the canvas component.
 
