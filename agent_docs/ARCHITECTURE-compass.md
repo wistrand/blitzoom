@@ -143,4 +143,4 @@ The A button in the compass triggers `autoTuneBtn.click()` in the viewer, reusin
 | [blitzoom-viewer.js](../docs/blitzoom-viewer.js) | Panel toggle, drag, sync wiring, A button integration             |
 | [blitzoom.css](../docs/blitzoom.css)             | `.compass-panel`, `.compass-titlebar`, `.compass-close` styles    |
 | [viewer.html](../docs/viewer.html)               | Panel markup, toolbar button, script import                       |
-| [bz-graph-demo.html](../docs/bz-graph-demo.html) | Live examples of declarative `for` binding                        |
+| [bz-graph-demo.html](../docs/demo/bz-graph-demo.html) | Live examples of declarative `for` binding                   |

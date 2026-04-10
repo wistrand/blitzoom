@@ -50,12 +50,31 @@ class BzControls extends HTMLElement {
   }
 
   connectedCallback() {
+    // Host-level keydown listener: forward canvas-level shortcuts (`,` `.` `f`
+    // etc.) to the bound view's canvas regardless of which inner element
+    // (slider, dial, checkbox) currently has focus. We listen at the host so
+    // events from any focused descendant bubble through; we filter to the
+    // forward set before re-dispatching so native input handlers (slider arrow
+    // keys, dial Home/0) are unaffected.
+    this._boundKeydown = this._onKeyDown.bind(this);
+    this.addEventListener('keydown', this._boundKeydown);
+
     const forId = this.getAttribute('for');
     if (forId) this._bindToGraph(forId);
   }
 
   disconnectedCallback() {
+    if (this._boundKeydown) {
+      this.removeEventListener('keydown', this._boundKeydown);
+      this._boundKeydown = null;
+    }
     this._unbind();
+  }
+
+  _onKeyDown(e) {
+    // Delegate canvas-level shortcuts (level switch, FPS, etc.) to the bound
+    // view. The canvas owns the policy and the dispatch — we just ask.
+    this._boundView?.forwardKeyEvent(e);
   }
 
   attributeChangedCallback(name, _old, val) {

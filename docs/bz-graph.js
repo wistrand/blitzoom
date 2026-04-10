@@ -48,6 +48,7 @@ const ATTR_MAP = {
   'use-gpu':      { prop: 'useGPU',      type: 'bool', default: false },
   'color-by':     { prop: 'colorBy',    type: 'string', default: null },
   'auto-tune':    { prop: 'autoTune',     type: 'json', default: null },
+  'label-font':   { prop: 'labelFont',     type: 'json', default: null },
 };
 
 const BOOL_ATTRS = ['legend', 'reset-btn', 'light-mode', 'size-log', 'webgl', 'auto-gpu', 'compass', 'controls', 'incremental'];
@@ -72,6 +73,12 @@ class BzGraph extends HTMLElement {
   constructor() {
     super();
     this._view = null;
+    // `ready` is a Promise that resolves once the build completes — modeled on
+    // `document.fonts.ready` and `navigator.serviceWorker.ready`. Created eagerly
+    // in the constructor so `await el.ready` works regardless of when it's read,
+    // including before connectedCallback fires or after the build has already
+    // finished. Reset on `_reload` so the Promise tracks the *current* build.
+    this._initReadyPromise();
     this._shadow = this.attachShadow({ mode: 'open' });
     this._shadow.innerHTML = `<style>
       :host { display: block; position: relative; }
@@ -94,6 +101,18 @@ class BzGraph extends HTMLElement {
     this._summaryBody = this._shadow.querySelector('tbody');
   }
 
+  _initReadyPromise() {
+    this.ready = new Promise((resolve, reject) => {
+      this._readyResolve = resolve;
+      this._readyReject = reject;
+    });
+    // Suppress unhandled-rejection warnings for callers who never await `ready`.
+    // (Listener-based callers using addEventListener('ready') don't touch the
+    // Promise; without this catch, a build failure would log a noisy unhandled
+    // rejection even though the failure path is via the missing event.)
+    this.ready.catch(() => {});
+  }
+
   connectedCallback() {
     // Defer to allow inner text content to be parsed
     requestAnimationFrame(() => this._init());
@@ -113,54 +132,67 @@ class BzGraph extends HTMLElement {
 
   async _init() {
     if (this._view) return;
-    const opts = this._buildOpts();
-    const edgesUrl = this.getAttribute('edges');
-    const nodesUrl = this.getAttribute('nodes');
-    const format = this.getAttribute('format');
-    // Check for <script> child first (no FOUC), fall back to raw textContent
-    const scriptEl = this.querySelector('script[type="application/json"], script[type="text/plain"], script[type="text/xml"]');
-    const inline = scriptEl ? scriptEl.textContent.trim() : this.textContent.trim();
-    // Infer format from script type if not explicitly set
-    const effectiveFormat = format || (scriptEl?.type === 'application/json' ? 'json' : null);
+    try {
+      const opts = this._buildOpts();
+      const edgesUrl = this.getAttribute('edges');
+      const nodesUrl = this.getAttribute('nodes');
+      const format = this.getAttribute('format');
+      // Check for <script> child first (no FOUC), fall back to raw textContent
+      const scriptEl = this.querySelector('script[type="application/json"], script[type="text/plain"], script[type="text/xml"]');
+      const inline = scriptEl ? scriptEl.textContent.trim() : this.textContent.trim();
+      // Infer format from script type if not explicitly set
+      const effectiveFormat = format || (scriptEl?.type === 'application/json' ? 'json' : null);
 
-    if (edgesUrl) {
-      // File mode: fetch SNAP files
-      const [edgesText, nodesText] = await Promise.all([
-        fetch(edgesUrl).then(r => r.text()),
-        nodesUrl ? fetch(nodesUrl).then(r => r.text()).catch(() => null) : Promise.resolve(null),
-      ]);
-      this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
-    } else if (inline && (effectiveFormat === 'json')) {
-      // Inline JSON mode (from format attribute, or inferred from <script type="application/json">)
-      const data = JSON.parse(inline);
-      const nodes = data.nodes || [];
-      const edges = data.edges || [];
-      this._view = createBlitZoomFromGraph(this._canvas, nodes, edges, opts);
-    } else if (inline) {
-      // Inline SNAP mode (default for raw text)
-      const lines = inline.split('\n');
-      // Split into edges text and optional nodes text (separated by blank line + # header)
-      let edgesText = inline;
-      let nodesText = null;
-      const sepIdx = lines.findIndex((l, i) => i > 0 && l.startsWith('# ') && lines[i - 1].trim() === '');
-      if (sepIdx > 0) {
-        edgesText = lines.slice(0, sepIdx - 1).join('\n');
-        nodesText = lines.slice(sepIdx).join('\n');
+      if (edgesUrl) {
+        // File mode: fetch SNAP files
+        const [edgesText, nodesText] = await Promise.all([
+          fetch(edgesUrl).then(r => r.text()),
+          nodesUrl ? fetch(nodesUrl).then(r => r.text()).catch(() => null) : Promise.resolve(null),
+        ]);
+        this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
+      } else if (inline && (effectiveFormat === 'json')) {
+        // Inline JSON mode (from format attribute, or inferred from <script type="application/json">)
+        const data = JSON.parse(inline);
+        const nodes = data.nodes || [];
+        const edges = data.edges || [];
+        this._view = createBlitZoomFromGraph(this._canvas, nodes, edges, opts);
+      } else if (inline) {
+        // Inline SNAP mode (default for raw text)
+        const lines = inline.split('\n');
+        // Split into edges text and optional nodes text (separated by blank line + # header)
+        let edgesText = inline;
+        let nodesText = null;
+        const sepIdx = lines.findIndex((l, i) => i > 0 && l.startsWith('# ') && lines[i - 1].trim() === '');
+        if (sepIdx > 0) {
+          edgesText = lines.slice(0, sepIdx - 1).join('\n');
+          nodesText = lines.slice(sepIdx).join('\n');
+        }
+        this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
+      } else {
+        // No data source — build an empty graph that's ready to receive
+        // addNodes calls. The schema (extra property groups) will be
+        // bootstrapped from the first batch of nodes; user-provided
+        // `strengths` for those groups are preserved and applied at that
+        // time. Used when the graph is populated entirely via streaming.
+        this._view = createBlitZoomFromGraph(this._canvas, [], [], opts);
       }
-      this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
+      // a11y debug toggle (handled via canvas keydown — canvas has tabindex from BlitZoomCanvas)
+      this._canvas.addEventListener('keydown', e => {
+        if (e.key === 'a') this.classList.toggle('a11y-debug');
+      });
+
+      // Create floating panels (default: on, disable with compass="false" or controls="false")
+      // Panels start hidden; toggle with r/R keyboard shortcuts after clicking graph
+      if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
+      if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
+
+      this.dispatchEvent(new Event('ready'));
+      this._readyResolve(this);
+      this._flushPendingAdds();
+    } catch (err) {
+      this._readyReject(err);
+      throw err;
     }
-    // a11y debug toggle (handled via canvas keydown — canvas has tabindex from BlitZoomCanvas)
-    this._canvas.addEventListener('keydown', e => {
-      if (e.key === 'a') this.classList.toggle('a11y-debug');
-    });
-
-    // Create floating panels (default: on, disable with compass="false" or controls="false")
-    // Panels start hidden; toggle with r/R keyboard shortcuts after clicking graph
-    if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
-    if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
-
-    this.dispatchEvent(new Event('ready'));
-    this._flushPendingAdds();
   }
 
   /** Tear down current view and panels, rebuild with new data. */
@@ -168,33 +200,45 @@ class BzGraph extends HTMLElement {
     if (this._view) { this._view.destroy(); this._view = null; }
     if (this._compassPanel) { this._compassPanel.remove(); this._compassPanel = null; }
     if (this._controlsPanel) { this._controlsPanel.remove(); this._controlsPanel = null; }
-    // Clear stale attributes so autotune results aren't overridden
-    this.removeAttribute('strengths');
-    this.removeAttribute('weights');
-    this.removeAttribute('label-props');
-    this.removeAttribute('alpha');
-    this.removeAttribute('quant');
-    const opts = this._buildOpts();
-    if (!opts.incremental) opts.autoTune = { strengths: true, alpha: true };
+    // Reset `ready` to a fresh pending Promise so awaiters see the new build,
+    // not the previous one. Code that grabbed `g.ready` before the reload keeps
+    // its (now-resolved) reference to the old Promise — that's fine, it just
+    // means "the previous build completed". Use `await g.ready` after triggering
+    // a reload to wait for the new build.
+    this._initReadyPromise();
+    try {
+      // Clear stale attributes so autotune results aren't overridden
+      this.removeAttribute('strengths');
+      this.removeAttribute('weights');
+      this.removeAttribute('label-props');
+      this.removeAttribute('alpha');
+      this.removeAttribute('quant');
+      const opts = this._buildOpts();
+      if (!opts.incremental) opts.autoTune = { strengths: true, alpha: true };
 
-    if (parsed) {
-      // Object pipeline: CSV, D3, JGF, GraphML, GEXF, Cytoscape, STIX, bare JSON, nodes-only
-      const nodes = [];
-      for (const [id, n] of parsed.nodes) {
-        const obj = { id, group: n.group, label: n.label };
-        if (n.extraProps) Object.assign(obj, n.extraProps);
-        nodes.push(obj);
+      if (parsed) {
+        // Object pipeline: CSV, D3, JGF, GraphML, GEXF, Cytoscape, STIX, bare JSON, nodes-only
+        const nodes = [];
+        for (const [id, n] of parsed.nodes) {
+          const obj = { id, group: n.group, label: n.label };
+          if (n.extraProps) Object.assign(obj, n.extraProps);
+          nodes.push(obj);
+        }
+        this._view = createBlitZoomFromGraph(this._canvas, nodes, parsed.edges || [], opts);
+      } else {
+        // SNAP text pipeline
+        this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
       }
-      this._view = createBlitZoomFromGraph(this._canvas, nodes, parsed.edges || [], opts);
-    } else {
-      // SNAP text pipeline
-      this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
-    }
 
-    if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
-    if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
-    this.dispatchEvent(new Event('ready'));
-    this._flushPendingAdds();
+      if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
+      if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
+      this.dispatchEvent(new Event('ready'));
+      this._readyResolve(this);
+      this._flushPendingAdds();
+    } catch (err) {
+      this._readyReject(err);
+      throw err;
+    }
   }
 
   /** Handle dropped files — classifies via shared utility, then reloads. */

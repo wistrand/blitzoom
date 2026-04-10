@@ -1017,6 +1017,10 @@ class BzCompass extends HTMLElement {
   // ─── Keyboard ────────���──────────────────────────────���────────────────────────
 
   _onKeyDown(e) {
+    // Delegate canvas-level shortcuts (level switch, FPS, etc.) to the bound
+    // view. The canvas owns the policy and the dispatch — we just ask.
+    if (this._boundView?.forwardKeyEvent(e)) return;
+
     const G = this._groups.length;
     if (!G) return;
 

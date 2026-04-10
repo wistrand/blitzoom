@@ -66,10 +66,11 @@ function hexToRgb(hex) {
 
 // Pre-built font string cache
 const _fontCache = {};
-function fontStr(size, bold) {
-  const key = bold ? -size : size;
+function fontStr(size, bold, family) {
+  const fam = family || 'JetBrains Mono';
+  const key = `${fam}|${bold ? '-' : ''}${size}`;
   if (_fontCache[key]) return _fontCache[key];
-  const s = bold ? `bold ${size}px JetBrains Mono` : `${size}px JetBrains Mono`;
+  const s = bold ? `bold ${size}px ${fam}` : `${size}px ${fam}`;
   _fontCache[key] = s;
   return s;
 }
@@ -446,63 +447,82 @@ function renderSupernodes(bz, pass) {
         const rawLabel = sn.cachedLabel;
         const labelParts = rawLabel.split(' · ');
         const hasMulti = labelParts.length > 1 && bz.labelProps.has('label');
+        const lfs = bz.labelFont;
+        const fam = lfs.family;
         if (isSelected || isHovered) {
-          const fs = Math.max(11, Math.min(12, cellPx * 0.18)) | 0;
-          ctx.font = fontStr(fs, true);
+          // Top can scale up to 18px on highlight so the primary label is
+          // readable; bottom stays smaller (11-12) as a supporting caption.
+          const topAdaptive = Math.max(11, Math.min(18, cellPx * 0.22)) | 0;
+          const botAdaptive = Math.max(11, Math.min(12, cellPx * 0.18)) | 0;
+          const topFs = lfs.topHL ?? topAdaptive;
+          const botFs = lfs.bottomHL ?? botAdaptive;
           ctx.textAlign = 'center';
           ctx.shadowColor = _t(bz).shadowColor;
           ctx.shadowBlur = 10;
           ctx.fillStyle = isSelected ? _t(bz).labelBright : _t(bz).labelHover;
           if (hasMulti) {
+            ctx.font = fontStr(topFs, true, fam);
             ctx.textBaseline = 'bottom';
             ctx.fillText(labelParts[0], px, py - r - 3);
+            ctx.font = fontStr(botFs, true, fam);
             ctx.textBaseline = 'top';
             ctx.fillText(labelParts.slice(1).join(' · '), px, py + r + 3);
           } else {
+            ctx.font = fontStr(topFs, true, fam);
             ctx.textBaseline = 'bottom';
             ctx.fillText(rawLabel, px, py - r - 3);
           }
           ctx.shadowBlur = 0;
         } else if (isMajorNeighbor) {
-          const fs = Math.max(10, Math.min(12, cellPx * 0.18)) | 0;
+          const adaptive = Math.max(10, Math.min(12, cellPx * 0.18)) | 0;
+          const topFs = lfs.top ?? adaptive;
+          const botFs = lfs.bottom ?? topFs;
           const maxChars = 20;
-          ctx.font = fontStr(fs, false);
           ctx.textAlign = 'center';
           ctx.shadowColor = _t(bz).shadowNeighbor;
           ctx.shadowBlur = 10;
           ctx.fillStyle = _t(bz).labelNeighbor;
           if (hasMulti) {
             const name = labelParts[0].length > maxChars ? labelParts[0].slice(0, maxChars - 1) + '…' : labelParts[0];
+            ctx.font = fontStr(topFs, false, fam);
             ctx.textBaseline = 'bottom';
             ctx.fillText(name, px, py - r - 3);
             const rest = labelParts.slice(1).join(' · ');
             const restTrunc = rest.length > maxChars ? rest.slice(0, maxChars - 1) + '…' : rest;
+            ctx.font = fontStr(botFs, false, fam);
             ctx.textBaseline = 'top';
             ctx.fillText(restTrunc, px, py + r + 3);
           } else {
             const label = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
+            ctx.font = fontStr(topFs, false, fam);
             ctx.textBaseline = 'bottom';
             ctx.fillText(label, px, py - r - 3);
           }
           ctx.shadowBlur = 0;
         } else {
-          const fs = Math.max(10, Math.min(13, cellPx * 0.18)) | 0;
-          const charW = fs * 0.6;
+          const adaptive = Math.max(10, Math.min(13, cellPx * 0.18)) | 0;
+          const topFs = lfs.top ?? adaptive;
+          const botFs = lfs.bottom ?? topFs;
+          // Truncation based on the larger of the two so layout is stable
+          const maxFs = Math.max(topFs, botFs);
+          const charW = maxFs * 0.6;
           const snappedCellPx = Math.round(cellPx / 4) * 4;
           const maxChars = Math.max(3, (snappedCellPx / charW) | 0);
           ctx.fillStyle = _t(bz).labelDim;
-          ctx.font = fontStr(fs, false);
           ctx.textAlign = 'center';
           if (hasMulti) {
             const name = labelParts[0].length > maxChars ? labelParts[0].slice(0, maxChars - 1) + '…' : labelParts[0];
+            ctx.font = fontStr(topFs, false, fam);
             ctx.textBaseline = 'bottom';
             ctx.fillText(name, px, py - r - 3);
             const rest = labelParts.slice(1).join(' · ');
             const restTrunc = rest.length > maxChars ? rest.slice(0, maxChars - 1) + '…' : rest;
+            ctx.font = fontStr(botFs, false, fam);
             ctx.textBaseline = 'top';
             ctx.fillText(restTrunc, px, py + r + 3);
           } else {
             const label = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
+            ctx.font = fontStr(topFs, false, fam);
             ctx.textBaseline = 'bottom';
             ctx.fillText(label, px, py - r - 3);
           }
@@ -659,23 +679,59 @@ function renderNodes(bz, pass) {
 
       if (isSelected || isHovered || isMajorNeighbor || cellPxRaw >= 14) {
         const rawLabel = bz._nodeLabel(n);
+        const labelParts = rawLabel.split(' · ');
+        const hasMulti = labelParts.length > 1 && bz.labelProps.has('label');
+        const lfs = bz.labelFont;
+        const fam = lfs.family;
         if (isSelected || isHovered) {
-          const fs = Math.max(11, Math.min(12, cellPxRaw * 0.22)) | 0;
+          // Top can scale up to 18px on highlight so the primary label is
+          // readable; bottom stays smaller (11-12) as a supporting caption.
+          const topAdaptive = Math.max(11, Math.min(18, cellPxRaw * 0.28)) | 0;
+          const botAdaptive = Math.max(11, Math.min(12, cellPxRaw * 0.22)) | 0;
+          const topFs = lfs.topHL ?? topAdaptive;
+          const botFs = lfs.bottomHL ?? botAdaptive;
           ctx.fillStyle = isSelected ? '#fff' : 'rgba(230,230,255,0.95)';
-          ctx.font = fontStr(fs, true);
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(rawLabel, px + r + 3, py);
+          ctx.textAlign = 'center';
+          ctx.shadowColor = _t(bz).shadowColor;
+          ctx.shadowBlur = 10;
+          if (hasMulti) {
+            ctx.font = fontStr(topFs, true, fam);
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(labelParts[0], px, py - r - 3);
+            ctx.font = fontStr(botFs, true, fam);
+            ctx.textBaseline = 'top';
+            ctx.fillText(labelParts.slice(1).join(' · '), px, py + r + 3);
+          } else {
+            ctx.font = fontStr(topFs, true, fam);
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(rawLabel, px, py - r - 3);
+          }
+          ctx.shadowBlur = 0;
         } else {
-          const fs = Math.max(10, Math.min(13, cellPxRaw * 0.22)) | 0;
-          const charW = fs * 0.6;
+          const adaptive = Math.max(10, Math.min(13, cellPxRaw * 0.22)) | 0;
+          const topFs = lfs.top ?? adaptive;
+          const botFs = lfs.bottom ?? topFs;
+          const maxFs = Math.max(topFs, botFs);
+          const charW = maxFs * 0.6;
           const maxChars = Math.max(4, ((cellPxRaw * 0.8) / charW) | 0);
-          const text = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
           ctx.fillStyle = _t(bz).labelRawDim;
-          ctx.font = fontStr(fs, false);
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(text, px + r + 3, py);
+          ctx.textAlign = 'center';
+          if (hasMulti) {
+            const name = labelParts[0].length > maxChars ? labelParts[0].slice(0, maxChars - 1) + '…' : labelParts[0];
+            ctx.font = fontStr(topFs, false, fam);
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(name, px, py - r - 3);
+            const rest = labelParts.slice(1).join(' · ');
+            const restTrunc = rest.length > maxChars ? rest.slice(0, maxChars - 1) + '…' : rest;
+            ctx.font = fontStr(botFs, false, fam);
+            ctx.textBaseline = 'top';
+            ctx.fillText(restTrunc, px, py + r + 3);
+          } else {
+            const text = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + '…' : rawLabel;
+            ctx.font = fontStr(topFs, false, fam);
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(text, px, py - r - 3);
+          }
         }
       }
     }
@@ -756,10 +812,15 @@ let _densityMaxWKey = '';
 let _densityMaxWTime = 0;
 let _densityNextId = 0; // monotonic counter for assigning instance IDs
 let _densityLastId = 0; // last-seen instance ID for snap detection
+let _densityLastLevel = -1; // last-seen level for snap detection on level change
 
 function _densityCacheKey(bz) {
   if (!bz._densityId) bz._densityId = ++_densityNextId;
-  return bz._densityId + '|' + bz.currentLevel + '|' + bz.renderZoom.toFixed(1) + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.W + '|' + bz.H;
+  // Include _blendGen so incremental adds (which re-blend without changing
+  // level/zoom/size/viewport) invalidate the cached maxW. Without this,
+  // streaming nodes piles up density above the seed's frozen maxW and the
+  // contours saturate to a uniform high-band blob.
+  return bz._densityId + '|' + bz._blendGen + '|' + bz.currentLevel + '|' + bz.renderZoom.toFixed(1) + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.W + '|' + bz.H;
 }
 
 function renderHeatmapDensity(bz) {
@@ -839,7 +900,11 @@ function renderHeatmapDensity(bz) {
     }
   }
 
-  // Compute maxW from current frame when config changes; lerp toward it for smooth transitions
+  // Compute maxW from current frame when config changes; lerp toward it for
+  // smooth transitions (used by incremental adds, strength/bearing changes,
+  // and zoom). Snap on discontinuous transitions: new instance, or level
+  // change (different supernodes at different positions — lerping across the
+  // jump produces wrong contours for several frames).
   if (needMaxW) {
     let maxW = 0;
     for (let i = 0; i < totalCells; i++) if (_densityW[i] > maxW) maxW = _densityW[i];
@@ -847,8 +912,10 @@ function renderHeatmapDensity(bz) {
     _densityMaxWKey = cacheKey;
     _densityMaxWTime = performance.now();
     const newInstance = bz._densityId !== _densityLastId;
+    const levelChanged = bz.currentLevel !== _densityLastLevel;
     _densityLastId = bz._densityId;
-    if (_densityMaxW === 0 || newInstance) _densityMaxW = maxW; // new instance or first frame: snap
+    _densityLastLevel = bz.currentLevel;
+    if (_densityMaxW === 0 || newInstance || levelChanged) _densityMaxW = maxW;
   }
 
   // Exponential lerp toward target (~500ms to 90% convergence)

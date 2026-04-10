@@ -30,6 +30,24 @@ import { layoutAll, render, worldToScreen, screenToWorld, hitTest } from './blit
 
 export class BlitZoomCanvas {
   static _instanceCount = 0;
+
+  /**
+   * Keys that the canvas claims as canvas-level shortcuts. Companion
+   * components (compass, controls) use this set indirectly via
+   * `forwardKeyEvent(e)` to delegate matching keys to the canvas while
+   * keeping their own native input handling for everything else.
+   *
+   * Mouse-position-dependent keys (`+`, `-`) are intentionally excluded —
+   * they zoom around the cursor, and the canvas's last mouse position is
+   * usually stale when triggered from a focused companion.
+   */
+  static FORWARDED_KEYS = new Set([
+    ',', '.',     // change zoom level
+    'f', 'F',     // toggle FPS overlay
+    'l', 'L',     // toggle legend
+    'c', 'C',     // cycle color scheme
+    'Escape',     // clear selection
+  ]);
   /**
    * @param {HTMLCanvasElement} canvas
    * @param {object} opts
@@ -121,6 +139,20 @@ export class BlitZoomCanvas {
     // Initialize WebGL if requested
     if (opts.webgl) this._initWebGL(canvas);
     this.labelProps = new Set(opts.labelProps || []);
+    // Optional font configuration for node labels.
+    //   `family`     — CSS font family for all node labels (defaults to JetBrains Mono).
+    //   `topHL/top/bottomHL/bottom` — fixed pixel sizes (integer) for the
+    //                  (top|bottom) × (highlighted|normal) matrix. When a
+    //                  key is null/undefined the renderer falls back to its
+    //                  adaptive math (cell-size dependent). `bottom*` only
+    //                  matter for multi-prop labels; single labels use `top*`.
+    this.labelFont = {
+      family:   opts.labelFont?.family   ?? null,
+      topHL:    opts.labelFont?.topHL    ?? null,
+      top:      opts.labelFont?.top      ?? null,
+      bottomHL: opts.labelFont?.bottomHL ?? null,
+      bottom:   opts.labelFont?.bottom   ?? null,
+    };
 
     // Store initial state for reset
     this._initLevel = this.currentLevel;
@@ -481,8 +513,11 @@ export class BlitZoomCanvas {
     const maxFps = this._maxFps || 0;
     const ms = this._lastFrameMs || 0;
     const mode = this._gl ? 'GL' : '2D';
+    const quant = (this.quantMode || 'gaussian')[0].toUpperCase();
+    const n = this.nodes ? this.nodes.length.toLocaleString() : '0';
+    const e = this.edges ? this.edges.length.toLocaleString() : '0';
     const fast = this._fastPassBudget !== undefined ? ` · fast(${this._fastPassBudget}p)` : '';
-    const text = `≤${String(maxFps).padStart(4)} fps · ${ms.toFixed(1)}ms · ${mode}${fast}`;
+    const text = `≤${String(maxFps).padStart(4)} fps · ${ms.toFixed(1)}ms · ${mode} · ${quant} · ${n}n/${e}e${fast}`;
     ctx.font = '10px JetBrains Mono';
     ctx.fillStyle = this._lightMode ? 'rgba(60,60,80,0.6)' : 'rgba(200,200,220,0.6)';
     ctx.textAlign = 'left';
@@ -619,6 +654,40 @@ export class BlitZoomCanvas {
     this.layoutAll();
     this.render();
     if (idx !== prevIdx && this._onLevelChange) this._onLevelChange(idx, prevIdx);
+  }
+
+  /**
+   * Delegate a keyboard event from a focused companion element (e.g.
+   * <bz-compass>, <bz-controls>) to this canvas's keydown handler.
+   * Companions call this from their own listeners so canvas-level shortcuts
+   * (level change, FPS toggle, deselect, etc.) work even when keyboard focus
+   * is on the companion. The canvas owns the policy: only keys in
+   * `BlitZoomCanvas.FORWARDED_KEYS` are forwarded; everything else is left
+   * for the companion to handle natively.
+   *
+   * On match: re-dispatches a synthetic KeyboardEvent on the canvas (its
+   * existing keydown handler picks it up), calls preventDefault and
+   * stopPropagation on the source event, and returns true.
+   *
+   * @param {KeyboardEvent} e - the source event from the companion's listener
+   * @returns {boolean} true if the event was forwarded
+   */
+  forwardKeyEvent(e) {
+    if (!BlitZoomCanvas.FORWARDED_KEYS.has(e.key)) return false;
+    const fwd = new KeyboardEvent('keydown', {
+      key: e.key,
+      code: e.code,
+      shiftKey: e.shiftKey,
+      ctrlKey: e.ctrlKey,
+      altKey: e.altKey,
+      metaKey: e.metaKey,
+      bubbles: false,
+      cancelable: true,
+    });
+    this.canvas.dispatchEvent(fwd);
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
   }
 
   _checkAutoLevel() {

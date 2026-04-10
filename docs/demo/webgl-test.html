@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BlitZoom — WebGL Rendering Test</title>
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="../logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
 
@@ -181,7 +181,7 @@
 </div>
 
 <script type="module">
-import { createBlitZoomView, isWebGL2Available } from './blitzoom.js';
+import { createBlitZoomView, isWebGL2Available } from '../blitzoom.js';
 
 const status = document.getElementById('status');
 const results = [];
@@ -209,32 +209,32 @@ async function loadPair(name, edgesFile, nodesFile, canvasL, canvasR, opts = {})
 }
 
 await loadPair('Karate',
-  'data/karate.edges', 'data/karate.nodes',
+  '../data/karate.edges', '../data/karate.nodes',
   'karate-2d', 'karate-gl',
   { initialLevel: 2, strengths: { group: 8 }, labelProps: ['group'] });
 
 await loadPair('Epstein',
-  'data/epstein.edges', 'data/epstein.nodes',
+  '../data/epstein.edges', '../data/epstein.nodes',
   'epstein-2d', 'epstein-gl',
   { initialLevel: 3, strengths: { group: 5, edgetype: 8 }, labelProps: ['label'] });
 
 await loadPair('Epstein curves',
-  'data/epstein.edges', 'data/epstein.nodes',
+  '../data/epstein.edges', '../data/epstein.nodes',
   'epstein-curves-2d', 'epstein-curves-gl',
   { initialLevel: 3, strengths: { group: 5, edgetype: 8 }, labelProps: ['label'], edgeMode: 'curves' });
 
 await loadPair('BZ Source',
-  'data/blitzoom-source.edges', 'data/blitzoom-source.nodes',
+  '../data/blitzoom-source.edges', '../data/blitzoom-source.nodes',
   'bzsource-2d', 'bzsource-gl',
   { strengths: { kind: 8, group: 3 }, labelProps: ['kind'] });
 
 await loadPair('MITRE',
-  'data/mitre-attack.edges', 'data/mitre-attack.nodes',
+  '../data/mitre-attack.edges', '../data/mitre-attack.nodes',
   'mitre-2d', 'mitre-gl',
   { strengths: { group: 5, platforms: 6, killchain: 4 }, labelProps: ['label'] });
 
 await loadPair('Email-EU',
-  'data/email-eu.edges', null,
+  '../data/email-eu.edges', null,
   'email-2d', 'email-gl',
   { strengths: {}, smoothAlpha: 1.0, quantMode: 'rank' });
 

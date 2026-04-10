@@ -27,7 +27,7 @@ Constructor accepts `{ webgl: true }`. Probe: `isWebGL2Available()`.
 | [blitzoom-canvas.js](../docs/blitzoom-canvas.js)           | `_initWebGL`, `_destroyWebGL`, `useWebGL`, wrapper management, resize          |
 | [blitzoom-renderer.js](../docs/blitzoom-renderer.js)       | `render()` skips geometry when `bz._gl` active, always draws text              |
 | [blitzoom-viewer.js](../docs/blitzoom-viewer.js)           | GL toggle button, `isWebGL2Available` import, GL wrapper hide/show with loader |
-| [webgl-test.html](../docs/webgl-test.html)                 | Side-by-side Canvas 2D vs WebGL2 visual comparison page                        |
+| [webgl-test.html](../docs/demo/webgl-test.html)            | Side-by-side Canvas 2D vs WebGL2 visual comparison page                        |
 
 ## Shaders and Programs
 

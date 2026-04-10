@@ -102,24 +102,28 @@ bob	carol
 
 ### Programmatic access
 
-For an element declared in static HTML:
+`<bz-graph>` exposes a `ready` Promise that resolves once the build completes — modeled on `document.fonts.ready` and `navigator.serviceWorker.ready`. Use it from any async function:
 
 ```js
 const el = document.querySelector('bz-graph');
-el.addEventListener('ready', () => {
-  el.view.setStrengths({ group: 8, kind: 3 });
-  el.view.colorScheme = 3;
-});
+await el.ready;
+el.view.setStrengths({ group: 8, kind: 3 });
+el.view.colorScheme = 3;
 ```
 
-For dynamically-created elements, **attach the `ready` listener before `appendChild`** — `connectedCallback` fires synchronously on append, and the build can complete before a later-attached listener sees the event:
+The Promise is created in the element's constructor, so it works regardless of when you read it — including for dynamically-created elements:
 
 ```js
 const g = document.createElement('bz-graph');
 g.setAttribute('edges', 'data/karate.edges');
-g.addEventListener('ready', () => { /* ... */ });   // BEFORE append
 document.body.appendChild(g);
+await g.ready;
+await g.addNodes(batch);
 ```
+
+No listener-vs-append ordering to worry about. The Promise rejects if the build fails.
+
+The legacy `addEventListener('ready', ...)` still works for static-HTML callers who prefer the event shape. After a `_reload` (e.g. file drop), `g.ready` is replaced with a fresh pending Promise tracking the new build.
 
 ### Companion components
 
@@ -140,21 +144,21 @@ Add, remove, and update nodes at runtime. Use `incremental` attribute for stable
 ```html
 <bz-graph id="g" edges="data/base.edges" nodes="data/base.nodes" incremental>
 </bz-graph>
-<script>
+<script type="module">
   const g = document.getElementById('g');
-  g.addEventListener('ready', async () => {
-    // Add nodes + edges
-    await g.addNodes(
-      [{id: 'n1', group: 'analyst'}, {id: 'n2', group: 'admin'}],
-      [{src: 'n1', dst: 'n2'}]
-    );
+  await g.ready;
 
-    // Update properties (only changed nodes re-projected)
-    await g.updateNodes([{id: 'n1', group: 'manager'}]);
+  // Add nodes + edges
+  await g.addNodes(
+    [{id: 'n1', group: 'analyst'}, {id: 'n2', group: 'admin'}],
+    [{src: 'n1', dst: 'n2'}]
+  );
 
-    // Remove by ID (edges cleaned up automatically)
-    await g.removeNodes(['n2']);
-  });
+  // Update properties (only changed nodes re-projected)
+  await g.updateNodes([{id: 'n1', group: 'manager'}]);
+
+  // Remove by ID (edges cleaned up automatically)
+  await g.removeNodes(['n2']);
 </script>
 ```
 
@@ -165,7 +169,27 @@ All three methods:
 
 ### Streaming large datasets
 
-For graphs that grow from a small seed to tens or hundreds of thousands of nodes via repeated `addNodes` calls, set the `incremental` attribute and follow this pattern:
+For graphs that grow to tens or hundreds of thousands of nodes via repeated `addNodes` calls, set the `incremental` attribute. Two patterns:
+
+**No-seed (recommended for pure streaming):** declare `<bz-graph>` with no inline data. The canvas builds empty; the first `addNodes` call bootstraps the property-group schema from that batch's fields and applies any user-set strengths to the new groups.
+
+```html
+<bz-graph id="g" incremental level="4" legend strengths="category:5,block:8">
+</bz-graph>
+<script type="module">
+  const g = document.getElementById('g');
+  await g.ready;
+  const BATCH_SIZE = 2000;
+  for (let i = 0; i < allNodes.length; i += BATCH_SIZE) {
+    const batch = allNodes.slice(i, i + BATCH_SIZE);
+    await g.addNodes(batch, [], { animate: false });
+    g.view.showProgress(`Streaming... ${i + batch.length} / ${allNodes.length}`);
+  }
+  g.view.showProgress(null);
+</script>
+```
+
+**Seeded (when you have a meaningful starting set):** include a `<script type="application/json">` with the seed. The schema is derived from the seed nodes' fields.
 
 ```html
 <bz-graph id="g" incremental level="4" legend strengths="category:5">
@@ -175,16 +199,15 @@ For graphs that grow from a small seed to tens or hundreds of thousands of nodes
 </bz-graph>
 <script type="module">
   const g = document.getElementById('g');
-  g.addEventListener('ready', async () => {
-    const BATCH_SIZE = 2000;
-    for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
-      const batch = remaining.slice(i, i + BATCH_SIZE);
-      const batchEdges = edgesFor(batch);
-      await g.addNodes(batch, batchEdges, { animate: false });
-      g.view.showProgress(`Streaming... ${i + batch.length} / ${remaining.length}`);
-    }
-    g.view.showProgress(null);
-  });
+  await g.ready;
+  const BATCH_SIZE = 2000;
+  for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
+    const batch = remaining.slice(i, i + BATCH_SIZE);
+    const batchEdges = edgesFor(batch);
+    await g.addNodes(batch, batchEdges, { animate: false });
+    g.view.showProgress(`Streaming... ${i + batch.length} / ${remaining.length}`);
+  }
+  g.view.showProgress(null);
 </script>
 ```
 
@@ -194,9 +217,9 @@ Things to know about streaming:
 - **Auto-tune is suppressed under `incremental`** — auto-tune would shift positions, defeating the point. Tune your `strengths` manually upfront, or load a small representative seed, run auto-tune once outside `incremental` mode to read the result, then use those values in your streaming page.
 - **Batch size: 1K–5K nodes per `addNodes` call** is the sweet spot. Smaller batches add per-call overhead; larger batches block the renderer for too long per blend.
 - **`{ animate: false }` is required for streaming** — animation queues up across batches and stutters. Use snap-update for any batch loop.
-- **`await` between batches** — `await g.addNodes(...)` serializes mutations and yields control to the renderer between blends. Don't fire-and-forget: concurrent calls queue, but you lose backpressure.
+- **`await` between batches** — `await g.addNodes(...)` waits for the blend *and* one paint frame, so the streaming loop is naturally rate-limited to the display refresh and progress is visible without any manual yield. Don't fire-and-forget — concurrent calls queue, but you lose backpressure.
 - **Progress display:** call `g.view.showProgress(text)` and `g.view.showProgress(null)` to clear. No need to invent your own status DOM.
-- **Property-group extension:** new categorical values for an existing property group (e.g. a new `category` value appearing in batch 30) extend the value set without shifting existing nodes — the per-node projection is deterministic. **New property groups not present in the seed** are not added by `addNodes`; include at least one example of every property group in the seed.
+- **Property-group extension:** new categorical values for an existing property group (e.g. a new `category` value appearing in batch 30) extend the value set without shifting existing nodes — the per-node projection is deterministic. **New property groups not present in the first batch** are not added later; if the graph starts empty, the first `addNodes` call bootstraps the schema from that batch's fields and locks it in. If you have a seed (`<script type="application/json">`), the schema is derived from the seed instead. Either way, **include at least one representative node containing every field you'll need** in the first set of nodes the canvas sees.
 - **Override the threshold if you really want periodic rebuilds:** the preset disables them by default, but you can pass `rebuild-threshold="0.5"` alongside `incremental` to opt back in. This is rarely useful for streaming workloads.
 
 ### Quantization modes

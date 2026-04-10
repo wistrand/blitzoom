@@ -22,21 +22,31 @@ docs/                    Web application (ES modules, served by Deno)
   viewer.html              Viewer HTML shell — header, loader, canvas, sidebar, detail panel
   about.html               How It Works — interactive explainer with embedded demos
   howto.html               Developer Guide — embedding API, data format, examples
-  example.html             Minimal example — two embedded graphs (SNAP + inline)
+  comparison.html          Layout algorithm comparison page
+  webgl.html               WebGL Rendering feature page
+  webgpu.html              WebGPU Acceleration feature page
   blitzoom.css              Styles — dark theme, responsive, loader, detail panel overlay
   blitzoom-algo.js          Pure algorithm functions and constants (no DOM)
   blitzoom-pipeline.js      SNAP parsers, buildGraph, runPipeline(GPU), runPipelineFromObjects(GPU)
   blitzoom-parsers.js       Format adapters — CSV, D3 JSON, JGF, GraphML, GEXF, Cytoscape, STIX dispatcher
   blitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing (no state mutation)
-  blitzoom-gl-renderer.js   WebGL2 instanced renderer — 7 shader programs (~1202 lines)
+  blitzoom-gl-renderer.js   WebGL2 instanced renderer — 7 shader programs
   blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, event hub
   blitzoom-viewer.js        BlitZoom app (composes BlitZoomCanvas) — UI, workers, data loading, drop zones
   blitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
-  stix2snap.js             STIX 2.1 → object pipeline (parseSTIX, browser-compatible)
+  stix2snap.js              STIX 2.1 → object pipeline (parseSTIX, browser-compatible)
   blitzoom-svg.js           SVG export — exportSVG(bz, opts) + createSVGView() headless factory
   blitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
   blitzoom-proj-worker.js   Web Worker — imports from algo+pipeline, computes projections
-  webgl-test.html          Side-by-side Canvas 2D vs WebGL2 visual comparison
+
+docs/demo/                 Standalone demo and test pages
+  example.html             Minimal example — two embedded graphs (SNAP + inline)
+  bz-graph-demo.html       <bz-graph> + <bz-compass> + <bz-controls> declarative-binding examples
+  incremental-api-demo.html Side-by-side Gaussian vs Norm incremental insertion demo
+  unicode-incremental.html  Streaming demo — all assigned Unicode codepoints loaded via addNodes batches
+  bundle-test.html          Smoke test for the dist bundle
+  gpu-test.html             GPU vs CPU side-by-side visual comparison
+  webgl-test.html           Side-by-side Canvas 2D vs WebGL2 visual comparison
 
 tests/pipeline_test.ts     172 Deno tests: algo, pipeline, numeric, undefined, E2E, SVG, parsers, format dispatch, auto-tune
 
@@ -400,12 +410,13 @@ All three are also available on `<bz-graph>`.
 
 ### addNodes Pipeline
 
-1. **Project** each new node on the fly via `projectNode()` — uses cached `numericBins` and `groupProjections` from initial load. O(K) per node per group.
+0. **Bootstrap empty graph** (only on first add to a graph with `view.nodes.length === 0 && view._extraPropNames.length === 0`) — `bootstrapEmptyGraph(view, newNodes)` derives `_extraPropNames` from the **first batch's fields** (excluding `id`/`group`/`label`), extends `groupNames`, builds projection matrices for the new groups (deterministic seeds at `PROJECTION_SEED_BASE + index`), computes `_numericBins` from the batch, applies factory-style strength defaults if the user hasn't already set strengths, and resets `_originalN` to the bootstrap batch size. **Schema is fixed at this point**: property keys not present in the first batch are silently dropped on subsequent batches. For schemas where every node has the same fields (the typical case) this is invisible; if you'll need a field later, include at least one representative node in the first batch.
+1. **Project** each new node on the fly via `projectNode()` — uses cached `numericBins` and `groupProjections` from initial load (or bootstrap). O(K) per node per group.
 2. **Register** — append to `nodes`, `nodeIndexFull`, `adjList`. Update degrees for new edges.
 3. **Extend color maps** — only generate colors for new property values; existing value→color mappings are never changed (stable colors across insertions).
 4. **Blend + quantize** — re-run `unifiedBlend` on the full (now larger) node array.
 5. **Animate** — lerp existing supernodes/nodes from old to new positions, fade in new items.
-6. **Periodic rebuild** — when cumulative inserts exceed 10% of original N, `_fullRebuild()` re-runs `computeProjections` on all nodes to refresh stale numeric bins and topology tokens.
+6. **Periodic rebuild** — when cumulative inserts exceed `_rebuildThreshold × _originalN`, `_fullRebuild()` re-runs `computeProjections` on all nodes to refresh stale numeric bins and topology tokens. The `incremental` preset disables this entirely (`Infinity`).
 
 ### removeNodes Pipeline
 
@@ -454,6 +465,8 @@ Tradeoff: norm mode has ~5-30% worse grid utilization than gaussian on datasets 
 ```
 
 The `incremental` attribute is a bundled preset (see `applyIncrementalPreset` in [blitzoom-factory.js](../docs/blitzoom-factory.js)) that sets `quantMode='norm'`, `rebuildThreshold=Infinity` (no periodic rebuild), and `autoTune=false`. Each setting can be overridden by passing it explicitly via the matching attribute (`quant=`, `rebuild-threshold=`) — the user value wins per-field while the rest of the preset still applies. Equivalent JS option: `{ incremental: true }` on `createBlitZoomView` / `createBlitZoomFromGraph`.
+
+**Empty graphs**: `<bz-graph>` with no `edges` URL and no inline data (no `<script type="application/json">` child, no raw text content) builds an empty canvas via `createBlitZoomFromGraph(canvas, [], [], opts)`. Strengths and other attributes are stored on the canvas at construction time even though no nodes exist yet. The first `addNodes` call into the empty graph runs the bootstrap step (see addNodes Pipeline above) to derive the property-group schema from the incoming nodes. Useful when the graph is populated entirely via streaming with no static seed.
 
 ### Concurrency
 

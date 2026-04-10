@@ -19,12 +19,12 @@
 <canvas id="c2"></canvas>
 
 <script type="module">
-import { createBlitZoomView, createBlitZoomFromGraph } from './blitzoom.js';
+import { createBlitZoomView, createBlitZoomFromGraph } from '../blitzoom.js';
 
 // Graph 1: load from SNAP files
 const [edges, nodes] = await Promise.all([
-  fetch('data/epstein.edges').then(r => r.text()),
-  fetch('data/epstein.nodes').then(r => r.text()),
+  fetch('../data/epstein.edges').then(r => r.text()),
+  fetch('../data/epstein.nodes').then(r => r.text()),
 ]);
 createBlitZoomView(document.getElementById('c1'), edges, nodes, {
   initialLevel: 3, edgeMode: 'lines', heatmapMode: 'density', showLegend: true,
