@@ -16,6 +16,7 @@ import {
 } from "../docs/blitzoom-pipeline.js";
 import { parseCSV, csvRowsToNodes, parseCSVToNodes, parseD3, parseJGF, parseXML, parseGraphML, parseGEXF, parseCytoscape, detectFormat, parseAny, isObjectFormat, isTextFormat, isSpecialFormat, OBJECT_FORMATS, FILE_EXTENSIONS, FILE_ACCEPT_ATTR } from "../docs/blitzoom-parsers.js";
 import { runPipelineFromObjects } from "../docs/blitzoom-pipeline.js";
+import { applyIncrementalPreset } from "../docs/blitzoom-factory.js";
 
 // ─── Unit tests: blitzoom-algo.js ─────────────────────────────────────────────
 
@@ -1872,6 +1873,60 @@ Deno.test("normQuantize: gaussian mode DOES shift on insertion (control test)", 
     if (allNodes[i].gx !== savedGx[i]) displaced++;
   }
   assert(displaced > 0, `Gaussian should displace some nodes when data is added, but 0/${firstHalf.length} moved`);
+});
+
+// ─── applyIncrementalPreset ────────────────────────────────────────────────
+
+Deno.test("applyIncrementalPreset: no incremental flag is a passthrough", () => {
+  const opts = { strengths: { group: 5 }, smoothAlpha: 0.3 };
+  const out = applyIncrementalPreset(opts);
+  assertEquals(out, opts);
+});
+
+Deno.test("applyIncrementalPreset: handles undefined/null opts", () => {
+  assertEquals(applyIncrementalPreset(undefined as any), {});
+  assertEquals(applyIncrementalPreset(null as any), {});
+});
+
+Deno.test("applyIncrementalPreset: incremental=true sets norm + Infinity threshold + autoTune off", () => {
+  const out = applyIncrementalPreset({ incremental: true });
+  assertEquals(out.quantMode, 'norm');
+  assertEquals(out.rebuildThreshold, Infinity);
+  assertEquals(out.autoTune, false);
+  assertEquals(out.incremental, true);
+});
+
+Deno.test("applyIncrementalPreset: explicit quantMode overrides preset", () => {
+  const out = applyIncrementalPreset({ incremental: true, quantMode: 'rank' });
+  assertEquals(out.quantMode, 'rank');
+  // Other preset defaults still apply
+  assertEquals(out.rebuildThreshold, Infinity);
+  assertEquals(out.autoTune, false);
+});
+
+Deno.test("applyIncrementalPreset: explicit rebuildThreshold overrides preset", () => {
+  const out = applyIncrementalPreset({ incremental: true, rebuildThreshold: 0.5 });
+  assertEquals(out.rebuildThreshold, 0.5);
+  // Other preset defaults still apply
+  assertEquals(out.quantMode, 'norm');
+  assertEquals(out.autoTune, false);
+});
+
+Deno.test("applyIncrementalPreset: explicit autoTune overrides preset", () => {
+  const tune = { strengths: true, alpha: true };
+  const out = applyIncrementalPreset({ incremental: true, autoTune: tune });
+  assertEquals(out.autoTune, tune);
+  // Other preset defaults still apply
+  assertEquals(out.quantMode, 'norm');
+  assertEquals(out.rebuildThreshold, Infinity);
+});
+
+Deno.test("applyIncrementalPreset: legacy quantMode='norm' without incremental keeps default threshold", () => {
+  const out = applyIncrementalPreset({ quantMode: 'norm' });
+  assertEquals(out.quantMode, 'norm');
+  assertEquals(out.rebuildThreshold, undefined); // canvas constructor will default to 0.10
+  assertEquals(out.autoTune, undefined);          // factory will skip the autoTune block
+  assertEquals(out.incremental, undefined);
 });
 
 // ─── Statistical MinHash accuracy ─────────────────────────────────────────────

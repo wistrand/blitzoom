@@ -159,10 +159,6 @@ class BzGraph extends HTMLElement {
     if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
     if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
 
-    // Apply custom rebuild threshold
-    const rt = this.getAttribute('rebuild-threshold');
-    if (rt && this._view) this._view._rebuildThreshold = parseFloat(rt) || 0.10;
-
     this.dispatchEvent(new Event('ready'));
     this._flushPendingAdds();
   }
@@ -179,7 +175,7 @@ class BzGraph extends HTMLElement {
     this.removeAttribute('alpha');
     this.removeAttribute('quant');
     const opts = this._buildOpts();
-    opts.autoTune = { strengths: true, alpha: true };
+    if (!opts.incremental) opts.autoTune = { strengths: true, alpha: true };
 
     if (parsed) {
       // Object pipeline: CSV, D3, JGF, GraphML, GEXF, Cytoscape, STIX, bare JSON, nodes-only
@@ -197,8 +193,6 @@ class BzGraph extends HTMLElement {
 
     if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
     if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
-    const rt = this.getAttribute('rebuild-threshold');
-    if (rt && this._view) this._view._rebuildThreshold = parseFloat(rt) || 0.10;
     this.dispatchEvent(new Event('ready'));
     this._flushPendingAdds();
   }
@@ -460,8 +454,12 @@ class BzGraph extends HTMLElement {
     if (this.hasAttribute('reset-btn')) opts.showResetBtn = true;
     if (this.hasAttribute('light-mode')) opts.lightMode = true;
     if (this.hasAttribute('size-log')) opts.sizeLog = true;
-    // incremental attribute implies norm quantization (unless explicit quant attribute overrides)
-    if (this.hasAttribute('incremental') && !this.hasAttribute('quant')) opts.quantMode = 'norm';
+    // `incremental` attribute → factory preset (norm quant + no rebuild + no auto-tune).
+    // Explicit `quant=` and `rebuild-threshold=` attributes still override the preset
+    // because applyIncrementalPreset spreads user opts last.
+    if (this.hasAttribute('incremental')) opts.incremental = true;
+    const rt = this.getAttribute('rebuild-threshold');
+    if (rt) opts.rebuildThreshold = parseFloat(rt) || 0.10;
     return opts;
   }
 

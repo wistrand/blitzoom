@@ -453,7 +453,7 @@ Tradeoff: norm mode has ~5-30% worse grid utilization than gaussian on datasets 
 </script>
 ```
 
-The `incremental` attribute sets `quantMode: 'norm'` automatically. `rebuild-threshold` attribute configures the periodic rebuild fraction (default 0.10).
+The `incremental` attribute is a bundled preset (see `applyIncrementalPreset` in [blitzoom-factory.js](../docs/blitzoom-factory.js)) that sets `quantMode='norm'`, `rebuildThreshold=Infinity` (no periodic rebuild), and `autoTune=false`. Each setting can be overridden by passing it explicitly via the matching attribute (`quant=`, `rebuild-threshold=`) — the user value wins per-field while the rest of the preset still applies. Equivalent JS option: `{ incremental: true }` on `createBlitZoomView` / `createBlitZoomFromGraph`.
 
 ### Concurrency
 

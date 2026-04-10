@@ -74,7 +74,8 @@ export class BlitZoomCanvas {
     this._extraPropNames = opts._extraPropNames || [];
     this._insertsSinceRebuild = 0;
     this._originalN = this.nodes.length;
-    this._rebuildThreshold = 0.10; // trigger full rebuild after 10% growth
+    this._rebuildThreshold = opts.rebuildThreshold ?? 0.10; // trigger full rebuild after 10% growth (Infinity to disable)
+    this.incremental = !!opts.incremental; // public marker — true if the factory's incremental preset was applied
     this._addNodesQueue = null;    // queued addNodes call while one is in progress
     this._addNodesRunning = false; // true while addNodes is executing
     this._animRaf = null;          // rAF handle for in-flight addNodes animation
