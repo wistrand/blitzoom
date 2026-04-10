@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlitZoom — Demos</title>
+<link rel="icon" href="../logo.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent3: #6af7c8;
+    --text: #c8c8d8;
+    --text-bright: #eeeef8;
+    --text-dim: #8888a0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-bright);
+    margin: 32px 0 8px;
+  }
+  h1 span { color: var(--accent); }
+  .lede {
+    color: var(--text-dim);
+    font-size: 13px;
+    max-width: 640px;
+    margin: 0 0 32px;
+  }
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .group-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 36px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    display: block;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  .card:hover .card-title { color: var(--accent); }
+  .card-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 9px;
+    color: var(--accent3);
+    border: 1px solid var(--accent3);
+    border-radius: 3px;
+    padding: 0 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+    opacity: 0.7;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<header style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.08);font:11px 'JetBrains Mono',monospace">
+  <a href="../index.html" style="color:#7c6af7;text-decoration:none">← BlitZoom</a>
+</header>
+
+<div class="container">
+  <h1>Blit<span>Zoom</span> Demos</h1>
+  <p class="lede">
+    Standalone pages exercising specific BlitZoom features and integration patterns.
+    Each demo is self-contained — open in a browser, no build step.
+  </p>
+
+  <div class="group-title">Embedding examples</div>
+  <div class="grid">
+    <a class="card" href="example.html">
+      <div class="card-title">Minimal example</div>
+      <div class="card-desc">Two graphs side by side: one loaded from SNAP files via <code>createBlitZoomView</code>, one built from inline JS objects via <code>createBlitZoomFromGraph</code>. The smallest possible embedding.</div>
+    </a>
+    <a class="card" href="bz-graph-demo.html">
+      <div class="card-title">&lt;bz-graph&gt; web component</div>
+      <div class="card-desc">Declarative HTML examples: graphs paired with <code>&lt;bz-compass&gt;</code> for radial controls, <code>&lt;bz-controls&gt;</code> for slider panels, and inline JSON via <code>&lt;script type="application/json"&gt;</code>.</div>
+    </a>
+    <a class="card" href="bundle-test.html">
+      <div class="card-title">Bundle smoke test <span class="card-tag">test</span></div>
+      <div class="card-desc">Loads the minified single-file <code>dist/blitzoom.bundle.js</code> and exercises <code>&lt;bz-graph&gt;</code>, inline JSON, WebGL, WebGPU, and the programmatic <code>createBlitZoomView</code> API from one bundle import.</div>
+    </a>
+  </div>
+
+  <div class="group-title">API and feature demos</div>
+  <div class="grid">
+    <a class="card" href="incremental-api-demo.html">
+      <div class="card-title">Incremental API: Gaussian vs Norm</div>
+      <div class="card-desc">Side-by-side comparison of <code>quantMode: 'gaussian'</code> and <code>quantMode: 'norm'</code> as nodes are added in batches via <code>addNodes</code>. Watch how Gaussian shifts existing nodes while Norm keeps them stable.</div>
+    </a>
+    <a class="card" href="unicode-incremental.html">
+      <div class="card-title">All Unicode characters streamed</div>
+      <div class="card-desc">Empty <code>&lt;bz-graph incremental&gt;</code> populated by streaming all ~150 000 assigned Unicode codepoints in batches. Demonstrates the empty-graph bootstrap, schema discovery from the first batch, and per-frame visible streaming.</div>
+    </a>
+  </div>
+
+  <div class="group-title">Rendering / compute comparisons</div>
+  <div class="grid">
+    <a class="card" href="webgl-test.html">
+      <div class="card-title">Canvas 2D vs WebGL <span class="card-tag">test</span></div>
+      <div class="card-desc">Same datasets rendered side by side using Canvas 2D and WebGL2. Verifies that both renderers produce visually equivalent results across grid, edges, heatmap, and circle layers.</div>
+    </a>
+    <a class="card" href="gpu-test.html">
+      <div class="card-title">CPU vs GPU compute <span class="card-tag">test</span></div>
+      <div class="card-desc">Same datasets projected and blended on CPU (float64) and GPU (float32 via WebGPU compute) side by side. Cluster structure matches; small precision differences may shift rank quantization sort order for tightly packed nodes.</div>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

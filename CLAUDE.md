@@ -16,7 +16,9 @@ BlitZoom is a deterministic layout and hierarchical aggregation viewer for large
 
 ```sh
 deno task serve       # dev server at http://localhost:8000
-deno task test        # run pipeline tests (177 tests)
+deno task test        # run pipeline + import-cycle tests (192 tests)
+deno task bundle      # build docs/dist/blitzoom.bundle.js (minified)
+deno task skill:zip   # zip docs/skills/blitzoom/ → docs/skills/blitzoom.zip
 deno task stix2snap   # STIX 2.1 JSON → SNAP converter
 deno task csv2snap    # OpenCTI CSV → SNAP converter
 deno task src2snap    # source code → SNAP call graph
@@ -25,57 +27,18 @@ deno task src2snap    # source code → SNAP call graph
 ## File Structure
 
 ```
-docs/                    Web app (ES modules, no build step)
-  index.html               Landing page with live demo
-  viewer.html              Viewer HTML shell
-  about.html               How It Works page
-  howto.html               Developer Guide
-  comparison.html          Layout algorithm comparison page
-  webgl.html               WebGL Rendering feature page
-  webgpu.html              WebGPU Acceleration feature page
-  blitzoom.css              Styles
-  blitzoom-algo.js          Pure algorithm functions, constants, normQuantize
-  blitzoom-pipeline.js      SNAP parsers, buildGraph, runPipeline(GPU), projectNode, computeNumericBins, computeAdjGroups
-  blitzoom-parsers.js       Format adapters — CSV, D3 JSON, JGF, GraphML, GEXF, Cytoscape; parseAny dispatcher, readFileText, classifyFiles
-  stix2snap.js              STIX 2.1 bundle parser (parseSTIX, browser-compatible)
-  blitzoom-renderer.js      Canvas 2D rendering, heatmaps, hit testing, FPS counter
-  blitzoom-gl-renderer.js   WebGL2 rendering — shaders, instanced draw, GPU heatmap
-  blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, statechange/blend events
-  blitzoom-mutations.js     Incremental graph mutations — addNodes, removeNodes, updateNodes, fullRebuild, animation, bootstrapEmptyGraph
-  blitzoom-factory.js       Factory functions — createBlitZoomView, createBlitZoomFromGraph, applyIncrementalPreset, hydrateAndLink
-  blitzoom-viewer.js        BlitZoom app (composes BlitZoomCanvas) — UI, workers, data loading, <bz-controls> sidebar, compass panel, auto-tune-on-load
-  blitzoom-utils.js         Auto-tune optimizer — dual-pass search, bearing autotune, portable async, memoization
-  blitzoom-svg.js           SVG export — exportSVG(bz, opts), createSVGView() for headless
-  blitzoom-colors.js        Color schemes (vivid, viridis, plasma, etc.)
-  blitzoom-gpu.js           WebGPU compute acceleration
-  blitzoom-worker.js        Web Worker coordinator
-  blitzoom-proj-worker.js   Web Worker projection
-  bz-graph.js               <bz-graph> web component — data loading, drop zone, addNodes/removeNodes/updateNodes, incremental attribute, ready Promise
-  bz-compass.js             <bz-compass> web component — radial strength/bearing/alpha control, colorBy label click
-  bz-controls.js            <bz-controls> web component — strength sliders + bearing dials + label checkboxes
-  blitzoom.js               Public API entrypoint (re-exports createBlitZoomView, exportSVG, createSVGView, autoTuneStrengths, projectNode, etc.)
-
-docs/demo/                 Standalone demo and test pages
-  example.html             Minimal example — two graphs (SNAP + inline), linked from developer guide
-  bz-graph-demo.html       Web component demo — <bz-graph> + <bz-compass> + <bz-controls> examples
-  incremental-api-demo.html Side-by-side Gaussian vs Norm incremental insertion demo (uses real addNodes API)
-  unicode-incremental.html  Streaming demo — all assigned Unicode codepoints loaded via addNodes batches
-  bundle-test.html          Smoke test for the dist bundle
-  gpu-test.html             GPU vs CPU side-by-side visual comparison
-  webgl-test.html           Side-by-side Canvas 2D vs WebGL2 comparison
-
-docs/dist/                 Bundled distribution
-  blitzoom.bundle.js        Minified single-file bundle (~98KB, gzipped). Build: `deno task bundle`
-
-docs/data/                 SNAP datasets + D3/JGF/GEXF/GraphML/Cytoscape/CSV samples, STIX bundles (.gz where large)
-benchmarks/                Layout comparison suite (export, compare, Docker runner)
-tests/pipeline_test.ts     177 tests: algo unit, pipeline, numeric, undefined, E2E, SVG, parsers, format dispatch, bearings
-scripts/
-  serve.ts                 Deno HTTP server (no-cache headers)
-  stix2snap.ts             STIX 2.1 → SNAP converter (extracts platforms, kill chains)
-  csv2snap.ts              OpenCTI CSV → SNAP converter (Jaccard co-reference edges)
-  src2snap.ts              Source code → SNAP call graph (functions, methods, calls)
+docs/             Web app (ES modules, no build step). Core JS modules, page HTML, styles.
+docs/demo/        Standalone demo and test pages with their own back-link header.
+docs/dist/        Bundled distribution — single minified blitzoom.bundle.js. Build: `deno task bundle`.
+docs/data/        SNAP datasets + D3/JGF/GEXF/GraphML/Cytoscape/CSV samples, STIX bundles (.gz where large).
+docs/skills/      Claude Code skill source — `blitzoom/SKILL.md`, plus reference docs. Build: `deno task skill:zip`.
+agent_docs/       Architecture, plans, and design notes for agent reference.
+benchmarks/       Layout comparison suite (export, compare, Docker runner).
+tests/            Deno tests — pipeline, GPU, ground truth, import-cycle DAG enforcement.
+scripts/          Standalone Deno scripts — serve, stix2snap, csv2snap, src2snap.
 ```
+
+The full per-file module list, layer assignments, and dependency graph live in [agent_docs/ARCHITECTURE.md](agent_docs/ARCHITECTURE.md) "Module System". The static import DAG invariant is enforced by [tests/import_cycle_test.ts](tests/import_cycle_test.ts).
 
 ## Data Formats
 
@@ -100,39 +63,7 @@ Drop any of these files onto the canvas or loader panel, or load them via URL �
 
 ## Datasets
 
-**SNAP pairs** (curated with presets in `datasets.json`):
-
-| Name            | Nodes | Edges  | Properties                            |
-| --------------- | ----- | ------ | ------------------------------------- |
-| Karate Club     | 34    | 78     | group                                 |
-| Epstein         | 364   | 534    | group, edge types                     |
-| BlitZoom Source | 966   | 2,609  | kind, file, lines, bytes, age         |
-| Marvel Comics   | 327   | —      | alignment, gender, alive, eye, hair   |
-| Porsche         | 297   | —      | body, drivetrain, weight, generation  |
-| Pokemon         | 959   | —      | type1, type2, generation, stats       |
-| Vadonland       | 512   | —      | government, type, biome, religion     |
-| Synth Packages  | 2,000 | 4,044  | downloads, license, version, depcount |
-| MITRE ATT&CK    | 4,736 | 25,856 | kill chain, platforms, aliases        |
-| Ransomware      | 27K   | —      | group, year, raas, victims, sector    |
-| Email EU        | 1,005 | 25,571 | (edge-only)                           |
-| Facebook        | 4,039 | 88,234 | (edge-only)                           |
-| Power Grid      | 4,941 | 6,594  | (edge-only)                           |
-| Amazon          | 367K  | 988K   | product category                      |
-
-**Object-pipeline samples**:
-
-| File                  | Format    | Nodes | Notes                                |
-| --------------------- | --------- | ----- | ------------------------------------ |
-| miserables.json       | D3 JSON   | 77    | Canonical Mike Bostock D3 example    |
-| miserables.jgf.json   | JGF v1    | 77    | Dict-form `graph.nodes`              |
-| miserables.gexf       | GEXF      | 74    | Gender attribute                     |
-| miserables.cyjs.json  | Cytoscape | 77    | Grouped form                         |
-| karate.graphml        | GraphML   | 34    | Faction attribute                    |
-| graphml-sample.xml    | GraphML   | 6     | Prefuse canonical example            |
-| penguins.csv          | CSV       | 344   | Palmer Penguins with species/sex     |
-| titanic.csv           | CSV       | 891   | Titanic passengers — class, sex, age |
-| ics-attack.json.gz    | STIX 2.1  | 464   | MITRE ATT&CK for ICS                 |
-| mobile-attack.json.gz | STIX 2.1  | 738   | MITRE ATT&CK for Mobile              |
+The curated dataset list with presets, paths, and node/edge counts lives in [docs/datasets.json](docs/datasets.json). Sample data files (SNAP pairs + D3/JGF/GraphML/GEXF/Cytoscape/STIX/CSV) live under [docs/data/](docs/data/). Notable scale points used in testing and demos: Karate Club (34 nodes, smallest), Epstein (364 nodes, mid), BlitZoom Source (~1K nodes, MITRE ATT&CK (~5K), Facebook (4K nodes / 88K edges, dense), Amazon co-purchase (367K nodes / 988K edges, largest tested).
 
 ## Key Design Decisions
 
@@ -204,3 +135,17 @@ Drop any of these files onto the canvas or loader panel, or load them via URL �
 
 - **Use markdown links** for file references: `[doc.md](path/to/doc.md)` not `` `path/to/doc.md` ``
 - **Align table columns** by padding cells to consistent widths
+- **After editing any file under `docs/skills/blitzoom/`, run `deno task skill:zip`** to refresh `docs/skills/blitzoom.zip`. The zip is what users download from the developer guide; if it's stale, the download silently ships old content.
+- **No AI-isms.** Avoid the phrasing patterns that mark text as AI-generated. Specifically:
+  - **No empty superlatives** as openers: "The fastest way to…", "The best way to…", "Effortlessly…", "Seamlessly…". They claim nothing falsifiable and signal marketing copy.
+  - **No three-beat punchy cadences** with a one-word kicker: "One import, one function call, done." "Simple, fast, reliable." Cadence-as-substitute-for-content reads as machine-written.
+  - **No filler preamble between a heading and the action it introduces.** A reader who clicked "Quick Start" already knows what the section is for. Going straight from `## Quick Start` to the buttons or code is better than a sentence describing what's coming. If a sentence carries no information beyond the heading, delete it.
+  - **No "let's", "we'll", "you'll find that", "it's worth noting that"**, or other filler-conversational openers. If something is worth noting, write the note. If the reader needs context to understand what follows, give the context as a fact, not as an announcement that context is coming.
+  - **No hedging adjectives**: "powerful", "robust", "elegant", "intuitive", "modern", "state-of-the-art". They're claims with no evidence and no measurable content.
+  - **Prefer concrete numbers and specific verbs over adjectives.** "Renders 367 000 nodes in a browser tab" beats "extremely fast at scale". "Re-projects only the changed nodes" beats "smart and efficient".
+  - **Don't summarize what you're about to say.** A paragraph that opens with "This section covers X, Y, and Z" is wasting space — the reader will see X, Y, and Z below. The same applies to bulleted lists and code blocks: don't precede them with a one-line "here's what's in this list".
+  - **Strip "make sure to", "be sure that", "remember to".** If a step is required, write it as a step. The instructional padding adds nothing.
+
+## Tooling
+
+- **Stick to basic git and `gh` commands.** Do not rely on advanced features: no `git rebase -i`, no `git filter-branch`, no `git worktree`, no `git submodule`, no `git reflog` recovery flows, no `gh api graphql` calls, no complex `gh` aliases, no shelling into `.git/` internals. The portable subset is `status`, `diff`, `log`, `add`, `commit`, `push`, `pull`, `checkout`, `branch`, `merge`, `stash`, plus the basic `gh pr`/`gh issue` commands. Anything beyond that is probably the wrong solution to whatever you're trying to do — ask the user instead. The reasons: advanced features have edge cases that depend on repo state, they're harder to undo when something goes wrong, and they make the action log harder for the user to follow.

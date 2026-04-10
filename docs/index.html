@@ -249,11 +249,11 @@
     </div>
     <div class="prop">
       <div class="prop-title">Instant zoom</div>
-      <div class="prop-desc">14 aggregation levels from 4 stored bytes per node. Bit shifts, not recomputation.</div>
+      <div class="prop-desc">14 aggregation levels derived from each node's 4-byte grid coordinate. Level changes are 2-bit shifts on the cell ID, not a re-layout.</div>
     </div>
     <div class="prop">
       <div class="prop-title">Interactive tuning</div>
-      <div class="prop-desc">Adjust property strengths and topology influence in real-time. No rehashing, no reprojection.</div>
+      <div class="prop-desc">Adjust property strengths and topology influence in real-time. The blend is a weighted sum of 2D anchors that were computed once at load time.</div>
     </div>
   </div>
 

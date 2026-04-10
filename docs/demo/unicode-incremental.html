@@ -26,19 +26,50 @@
       border-radius: 12px;
       overflow: hidden;
     }
+    .panel-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 12px;
+    }
+    .panel-row bz-compass {
+      flex-shrink: 0;
+      width: 240px;
+      height: 240px;
+      background: #111118;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+    .panel-row bz-controls {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      background: #111118;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
+  <header style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.08);font:11px 'JetBrains Mono',monospace;align-self:stretch;margin:-1rem -1rem 1rem">
+    <a href="../index.html" style="color:#7c6af7;text-decoration:none">← BlitZoom</a>
+  </header>
   <h1>All Unicode Characters (Incremental)</h1>
   <p class="subtitle">Streamed in batches via addNodes(). Stable layout via the incremental preset.</p>
   <script type="module" src="../blitzoom.js"></script>
+  <script type="module" src="../bz-compass.js"></script>
   <script type="module" src="../bz-controls.js"></script>
 
   <bz-graph id="g" level="6" legend label-props="label,block" color-by="block"
             strengths="category:6,block:8" heatmap="density" incremental
             label-font='{"topHL":22,"bottomHL":11,"top":12,"bottom":10}'>
   </bz-graph>
-  <bz-controls for="g" checkboxes></bz-controls>
+  <div class="panel-row">
+    <bz-compass for="g"></bz-compass>
+    <bz-controls for="g" checkboxes></bz-controls>
+  </div>
 
   <script type="module">
 

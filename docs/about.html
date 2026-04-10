@@ -706,7 +706,7 @@
 <div class="fig-caption">The &alpha; parameter controls the balance between property similarity and topology. High &alpha; causes oversmoothing.</div>
 </div>
 
-<p>Because the blend is a <strong>convex combination of fixed anchors</strong>, changing a strength smoothly moves nodes along predictable paths. No rehashing, no reprojection. Just arithmetic.</p>
+<p>Because the blend is a <strong>convex combination of fixed anchors</strong>, changing a strength smoothly moves nodes along predictable paths. The new positions are a weighted sum of vectors that were computed once at load time — the MinHash signatures and per-group projections are never recomputed.</p>
 
 <!-- Synthetic demo: property clustering + topology -->
 <div style="display:flex;gap:12px;margin:24px 0;flex-wrap:wrap">
