@@ -329,23 +329,38 @@ class BzControls extends HTMLElement {
       this._boundView = view;
       this._syncFromView();
 
-      // Push control changes → view
-      let _rebuildPending = false;
-      const onControlChange = (e) => {
+      // Push control changes → view. `input` events fire continuously during
+      // a slider/dial drag — coalesce per animation frame and call
+      // view.fastRebuild() (subsamples the layout/render for large graphs).
+      // `change` events fire on release — call view.endFastRebuild() to drop
+      // the subsample and run a full-quality rebuild.
+      const applyDetail = (detail) => {
+        view.propStrengths[detail.name] = detail.strength;
+        view.propBearings[detail.name] = detail.bearing;
+      };
+      let _rebuildRaf = null;
+      const onControlInput = (e) => {
         if (!e.detail) return;
-        view.propStrengths[e.detail.name] = e.detail.strength;
-        view.propBearings[e.detail.name] = e.detail.bearing;
-        if (!_rebuildPending) {
-          _rebuildPending = true;
-          requestAnimationFrame(() => {
-            _rebuildPending = false;
-            view._quantStats = {};
-            view.levels = new Array(view.levels.length).fill(null);
-            view._blend(true).then(() => { view.layoutAll(); view.render(); });
+        applyDetail(e.detail);
+        if (_rebuildRaf == null) {
+          _rebuildRaf = requestAnimationFrame(() => {
+            _rebuildRaf = null;
+            view.fastRebuild();
           });
         }
       };
-      this.addEventListener('input', this._onBoundInput = onControlChange);
+      const onControlChange = (e) => {
+        if (!e.detail) return;
+        applyDetail(e.detail);
+        // Cancel any rAF that hasn't fired yet — otherwise it would run
+        // fastRebuild() AFTER endFastRebuild() and re-engage fast mode.
+        if (_rebuildRaf != null) {
+          cancelAnimationFrame(_rebuildRaf);
+          _rebuildRaf = null;
+        }
+        view.endFastRebuild();
+      };
+      this.addEventListener('input', this._onBoundInput = onControlInput);
       this.addEventListener('change', this._onBoundChange = onControlChange);
 
       this.addEventListener('colorby', this._onBoundColorby = (e) => {

@@ -9,18 +9,33 @@ import { generateGroupColors } from './blitzoom-colors.js';
 // ─── Shared helpers ─────────────────────────────────────────────────────────
 
 /**
- * Yield one animation frame so the browser can paint the just-scheduled render
- * before this mutation's promise resolves. Without this yield, a tight loop of
- * `await g.addNodes(...)` calls schedules many rAF callbacks but the rendering
- * step never runs (microtask boundaries don't trigger paint), so the user sees
- * a frozen graph until the loop completes.
+ * Yield to the browser so it can both paint and dispatch queued input events
+ * before this mutation's promise resolves. Without this yield, a tight loop
+ * of `await g.addNodes(...)` calls keeps the page unresponsive — keydown,
+ * pointerdown, and other input events sit in the queue until the loop ends.
+ *
+ * The implementation has two parts:
+ *   1. `requestAnimationFrame` — gives the browser a paint opportunity so the
+ *      newly-rendered nodes show up before the next batch starts.
+ *   2. A macrotask boundary — `scheduler.yield()` (Chrome 129+) when
+ *      available, otherwise `setTimeout(r, 0)`. This is the part that lets
+ *      the browser dispatch queued input events. The microtask boundaries
+ *      from `await` alone are not enough: input dispatch happens between
+ *      tasks, not between microtasks.
  *
  * Headless / non-browser environments (Deno tests, jsdom-without-rAF) fall
  * through to a resolved promise — the yield is a no-op and mutations run as
  * fast as possible.
  */
 const _yieldFrame = typeof requestAnimationFrame !== 'undefined'
-  ? () => new Promise(r => requestAnimationFrame(r))
+  ? async () => {
+      await new Promise(r => requestAnimationFrame(r));
+      if (typeof scheduler !== 'undefined' && scheduler.yield) {
+        await scheduler.yield();
+      } else {
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
   : () => Promise.resolve();
 
 /** Cancel any in-flight mutation animation on the view. */

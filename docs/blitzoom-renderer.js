@@ -804,12 +804,15 @@ let _densityR = null, _densityG = null, _densityB = null, _densityW = null;
 let _densityImgData = null;
 let _densityCanvas = null;
 
-// Cached maxW — recomputed when level/zoom/sizeBy/sizeLog or instance change, stable across pan.
-// Lerped toward target over ~500ms to avoid jarring jumps on level change.
-let _densityMaxW = 0;
-let _densityMaxWTarget = 0;
-let _densityMaxWKey = '';
-let _densityMaxWTime = 0;
+// Cached normalization base — recomputed when level/zoom/sizeBy/sizeLog or
+// instance change, stable across pan. Lerped toward target over ~500ms to
+// avoid jarring jumps on level change. Stores the 95th percentile of non-zero
+// density cells (was previously the absolute max — see renderHeatmapDensity
+// comments for the rationale).
+let _densityNorm = 0;
+let _densityNormTarget = 0;
+let _densityNormKey = '';
+let _densityNormTime = 0;
 let _densityNextId = 0; // monotonic counter for assigning instance IDs
 let _densityLastId = 0; // last-seen instance ID for snap detection
 let _densityLastLevel = -1; // last-seen level for snap detection on level change
@@ -817,9 +820,9 @@ let _densityLastLevel = -1; // last-seen level for snap detection on level chang
 function _densityCacheKey(bz) {
   if (!bz._densityId) bz._densityId = ++_densityNextId;
   // Include _blendGen so incremental adds (which re-blend without changing
-  // level/zoom/size/viewport) invalidate the cached maxW. Without this,
-  // streaming nodes piles up density above the seed's frozen maxW and the
-  // contours saturate to a uniform high-band blob.
+  // level/zoom/size/viewport) invalidate the cached normalization base.
+  // Without this, streaming nodes pile up density above the seed's frozen
+  // norm and the contours saturate to a uniform high-band blob.
   return bz._densityId + '|' + bz._blendGen + '|' + bz.currentLevel + '|' + bz.renderZoom.toFixed(1) + '|' + bz.sizeBy + '|' + bz.sizeLog + '|' + bz.W + '|' + bz.H;
 }
 
@@ -855,9 +858,10 @@ function renderHeatmapDensity(bz) {
   const kernelR = Math.max(8, Math.min(40, Math.min(gw, gh) / 8));
   const kernelRSq = kernelR * kernelR;
 
-  // Check if maxW needs recomputing (level, zoom, size config, or viewport size changed)
+  // Check if the normalization base needs recomputing (level, zoom, size
+  // config, or viewport size changed).
   const cacheKey = _densityCacheKey(bz);
-  const needMaxW = cacheKey !== _densityMaxWKey;
+  const needNorm = cacheKey !== _densityNormKey;
 
   for (let i = 0; i < allNodes.length; i++) {
     const n = allNodes[i];
@@ -900,34 +904,80 @@ function renderHeatmapDensity(bz) {
     }
   }
 
-  // Compute maxW from current frame when config changes; lerp toward it for
-  // smooth transitions (used by incremental adds, strength/bearing changes,
-  // and zoom). Snap on discontinuous transitions: new instance, or level
-  // change (different supernodes at different positions — lerping across the
-  // jump produces wrong contours for several frames).
-  if (needMaxW) {
+  // Recompute the normalization base from the current frame when config
+  // changes; lerp toward it for smooth transitions (incremental adds, strength
+  // and bearing changes, zoom). Snap on discontinuous transitions: new
+  // instance, or level change (different supernodes at different positions —
+  // lerping across the jump produces wrong contours for several frames).
+  //
+  // The normalization base is the **95th percentile** of non-zero density
+  // cells, not the absolute max. The percentile adapts to the distribution
+  // shape: at fine aggregation levels with sharp density peaks, p95 is much
+  // smaller than max, so the moderate threshold (saturate at p95) preserves
+  // the existing "densest cores glow, surrounding cluster shows graded
+  // intensity" look. At coarse levels with few uniformly-spread supernodes,
+  // the distribution is flat — p95 ≈ max — so saturation is restricted to
+  // the genuine top ~5% of cells, instead of blanket-coloring most of the
+  // cluster as the previous max-based threshold did.
+  //
+  // Computed via a 256-bin histogram pass, walked from the top to find the
+  // bin covering 5% of non-zero cells. O(N) — same complexity as the old
+  // max scan, just one extra constant-size accumulator.
+  if (needNorm) {
     let maxW = 0;
     for (let i = 0; i < totalCells; i++) if (_densityW[i] > maxW) maxW = _densityW[i];
-    _densityMaxWTarget = maxW;
-    _densityMaxWKey = cacheKey;
-    _densityMaxWTime = performance.now();
+
+    let normBase = maxW;
+    if (maxW > 0) {
+      const NBINS = 256;
+      const hist = new Uint32Array(NBINS);
+      let nonZero = 0;
+      const binScale = NBINS / maxW;
+      for (let i = 0; i < totalCells; i++) {
+        const w = _densityW[i];
+        if (w < 0.001) continue;
+        let bin = (w * binScale) | 0;
+        if (bin >= NBINS) bin = NBINS - 1;
+        hist[bin]++;
+        nonZero++;
+      }
+      if (nonZero > 0) {
+        // Walk histogram from top, accumulate until we cover 5% of non-zero cells.
+        const targetCount = Math.max(1, Math.ceil(nonZero * 0.05));
+        let acc = 0;
+        let p95Bin = NBINS - 1;
+        for (let b = NBINS - 1; b >= 0; b--) {
+          acc += hist[b];
+          if (acc >= targetCount) { p95Bin = b; break; }
+        }
+        // Use bin midpoint as the percentile estimate.
+        normBase = ((p95Bin + 0.5) / NBINS) * maxW;
+      }
+    }
+
+    _densityNormTarget = normBase;
+    _densityNormKey = cacheKey;
+    _densityNormTime = performance.now();
     const newInstance = bz._densityId !== _densityLastId;
     const levelChanged = bz.currentLevel !== _densityLastLevel;
     _densityLastId = bz._densityId;
     _densityLastLevel = bz.currentLevel;
-    if (_densityMaxW === 0 || newInstance || levelChanged) _densityMaxW = maxW;
+    if (_densityNorm === 0 || newInstance || levelChanged) _densityNorm = normBase;
   }
 
   // Exponential lerp toward target (~500ms to 90% convergence)
-  const dt = performance.now() - _densityMaxWTime;
+  const dt = performance.now() - _densityNormTime;
   const alpha = 1 - Math.exp(-dt / 200); // time constant 200ms
-  _densityMaxW += (_densityMaxWTarget - _densityMaxW) * alpha;
-  _densityMaxWTime = performance.now();
+  _densityNorm += (_densityNormTarget - _densityNorm) * alpha;
+  _densityNormTime = performance.now();
 
-  if (_densityMaxW < 0.001) return;
+  if (_densityNorm < 0.001) return;
 
   const px = _densityImgData.data;
-  const invThreshold = 1 / (_densityMaxW * 0.3);
+  // Saturate at exactly the normalization base (= 95th percentile). This
+  // means the top ~5% of non-zero cells are at full intensity; the rest
+  // render with intensity proportional to weight / p95.
+  const invThreshold = 1 / _densityNorm;
   const light = bz._lightMode;
   for (let i = 0; i < totalCells; i++) {
     const w = _densityW[i];
@@ -963,7 +1013,7 @@ function renderHeatmapDensity(bz) {
   bz.ctx.restore();
 
   // Keep rendering while lerp hasn't converged (>1% difference)
-  if (Math.abs(_densityMaxW - _densityMaxWTarget) > _densityMaxWTarget * 0.01) {
+  if (Math.abs(_densityNorm - _densityNormTarget) > _densityNormTarget * 0.01) {
     bz.render();
   }
 }
