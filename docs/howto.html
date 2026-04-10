@@ -161,7 +161,7 @@
 
 <h2 id="quick-start">Quick Start</h2>
 
-<p>The fastest way to get a BlitZoom graph on screen: one import, one function call, done. See the <a href="example.html">JS example</a> or <a href="bz-graph-demo.html">&lt;bz-graph&gt; example</a> for complete working pages.</p>
+<p>The fastest way to get a BlitZoom graph on screen: one import, one function call, done. See the <a href="demo/example.html">JS example</a> or <a href="demo/bz-graph-demo.html">&lt;bz-graph&gt; example</a> for complete working pages.</p>
 
 <pre><span class="keyword">import</span> { createBlitZoomView } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
@@ -299,28 +299,45 @@ eve	Eve	management	director	12</pre>
 <pre>&lt;bz-graph id="g" edges="data/karate.edges" nodes="data/karate.nodes" incremental&gt;
 &lt;/bz-graph&gt;
 
-&lt;script&gt;
+&lt;script type="module"&gt;
   <span class="keyword">const</span> g = document.getElementById(<span class="string">'g'</span>);
-  g.addEventListener(<span class="string">'ready'</span>, <span class="keyword">async</span> () =&gt; {
+  <span class="keyword">await</span> g.ready;
 
-    <span class="comment">// Add nodes + edges</span>
-    <span class="keyword">await</span> g.<span class="fn">addNodes</span>(
-      [{id: <span class="string">'new1'</span>, group: <span class="string">'analyst'</span>}, {id: <span class="string">'new2'</span>, group: <span class="string">'admin'</span>}],
-      [{src: <span class="string">'new1'</span>, dst: <span class="string">'new2'</span>}]
-    );
+  <span class="comment">// Add nodes + edges</span>
+  <span class="keyword">await</span> g.<span class="fn">addNodes</span>(
+    [{id: <span class="string">'new1'</span>, group: <span class="string">'analyst'</span>}, {id: <span class="string">'new2'</span>, group: <span class="string">'admin'</span>}],
+    [{src: <span class="string">'new1'</span>, dst: <span class="string">'new2'</span>}]
+  );
 
-    <span class="comment">// Update properties (only changed nodes are re-projected)</span>
-    <span class="keyword">await</span> g.<span class="fn">updateNodes</span>([{id: <span class="string">'new1'</span>, group: <span class="string">'manager'</span>}]);
+  <span class="comment">// Update properties (only changed nodes are re-projected)</span>
+  <span class="keyword">await</span> g.<span class="fn">updateNodes</span>([{id: <span class="string">'new1'</span>, group: <span class="string">'manager'</span>}]);
 
-    <span class="comment">// Remove by ID (edges cleaned up automatically)</span>
-    <span class="keyword">await</span> g.<span class="fn">removeNodes</span>([<span class="string">'new2'</span>]);
-  });
+  <span class="comment">// Remove by ID (edges cleaned up automatically)</span>
+  <span class="keyword">await</span> g.<span class="fn">removeNodes</span>([<span class="string">'new2'</span>]);
 &lt;/script&gt;
 </pre>
+
+<p>The <code>await g.ready</code> Promise resolves once the build completes — modeled on <code>document.fonts.ready</code> and <code>navigator.serviceWorker.ready</code>. Use it from any async function; it works regardless of when you read it (before or after the build finishes). The legacy <code>addEventListener('ready', ...)</code> shape still works.</p>
 
 <p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly — required when streaming many batches in a loop. A periodic full rebuild triggers automatically after <code>rebuildThreshold × originalN</code> cumulative inserts to refresh stale numeric bins and topology tokens; the <code>incremental</code> preset disables this entirely (sets the threshold to <code>Infinity</code>) since norm projections are deterministic per-node and rebuilds are unnecessary.</p>
 
 <p>Each preset default can still be overridden by passing the matching attribute alongside <code>incremental</code>. For example, <code>incremental rebuild-threshold="0.5"</code> opts back into periodic rebuilds at 50% growth while keeping the rest of the preset.</p>
+
+<h3>Empty graphs and schema bootstrap</h3>
+
+<p>You can declare <code>&lt;bz-graph&gt;</code> with no <code>edges</code> URL and no inline data — the canvas builds empty and waits for <code>addNodes</code> to populate it. Useful when the graph is generated entirely at runtime (streaming, computed datasets, etc.):</p>
+
+<pre>&lt;bz-graph id="g" incremental legend strengths="category:5,block:8"&gt;&lt;/bz-graph&gt;
+
+&lt;script type="module"&gt;
+  <span class="keyword">const</span> g = document.getElementById(<span class="string">'g'</span>);
+  <span class="keyword">await</span> g.ready;
+  <span class="keyword">await</span> g.<span class="fn">addNodes</span>(allMyNodes, [], { animate: <span class="keyword">false</span> });
+&lt;/script&gt;</pre>
+
+<p>The first <code>addNodes</code> call into an empty graph runs a <strong>schema bootstrap</strong>: it derives the property-group names (<code>category</code>, <code>block</code>, etc.) from the first batch's node fields, builds projection matrices for them, computes numeric bins, and applies any <code>strengths</code> you set via attributes. The schema is then locked in.</p>
+
+<p><strong>Limitation:</strong> property keys not present in the first batch are silently dropped on subsequent batches — same as the existing static-build behavior. Make sure your first batch contains at least one representative node with every field you'll need later. For datasets where every node has the same fields (the typical case), this is invisible.</p>
 
 <p><strong>Why norm mode?</strong> There's a fundamental tradeoff: you can't have data-independent scale, optimal grid utilization, <em>and</em> zero displacement on insertion. Gaussian adapts its scale to the data (best grids, but every node shifts when new data arrives). Norm uses a fixed scale derived from the projection matrices (stable positions, but 5-30% worse grid utilization on datasets with low property diversity). Use <code>norm</code> for incremental/streaming use cases; use <code>gaussian</code> for static datasets where you load once and explore.</p>
 
@@ -937,7 +954,7 @@ compass.addEventListener(<span class="string">'input'</span>, e =&gt; {
   console.log(e.detail); <span class="comment">// { name, strength, bearing }</span>
 });</pre>
 
-<p>See the <a href="bz-graph-demo.html">full demo page</a> for live examples.</p>
+<p>See the <a href="demo/bz-graph-demo.html">full demo page</a> for live examples.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 

@@ -12,7 +12,7 @@ unavailable.
 | [tests/gpu_test.ts](../tests/gpu_test.ts)                   | Unit tests: hashSlot precision, OPH, similarity               |
 | [tests/gpu_pipeline_test.ts](../tests/gpu_pipeline_test.ts) | Pipeline comparison: GPU vs CPU projections across datasets   |
 | [tests/gpu_blend_test.ts](../tests/gpu_blend_test.ts)       | Blend comparison: GPU vs CPU across datasets and alpha values |
-| [gpu-test.html](../docs/gpu-test.html)                      | Visual side-by-side comparison page                           |
+| [gpu-test.html](../docs/demo/gpu-test.html)                 | Visual side-by-side comparison page                           |
 | [scripts/bench-gpu.js](../scripts/bench-gpu.js)             | GPU vs CPU performance benchmark                              |
 
 ## Initialization

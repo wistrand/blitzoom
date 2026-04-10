@@ -447,6 +447,26 @@ for (const f of files) {
 }
 
 // File→file edges from importScripts / script src / import
+// Resolve a relative path against the directory of `fromPath`, normalizing
+// `./` and `..` segments. Used by HTML/JS reference extraction below so that
+// e.g. `docs/demo/example.html` referencing `../blitzoom.js` resolves to
+// `docs/blitzoom.js` (matching the symbol map) rather than the literal
+// `docs/demo/../blitzoom.js` which would never match.
+function resolveRelativePath(fromPath: string, target: string): string {
+  // Strip a leading `/` (treat as project-rooted, rare in this codebase).
+  if (target.startsWith("/")) target = target.slice(1);
+  const slashIdx = fromPath.lastIndexOf("/");
+  const dir = slashIdx >= 0 ? fromPath.slice(0, slashIdx) : "";
+  const parts = (dir ? dir.split("/") : []).concat(target.split("/"));
+  const out: string[] = [];
+  for (const p of parts) {
+    if (p === "" || p === ".") continue;
+    if (p === "..") { out.pop(); continue; }
+    out.push(p);
+  }
+  return out.join("/");
+}
+
 for (const f of files) {
   const fileId = `file:${f.relPath}`;
 
@@ -454,37 +474,48 @@ for (const f of files) {
   const importPattern = /importScripts\(['"]([^'"]+)['"]\)/g;
   let m;
   while ((m = importPattern.exec(f.content)) !== null) {
-    const target = f.relPath.includes("/")
-      ? f.relPath.slice(0, f.relPath.lastIndexOf("/") + 1) + m[1]
-      : m[1];
-    const targetId = `file:${target}`;
+    const targetId = `file:${resolveRelativePath(f.relPath, m[1])}`;
     if (symbols.has(targetId)) addEdge(fileId, targetId, "imports");
   }
 
   // <script src="file.js">
   const scriptPattern = /src=["']([^"']+\.js)["']/g;
   while ((m = scriptPattern.exec(f.content)) !== null) {
-    const target = f.relPath.includes("/")
-      ? f.relPath.slice(0, f.relPath.lastIndexOf("/") + 1) + m[1]
-      : m[1];
-    const targetId = `file:${target}`;
+    const targetId = `file:${resolveRelativePath(f.relPath, m[1])}`;
     if (symbols.has(targetId)) addEdge(fileId, targetId, "loads");
   }
 
   // <link href="file.css">
   const linkPattern = /href=["']([^"']+\.css)["']/g;
   while ((m = linkPattern.exec(f.content)) !== null) {
-    const target = f.relPath.includes("/")
-      ? f.relPath.slice(0, f.relPath.lastIndexOf("/") + 1) + m[1]
-      : m[1];
-    const targetId = `file:${target}`;
+    const targetId = `file:${resolveRelativePath(f.relPath, m[1])}`;
     if (symbols.has(targetId)) addEdge(fileId, targetId, "loads");
   }
 
-  // import from "..." (Deno/TS)
-  const esImportPattern = /from\s+["']\.\/([^"']+)["']/g;
+  // <a href="page.html"> page-to-page links. Skip protocol-prefixed URLs
+  // (http, https, mailto) and pure-anchor hrefs (#section). Optional
+  // fragment after .html is allowed but stripped before resolving.
+  const hrefPattern = /href=["'](?!https?:\/\/|mailto:|#)([^"'#]+\.html)(?:#[^"']*)?["']/g;
+  while ((m = hrefPattern.exec(f.content)) !== null) {
+    const targetId = `file:${resolveRelativePath(f.relPath, m[1])}`;
+    if (symbols.has(targetId)) addEdge(fileId, targetId, "links");
+  }
+
+  // Markdown links: [text](path/to/file.ext) — captures cross-references in
+  // CLAUDE.md and agent_docs/*.md to other docs and source files. Same skip
+  // rules as <a href>: no http/https/mailto URLs, no pure anchors. The ext
+  // whitelist matches the scanned EXTENSIONS so only files that have a
+  // corresponding node produce an edge.
+  const mdLinkPattern = /\[[^\]]*\]\((?!https?:\/\/|mailto:|#)([^)#\s]+\.(?:md|html|js|ts|css|json))(?:#[^)]*)?\)/g;
+  while ((m = mdLinkPattern.exec(f.content)) !== null) {
+    const targetId = `file:${resolveRelativePath(f.relPath, m[1])}`;
+    if (symbols.has(targetId)) addEdge(fileId, targetId, "links");
+  }
+
+  // import from "..." (Deno/TS) — handles both `./foo.js` and `../foo.js`
+  const esImportPattern = /from\s+["'](\.\.?\/[^"']+)["']/g;
   while ((m = esImportPattern.exec(f.content)) !== null) {
-    const targetId = `file:${m[1]}`;
+    const targetId = `file:${resolveRelativePath(f.relPath, m[1])}`;
     if (symbols.has(targetId)) addEdge(fileId, targetId, "imports");
   }
 }
@@ -503,16 +534,30 @@ for (const e of validEdges) {
 }
 Deno.writeTextFileSync(prefix + ".edges", edgeLines.join("\n") + "\n");
 
+// Derive the filetype (extension without the dot) for a symbol. For file
+// nodes, sym.id encodes the path as `file:relPath`. For non-file symbols
+// (function, class, element, rule, etc.), sym.file holds the containing
+// file's relPath. Returns the empty string for symbols without a discernible
+// extension (none in the current scan, but defensive).
+function filetypeOf(sym: Symbol): string {
+  const path = sym.kind === "file" ? sym.id.slice(5) : sym.file;
+  const dotIdx = path.lastIndexOf(".");
+  const slashIdx = path.lastIndexOf("/");
+  if (dotIdx > slashIdx) return path.slice(dotIdx + 1);
+  return "";
+}
+
 // Write .nodes — Lines, Bytes, AgeHours are numeric, auto-binned by pipeline
 const nodeLines = [
-  "# NodeId\tLabel\tGroup\tKind\tFile\tLines\tBytes\tAgeHours",
+  "# NodeId\tLabel\tGroup\tKind\tFile\tFiletype\tLines\tBytes\tAgeHours",
 ];
 for (const [id, sym] of symbols) {
   const label = sym.name.replace(/\t/g, " ");
   const group = sym.file;
+  const filetype = filetypeOf(sym);
   const bytesStr = sym.bytes > 0 ? String(sym.bytes) : '';
   const ageStr = sym.ageHours > 0 ? String(sym.ageHours) : '';
-  nodeLines.push(`${id}\t${label}\t${group}\t${sym.kind}\t${sym.file}\t${sym.size}\t${bytesStr}\t${ageStr}`);
+  nodeLines.push(`${id}\t${label}\t${group}\t${sym.kind}\t${sym.file}\t${filetype}\t${sym.size}\t${bytesStr}\t${ageStr}`);
 }
 Deno.writeTextFileSync(prefix + ".nodes", nodeLines.join("\n") + "\n");
 

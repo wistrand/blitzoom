@@ -2,11 +2,26 @@
 // Standalone functions that operate on a BlitZoomCanvas instance (view).
 // Extracted from blitzoom-canvas.js to keep the component focused on rendering.
 
-import { ZOOM_LEVELS, RAW_LEVEL, getNodePropValue } from './blitzoom-algo.js';
+import { ZOOM_LEVELS, RAW_LEVEL, getNodePropValue, PROJECTION_SEED_BASE, MINHASH_K, buildGaussianProjection } from './blitzoom-algo.js';
 import { projectNode, computeProjections, computeNumericBins, computeAdjGroups } from './blitzoom-pipeline.js';
 import { generateGroupColors } from './blitzoom-colors.js';
 
 // ─── Shared helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Yield one animation frame so the browser can paint the just-scheduled render
+ * before this mutation's promise resolves. Without this yield, a tight loop of
+ * `await g.addNodes(...)` calls schedules many rAF callbacks but the rendering
+ * step never runs (microtask boundaries don't trigger paint), so the user sees
+ * a frozen graph until the loop completes.
+ *
+ * Headless / non-browser environments (Deno tests, jsdom-without-rAF) fall
+ * through to a resolved promise — the yield is a no-op and mutations run as
+ * fast as possible.
+ */
+const _yieldFrame = typeof requestAnimationFrame !== 'undefined'
+  ? () => new Promise(r => requestAnimationFrame(r))
+  : () => Promise.resolve();
 
 /** Cancel any in-flight mutation animation on the view. */
 function cancelAnimation(view) {
@@ -128,10 +143,97 @@ async function blendAndAnimate(view, prevPositions, animate, animMs) {
   view.layoutAll();
 
   if (animate && prevPositions && prevPositions.size > 0) {
+    // animateTransition runs an rAF loop and resolves only after the
+    // animation completes — natural frame yielding, no extra wait needed.
     await animateTransition(view, prevPositions, animMs);
   } else {
+    // Snap path: render() schedules an rAF, then yield one frame so the
+    // browser actually paints before this mutation resolves. Lets streaming
+    // loops (`for ... await g.addNodes(...)`) progress visually without
+    // requiring the caller to insert a manual rAF yield.
     view.render();
+    await _yieldFrame();
   }
+}
+
+/**
+ * Bootstrap an empty graph's schema from the first batch of incoming nodes.
+ *
+ * When a graph is created with no seed (`createBlitZoomFromGraph(canvas, [])`
+ * or `<bz-graph>` with no inline data), `_extraPropNames` and `groupNames`
+ * only contain the four defaults (`group`, `label`, `structure`, `neighbors`).
+ * The first call to `addNodes` discovers the property groups from the new
+ * nodes' fields and rebuilds the canvas's schema in place: extends
+ * `groupNames`, builds projection matrices for the new groups (deterministic
+ * seeds keyed on group index, matching the factory init path), computes
+ * `_numericBins` from the new nodes, and initializes empty `propColors`
+ * entries. User-provided `propStrengths` for the new groups are preserved
+ * (the factory already stored them on the canvas at construction time).
+ */
+function bootstrapEmptyGraph(view, newNodes) {
+  // Discover extra property keys from the new nodes (excluding the special
+  // id/group/label fields). Use the first node as the schema source — same
+  // strategy as createBlitZoomFromGraph.
+  const newExtras = [];
+  const seen = new Set();
+  for (const rn of newNodes) {
+    for (const k in rn) {
+      if (k === 'id' || k === 'group' || k === 'label') continue;
+      if (!seen.has(k)) { seen.add(k); newExtras.push(k); }
+    }
+  }
+  if (newExtras.length === 0) return;
+
+  // Extend groupNames with the new extras and build projection matrices.
+  // The seed for each group is PROJECTION_SEED_BASE + index in groupNames,
+  // matching the canvas constructor's per-group seeding so projections are
+  // deterministic regardless of when the group was added.
+  for (const ep of newExtras) {
+    if (view.groupNames.includes(ep)) continue;
+    view.groupNames.push(ep);
+    const idx = view.groupNames.length - 1;
+    view.groupProjections[ep] = buildGaussianProjection(PROJECTION_SEED_BASE + idx, MINHASH_K);
+    if (view.propStrengths[ep] === undefined) view.propStrengths[ep] = 0;
+    if (!view.propColors[ep]) view.propColors[ep] = {};
+  }
+  view._extraPropNames = newExtras;
+
+  // Compute numeric bins from the bootstrap batch. computeNumericBins expects
+  // node-shaped objects with `extraProps` — wrap raw input nodes accordingly.
+  const wrapped = newNodes.map(rn => {
+    const extraProps = {};
+    for (const k in rn) {
+      if (k !== 'id' && k !== 'group' && k !== 'label') extraProps[k] = rn[k];
+    }
+    return { extraProps };
+  });
+  view._numericBins = computeNumericBins(wrapped, newExtras);
+
+  // Apply factory-style default strength: if `group` has only one distinct
+  // value across the bootstrap batch (typical when group isn't a useful
+  // categorical), pick the first non-trivial extra prop and give it strength 3.
+  // Skip if the user already set non-zero strengths.
+  const userSet = view.groupNames.some(g => (view.propStrengths[g] || 0) > 0);
+  if (!userSet) {
+    const groupVals = new Set();
+    for (const n of newNodes) { groupVals.add(n.group); if (groupVals.size > 1) break; }
+    if (groupVals.size > 1) {
+      view.propStrengths['group'] = 3;
+    } else {
+      for (const g of newExtras) {
+        const vals = new Set();
+        for (const n of newNodes) {
+          vals.add(n[g]);
+          if (vals.size > 50) break;
+        }
+        if (vals.size >= 2 && vals.size <= 50) { view.propStrengths[g] = 3; break; }
+      }
+    }
+  }
+
+  // _originalN and _insertsSinceRebuild are managed by addNodes (the
+  // first-build path), not bootstrap. _refreshPropCache is called by
+  // blendAndAnimate after the blend, so no need to call it here either.
 }
 
 // ─── Mutation functions ─────────────────────────────────────────────────────
@@ -159,6 +261,21 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
   try {
 
   const animate = opts.animate !== false;
+
+  // 0. First-build detection. An empty graph has _originalN === 0 (set by
+  // the canvas constructor). The first addNodes call into such a graph IS
+  // the original build, not an incremental insert — its nodes shouldn't
+  // count toward the rebuild-threshold accounting. We capture this state
+  // here and apply the right bookkeeping at step 6 below.
+  //
+  // Schema bootstrap is a separate concern: only needed when no extra
+  // property groups have been established yet. Bootstrap derives the
+  // schema from this batch's fields, extends groupNames, and builds
+  // projection matrices for the new groups.
+  const isFirstBuild = view._originalN === 0 && newNodes.length > 0;
+  if (isFirstBuild && view._extraPropNames.length === 0) {
+    bootstrapEmptyGraph(view, newNodes);
+  }
 
   // 1. Build node objects and project each
   const added = [];
@@ -213,10 +330,19 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
     detail: { count: added.length, edgesAdded: newEdges.length, total: view.nodes.length },
   }));
 
-  // 6. Check if periodic full rebuild is needed
-  view._insertsSinceRebuild += added.length;
-  if (view._originalN > 0 && view._insertsSinceRebuild > view._originalN * view._rebuildThreshold) {
-    await fullRebuild(view);
+  // 6. Account for added nodes. If this was the first build into a
+  // previously empty graph, set _originalN to the new size (this batch
+  // is the baseline) and leave _insertsSinceRebuild at 0 — the bootstrap
+  // batch is not an incremental insert, it's the original. Otherwise,
+  // increment the incremental counter and check the rebuild threshold.
+  if (isFirstBuild) {
+    view._originalN = view.nodes.length;
+    view._insertsSinceRebuild = 0;
+  } else {
+    view._insertsSinceRebuild += added.length;
+    if (view._originalN > 0 && view._insertsSinceRebuild > view._originalN * view._rebuildThreshold) {
+      await fullRebuild(view);
+    }
   }
 
   // 7. Drain queue

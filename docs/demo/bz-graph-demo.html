@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BlitZoom — &lt;bz-graph&gt; Web Component Demo</title>
-<script type="module" src="blitzoom.js"></script>
-<script type="module" src="bz-compass.js"></script>
-<script type="module" src="bz-controls.js"></script>
+<script type="module" src="../blitzoom.js"></script>
+<script type="module" src="../bz-compass.js"></script>
+<script type="module" src="../bz-controls.js"></script>
 <style>
   body { margin: 0; background: #0a0a0f; color: #c8c8d8; font-family: monospace; padding: 16px; }
   h2 { font-size: 14px; color: #eeeef8; margin: 24px 0 8px; }
@@ -26,13 +26,13 @@
 <h2>Graph + Compass (pure HTML, no JS)</h2>
 <p>Drag handles to adjust strengths and bearings. The graph updates in real time.</p>
 <div class="row">
-  <bz-graph id="epstein" edges="data/epstein.edges" nodes="data/epstein.nodes"
+  <bz-graph id="epstein" edges="../data/epstein.edges" nodes="../data/epstein.nodes"
             level="3" heatmap="density" edge-mode="curves" legend
             strengths="group:5,edgetype:8" label-props="label">
   </bz-graph>
   <bz-compass for="epstein"></bz-compass>
 </div>
-<pre>&lt;bz-graph id="epstein" edges="data/epstein.edges" nodes="data/epstein.nodes"
+<pre>&lt;bz-graph id="epstein" edges="../data/epstein.edges" nodes="../data/epstein.nodes"
           level="3" heatmap="density" edge-mode="curves" legend
           strengths="group:5,edgetype:8" label-props="label"&gt;
 &lt;/bz-graph&gt;
@@ -66,24 +66,24 @@
 <h2>Graph + Controls (slider panel, no JS)</h2>
 <p>Strength sliders and bearing dials as a standalone component.</p>
 <div class="row">
-  <bz-graph id="karate2" edges="data/karate.edges" nodes="data/karate.nodes"
+  <bz-graph id="karate2" edges="../data/karate.edges" nodes="../data/karate.nodes"
             level="2" edge-mode="curves" legend
             strengths="group:8">
   </bz-graph>
   <bz-controls for="karate2"></bz-controls>
 </div>
-<pre>&lt;bz-graph id="karate2" edges="data/karate.edges" nodes="data/karate.nodes"
+<pre>&lt;bz-graph id="karate2" edges="../data/karate.edges" nodes="../data/karate.nodes"
           level="2" edge-mode="curves" legend strengths="group:8"&gt;
 &lt;/bz-graph&gt;
 &lt;bz-controls for="karate2"&gt;&lt;/bz-controls&gt;</pre>
 
 <h2>Built-in floating panels (r = compass, R = controls)</h2>
 <p>Click the graph, then press <code>r</code> or <code>R</code> to toggle panels.</p>
-<bz-graph edges="data/epstein.edges" nodes="data/epstein.nodes"
+<bz-graph edges="../data/epstein.edges" nodes="../data/epstein.nodes"
           level="3" edge-mode="curves" legend compass controls
           strengths="group:5,edgetype:8" label-props="label">
 </bz-graph>
-<pre>&lt;bz-graph edges="data/epstein.edges" nodes="data/epstein.nodes"
+<pre>&lt;bz-graph edges="../data/epstein.edges" nodes="../data/epstein.nodes"
           level="3" edge-mode="curves" legend <b>compass controls</b>
           strengths="group:5,edgetype:8" label-props="label"&gt;
 &lt;/bz-graph&gt;</pre>
@@ -103,7 +103,7 @@ b	d
 
 <h2 class="light">Light mode with viridis</h2>
 <div class="light">
-<bz-graph edges="data/karate.edges" nodes="data/karate.nodes"
+<bz-graph edges="../data/karate.edges" nodes="../data/karate.nodes"
           level="2" legend light-mode color-scheme="1"
           strengths="group:8" label-props="group">
 </bz-graph>

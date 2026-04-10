@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BlitZoom — Incremental API Demo</title>
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="../logo.svg" type="image/svg+xml">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
 
@@ -148,7 +148,7 @@
 </head>
 <body>
 
-<h1><img src="logo.svg" alt="" style="width:32px;height:32px;vertical-align:-4px;margin-right:8px">Blit<span>Zoom</span> Incremental API Demo</h1>
+<h1><img src="../logo.svg" alt="" style="width:32px;height:32px;vertical-align:-4px;margin-right:8px">Blit<span>Zoom</span> Incremental API Demo</h1>
 <p class="subtitle">
   Uses the real <code>BlitZoomCanvas.addNodes()</code> API. Both canvases are full interactive views
   (zoom, pan, select). Gaussian recomputes μ/σ on each batch; Norm uses fixed projection-matrix scale.
@@ -215,22 +215,22 @@
 </div>
 
 <div class="footer">
-  <a href="viewer.html">Viewer</a> · <a href="about.html">How It Works</a> · <a href="https://github.com/wistrand/blitzoom">GitHub</a>
+  <a href="../viewer.html">Viewer</a> · <a href="../about.html">How It Works</a> · <a href="https://github.com/wistrand/blitzoom">GitHub</a>
 </div>
 
 <script type="module">
-import { createBlitZoomFromGraph } from './blitzoom-factory.js';
-import { runPipeline } from './blitzoom-pipeline.js';
-import { autoTuneStrengths } from './blitzoom-utils.js';
+import { createBlitZoomFromGraph } from '../blitzoom-factory.js';
+import { runPipeline } from '../blitzoom-pipeline.js';
+import { autoTuneStrengths } from '../blitzoom-utils.js';
 
 const DATASETS = {
-  'marvel':     { edges: 'data/marvel.edges',              nodes: 'data/marvel.nodes',              strengths: { group: 5, alignment: 3, gender: 2 } },
-  'epstein':    { edges: 'data/epstein.edges',             nodes: 'data/epstein.nodes',             strengths: { group: 5, edgetype: 8 } },
-  'pokemon':    { edges: 'data/pokemon.edges',             nodes: 'data/pokemon.nodes',             strengths: { group: 3 } },
-  'bz-source':  { edges: 'data/blitzoom-source.edges',     nodes: 'data/blitzoom-source.nodes',     strengths: { kind: 8, group: 3 } },
-  'mitre':      { edges: 'data/mitre-attack.edges',        nodes: 'data/mitre-attack.nodes',        strengths: { group: 5, platforms: 6, killchain: 4 } },
-  'ransomware': { edges: 'data/ransomware.edges.gz',      nodes: 'data/ransomware.nodes.gz',      strengths: { group: 3 } },
-  'amazon':     { edges: 'data/amazon-copurchase.edges.gz', nodes: 'data/amazon-copurchase.nodes.gz', strengths: { group: 3 } },
+  'marvel':     { edges: '../data/marvel.edges',              nodes: '../data/marvel.nodes',              strengths: { group: 5, alignment: 3, gender: 2 } },
+  'epstein':    { edges: '../data/epstein.edges',             nodes: '../data/epstein.nodes',             strengths: { group: 5, edgetype: 8 } },
+  'pokemon':    { edges: '../data/pokemon.edges',             nodes: '../data/pokemon.nodes',             strengths: { group: 3 } },
+  'bz-source':  { edges: '../data/blitzoom-source.edges',     nodes: '../data/blitzoom-source.nodes',     strengths: { kind: 8, group: 3 } },
+  'mitre':      { edges: '../data/mitre-attack.edges',        nodes: '../data/mitre-attack.nodes',        strengths: { group: 5, platforms: 6, killchain: 4 } },
+  'ransomware': { edges: '../data/ransomware.edges.gz',      nodes: '../data/ransomware.nodes.gz',      strengths: { group: 3 } },
+  'amazon':     { edges: '../data/amazon-copurchase.edges.gz', nodes: '../data/amazon-copurchase.nodes.gz', strengths: { group: 3 } },
 };
 
 // ─── State ──────────────────────────────────────────────────────────────────

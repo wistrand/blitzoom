@@ -27,6 +27,12 @@ All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are opti
 | `lightMode`      | boolean        | false         | Light theme                                                                                                          |
 | `autoTune`       | object\|false  | null          | Auto-tune on load: `{ strengths: true, alpha: true, quant: true }`. Set to `false` to disable; `incremental` does this for you. |
 
+## Empty graphs and schema bootstrap
+
+`createBlitZoomFromGraph(canvas, [], [], opts)` and `<bz-graph>` with no inline data both produce a valid empty canvas. The first `addNodes` call into an empty graph **derives the property-group schema from that batch's fields** (excluding `id`/`group`/`label`), builds projection matrices for the new groups, and computes numeric bins. Strengths set via `opts.strengths` (or the `strengths` attribute) are preserved across the bootstrap.
+
+**Limitation**: property keys not present in the first batch are silently dropped on subsequent batches — same as the existing static-build behavior. Include at least one representative node containing every field you'll need in the first set of nodes the canvas sees.
+
 ## Callback options
 
 | Option          | Signature          | Description                                                                                |
