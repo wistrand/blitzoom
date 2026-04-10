@@ -7,7 +7,9 @@ All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are opti
 | `initialLevel`   | number         | 3             | Starting zoom level index (0=L1, 13=L14, 14=RAW)                                                                    |
 | `edgeMode`       | string         | `'curves'`    | `'curves'`, `'lines'`, or `'none'`                                                                                   |
 | `heatmapMode`    | string         | `'off'`       | `'off'`, `'splat'`, or `'density'`                                                                                   |
-| `quantMode`      | string         | `'gaussian'`  | `'gaussian'` (density-preserving), `'rank'` (uniform), `'norm'` (stable for incremental)                             |
+| `quantMode`      | string         | `'gaussian'`  | `'gaussian'` (density-preserving), `'rank'` (uniform), `'norm'` (stable for incremental). Low-level — most users want `incremental` instead. |
+| `incremental`    | boolean        | false         | Bundled preset for runtime mutation/streaming. Sets `quantMode='norm'`, `rebuildThreshold=Infinity`, `autoTune=false`. Each can still be overridden by passing it explicitly alongside. |
+| `rebuildThreshold` | number       | 0.10          | Trigger periodic full rebuild after this fraction of original-N inserts via `addNodes`. Set to `Infinity` to disable. `incremental` defaults this to `Infinity`. |
 | `sizeBy`         | string         | `'edges'`     | Node size: `'edges'` (degree) or `'members'` (count)                                                                 |
 | `sizeLog`        | boolean        | false         | Log scale for node size                                                                                              |
 | `smoothAlpha`    | number         | 0             | Topology blend weight, 0 (property only) to 1 (topology only)                                                       |
@@ -23,7 +25,7 @@ All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are opti
 | `colorScheme`    | number         | 0             | Color scheme index: 0=vivid, 1=viridis, 2=plasma, 3=inferno, 4=thermal, 5=grayscale, 6=diverging, 7=greens, 8=reds  |
 | `colorBy`        | string         | null          | Override which property group controls node colors. null=auto (highest-strength group).                              |
 | `lightMode`      | boolean        | false         | Light theme                                                                                                          |
-| `autoTune`       | object         | null          | Auto-tune on load: `{ strengths: true, alpha: true, quant: true }`                                                  |
+| `autoTune`       | object\|false  | null          | Auto-tune on load: `{ strengths: true, alpha: true, quant: true }`. Set to `false` to disable; `incremental` does this for you. |
 
 ## Callback options
 

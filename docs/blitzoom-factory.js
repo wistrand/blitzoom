@@ -8,6 +8,21 @@ import { autoTuneStrengths } from './blitzoom-utils.js';
 import { runPipeline, computeProjections, computeNumericBins, computeAdjGroups } from './blitzoom-pipeline.js';
 import { initGPU } from './blitzoom-gpu.js';
 
+// ─── Incremental preset ─────────────────────────────────────────────────────
+// `incremental: true` is a bundle of defaults for streaming and runtime
+// mutation: norm quantization (zero-displacement), no periodic rebuild,
+// and no auto-tune-on-load (which would shift positions). Each setting
+// can still be overridden by passing it explicitly alongside `incremental`.
+export function applyIncrementalPreset(opts) {
+  if (!opts || !opts.incremental) return opts || {};
+  return {
+    quantMode:        'norm',
+    rebuildThreshold: Infinity,
+    autoTune:         false,
+    ...opts, // explicit options override the preset
+  };
+}
+
 // ─── Shared tail: strengths, colors, blend, construct view ──────────────────
 
 function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, hasEdgeTypes, opts) {
@@ -153,6 +168,7 @@ export function hydrateAndLink(nodeArray, projBuf, groupNames, edges) {
  * @returns {BlitZoomCanvas}
  */
 export function createBlitZoomView(canvas, edgesText, nodesText, opts = {}) {
+  opts = applyIncrementalPreset(opts);
   const result = runPipeline(edgesText, nodesText);
   const { nodes, nodeIndexFull, adjList } = hydrateAndLink(result.nodeArray, result.projBuf, result.groupNames, result.edges);
   return _finalize(canvas, nodes, result.edges, nodeIndexFull, adjList, result.groupNames, result.hasEdgeTypes, {
@@ -170,6 +186,7 @@ export function createBlitZoomView(canvas, edgesText, nodesText, opts = {}) {
  * @returns {BlitZoomCanvas}
  */
 export function createBlitZoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
+  opts = applyIncrementalPreset(opts);
   const nodeIndex = {};
   const tempAdj = {};
   const nodeArray = rawNodes.map(rn => {

@@ -294,7 +294,7 @@ eve	Eve	management	director	12</pre>
 
 <h2 id="incremental">Incremental Updates</h2>
 
-<p>Add, remove, and update nodes at runtime. The <code>incremental</code> attribute on <code>&lt;bz-graph&gt;</code> enables norm quantization — existing nodes never shift when data changes.</p>
+<p>Add, remove, and update nodes at runtime. The <code>incremental</code> attribute on <code>&lt;bz-graph&gt;</code> is a bundled preset that picks <code>quant='norm'</code> (existing nodes never shift), disables periodic full rebuild, and suppresses auto-tune-on-load (which would shift positions). Use it for any graph that will receive <code>addNodes</code>/<code>removeNodes</code>/<code>updateNodes</code> calls.</p>
 
 <pre>&lt;bz-graph id="g" edges="data/karate.edges" nodes="data/karate.nodes" incremental&gt;
 &lt;/bz-graph&gt;
@@ -318,7 +318,9 @@ eve	Eve	management	director	12</pre>
 &lt;/script&gt;
 </pre>
 
-<p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly. A periodic full rebuild triggers automatically after 10% cumulative growth to refresh stale numeric bins and topology tokens.</p>
+<p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly — required when streaming many batches in a loop. A periodic full rebuild triggers automatically after <code>rebuildThreshold × originalN</code> cumulative inserts to refresh stale numeric bins and topology tokens; the <code>incremental</code> preset disables this entirely (sets the threshold to <code>Infinity</code>) since norm projections are deterministic per-node and rebuilds are unnecessary.</p>
+
+<p>Each preset default can still be overridden by passing the matching attribute alongside <code>incremental</code>. For example, <code>incremental rebuild-threshold="0.5"</code> opts back into periodic rebuilds at 50% growth while keeping the rest of the preset.</p>
 
 <p><strong>Why norm mode?</strong> There's a fundamental tradeoff: you can't have data-independent scale, optimal grid utilization, <em>and</em> zero displacement on insertion. Gaussian adapts its scale to the data (best grids, but every node shifts when new data arrives). Norm uses a fixed scale derived from the projection matrices (stable positions, but 5-30% worse grid utilization on datasets with low property diversity). Use <code>norm</code> for incremental/streaming use cases; use <code>gaussian</code> for static datasets where you load once and explore.</p>
 
@@ -354,13 +356,15 @@ el.addEventListener(<span class="string">'nodesupdated'</span>, e =&gt; console.
 <pre><span class="keyword">import</span> { createBlitZoomFromGraph } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="keyword">const</span> view = <span class="fn">createBlitZoomFromGraph</span>(canvas,
-  [{id: <span class="string">'a'</span>, group: <span class="string">'x'</span>}], [], { quantMode: <span class="string">'norm'</span> }
+  [{id: <span class="string">'a'</span>, group: <span class="string">'x'</span>}], [], { incremental: <span class="keyword">true</span> }
 );
 
 <span class="keyword">await</span> view.<span class="fn">addNodes</span>([{id: <span class="string">'b'</span>, group: <span class="string">'y'</span>}], [{src: <span class="string">'a'</span>, dst: <span class="string">'b'</span>}]);
 <span class="keyword">await</span> view.<span class="fn">updateNodes</span>([{id: <span class="string">'b'</span>, group: <span class="string">'z'</span>}]);
 <span class="keyword">await</span> view.<span class="fn">removeNodes</span>([<span class="string">'b'</span>]);
 </pre>
+
+<p>The <code>incremental: true</code> JS option is the same preset as the <code>&lt;bz-graph incremental&gt;</code> attribute. Pass it to either factory (<code>createBlitZoomView</code>, <code>createBlitZoomFromGraph</code>) when the view will receive runtime mutations. Individual settings (<code>quantMode</code>, <code>rebuildThreshold</code>, <code>autoTune</code>) can still be passed alongside it to override the preset per-field.</p>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
@@ -373,7 +377,9 @@ el.addEventListener(<span class="string">'nodesupdated'</span>, e =&gt; console.
   <tr><td><code>initialLevel</code></td><td>number</td><td>3</td><td>Starting zoom level index (0=L1, 13=L14, 14=RAW)</td></tr>
   <tr><td><code>edgeMode</code></td><td>string</td><td><code>'curves'</code></td><td><code>'curves'</code>, <code>'lines'</code>, or <code>'none'</code></td></tr>
   <tr><td><code>heatmapMode</code></td><td>string</td><td><code>'off'</code></td><td><code>'off'</code>, <code>'splat'</code>, or <code>'density'</code></td></tr>
-  <tr><td><code>quantMode</code></td><td>string</td><td><code>'gaussian'</code></td><td><code>'gaussian'</code> (density-preserving), <code>'rank'</code> (uniform), or <code>'norm'</code> (order-independent, stable for incremental updates)</td></tr>
+  <tr><td><code>quantMode</code></td><td>string</td><td><code>'gaussian'</code></td><td><code>'gaussian'</code> (density-preserving), <code>'rank'</code> (uniform), or <code>'norm'</code> (order-independent, stable for incremental updates). Low-level — most users want <code>incremental</code> instead.</td></tr>
+  <tr><td><code>incremental</code></td><td>boolean</td><td>false</td><td>Bundled preset for runtime mutation/streaming. Sets <code>quantMode='norm'</code>, <code>rebuildThreshold=Infinity</code>, <code>autoTune=false</code>. Each can still be overridden by passing it explicitly alongside.</td></tr>
+  <tr><td><code>rebuildThreshold</code></td><td>number</td><td>0.10</td><td>Trigger periodic full rebuild after this fraction of original-N inserts via <code>addNodes</code>. Set to <code>Infinity</code> to disable. <code>incremental</code> defaults this to <code>Infinity</code>.</td></tr>
   <tr><td><code>sizeBy</code></td><td>string</td><td><code>'edges'</code></td><td>Node size: <code>'edges'</code> (degree) or <code>'members'</code> (count)</td></tr>
   <tr><td><code>sizeLog</code></td><td>boolean</td><td>false</td><td>Log scale for node size</td></tr>
   <tr><td><code>smoothAlpha</code></td><td>number</td><td>0</td><td>Topology blend weight, 0 (property only) to 1 (topology only)</td></tr>
