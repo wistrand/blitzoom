@@ -1,80 +1,81 @@
 # NodeId	Label	Group	Kind	File	Filetype	Lines	Bytes	AgeHours
-file:tests/gpu_blend_test.ts	tests/gpu_blend_test.ts	tests	file	tests	ts	363	16801	62
+file:tests/gpu_blend_test.ts	tests/gpu_blend_test.ts	tests	file	tests	ts	363	16801	63
 file:tests/gpu_pipeline_test.ts	tests/gpu_pipeline_test.ts	tests	file	tests	ts	140	5621	62
-file:tests/gen_ground_truth.ts	tests/gen_ground_truth.ts	tests	file	tests	ts	108	4498	62
-file:tests/ground_truth_test.ts	tests/ground_truth_test.ts	tests	file	tests	ts	104	4415	62
-file:tests/pipeline_test.ts	tests/pipeline_test.ts	tests	file	tests	ts	2306	93752	2
-file:tests/gpu_test.ts	tests/gpu_test.ts	tests	file	tests	ts	230	8819	62
-file:agent_docs/ARCHITECTURE-bearings.md	agent_docs/ARCHITECTURE-bearings.md	agent_docs	file	agent_docs	md	75	4203	62
+file:tests/gen_ground_truth.ts	tests/gen_ground_truth.ts	tests	file	tests	ts	108	4498	63
+file:tests/ground_truth_test.ts	tests/ground_truth_test.ts	tests	file	tests	ts	104	4415	63
+file:tests/pipeline_test.ts	tests/pipeline_test.ts	tests	file	tests	ts	2306	93752	3
+file:tests/gpu_test.ts	tests/gpu_test.ts	tests	file	tests	ts	230	8819	63
+file:tests/import_cycle_test.ts	tests/import_cycle_test.ts	tests	file	tests	ts	279	10004	
+file:agent_docs/ARCHITECTURE-bearings.md	agent_docs/ARCHITECTURE-bearings.md	agent_docs	file	agent_docs	md	75	4203	63
 file:agent_docs/PLAN-30M-incremental.md	agent_docs/PLAN-30M-incremental.md	agent_docs	file	agent_docs	md	332	13166	16
-file:agent_docs/ARCHITECTURE-webgl.md	agent_docs/ARCHITECTURE-webgl.md	agent_docs	file	agent_docs	md	221	10235	
-file:agent_docs/ARCHITECTURE.md	agent_docs/ARCHITECTURE.md	agent_docs	file	agent_docs	md	488	39241	
+file:agent_docs/ARCHITECTURE-webgl.md	agent_docs/ARCHITECTURE-webgl.md	agent_docs	file	agent_docs	md	221	10235	1
+file:agent_docs/ARCHITECTURE.md	agent_docs/ARCHITECTURE.md	agent_docs	file	agent_docs	md	517	42998	
 file:agent_docs/ARCHITECTURE-data-import.md	agent_docs/ARCHITECTURE-data-import.md	agent_docs	file	agent_docs	md	288	40130	16
-file:agent_docs/ARCHITECTURE-compass.md	agent_docs/ARCHITECTURE-compass.md	agent_docs	file	agent_docs	md	147	7738	
+file:agent_docs/ARCHITECTURE-compass.md	agent_docs/ARCHITECTURE-compass.md	agent_docs	file	agent_docs	md	147	7738	1
 file:agent_docs/PLAN-blitzoom-skill.md	agent_docs/PLAN-blitzoom-skill.md	agent_docs	file	agent_docs	md	90	4097	16
-file:agent_docs/PLAN-rename-blitzoom.md	agent_docs/PLAN-rename-blitzoom.md	agent_docs	file	agent_docs	md	310	12464	62
+file:agent_docs/PLAN-rename-blitzoom.md	agent_docs/PLAN-rename-blitzoom.md	agent_docs	file	agent_docs	md	310	12464	63
 file:agent_docs/ARCHITECTURE-svg.md	agent_docs/ARCHITECTURE-svg.md	agent_docs	file	agent_docs	md	218	8824	16
 file:agent_docs/SPEC.md	agent_docs/SPEC.md	agent_docs	file	agent_docs	md	138	12752	16
-file:agent_docs/ARCHITECTURE-webgpu.md	agent_docs/ARCHITECTURE-webgpu.md	agent_docs	file	agent_docs	md	301	13470	
+file:agent_docs/ARCHITECTURE-webgpu.md	agent_docs/ARCHITECTURE-webgpu.md	agent_docs	file	agent_docs	md	301	13470	1
 file:agent_docs/ARCHITECTURE-auto-tune.md	agent_docs/ARCHITECTURE-auto-tune.md	agent_docs	file	agent_docs	md	316	21658	16
 file:agent_docs/PLAN-gpu-resident.md	agent_docs/PLAN-gpu-resident.md	agent_docs	file	agent_docs	md	202	12336	16
 file:agent_docs/PLAN-keyboard-node-nav.md	agent_docs/PLAN-keyboard-node-nav.md	agent_docs	file	agent_docs	md	63	4038	16
 file:agent_docs/RESEARCH-precompute-optimizations.md	agent_docs/RESEARCH-precompute-optimizations.md	agent_docs	file	agent_docs	md	177	6908	16
 file:agent_docs/PLAN-topology-smoothing.md	agent_docs/PLAN-topology-smoothing.md	agent_docs	file	agent_docs	md	216	8791	16
-file:deno.json	deno.json	.	file	.	json	14	1104	62
-file:scripts/src2snap.ts	scripts/src2snap.ts	scripts	file	scripts	ts	581	23180	
+file:deno.json	deno.json	.	file	.	json	14	1131	
+file:scripts/src2snap.ts	scripts/src2snap.ts	scripts	file	scripts	ts	581	23180	1
 file:scripts/azgaar2snap.ts	scripts/azgaar2snap.ts	scripts	file	scripts	ts	211	7459	63
 file:scripts/porsche2snap.ts	scripts/porsche2snap.ts	scripts	file	scripts	ts	322	13034	63
-file:scripts/bench-render.js	scripts/bench-render.js	scripts	file	scripts	js	115	4667	62
-file:scripts/bench-minhash.js	scripts/bench-minhash.js	scripts	file	scripts	js	77	3074	62
+file:scripts/bench-render.js	scripts/bench-render.js	scripts	file	scripts	js	115	4667	63
+file:scripts/bench-minhash.js	scripts/bench-minhash.js	scripts	file	scripts	js	77	3074	63
 file:scripts/csv2snap.ts	scripts/csv2snap.ts	scripts	file	scripts	ts	252	8160	63
-file:scripts/bench-3M.js	scripts/bench-3M.js	scripts	file	scripts	js	185	7600	62
+file:scripts/bench-3M.js	scripts/bench-3M.js	scripts	file	scripts	js	185	7600	63
 file:scripts/stix2snap.ts	scripts/stix2snap.ts	scripts	file	scripts	ts	384	13326	63
 file:scripts/bench-gpu.js	scripts/bench-gpu.js	scripts	file	scripts	js	174	7097	62
-file:scripts/bench-pipeline.js	scripts/bench-pipeline.js	scripts	file	scripts	js	84	3639	62
+file:scripts/bench-pipeline.js	scripts/bench-pipeline.js	scripts	file	scripts	js	84	3639	63
 file:scripts/midi2graph.js	scripts/midi2graph.js	scripts	file	scripts	js	346	13744	62
 file:scripts/ransomware2snap.ts	scripts/ransomware2snap.ts	scripts	file	scripts	ts	274	10421	63
-file:scripts/bench-oph-threshold.js	scripts/bench-oph-threshold.js	scripts	file	scripts	js	79	2813	62
-file:scripts/bench-viewer.js	scripts/bench-viewer.js	scripts	file	scripts	js	225	9878	62
+file:scripts/bench-oph-threshold.js	scripts/bench-oph-threshold.js	scripts	file	scripts	js	79	2813	63
+file:scripts/bench-viewer.js	scripts/bench-viewer.js	scripts	file	scripts	js	225	9878	63
 file:scripts/serve.ts	scripts/serve.ts	scripts	file	scripts	ts	46	1240	63
 file:scripts/bench-hashslot.js	scripts/bench-hashslot.js	scripts	file	scripts	js	109	3305	63
 file:benchmarks/export-layout.ts	benchmarks/export-layout.ts	benchmarks	file	benchmarks	ts	152	5825	62
 file:benchmarks/results/REPORT.md	benchmarks/results/REPORT.md	benchmarks/results	file	benchmarks/results	md	240	12276	62
 file:README.md	README.md	.	file	.	md	148	6646	16
-file:docs/blitzoom-utils.js	docs/blitzoom-utils.js	docs	file	docs	js	630	25810	62
+file:docs/blitzoom-utils.js	docs/blitzoom-utils.js	docs	file	docs	js	630	25810	63
 file:docs/skills/blitzoom/SKILL.md	docs/skills/blitzoom/SKILL.md	docs/skills/blitzoom	file	docs/skills/blitzoom	md	373	18021	1
 file:docs/skills/blitzoom/data-formats.md	docs/skills/blitzoom/data-formats.md	docs/skills/blitzoom	file	docs/skills/blitzoom	md	164	3896	16
 file:docs/skills/blitzoom/options-reference.md	docs/skills/blitzoom/options-reference.md	docs/skills/blitzoom	file	docs/skills/blitzoom	md	57	7246	1
 file:docs/stix2snap.js	docs/stix2snap.js	docs	file	docs	js	244	9385	63
-file:docs/blitzoom-gpu.js	docs/blitzoom-gpu.js	docs	file	docs	js	770	30972	14
-file:docs/webgl.html	docs/webgl.html	docs	file	docs	html	489	23311	
-file:docs/blitzoom-proj-worker.js	docs/blitzoom-proj-worker.js	docs	file	docs	js	96	3423	62
-file:docs/blitzoom-algo.js	docs/blitzoom-algo.js	docs	file	docs	js	627	24966	14
-file:docs/blitzoom-viewer.js	docs/blitzoom-viewer.js	docs	file	docs	js	2476	118535	14
-file:docs/blitzoom-worker.js	docs/blitzoom-worker.js	docs	file	docs	js	144	4491	14
+file:docs/blitzoom-gpu.js	docs/blitzoom-gpu.js	docs	file	docs	js	770	30972	15
+file:docs/webgl.html	docs/webgl.html	docs	file	docs	html	489	23311	1
+file:docs/blitzoom-proj-worker.js	docs/blitzoom-proj-worker.js	docs	file	docs	js	96	3423	63
+file:docs/blitzoom-algo.js	docs/blitzoom-algo.js	docs	file	docs	js	627	24966	15
+file:docs/blitzoom-viewer.js	docs/blitzoom-viewer.js	docs	file	docs	js	2491	119431	
+file:docs/blitzoom-worker.js	docs/blitzoom-worker.js	docs	file	docs	js	144	4491	15
 file:docs/blitzoom-colors.js	docs/blitzoom-colors.js	docs	file	docs	js	124	3752	62
-file:docs/demo/gpu-test.html	docs/demo/gpu-test.html	docs/demo	file	docs/demo	html	298	9853	
-file:docs/demo/bz-graph-demo.html	docs/demo/bz-graph-demo.html	docs/demo	file	docs/demo	html	115	4935	
-file:docs/demo/unicode-incremental.html	docs/demo/unicode-incremental.html	docs/demo	file	docs/demo	html	486	20351	
-file:docs/demo/example.html	docs/demo/example.html	docs/demo	file	docs/demo	html	54	1832	
-file:docs/demo/incremental-api-demo.html	docs/demo/incremental-api-demo.html	docs/demo	file	docs/demo	html	528	19111	
-file:docs/demo/webgl-test.html	docs/demo/webgl-test.html	docs/demo	file	docs/demo	html	246	7676	
-file:docs/demo/bundle-test.html	docs/demo/bundle-test.html	docs/demo	file	docs/demo	html	83	3168	
-file:docs/blitzoom-factory.js	docs/blitzoom-factory.js	docs	file	docs	js	233	9753	2
-file:docs/blitzoom.css	docs/blitzoom.css	docs	file	docs	css	826	20529	63
-file:docs/blitzoom-renderer.js	docs/blitzoom-renderer.js	docs	file	docs	js	1184	46772	1
-file:docs/index.html	docs/index.html	docs	file	docs	html	314	8978	62
-file:docs/viewer.html	docs/viewer.html	docs	file	docs	html	147	11834	62
-file:docs/webgpu.html	docs/webgpu.html	docs	file	docs	html	793	38976	
+file:docs/demo/gpu-test.html	docs/demo/gpu-test.html	docs/demo	file	docs/demo	html	298	9853	1
+file:docs/demo/bz-graph-demo.html	docs/demo/bz-graph-demo.html	docs/demo	file	docs/demo	html	115	4935	1
+file:docs/demo/unicode-incremental.html	docs/demo/unicode-incremental.html	docs/demo	file	docs/demo	html	486	20351	1
+file:docs/demo/example.html	docs/demo/example.html	docs/demo	file	docs/demo	html	54	1832	1
+file:docs/demo/incremental-api-demo.html	docs/demo/incremental-api-demo.html	docs/demo	file	docs/demo	html	528	19111	1
+file:docs/demo/webgl-test.html	docs/demo/webgl-test.html	docs/demo	file	docs/demo	html	246	7676	1
+file:docs/demo/bundle-test.html	docs/demo/bundle-test.html	docs/demo	file	docs/demo	html	83	3168	1
+file:docs/blitzoom-factory.js	docs/blitzoom-factory.js	docs	file	docs	js	233	9753	3
+file:docs/blitzoom.css	docs/blitzoom.css	docs	file	docs	css	840	21035	
+file:docs/blitzoom-renderer.js	docs/blitzoom-renderer.js	docs	file	docs	js	1184	46772	2
+file:docs/index.html	docs/index.html	docs	file	docs	html	342	9744	
+file:docs/viewer.html	docs/viewer.html	docs	file	docs	html	157	13239	
+file:docs/webgpu.html	docs/webgpu.html	docs	file	docs	html	793	38976	1
 file:docs/dist/blitzoom.bundle.js	docs/dist/blitzoom.bundle.js	docs/dist	file	docs/dist	js	556	200140	
 file:docs/about.html	docs/about.html	docs	file	docs	html	1563	90687	62
-file:docs/blitzoom-canvas.js	docs/blitzoom-canvas.js	docs	file	docs	js	1671	68725	
+file:docs/blitzoom-canvas.js	docs/blitzoom-canvas.js	docs	file	docs	js	1671	68725	1
 file:docs/data/miserables.cyjs.json	docs/data/miserables.cyjs.json	docs/data	file	docs/data	json	2325	39657	63
 file:docs/data/miserables.jgf.json	docs/data/miserables.jgf.json	docs/data	file	docs/data	json	2251	59325	63
 file:docs/data/miserables.json	docs/data/miserables.json	docs/data	file	docs/data	json	2	11536	63
 file:docs/data/midi-synths.json	docs/data/midi-synths.json	docs/data	file	docs/data	json	22571	524213	63
-file:docs/howto.html	docs/howto.html	docs	file	docs	html	1197	73899	
-file:docs/bz-controls.js	docs/bz-controls.js	docs	file	docs	js	435	19151	
+file:docs/howto.html	docs/howto.html	docs	file	docs	html	1197	73899	1
+file:docs/bz-controls.js	docs/bz-controls.js	docs	file	docs	js	435	19151	1
 file:docs/blitzoom-svg.js	docs/blitzoom-svg.js	docs	file	docs	js	623	25397	62
 file:docs/bz-graph.js	docs/bz-graph.js	docs	file	docs	js	580	26344	1
 file:docs/blitzoom-parsers.js	docs/blitzoom-parsers.js	docs	file	docs	js	1028	38007	62
@@ -82,10 +83,10 @@ file:docs/comparison.html	docs/comparison.html	docs	file	docs	html	605	29972	62
 file:docs/blitzoom-gl-renderer.js	docs/blitzoom-gl-renderer.js	docs	file	docs	js	1250	41651	62
 file:docs/blitzoom.js	docs/blitzoom.js	docs	file	docs	js	30	1012	17
 file:docs/blitzoom-mutations.js	docs/blitzoom-mutations.js	docs	file	docs	js	513	18768	1
-file:docs/bz-compass.js	docs/bz-compass.js	docs	file	docs	js	1094	42765	
+file:docs/bz-compass.js	docs/bz-compass.js	docs	file	docs	js	1094	42765	1
 file:docs/datasets.json	docs/datasets.json	docs	file	docs	json	51	6024	62
-file:docs/blitzoom-pipeline.js	docs/blitzoom-pipeline.js	docs	file	docs	js	510	19576	14
-file:CLAUDE.md	CLAUDE.md	.	file	.	md	206	25656	
+file:docs/blitzoom-pipeline.js	docs/blitzoom-pipeline.js	docs	file	docs	js	510	19576	15
+file:CLAUDE.md	CLAUDE.md	.	file	.	md	207	26449	
 fn:tests/ground_truth_test.ts:loadGroundTruth	loadGroundTruth	tests/ground_truth_test.ts	function	tests/ground_truth_test.ts	ts	69		
 const:tests/pipeline_test.ts:SAMPLE_EDGES	SAMPLE_EDGES	tests/pipeline_test.ts	constant	tests/pipeline_test.ts	ts	1		
 const:tests/pipeline_test.ts:SAMPLE_LABELS	SAMPLE_LABELS	tests/pipeline_test.ts	constant	tests/pipeline_test.ts	ts	1		
@@ -94,6 +95,14 @@ fn:tests/pipeline_test.ts:makeRotationFixture	makeRotationFixture	tests/pipeline
 fn:tests/pipeline_test.ts:buildSVGView	buildSVGView	tests/pipeline_test.ts	function	tests/pipeline_test.ts	ts	158		
 fn:tests/gpu_test.ts:buildGPUInput	buildGPUInput	tests/gpu_test.ts	function	tests/gpu_test.ts	ts	40		
 fn:tests/gpu_test.ts:cpuMinHashProject	cpuMinHashProject	tests/gpu_test.ts	function	tests/gpu_test.ts	ts	175		
+const:tests/import_cycle_test.ts:DOCS_DIR	DOCS_DIR	tests/import_cycle_test.ts	constant	tests/import_cycle_test.ts	ts	1		
+const:tests/import_cycle_test.ts:LEAF_MODULES	LEAF_MODULES	tests/import_cycle_test.ts	constant	tests/import_cycle_test.ts	ts	1		
+fn:tests/import_cycle_test.ts:stripComments	stripComments	tests/import_cycle_test.ts	function	tests/import_cycle_test.ts	ts	14		
+fn:tests/import_cycle_test.ts:extractStaticImports	extractStaticImports	tests/import_cycle_test.ts	function	tests/import_cycle_test.ts	ts	15		
+fn:tests/import_cycle_test.ts:extractDynamicImports	extractDynamicImports	tests/import_cycle_test.ts	function	tests/import_cycle_test.ts	ts	17		
+fn:tests/import_cycle_test.ts:resolveToBasename	resolveToBasename	tests/import_cycle_test.ts	function	tests/import_cycle_test.ts	ts	20		
+fn:tests/import_cycle_test.ts:buildGraph	buildGraph	tests/import_cycle_test.ts	function	tests/import_cycle_test.ts	ts	27		
+fn:tests/import_cycle_test.ts:findCycle	findCycle	tests/import_cycle_test.ts	function	tests/import_cycle_test.ts	ts	120		
 fn:scripts/src2snap.ts:addSymbol	addSymbol	scripts/src2snap.ts	function	scripts/src2snap.ts	ts	4		
 fn:scripts/src2snap.ts:addEdge	addEdge	scripts/src2snap.ts	function	scripts/src2snap.ts	ts	8		
 const:scripts/src2snap.ts:EXTENSIONS	EXTENSIONS	scripts/src2snap.ts	constant	scripts/src2snap.ts	ts	1		
@@ -257,7 +266,7 @@ fn:docs/blitzoom-algo.js:getSupernodeDominantValue	getSupernodeDominantValue	doc
 fn:docs/blitzoom-viewer.js:esc	esc	docs/blitzoom-viewer.js	function	docs/blitzoom-viewer.js	js	10		
 fn:docs/blitzoom-viewer.js:pickInitialLevel	pickInitialLevel	docs/blitzoom-viewer.js	function	docs/blitzoom-viewer.js	js	38		
 const:docs/blitzoom-viewer.js:DATASETS	DATASETS	docs/blitzoom-viewer.js	constant	docs/blitzoom-viewer.js	js	1		
-class:docs/blitzoom-viewer.js:BlitZoom	BlitZoom	docs/blitzoom-viewer.js	class	docs/blitzoom-viewer.js	js	2325		
+class:docs/blitzoom-viewer.js:BlitZoom	BlitZoom	docs/blitzoom-viewer.js	class	docs/blitzoom-viewer.js	js	2340		
 method:docs/blitzoom-viewer.js:BlitZoom.constructor	BlitZoom.constructor	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	71		
 method:docs/blitzoom-viewer.js:BlitZoom._serializeHash	BlitZoom._serializeHash	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	43		
 method:docs/blitzoom-viewer.js:BlitZoom._scheduleHashUpdate	BlitZoom._scheduleHashUpdate	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	10		
@@ -291,7 +300,7 @@ method:docs/blitzoom-viewer.js:BlitZoom.resolve	BlitZoom.resolve	docs/blitzoom-v
 method:docs/blitzoom-viewer.js:BlitZoom.loadGraphGPU	BlitZoom.loadGraphGPU	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	71		
 method:docs/blitzoom-viewer.js:BlitZoom.loadFromParsed	BlitZoom.loadFromParsed	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	51		
 method:docs/blitzoom-viewer.js:BlitZoom._applyWorkerResult	BlitZoom._applyWorkerResult	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	135		
-method:docs/blitzoom-viewer.js:BlitZoom._finalizeLoad	BlitZoom._finalizeLoad	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	68		
+method:docs/blitzoom-viewer.js:BlitZoom._finalizeLoad	BlitZoom._finalizeLoad	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	83		
 method:docs/blitzoom-viewer.js:BlitZoom._autoTuneFresh	BlitZoom._autoTuneFresh	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	45		
 method:docs/blitzoom-viewer.js:BlitZoom._applyGPUToCurrentData	BlitZoom._applyGPUToCurrentData	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	34		
 method:docs/blitzoom-viewer.js:BlitZoom._reloadCPU	BlitZoom._reloadCPU	docs/blitzoom-viewer.js	method	docs/blitzoom-viewer.js	js	27		
@@ -743,12 +752,12 @@ region:docs/demo/webgl-test.html:script:183	inline-script:183	docs/demo/webgl-te
 region:docs/demo/bundle-test.html:style:8	inline-style:8	docs/demo/bundle-test.html	style	docs/demo/bundle-test.html	html	9		
 elem:docs/demo/bundle-test.html:#c1	#c1	docs/demo/bundle-test.html	element	docs/demo/bundle-test.html	html	1		
 region:docs/demo/bundle-test.html:script:69	inline-script:69	docs/demo/bundle-test.html	script	docs/demo/bundle-test.html	html	12		
-region:docs/index.html:style:17	inline-style:17	docs/index.html	style	docs/index.html	html	197		
-region:docs/index.html:style:245	inline-style:245	docs/index.html	style	docs/index.html	html	4		
+region:docs/index.html:style:17	inline-style:17	docs/index.html	style	docs/index.html	html	213		
+region:docs/index.html:style:273	inline-style:273	docs/index.html	style	docs/index.html	html	4		
 elem:docs/index.html:#demo-dataset	#demo-dataset	docs/index.html	element	docs/index.html	html	1		
 elem:docs/index.html:#demo-graph	#demo-graph	docs/index.html	element	docs/index.html	html	1		
-region:docs/index.html:script:270	inline-script:270	docs/index.html	script	docs/index.html	html	41		
-region:docs/viewer.html:style:17	inline-style:17	docs/viewer.html	style	docs/viewer.html	html	132		
+region:docs/index.html:script:298	inline-script:298	docs/index.html	script	docs/index.html	html	41		
+region:docs/viewer.html:style:17	inline-style:17	docs/viewer.html	style	docs/viewer.html	html	142		
 elem:docs/viewer.html:#datasetName	#datasetName	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#loadNewBtn	#loadNewBtn	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#levelLabel	#levelLabel	docs/viewer.html	element	docs/viewer.html	html	1		
@@ -774,6 +783,9 @@ elem:docs/viewer.html:#helpBtn	#helpBtn	docs/viewer.html	element	docs/viewer.htm
 elem:docs/viewer.html:#helpDialog	#helpDialog	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#helpDialogTitle	#helpDialogTitle	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#helpDialogContent	#helpDialogContent	docs/viewer.html	element	docs/viewer.html	html	1		
+elem:docs/viewer.html:#welcomeDialog	#welcomeDialog	docs/viewer.html	element	docs/viewer.html	html	1		
+elem:docs/viewer.html:#welcomeDialogTitle	#welcomeDialogTitle	docs/viewer.html	element	docs/viewer.html	html	1		
+elem:docs/viewer.html:#welcomeDatasetName	#welcomeDatasetName	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#loader-screen	#loader-screen	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#dropZone	#dropZone	docs/viewer.html	element	docs/viewer.html	html	1		
 elem:docs/viewer.html:#datasetSelect	#datasetSelect	docs/viewer.html	element	docs/viewer.html	html	1		
@@ -948,86 +960,88 @@ rule:docs/blitzoom.css:241	.zoom-step-btn:disabled	docs/blitzoom.css	rule	docs/b
 rule:docs/blitzoom.css:243	.zoom-current	docs/blitzoom.css	rule	docs/blitzoom.css	css	13		
 rule:docs/blitzoom.css:257	.reset-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	13		
 rule:docs/blitzoom.css:270	.reset-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:272	#canvas	docs/blitzoom.css	rule	docs/blitzoom.css	css	10		
-rule:docs/blitzoom.css:282	#canvas:active	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:284	.sidebar	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
-rule:docs/blitzoom.css:296	.sidebar::-webkit-scrollbar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:297	.sidebar::-webkit-scrollbar-track	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:298	.sidebar::-webkit-scrollbar-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:300	.algo-info	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:308	.hint	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
-rule:docs/blitzoom.css:314	.panel-title	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
-rule:docs/blitzoom.css:323	.stat-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:330	.stat-label	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:331	.stat-value	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:333	.node-title	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:341	.node-badge	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
-rule:docs/blitzoom.css:351	.prop-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:358	.prop-key	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:359	.prop-val	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:361	.minhash-display	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:367	.mh-bit	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:374	.neighbor-list	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
-rule:docs/blitzoom.css:379	.neighbor-item	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
-rule:docs/blitzoom.css:390	.neighbor-item:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:392	.nudge-control	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:399	.nudge-control input[type=range]	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
-rule:docs/blitzoom.css:408	.nudge-control input[type=range]::-webkit-slider-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
-rule:docs/blitzoom.css:417	.nudge-val	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
-rule:docs/blitzoom.css:427	.bucket-id	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:435	.strength-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:442	.strength-row > .strength-label	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:449	.strength-row input[type=checkbox]	docs/blitzoom.css	rule	docs/blitzoom.css	css	14		
-rule:docs/blitzoom.css:463	.strength-row input[type=checkbox]:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	3		
-rule:docs/blitzoom.css:466	.strength-row input[type=checkbox]:checked	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
-rule:docs/blitzoom.css:470	.strength-row input[type=checkbox]:checked::after	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
-rule:docs/blitzoom.css:481	.strength-label	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
-rule:docs/blitzoom.css:489	.strength-slider	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
-rule:docs/blitzoom.css:498	.strength-slider::-webkit-slider-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:505	.strength-val	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:513	.bearing-dial	docs/blitzoom.css	rule	docs/blitzoom.css	css	16		
-rule:docs/blitzoom.css:529	.bearing-dial.nonzero	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
-rule:docs/blitzoom.css:533	.bearing-dial:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
-rule:docs/blitzoom.css:537	.bearing-dial:focus, .bearing-dial.focused, .bearing-dial.active	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
-rule:docs/blitzoom.css:542	.bearing-tick	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
-rule:docs/blitzoom.css:553	.preset-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:559	.preset-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	13		
-rule:docs/blitzoom.css:572	.preset-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:573	.preset-btn.active	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:575	.loader-screen	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
-rule:docs/blitzoom.css:584	.loader-screen.hidden	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:586	.drop-zone	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
-rule:docs/blitzoom.css:595	.drop-zone.dragover	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
-rule:docs/blitzoom.css:599	#canvas.drag-hover, .gl-wrapper.drag-hover, .drag-hover > #canvas	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
-rule:docs/blitzoom.css:603	.drop-title	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:610	.drop-hint	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:616	.file-input-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:623	.file-input-row label	docs/blitzoom.css	rule	docs/blitzoom.css	css	10		
-rule:docs/blitzoom.css:633	.file-input-row input[type=file]	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:639	.file-input-row input[type=file]::file-selector-button	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
-rule:docs/blitzoom.css:650	.file-input-row input[type=file]::file-selector-button:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
-rule:docs/blitzoom.css:654	.load-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	13		
-rule:docs/blitzoom.css:667	.load-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:668	.load-btn:disabled	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:669	.load-status	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
-rule:docs/blitzoom.css:675	.load-status.error	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:677	.dataset-list	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:684	.dataset-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	12		
-rule:docs/blitzoom.css:696	.dataset-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:697	.dataset-btn:disabled	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:700	progress	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
-rule:docs/blitzoom.css:707	progress::-webkit-progress-bar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:708	progress::-webkit-progress-value	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:709	progress::-moz-progress-bar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:711	.node-panel	docs/blitzoom.css	rule	docs/blitzoom.css	css	18		
-rule:docs/blitzoom.css:729	.node-panel.open	docs/blitzoom.css	rule	docs/blitzoom.css	css	3		
-rule:docs/blitzoom.css:732	.node-panel::-webkit-scrollbar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:733	.node-panel::-webkit-scrollbar-track	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:734	.node-panel::-webkit-scrollbar-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:736	.node-panel-close	docs/blitzoom.css	rule	docs/blitzoom.css	css	17		
-rule:docs/blitzoom.css:753	.node-panel-close:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:773	.compass-panel	docs/blitzoom.css	rule	docs/blitzoom.css	css	14		
-rule:docs/blitzoom.css:787	.compass-titlebar	docs/blitzoom.css	rule	docs/blitzoom.css	css	12		
-rule:docs/blitzoom.css:799	.compass-close	docs/blitzoom.css	rule	docs/blitzoom.css	css	10		
-rule:docs/blitzoom.css:809	.compass-close:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
-rule:docs/blitzoom.css:810	.compass-panel bz-compass	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
+rule:docs/blitzoom.css:275	#loadNewBtn	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
+rule:docs/blitzoom.css:284	#loadNewBtn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:286	#canvas	docs/blitzoom.css	rule	docs/blitzoom.css	css	10		
+rule:docs/blitzoom.css:296	#canvas:active	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:298	.sidebar	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
+rule:docs/blitzoom.css:310	.sidebar::-webkit-scrollbar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:311	.sidebar::-webkit-scrollbar-track	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:312	.sidebar::-webkit-scrollbar-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:314	.algo-info	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:322	.hint	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
+rule:docs/blitzoom.css:328	.panel-title	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
+rule:docs/blitzoom.css:337	.stat-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:344	.stat-label	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:345	.stat-value	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:347	.node-title	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:355	.node-badge	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
+rule:docs/blitzoom.css:365	.prop-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:372	.prop-key	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:373	.prop-val	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:375	.minhash-display	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:381	.mh-bit	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:388	.neighbor-list	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
+rule:docs/blitzoom.css:393	.neighbor-item	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
+rule:docs/blitzoom.css:404	.neighbor-item:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:406	.nudge-control	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:413	.nudge-control input[type=range]	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
+rule:docs/blitzoom.css:422	.nudge-control input[type=range]::-webkit-slider-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
+rule:docs/blitzoom.css:431	.nudge-val	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
+rule:docs/blitzoom.css:441	.bucket-id	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:449	.strength-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:456	.strength-row > .strength-label	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:463	.strength-row input[type=checkbox]	docs/blitzoom.css	rule	docs/blitzoom.css	css	14		
+rule:docs/blitzoom.css:477	.strength-row input[type=checkbox]:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	3		
+rule:docs/blitzoom.css:480	.strength-row input[type=checkbox]:checked	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
+rule:docs/blitzoom.css:484	.strength-row input[type=checkbox]:checked::after	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
+rule:docs/blitzoom.css:495	.strength-label	docs/blitzoom.css	rule	docs/blitzoom.css	css	8		
+rule:docs/blitzoom.css:503	.strength-slider	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
+rule:docs/blitzoom.css:512	.strength-slider::-webkit-slider-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:519	.strength-val	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:527	.bearing-dial	docs/blitzoom.css	rule	docs/blitzoom.css	css	16		
+rule:docs/blitzoom.css:543	.bearing-dial.nonzero	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
+rule:docs/blitzoom.css:547	.bearing-dial:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
+rule:docs/blitzoom.css:551	.bearing-dial:focus, .bearing-dial.focused, .bearing-dial.active	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		
+rule:docs/blitzoom.css:556	.bearing-tick	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
+rule:docs/blitzoom.css:567	.preset-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:573	.preset-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	13		
+rule:docs/blitzoom.css:586	.preset-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:587	.preset-btn.active	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:589	.loader-screen	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
+rule:docs/blitzoom.css:598	.loader-screen.hidden	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:600	.drop-zone	docs/blitzoom.css	rule	docs/blitzoom.css	css	9		
+rule:docs/blitzoom.css:609	.drop-zone.dragover	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
+rule:docs/blitzoom.css:613	#canvas.drag-hover, .gl-wrapper.drag-hover, .drag-hover > #canvas	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
+rule:docs/blitzoom.css:617	.drop-title	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:624	.drop-hint	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:630	.file-input-row	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:637	.file-input-row label	docs/blitzoom.css	rule	docs/blitzoom.css	css	10		
+rule:docs/blitzoom.css:647	.file-input-row input[type=file]	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:653	.file-input-row input[type=file]::file-selector-button	docs/blitzoom.css	rule	docs/blitzoom.css	css	11		
+rule:docs/blitzoom.css:664	.file-input-row input[type=file]::file-selector-button:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	4		
+rule:docs/blitzoom.css:668	.load-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	13		
+rule:docs/blitzoom.css:681	.load-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:682	.load-btn:disabled	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:683	.load-status	docs/blitzoom.css	rule	docs/blitzoom.css	css	6		
+rule:docs/blitzoom.css:689	.load-status.error	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:691	.dataset-list	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:698	.dataset-btn	docs/blitzoom.css	rule	docs/blitzoom.css	css	12		
+rule:docs/blitzoom.css:710	.dataset-btn:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:711	.dataset-btn:disabled	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:714	progress	docs/blitzoom.css	rule	docs/blitzoom.css	css	7		
+rule:docs/blitzoom.css:721	progress::-webkit-progress-bar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:722	progress::-webkit-progress-value	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:723	progress::-moz-progress-bar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:725	.node-panel	docs/blitzoom.css	rule	docs/blitzoom.css	css	18		
+rule:docs/blitzoom.css:743	.node-panel.open	docs/blitzoom.css	rule	docs/blitzoom.css	css	3		
+rule:docs/blitzoom.css:746	.node-panel::-webkit-scrollbar	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:747	.node-panel::-webkit-scrollbar-track	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:748	.node-panel::-webkit-scrollbar-thumb	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:750	.node-panel-close	docs/blitzoom.css	rule	docs/blitzoom.css	css	17		
+rule:docs/blitzoom.css:767	.node-panel-close:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:787	.compass-panel	docs/blitzoom.css	rule	docs/blitzoom.css	css	14		
+rule:docs/blitzoom.css:801	.compass-titlebar	docs/blitzoom.css	rule	docs/blitzoom.css	css	12		
+rule:docs/blitzoom.css:813	.compass-close	docs/blitzoom.css	rule	docs/blitzoom.css	css	10		
+rule:docs/blitzoom.css:823	.compass-close:hover	docs/blitzoom.css	rule	docs/blitzoom.css	css	1		
+rule:docs/blitzoom.css:824	.compass-panel bz-compass	docs/blitzoom.css	rule	docs/blitzoom.css	css	5		

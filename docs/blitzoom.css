@@ -269,6 +269,20 @@
   }
   .reset-btn:hover { border-color: var(--accent3); color: var(--accent3); }
 
+  /* Promote the "Load a different dataset" button so it doesn't disappear into
+     the row of single-letter toolbar toggles. Accent fill, brighter text,
+     wider padding, and right-side spacing separate it from the rest. */
+  #loadNewBtn {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    padding: 0 14px;
+    margin-right: 12px;
+    letter-spacing: 0.08em;
+  }
+  #loadNewBtn:hover { background: #6a5ae0; border-color: #6a5ae0; color: #fff; }
+
   #canvas {
     display: block;
     cursor: grab;

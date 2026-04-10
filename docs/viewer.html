@@ -65,6 +65,16 @@
   <form method="dialog" style="margin-top:16px"><button style="background:var(--accent);color:#fff;border:none;border-radius:4px;padding:6px 16px;font-size:12px;cursor:pointer;font-family:inherit" aria-label="Close help">OK</button></form>
 </dialog>
 
+<dialog id="welcomeDialog" aria-labelledby="welcomeDialogTitle" style="max-width:440px;margin:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'JetBrains Mono',monospace;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+  <h3 style="margin:0 0 12px;color:var(--text-bright);font-size:15px;font-family:'Syne',sans-serif" id="welcomeDialogTitle">Welcome to BlitZoom</h3>
+  <div style="font-size:12px;line-height:1.7;color:var(--text)">
+    <p style="margin:0 0 12px">You're looking at the <strong id="welcomeDatasetName" style="color:var(--accent3)">…</strong> dataset.</p>
+    <p style="margin:0 0 12px">Want to explore something else? Click the <strong style="color:var(--accent)">Load</strong> button in the toolbar to pick another preset, drop your own file (CSV, JSON, GraphML, GEXF, Cytoscape, SNAP, STIX&nbsp;2.1), or load from a URL.</p>
+    <p style="margin:0;color:var(--text-dim);font-size:11px">Press <kbd style="background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px">?</kbd> any time for keyboard shortcuts.</p>
+  </div>
+  <form method="dialog" style="margin-top:16px;text-align:right"><button style="background:var(--accent);color:#fff;border:none;border-radius:4px;padding:6px 16px;font-size:12px;cursor:pointer;font-family:inherit" aria-label="Close welcome">Got it</button></form>
+</dialog>
+
 <main id="loader-screen" class="loader-screen" role="region" aria-label="Dataset loader">
   <div class="drop-zone" id="dropZone" role="region" aria-label="Drop zone for graph files">
     <div class="drop-title" role="heading" aria-level="2">Load Graph</div>
