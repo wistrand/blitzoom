@@ -118,6 +118,53 @@
   th, td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
   th { background: var(--surface); color: var(--text-bright); font-weight: 600; }
   td code { background: none; padding: 0; }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0 28px;
+  }
+  .cta-row a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  }
+  .cta-row a:hover { transform: translateY(-1px); }
+  .cta-row .cta-primary {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+  }
+  .cta-row .cta-primary:hover { background: #6a5ae0; border-color: #6a5ae0; }
+  .cta-row .cta-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .cta-row .cta-secondary:hover { border-color: var(--accent); color: var(--text-bright); }
+  .cta-row .cta-special {
+    background: rgba(106,247,200,0.06);
+    color: var(--accent3);
+    border: 1px solid var(--accent3);
+  }
+  .cta-row .cta-special:hover { background: rgba(106,247,200,0.14); }
+
+  .cta-caption {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: -16px 0 28px;
+    line-height: 1.55;
+    max-width: 640px;
+  }
 </style>
 </head>
 <body>
@@ -149,6 +196,7 @@
   <a href="about.html">How It Works</a> &middot;
   <a href="comparison.html">Comparison</a> &middot;
   <strong>Developer Guide</strong> &middot;
+  <a href="demo/index.html">Demos</a> &middot;
   <a href="webgpu.html">WebGPU</a> &middot;
   <a href="webgl.html">WebGL</a> &middot;
   <a href="https://github.com/wistrand/blitzoom">GitHub</a>
@@ -161,7 +209,18 @@
 
 <h2 id="quick-start">Quick Start</h2>
 
-<p>The fastest way to get a BlitZoom graph on screen: one import, one function call, done. See the <a href="demo/example.html">JS example</a> or <a href="demo/bz-graph-demo.html">&lt;bz-graph&gt; example</a> for complete working pages.</p>
+<nav class="cta-row" aria-label="Quick start actions">
+  <a class="cta-primary" href="demo/bz-graph-demo.html">&lt;bz-graph&gt; example<span aria-hidden="true"> →</span></a>
+  <a class="cta-secondary" href="demo/example.html">JS example<span aria-hidden="true"> →</span></a>
+  <a class="cta-secondary" href="demo/index.html">All demos<span aria-hidden="true"> →</span></a>
+  <a class="cta-special" href="skills/blitzoom.zip" type="application/zip" download>Download skill (.zip)</a>
+</nav>
+<p class="cta-caption">
+  Examples cover declarative HTML, programmatic embedding, streaming with the
+  incremental API, and side-by-side renderer/compute comparisons. The skill
+  bundle is a Claude Code skill — drop it into your skills directory to teach
+  Claude how to use the BlitZoom API.
+</p>
 
 <pre><span class="keyword">import</span> { createBlitZoomView } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
@@ -337,7 +396,7 @@ eve	Eve	management	director	12</pre>
 
 <p>The first <code>addNodes</code> call into an empty graph runs a <strong>schema bootstrap</strong>: it derives the property-group names (<code>category</code>, <code>block</code>, etc.) from the first batch's node fields, builds projection matrices for them, computes numeric bins, and applies any <code>strengths</code> you set via attributes. The schema is then locked in.</p>
 
-<p><strong>Limitation:</strong> property keys not present in the first batch are silently dropped on subsequent batches — same as the existing static-build behavior. Make sure your first batch contains at least one representative node with every field you'll need later. For datasets where every node has the same fields (the typical case), this is invisible.</p>
+<p><strong>Limitation:</strong> property keys not present in the first batch are silently dropped on subsequent batches — same as the existing static-build behavior. Include at least one representative node with every field you'll need in the first batch. For datasets where every node has the same fields (the typical case), this is invisible.</p>
 
 <p><strong>Why norm mode?</strong> There's a fundamental tradeoff: you can't have data-independent scale, optimal grid utilization, <em>and</em> zero displacement on insertion. Gaussian adapts its scale to the data (best grids, but every node shifts when new data arrives). Norm uses a fixed scale derived from the projection matrices (stable positions, but 5-30% worse grid utilization on datasets with low property diversity). Use <code>norm</code> for incremental/streaming use cases; use <code>gaussian</code> for static datasets where you load once and explore.</p>
 
@@ -480,7 +539,7 @@ console.log(view.colorSchemeName);   <span class="comment">// "thermal"</span></
 
 <h2 id="strengths">Strength Tuning</h2>
 
-<p>Property strengths control which attributes dominate the layout. Change them at any time. No rehashing, no reprojection. Just a weighted blend of fixed 2D anchors.</p>
+<p>Property strengths control which attributes dominate the layout. The blend is a weighted sum of fixed 2D anchors that were computed once at load time, so a strength change only re-runs the sum and the quantization step — neither the MinHash signatures nor the per-group projections are touched.</p>
 
 <div style="display:flex;gap:12px;margin:24px 0;flex-wrap:wrap">
   <div style="flex:1;min-width:280px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)">

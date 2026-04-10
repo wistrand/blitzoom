@@ -1,7 +1,9 @@
 *.zip
+*~
 tmp/
 stix/
 .claude/
 benchmarks/layouts/
 data/
 !docs/data/
+!docs/skills/*.zip
