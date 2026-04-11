@@ -195,9 +195,11 @@ export function createBlitZoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
     const label = rn.label || id;
     const extraProps = {};
     for (const k in rn) {
-      if (k !== 'id' && k !== 'group' && k !== 'label') extraProps[k] = rn[k];
+      if (k === 'id' || k === 'group' || k === 'label' || k === 'color') continue;
+      extraProps[k] = rn[k];
     }
     const node = { id, group, label, degree: 0, edgeTypes: null, extraProps };
+    if (rn.color !== undefined) node.color = rn.color;
     nodeIndex[id] = node;
     tempAdj[id] = [];
     return node;

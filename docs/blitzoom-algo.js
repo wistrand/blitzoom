@@ -541,7 +541,11 @@ export function buildLevelNodes(level, nodes, colorValFn, labelValFn, colorLooku
     const repName = bestNode.label || bestNode.id;
 
     const cachedColorVal = colorValFn ? maxCountKey(colorCounts) : domGroup;
-    const cachedColor = colorLookup ? (colorLookup(cachedColorVal) || '#888888') : '#888888';
+    // Per-node `n.color` overrides the categorical palette lookup. The rep
+    // member (highest degree) wins the supernode color — symmetric with how
+    // `repName` picks the supernode label.
+    const cachedColor = bestNode.color
+      || (colorLookup ? (colorLookup(cachedColorVal) || '#888888') : '#888888');
     const cachedLabel = labelValFn ? maxCountKey(labelCounts) : repName;
 
     supernodes.push({ bid, members, ax, ay, domGroup, avgDegree, totalDegree, repName,

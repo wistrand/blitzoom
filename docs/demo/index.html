@@ -134,9 +134,25 @@
       <div class="card-title">Incremental API: Gaussian vs Norm</div>
       <div class="card-desc">Side-by-side comparison of <code>quantMode: 'gaussian'</code> and <code>quantMode: 'norm'</code> as nodes are added in batches via <code>addNodes</code>. Watch how Gaussian shifts existing nodes while Norm keeps them stable.</div>
     </a>
+  </div>
+
+  <div class="group-title">Synthetic data demos</div>
+  <div class="grid">
     <a class="card" href="unicode-incremental.html">
-      <div class="card-title">All Unicode characters streamed</div>
-      <div class="card-desc">Empty <code>&lt;bz-graph incremental&gt;</code> populated by streaming all ~150 000 assigned Unicode codepoints in batches. Demonstrates the empty-graph bootstrap, schema discovery from the first batch, and per-frame visible streaming.</div>
+      <div class="card-title">All Unicode characters</div>
+      <div class="card-desc">Empty <code>&lt;bz-graph incremental&gt;</code> populated by streaming all ~150 000 assigned Unicode codepoints in batches. Layout reorganizes by major category and block, revealing the script structure of the standard.</div>
+    </a>
+    <a class="card" href="numbers-incremental.html">
+      <div class="card-title">Numbers 2..200,000 by arithmetic</div>
+      <div class="card-desc">Streams every natural number up to 200K with properties derived from a smallest-prime-factor sieve: prime/semiprime/composite, distinct-prime-factor count, divisor count, last digit, largest prime factor. Primes form rays; smooth-number bands and last-digit classes separate visibly.</div>
+    </a>
+    <a class="card" href="dna-kmers.html">
+      <div class="card-title">All DNA 8-mers</div>
+      <div class="card-desc">Every possible 8-base DNA sequence (4<sup>8</sup> = 65 536), each annotated with GC content, palindromicity, longest homopolymer run, and restriction-enzyme membership (EcoRI, BamHI, NotI, …). Layout clusters by GC band; palindromic and enzyme-cut k-mers form distinct subsets.</div>
+    </a>
+    <a class="card" href="rgb-incremental.html">
+      <div class="card-title">RGB color cube</div>
+      <div class="card-desc">A 64×64×64 sample of the RGB cube — 262 144 colors — with hue/saturation/lightness derived per node and a 12-name color family classification. The layout reorganizes the cube by perceptual color similarity instead of by axis order.</div>
     </a>
   </div>
 
