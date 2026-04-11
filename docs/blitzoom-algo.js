@@ -282,6 +282,78 @@ export function gaussianQuantize(nodes, stats) {
   }
 }
 
+// ─── Polar (radial) quantization ────────────────────────────────────────────
+// Maps the 2D continuous (px, py) distribution onto an inscribed disk inside
+// the uint16 grid, instead of folding x and y onto the grid via two
+// independent 1D CDFs (the way gaussianQuantize/normQuantize do).
+//
+// Why: separable per-axis quantization gives nodes a non-circular
+// distribution in grid space, with pile-ups at the four corners and
+// asymmetric "breathing" when bearings rotate (a continuous-space rotation
+// is not a grid-space rotation under separable Φ). Polar quant maps the
+// radius and angle jointly, so a continuous-space rotation IS a grid-space
+// rotation around the origin. Bearing dragging feels mechanical instead of
+// warpy, and outliers form a smooth ring around the disk's edge instead of
+// jamming into corners.
+//
+// The radial scale comes from projection matrix norms — same trick
+// normQuantize uses for its per-axis scales. This makes polar mode:
+//   - **Insertion-stable**: addNodes/removeNodes/updateNodes never shifts
+//     existing nodes' (gx, gy). The radial scale depends only on (effW,
+//     projection seeds), not on the current node distribution. Same
+//     guarantee as `quantMode='norm'`, just radial.
+//   - **Centroid-free**: origin = (0, 0) by convention, matching
+//     normQuantize. The blend's output is mean-zero by construction
+//     (Gaussian projection matrices are zero-mean), so no centroid scan
+//     is needed.
+//   - **Compatible with the incremental preset**: stream nodes in batches,
+//     drag bearings, never see drift.
+//
+// Method: Rayleigh CDF on the radius. For an isotropic 2D Gaussian with
+// per-axis variance σ², the radial distance r ~ Rayleigh(σ), with CDF
+// `1 - exp(-r² / (2σ²))`. Compute σ_x² and σ_y² from projection norms
+// (varX + varY = E[r²] = 2σ² under isotropy), apply the CDF to get a
+// percentile in [0, 1), then map to disk radius via sqrt for area-uniform
+// spread on the unit disk. The four grid corners are unused; at the grid
+// scale (~4B cells) the 21% loss is invisible.
+export function radialQuantize(nodes, groupNames, effW, totalW) {
+  // Compute σ_x² and σ_y² from projection matrix norms (same as
+  // normQuantize), then sum: 2σ²_radial = σ_x² + σ_y² for isotropic blend.
+  let varX = 0, varY = 0;
+  for (let gi = 0; gi < groupNames.length; gi++) {
+    const norms = projNormSq(PROJECTION_SEED_BASE + gi);
+    const w = effW[groupNames[gi]];
+    varX += w * w * norms[0];
+    varY += w * w * norms[1];
+  }
+  const twoSigmaSq = (varX + varY) / (totalW * totalW) || 1;
+
+  const n = nodes.length;
+  for (let i = 0; i < n; i++) {
+    const dx = nodes[i].px;  // origin = (0, 0); no centroid subtraction
+    const dy = nodes[i].py;
+    const r2 = dx * dx + dy * dy;
+    // Rayleigh CDF: u = 1 - exp(-r²/(2σ²)) ∈ [0, 1)
+    const u = 1 - Math.exp(-r2 / twoSigmaSq);
+    // Area-uniform mapping: r_disk = sqrt(u). Reuse (dx, dy) direction
+    // instead of atan2/cos/sin: scale = r_disk / r.
+    let px, py;
+    if (r2 > 1e-30) {
+      const r = Math.sqrt(r2);
+      const scale = Math.sqrt(u) / r;
+      px = dx * scale;
+      py = dy * scale;
+    } else {
+      px = 0; py = 0;
+    }
+    // Map [-1, 1] disk coordinates → [0, GRID_SIZE) grid coordinates.
+    nodes[i].gx = Math.min(GRID_SIZE - 1, Math.floor((px * 0.5 + 0.5) * GRID_SIZE));
+    nodes[i].gy = Math.min(GRID_SIZE - 1, Math.floor((py * 0.5 + 0.5) * GRID_SIZE));
+    nodes[i].px = px;
+    nodes[i].py = py;
+  }
+}
+
 // ─── Norm-based quantization (order-independent) ────────────────────────────
 // Uses projection matrix norms as scale — no data scan needed.
 // Each node's grid position depends only on its own blended (px, py) and the
@@ -453,6 +525,7 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
   const doQuant = () => {
     if (quantMode === 'gaussian') gaussianQuantize(nodes, quantStats);
     else if (quantMode === 'norm') normQuantize(nodes, groupNames, effW, propTotal);
+    else if (quantMode === 'polar') radialQuantize(nodes, groupNames, effW, propTotal);
     else normalizeAndQuantize(nodes);
   };
   if (smoothAlpha === 0 || passes === 0) { doQuant(); return; }

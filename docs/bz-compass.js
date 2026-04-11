@@ -53,17 +53,23 @@ class BzCompass extends HTMLElement {
       canvas { width: 100%; height: 100%; display: block; cursor: default; touch-action: none; }
       canvas:focus { outline: 1px solid var(--border, #334); outline-offset: -1px; }
       .visually-hidden { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0; }
-      .toolbar { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
-      :host(:hover) .toolbar, canvas:focus ~ .toolbar { opacity: 1; pointer-events: auto; }
-      .toolbar button {
+      .toolbar, .toolbar-left { position: absolute; top: 4px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+      .toolbar { right: 4px; }
+      .toolbar-left { left: 4px; }
+      :host(:hover) .toolbar, canvas:focus ~ .toolbar,
+      :host(:hover) .toolbar-left, canvas:focus ~ .toolbar-left { opacity: 1; pointer-events: auto; }
+      .toolbar button, .toolbar-left button {
         background: var(--bg, #12122a); color: var(--fg, #dde); border: 1px solid var(--border, #334);
         font: bold 10px -apple-system, system-ui, sans-serif; padding: 2px 6px; border-radius: 3px;
         cursor: pointer; line-height: 1.2;
       }
-      .toolbar button:hover { border-color: var(--accent, #5af); color: var(--accent, #5af); }
+      .toolbar button:hover, .toolbar-left button:hover { border-color: var(--accent, #5af); color: var(--accent, #5af); }
     </style>
     <canvas tabindex="0" role="application"
       aria-label="Strength and bearing compass. Tab to cycle handles, arrows to adjust, Up/Down for strength, Left/Right for bearing."></canvas>
+    <div class="toolbar-left">
+      <button data-action="quant" title="Cycle quantization mode" aria-label="Cycle quantization mode">Q</button>
+    </div>
     <div class="toolbar">
       <button data-action="zero" title="Reset all to zero" aria-label="Reset all strengths and bearings">0</button>
       <button data-action="auto" title="Auto-tune strengths and bearings" aria-label="Auto-tune">A</button>
@@ -96,12 +102,15 @@ class BzCompass extends HTMLElement {
     c.addEventListener('contextmenu', this._bound.contextmenu);
     c.addEventListener('mouseenter', () => { this._mouseInside = true; this._scheduleRender(); });
     c.addEventListener('mouseleave', () => { this._mouseInside = false; this._hoverIdx = -1; this._scheduleRender(); });
-    // Toolbar buttons
-    this._shadow.querySelector('.toolbar').addEventListener('click', (e) => {
+    // Toolbar buttons (left and right toolbars share the same handler)
+    const toolbarHandler = (e) => {
       const action = e.target.dataset?.action;
       if (action === 'zero') this._zeroAll();
+      else if (action === 'quant') this.dispatchEvent(new Event('quantcycle', { bubbles: true }));
       else if (action === 'auto') this.dispatchEvent(new Event('autotune', { bubbles: true }));
-    });
+    };
+    this._shadow.querySelector('.toolbar').addEventListener('click', toolbarHandler);
+    this._shadow.querySelector('.toolbar-left').addEventListener('click', toolbarHandler);
     this._ro = new ResizeObserver(() => this._resize());
     this._ro.observe(this);
     // Defer initial resize to avoid forcing layout before stylesheets load
@@ -126,14 +135,7 @@ class BzCompass extends HTMLElement {
       this._boundReadyHandler = null;
       this._boundTarget = null;
     }
-    if (this._boundView && this._boundBlendHandler) {
-      this._boundView.canvas.removeEventListener('statechange', this._boundBlendHandler);
-      this._boundBlendHandler = null;
-    }
-    if (this._onBoundInput) { this.removeEventListener('input', this._onBoundInput); this._onBoundInput = null; }
-    if (this._onBoundChange) { this.removeEventListener('change', this._onBoundChange); this._onBoundChange = null; }
-    if (this._onBoundAutotune) { this.removeEventListener('autotune', this._onBoundAutotune); this._onBoundAutotune = null; }
-    this._boundView = null;
+    this._unbindFromView();
   }
 
   _announce(text) {
@@ -142,6 +144,20 @@ class BzCompass extends HTMLElement {
       // Force re-announcement by clearing then setting in next frame
       requestAnimationFrame(() => { this._ariaLive.textContent = text; });
     }
+  }
+
+  // Reflect the given view's current quantMode in the Q toolbar button.
+  // Public so bz-graph can call it for the internal compass panel (which
+  // doesn't go through _bindToGraph). Defaults to this._boundView for the
+  // standalone `for=` binding path.
+  updateQuantBtn(view = this._boundView) {
+    if (!view) return;
+    const btn = this._shadow.querySelector('[data-action="quant"]');
+    if (!btn) return;
+    const mode = view.quantMode || 'gaussian';
+    const labels = { gaussian: 'Q:G', rank: 'Q:R', norm: 'Q:N', polar: 'Q:P' };
+    btn.textContent = labels[mode] || 'Q:?';
+    btn.title = `Quant mode: ${mode} (click to cycle)`;
   }
 
   _zeroAll() {
@@ -318,14 +334,7 @@ class BzCompass extends HTMLElement {
   // ─── Auto-bind to <bz-graph> via `for` attribute ─────────────────────────
 
   _bindToGraph(id) {
-    // Clean up previous binding
-    if (this._boundView && this._boundBlendHandler) {
-      this._boundView.canvas.removeEventListener('statechange', this._boundBlendHandler);
-      this._boundBlendHandler = null;
-    }
-    if (this._boundView) {
-      this._boundView = null;
-    }
+    this._unbindFromView();
     if (this._boundReadyHandler) {
       this._boundTarget?.removeEventListener('ready', this._boundReadyHandler);
       this._boundReadyHandler = null;
@@ -336,63 +345,131 @@ class BzCompass extends HTMLElement {
     const el = document.getElementById(id);
     if (!el) return;
 
-    const attach = () => {
-      const view = el.view;
-      if (!view || !view.groupNames || !view.groupNames.length) return;
-      this._boundView = view;
-      this._syncFromView();
+    if (el.view) {
+      this.bindToView(el.view);
+    } else {
+      this._boundTarget = el;
+      this._boundReadyHandler = () => this.bindToView(el.view);
+      el.addEventListener('ready', this._boundReadyHandler, { once: true });
+    }
+  }
 
-      // Push compass changes → view. `input` events fire continuously during
-      // a drag — coalesce per animation frame and call view.fastRebuild()
-      // (subsamples the layout/render for large graphs). `change` events fire
-      // on release — call view.endFastRebuild() to drop the subsample and run
-      // a full-quality rebuild.
-      const applyDetail = (detail) => {
-        if (detail.name === '_alpha') {
-          view.smoothAlpha = detail.alpha;
-        } else {
-          view.propStrengths[detail.name] = detail.strength;
-          view.propBearings[detail.name] = detail.bearing;
-        }
-      };
-      let _rebuildRaf = null;
-      const onCompassInput = (e) => {
-        if (!e.detail) return;
-        applyDetail(e.detail);
-        if (_rebuildRaf == null) {
-          _rebuildRaf = requestAnimationFrame(() => {
-            _rebuildRaf = null;
-            view.fastRebuild();
-          });
-        }
-      };
-      const onCompassChange = (e) => {
-        if (!e.detail) return;
-        applyDetail(e.detail);
-        // Cancel any rAF that hasn't fired yet — otherwise it would run
-        // fastRebuild() AFTER endFastRebuild() and re-engage fast mode.
-        if (_rebuildRaf != null) {
-          cancelAnimationFrame(_rebuildRaf);
-          _rebuildRaf = null;
-        }
-        view.endFastRebuild();
-      };
-      this.addEventListener('input', this._onBoundInput = onCompassInput);
-      this.addEventListener('change', this._onBoundChange = onCompassChange);
-      this.addEventListener('colorby', (e) => {
-        if (!e.detail) return;
-        view.colorBy = (view.colorBy === e.detail.name) ? null : e.detail.name;
-      });
-      this.addEventListener('labelchange', (e) => {
-        if (!e.detail) return;
-        view.labelProps = new Set(e.detail.labelProps);
-        view._refreshPropCache();
-        view.render();
-      });
+  /**
+   * Public binding API. Called by the standalone `for=` path (via
+   * `_bindToGraph`) and directly by hosts that hold a `<bz-compass>`
+   * element programmatically (`<bz-graph>`'s internal panel,
+   * `blitzoom-viewer`'s static `compassWidget`).
+   *
+   * Wires the standard event flow:
+   *   - input  → fastRebuild (rAF-coalesced)
+   *   - change → endFastRebuild
+   *   - colorby → toggle view.colorBy
+   *   - labelchange → set view.labelProps + render
+   *   - autotune → built-in flow (or `opts.onAutotune` override)
+   *   - quantcycle → cycle quant mode + refresh button label
+   *   - statechange → syncFromView + refresh button label
+   *
+   * Hosts that need additional behavior (cross-panel sync, custom
+   * autotune flow, viewer-specific UI updates) can pass callbacks via
+   * `opts` or attach their own listeners on the same element after
+   * calling bindToView. Multiple listeners on the same event run in
+   * registration order.
+   *
+   * @param {BlitZoomCanvas} view - the canvas to bind to
+   * @param {object} [opts]
+   * @param {Function} [opts.onAutotune] - replaces the built-in autotune
+   *   flow. When provided, the autotune button click invokes this
+   *   callback instead of running the standalone autotune. Use this when
+   *   the host has its own autotune UI (progress display, abort control)
+   *   that needs to take over.
+   */
+  bindToView(view, opts = {}) {
+    this._unbindFromView();
+    // Note: do NOT bail out when groupNames is empty. The viewer creates
+    // its canvas before any dataset is loaded (groupNames=[] initially)
+    // and binds compass/controls in its constructor. If we returned here,
+    // none of the event listeners would be installed and the Q button
+    // (and everything else) would be silently dead even after data loads.
+    // _syncFromView and updateQuantBtn both handle empty group lists fine.
+    if (!view || !view.groupNames) return;
+    this._boundView = view;
+    this._syncFromView();
+    this.updateQuantBtn(view);
 
-      // Auto-tune button — toggle start/stop
+    // Push compass changes → view. `input` events fire continuously during
+    // a drag — coalesce per animation frame and call view.fastRebuild()
+    // (subsamples the layout/render for large graphs). `change` events fire
+    // on release — call view.endFastRebuild() to drop the subsample and run
+    // a full-quality rebuild.
+    const applyDetail = (detail) => {
+      if (detail.name === '_alpha') {
+        view.smoothAlpha = detail.alpha;
+      } else {
+        view.propStrengths[detail.name] = detail.strength;
+        view.propBearings[detail.name] = detail.bearing;
+      }
+    };
+    // _bindRebuildRaf and _bindEndRebuildPending live on `this` (not as
+    // closure locals) so `_unbindFromView` can cancel or invalidate them
+    // when rebinding or disconnecting, preventing a pending
+    // fastRebuild/endFastRebuild from firing against a defunct view.
+    this._bindRebuildRaf = null;
+    this._bindEndRebuildPending = false;
+    this._onBoundInput = (e) => {
+      if (!e.detail) return;
+      applyDetail(e.detail);
+      if (this._bindRebuildRaf == null) {
+        this._bindRebuildRaf = requestAnimationFrame(() => {
+          this._bindRebuildRaf = null;
+          // Guard: unbind may have fired after the rAF was scheduled.
+          if (this._boundView === view) view.fastRebuild();
+        });
+      }
+    };
+    this._onBoundChange = (e) => {
+      if (!e.detail) return;
+      applyDetail(e.detail);
+      // Cancel any rAF that hasn't fired yet — otherwise it would run
+      // fastRebuild() AFTER endFastRebuild() and re-engage fast mode.
+      if (this._bindRebuildRaf != null) {
+        cancelAnimationFrame(this._bindRebuildRaf);
+        this._bindRebuildRaf = null;
+      }
+      // Coalesce bursts of change events (e.g. _zeroAll dispatching N+1
+      // events synchronously) into a single endFastRebuild via microtask.
+      // Without this, only the first event's blend runs (the rest hit the
+      // _blending guard and no-op), leaving propStrengths fully zeroed but
+      // the rendered layout reflecting only the first group's change.
+      if (!this._bindEndRebuildPending) {
+        this._bindEndRebuildPending = true;
+        queueMicrotask(() => {
+          this._bindEndRebuildPending = false;
+          // Guard: unbind may have fired after the microtask was queued.
+          if (this._boundView === view) view.endFastRebuild();
+        });
+      }
+    };
+    this._onBoundColorby = (e) => {
+      if (!e.detail) return;
+      view.colorBy = (view.colorBy === e.detail.name) ? null : e.detail.name;
+    };
+    this._onBoundLabelchange = (e) => {
+      if (!e.detail) return;
+      view.labelProps = new Set(e.detail.labelProps);
+      view._refreshPropCache();
+      view.render();
+    };
+    this.addEventListener('input', this._onBoundInput);
+    this.addEventListener('change', this._onBoundChange);
+    this.addEventListener('colorby', this._onBoundColorby);
+    this.addEventListener('labelchange', this._onBoundLabelchange);
+
+    // Auto-tune button — host override or built-in flow
+    if (opts.onAutotune) {
+      this._onBoundAutotune = opts.onAutotune;
+    } else {
       let tuneAbort = null;
-      this.addEventListener('autotune', this._onBoundAutotune = async () => {
+      this._onBoundAutotune = async () => {
         if (tuneAbort) { tuneAbort.abort(); view.showProgress(null); return; }
         try {
           tuneAbort = new AbortController();
@@ -426,21 +503,49 @@ class BzCompass extends HTMLElement {
         tuneAbort = null;
         const btn = this._shadow.querySelector('[data-action="auto"]');
         if (btn) { btn.textContent = 'A'; btn.title = 'Auto-tune strengths and bearings'; }
-      });
-
-      // Pull view changes → compass after each statechange
-      this._boundBlendHandler = () => this._syncFromView();
-      view.canvas.addEventListener('statechange', this._boundBlendHandler);
-    };
-
-    // If the view is already ready, bind immediately; otherwise wait for 'ready' event
-    if (el.view) {
-      attach();
-    } else {
-      this._boundTarget = el;
-      this._boundReadyHandler = () => attach();
-      el.addEventListener('ready', this._boundReadyHandler, { once: true });
+      };
     }
+    this.addEventListener('autotune', this._onBoundAutotune);
+
+    // Quant mode cycle button — Gaussian → Rank → Norm → Polar → Gaussian
+    const QUANT_MODES = ['gaussian', 'rank', 'norm', 'polar'];
+    this._onBoundQuantcycle = () => {
+      const v = this._boundView;
+      if (!v) return;
+      const idx = QUANT_MODES.indexOf(v.quantMode);
+      v.setQuantMode(QUANT_MODES[(idx + 1) % QUANT_MODES.length]);
+      this.updateQuantBtn(v);
+    };
+    this.addEventListener('quantcycle', this._onBoundQuantcycle);
+
+    // Pull view changes → compass after each statechange
+    this._boundBlendHandler = () => { this._syncFromView(); this.updateQuantBtn(view); };
+    view.canvas.addEventListener('statechange', this._boundBlendHandler);
+  }
+
+  /** Tear down all listeners installed by `bindToView`. Idempotent. */
+  _unbindFromView() {
+    if (!this._boundView) return;
+    // Cancel any pending rAF from a drag-in-progress, and let any pending
+    // microtask become a no-op via the `_boundView === view` guard inside
+    // the callback. queueMicrotask can't be cancelled, so the guard is
+    // the only way to neutralize it.
+    if (this._bindRebuildRaf != null) {
+      cancelAnimationFrame(this._bindRebuildRaf);
+      this._bindRebuildRaf = null;
+    }
+    this._bindEndRebuildPending = false;
+    if (this._boundBlendHandler) {
+      this._boundView.canvas.removeEventListener('statechange', this._boundBlendHandler);
+      this._boundBlendHandler = null;
+    }
+    if (this._onBoundInput) { this.removeEventListener('input', this._onBoundInput); this._onBoundInput = null; }
+    if (this._onBoundChange) { this.removeEventListener('change', this._onBoundChange); this._onBoundChange = null; }
+    if (this._onBoundColorby) { this.removeEventListener('colorby', this._onBoundColorby); this._onBoundColorby = null; }
+    if (this._onBoundLabelchange) { this.removeEventListener('labelchange', this._onBoundLabelchange); this._onBoundLabelchange = null; }
+    if (this._onBoundAutotune) { this.removeEventListener('autotune', this._onBoundAutotune); this._onBoundAutotune = null; }
+    if (this._onBoundQuantcycle) { this.removeEventListener('quantcycle', this._onBoundQuantcycle); this._onBoundQuantcycle = null; }
+    this._boundView = null;
   }
 
   /** Pull current strengths/bearings/colors from the bound view into groups. */

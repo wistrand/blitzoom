@@ -133,7 +133,7 @@ export class BlitZoomCanvas {
     this.sizeLog = opts.sizeLog || false;
     this.edgeMode = opts.edgeMode || 'curves';
     this.heatmapMode = opts.heatmapMode || 'off';
-    this.quantMode = opts.quantMode || 'gaussian'; // 'gaussian' or 'rank'
+    this.quantMode = opts.quantMode || 'gaussian'; // 'gaussian' | 'rank' | 'norm' | 'polar'
     this.showLegend = opts.showLegend ? 1 : 0; // 0=hidden, 1=BR, 2=BL, 3=TL, 4=TR
     this.showResetBtn = opts.showResetBtn || false;
     this._progressText = null; // overlay text shown during auto-tune
@@ -949,6 +949,35 @@ export class BlitZoomCanvas {
     Object.assign(this.propBearings, obj);
     this._quantStats = {};
     this.levels = new Array(ZOOM_LEVELS.length).fill(null);
+  }
+
+  /** Switch quantization mode and re-blend.
+   *  Mirrors setStrengths/setBearing/setAlpha — encapsulates the
+   *  `_quantStats` reset, level-cache invalidation, blend, layout, and
+   *  render chain so callers don't have to repeat it (and miss steps).
+   *
+   *  Also clears any lingering fast-mode state (`_sampleNodes`,
+   *  `_skipEdgeBuild`, `_fastRebuildPromise`) before the blend. Quant
+   *  mode changes are user-button-driven and happen outside any drag
+   *  context, so leftover fast-mode artifacts from a recent drag would
+   *  otherwise cause the new blend's results to render against a stale
+   *  subsample swap. The other setX methods don't do this cleanup
+   *  because they're typically called from inside a drag callback where
+   *  fast mode is intentional. */
+  async setQuantMode(mode) {
+    this.quantMode = mode;
+    this._quantStats = {};
+    // Wait for any in-flight fastRebuild and clear sample state.
+    if (this._fastRebuildPromise) {
+      try { await this._fastRebuildPromise; } catch {}
+    }
+    this._sampleNodes = null;
+    this._sampleNodesN = 0;
+    this._skipEdgeBuild = false;
+    this._refreshPropCache();
+    await this._blend();
+    this.layoutAll();
+    this.render();
   }
 
   /** Update topology alpha and re-blend */
