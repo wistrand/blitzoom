@@ -6,4 +6,10 @@ stix/
 benchmarks/layouts/
 data/
 !docs/data/
-!docs/skills/*.zip
+
+# Build artifacts — produced by `deno task bundle` and `deno task skill:zip`
+# locally for testing, and by .github/workflows/pages.yml on every push to
+# main for deployment. Not tracked in git; the GitHub Action rebuilds them
+# from a clean checkout and ships them as part of the Pages artifact.
+docs/dist/blitzoom.bundle.js
+docs/skills/blitzoom.zip
