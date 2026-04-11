@@ -14,9 +14,23 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-# Opt JavaScript actions (checkout, upload-artifact, etc.) into Node.js 24
-# now, ahead of the June 2026 forced switch. Avoids the deprecation warning
-# without waiting for the action authors to ship Node 24-native releases.
+# Force JavaScript actions (checkout, upload-artifact, deploy-pages, etc.)
+# to run on Node.js 24 instead of the Node 20 declared in their action.yml
+# manifests. GitHub is removing Node 20 from runners on 2026-09-16; this env
+# variable is the official opt-in until those actions publish Node 24-native
+# major releases.
+#
+# Rant: setting this env variable does NOT silence the deprecation warning.
+# Instead, GitHub helpfully swaps it for a *different* warning that says
+# "this action targets Node 20 but is being forced to run on Node 24" — i.e.
+# "you are using the workaround we told you to use". On every single run.
+# Forever, until the upstream action authors (also GitHub) publish new
+# versions that declare Node 24 in their own action.yml and we bump the pin.
+# This is the official escape hatch; using it correctly produces noise that
+# trains everyone to ignore CI warnings, which is the actual harm here.
+# A 30-second UX review of "should we still warn after the user opts in"
+# would have caught this. Nothing to do but wait for actions/checkout@v5
+# (etc.) to ship and then bump pins + delete this block.
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
