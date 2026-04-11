@@ -799,7 +799,6 @@ class BlitZoom {
     }
     if (settings.quantMode) {
       v.quantMode = settings.quantMode;
-      this._updateQuantBtn();
     }
     if (settings.smoothAlpha != null) {
       v.smoothAlpha = settings.smoothAlpha;
@@ -871,6 +870,7 @@ class BlitZoom {
     }
     controls.labelProps = v.labelProps;
     controls.colorBy = v.colorBy;
+    controls.updateQuantBtn(v); // sidebar Q button label
   }
 
   _compassSVGOpts() {
@@ -919,6 +919,7 @@ class BlitZoom {
     widget.alpha = v.smoothAlpha;
     widget.colorBy = v.colorBy;
     widget.labelProps = v.labelProps;
+    widget.updateQuantBtn(v); // floating compass Q button label
   }
 
 
@@ -1217,7 +1218,6 @@ class BlitZoom {
     document.getElementById('nudgeVal').textContent = '0';
     this._updateSizeButtons();
     this._updateLogBtn();
-    this._updateQuantBtn();
     this._updateEdgeBtn();
     this._updateHeatBtn();
     // Blend is deferred to _finalizeLoad which calls v._blend() (GPU or CPU)
@@ -1595,25 +1595,10 @@ class BlitZoom {
       v.render();
     }, sig);
 
-    // Quantization mode toggle
-    const quantBtn = document.getElementById('quantModeBtn');
-    const QUANT_MODES = ['gaussian', 'rank', 'norm'];
-    const QUANT_LABELS = { rank: 'Q:R', gaussian: 'Q:G', norm: 'Q:N' };
-    const QUANT_COLORS = { gaussian: 'var(--accent)', rank: '', norm: 'var(--accent3, #6af7c8)' };
-    const updateQuantBtn = () => {
-      quantBtn.textContent = QUANT_LABELS[v.quantMode];
-      quantBtn.style.background = QUANT_COLORS[v.quantMode] || '';
-      quantBtn.style.color = v.quantMode !== 'rank' ? '#fff' : '';
-    };
-    this._updateQuantBtn = updateQuantBtn;
-    updateQuantBtn();
-    quantBtn.addEventListener('click', () => {
-      const idx = QUANT_MODES.indexOf(v.quantMode);
-      v.quantMode = QUANT_MODES[(idx + 1) % QUANT_MODES.length];
-      v._quantStats = {}; // mode change → fresh boundaries
-      updateQuantBtn();
-      this.rebuildProjections();
-    }, sig);
+    // Quantization mode toggle is provided by the floating compass and
+    // sidebar controls' Q buttons (via bz-compass/bz-controls bindToView
+    // → setQuantMode). The header Q was removed because it duplicated
+    // those without adding value.
 
     // Edge mode toggle
     const edgeBtn = document.getElementById('edgeModeBtn');
@@ -1672,7 +1657,6 @@ class BlitZoom {
       v.propBearings = bearings;
       document.getElementById('nudgeSlider').value = v.smoothAlpha;
       document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
-      this._updateQuantBtn();
       v._progressText = null;
       await this.rebuildProjections();
       // Re-pick level for the new blend distribution
@@ -1931,93 +1915,59 @@ class BlitZoom {
     window.addEventListener('touchend', endDrag);
     window.addEventListener('touchcancel', endDrag);
 
-    // Compass ↔ canvas sync
+    // Compass ↔ canvas sync. bindToView handles input/change/colorby/
+    // labelchange/quantcycle/statechange wiring with the standard
+    // fastRebuild flow. The viewer adds its own listeners on top for
+    // viewer-specific UI: nudge slider sync (for the alpha dial), preset
+    // button reset on drag-end, and cross-panel labelProps sync.
     const compassWidget = document.getElementById('compassWidget');
-    const onCompassInput = (e) => {
-      if (!e.detail) return;
-      if (e.detail.name === '_alpha') {
-        v.smoothAlpha = e.detail.alpha;
-        document.getElementById('nudgeSlider').value = v.smoothAlpha;
-        document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
-        this._scheduleRebuild();
-        return;
-      }
-      const { name, strength, bearing } = e.detail;
-      v.propStrengths[name] = strength;
-      v.propBearings[name] = bearing;
-      this._scheduleRebuild();
+    compassWidget.bindToView(v, {
+      onAutotune: () => {
+        // Delegate to the main toolbar Auto button (which has its own
+        // start/stop UI flow). Mirror its label onto the compass A button.
+        const autoBtn2 = document.getElementById('autoTuneBtn');
+        autoBtn2?.click();
+        const running = autoBtn2?.textContent === 'Stop';
+        const cBtn = compassWidget.shadowRoot?.querySelector('[data-action="auto"]');
+        if (cBtn) {
+          cBtn.textContent = running ? '■' : 'A';
+          cBtn.title = running ? 'Stop auto-tune' : 'Auto-tune strengths and bearings';
+        }
+      },
+    });
+    const syncNudge = (alpha) => {
+      document.getElementById('nudgeSlider').value = alpha;
+      document.getElementById('nudgeVal').textContent = alpha.toFixed(2);
     };
-    compassWidget.addEventListener('input', onCompassInput);
+    compassWidget.addEventListener('input', (e) => {
+      if (e.detail?.name === '_alpha') syncNudge(e.detail.alpha);
+    });
     compassWidget.addEventListener('change', (e) => {
-      if (!e.detail) return;
-      if (e.detail.name === '_alpha') {
-        v.smoothAlpha = e.detail.alpha;
-        document.getElementById('nudgeSlider').value = v.smoothAlpha;
-        document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
-      } else {
-        v.propStrengths[e.detail.name] = e.detail.strength;
-        v.propBearings[e.detail.name] = e.detail.bearing;
-      }
+      if (e.detail?.name === '_alpha') syncNudge(e.detail.alpha);
       document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-      this.rebuildProjections(false); // full quality on drag end
     });
-    compassWidget.addEventListener('colorby', (e) => {
-      v.colorBy = (v.colorBy === e.detail.name) ? null : e.detail.name;
-      this._updateColorByUI();
-    });
-    compassWidget.addEventListener('labelchange', (e) => {
-      v.labelProps = new Set(e.detail.labelProps);
-      v._refreshPropCache();
-      v.render();
-      this._syncControls();
-    });
-    compassWidget.addEventListener('autotune', () => {
-      // Trigger the same autotune flow as the Auto button
-      const autoBtn2 = document.getElementById('autoTuneBtn');
-      autoBtn2?.click();
-      // Sync compass A button — check toolbar button text (set synchronously in click handler)
-      const running = autoBtn2?.textContent === 'Stop';
-      const cBtn = compassWidget.shadowRoot?.querySelector('[data-action="auto"]');
-      if (cBtn) {
-        cBtn.textContent = running ? '■' : 'A';
-        cBtn.title = running ? 'Stop auto-tune' : 'Auto-tune strengths and bearings';
-      }
-    });
+    compassWidget.addEventListener('labelchange', () => this._syncControls());
+    // colorBy doesn't trigger statechange (it's not a blend), so the sibling
+    // controls panel won't auto-sync via the statechange handler. Mirror it
+    // explicitly.
+    compassWidget.addEventListener('colorby', () => this._updateColorByUI());
 
-    // Strength controls (<bz-controls> component in sidebar)
+    // Strength controls (<bz-controls> component in sidebar). Same shape
+    // as the compass binding — bindToView for the standard event flow,
+    // additional listeners for viewer-specific UI.
     const strengthControls = document.getElementById('strengthControls');
     if (strengthControls) {
-      strengthControls.addEventListener('input', (e) => {
-        if (!e.detail) return; // ignore native input events bubbling from shadow DOM
-        const { name, strength, bearing } = e.detail;
-        v.propStrengths[name] = strength;
-        v.propBearings[name] = bearing;
+      strengthControls.bindToView(v, {
+        onAutotune: () => document.getElementById('autoTuneBtn')?.click(),
+      });
+      strengthControls.addEventListener('change', () => {
         document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        this._scheduleRebuild();
       });
-      strengthControls.addEventListener('change', (e) => {
-        if (e.detail) {
-          const { name, strength, bearing } = e.detail;
-          v.propStrengths[name] = strength;
-          v.propBearings[name] = bearing;
-        }
-        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        // Full-quality rebuild on drag end (change fires on pointerup)
-        this.rebuildProjections(false);
-      });
-      strengthControls.addEventListener('colorby', (e) => {
-        v.colorBy = (v.colorBy === e.detail.name) ? null : e.detail.name;
-        this._updateColorByUI();
-        strengthControls.colorBy = v.colorBy;
-      });
-      strengthControls.addEventListener('autotune', () => {
-        document.getElementById('autoTuneBtn')?.click();
-      });
-      strengthControls.addEventListener('labelchange', (e) => {
-        v.labelProps = new Set(e.detail.labelProps);
-        v._refreshPropCache();
-        v.render();
-        this._syncCompass();
+      strengthControls.addEventListener('labelchange', () => this._syncCompass());
+      // colorBy doesn't trigger statechange, so the sibling compass won't
+      // auto-sync. Mirror the active-label state explicitly.
+      strengthControls.addEventListener('colorby', () => {
+        compassWidget.colorBy = v.colorBy;
       });
     }
 

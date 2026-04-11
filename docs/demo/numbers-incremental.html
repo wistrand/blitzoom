@@ -63,7 +63,7 @@
   <script type="module" src="../bz-controls.js"></script>
 
   <bz-graph id="g" level="6" legend label-props="label" color-by="omega"
-            strengths="isPrime:5,omega:6,lastDigit:4,digits:3" heatmap="density" incremental
+            strengths="isPrime:5,omega:6,lastDigit:4,digits:3" heatmap="density" incremental quant="polar"
             label-font='{"topHL":18,"top":11,"bottomHL":11,"bottom":10}'>
   </bz-graph>
   <div class="panel-row">
@@ -141,7 +141,7 @@
     const g = document.getElementById('g');
     await g.ready;
 
-    const BATCH_SIZE = 2000;
+    const BATCH_SIZE = 10000;
     const total = nodes.length;
     for (let i = 0; i < total; i += BATCH_SIZE) {
       const batch = nodes.slice(i, i + BATCH_SIZE);

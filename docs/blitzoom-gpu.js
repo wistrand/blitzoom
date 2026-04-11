@@ -2,7 +2,7 @@
 // Takes pre-hashed token values (uint32) and computes signatures + 2D projections.
 // Falls back gracefully: callers should check `await initGPU()` before using.
 
-import { MINHASH_K, LARGE_PRIME, PROJECTION_SEED_BASE, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize, normQuantize, computeEffectiveWeights } from './blitzoom-algo.js';
+import { MINHASH_K, LARGE_PRIME, PROJECTION_SEED_BASE, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize, normQuantize, radialQuantize, computeEffectiveWeights } from './blitzoom-algo.js';
 import { tokenizeLabel, tokenizeNumeric, degreeBucket } from './blitzoom-pipeline.js';
 
 let device = null;
@@ -752,6 +752,9 @@ export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAl
   } else if (quantMode === 'norm') {
     const { effW, totalW } = computeEffectiveWeights(groupNames, propStrengths);
     normQuantize(nodes, groupNames, effW, totalW);
+  } else if (quantMode === 'polar') {
+    const { effW, totalW } = computeEffectiveWeights(groupNames, propStrengths);
+    radialQuantize(nodes, groupNames, effW, totalW);
   } else {
     normalizeAndQuantize(nodes);
   }

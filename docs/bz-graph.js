@@ -310,70 +310,27 @@ class BzGraph extends HTMLElement {
     compass.style.cssText = 'display:block;width:100%;height:calc(100% - 26px);';
     panel.appendChild(compass);
 
-    // Sync from view
-    const sync = () => {
-      if (!this._view) return;
-      const v = this._view;
-      const groups = v.groupNames.filter(g => g !== 'label' && g !== 'structure' && g !== 'neighbors').map(g => ({
-        name: g, color: (v.propColors[g] && Object.values(v.propColors[g])[0]) || '#888',
-        strength: v.propStrengths[g] || 0, bearing: v.propBearings[g] || 0,
-      }));
-      if (compass.groups.length === groups.length) compass.updateAll(groups);
-      else compass.groups = groups;
-      compass.alpha = v.smoothAlpha;
-      compass.colorBy = v.colorBy;
-      compass.labelProps = v.labelProps;
-    };
-    this._canvas.addEventListener('statechange', sync);
-    sync(); // initial sync — statechange already fired during init
+    // Wire all standard compass↔view events via the public bindToView API.
+    // Override autotune to use this host's _runAutotune (which manages
+    // _tuneAbort and panel-state UI bz-graph specifically needs).
+    compass.bindToView(this._view, { onAutotune: () => this._runAutotune() });
 
-    // Push compass changes → view. Same fast/full-rebuild split as the
-    // standalone bz-compass binding: input → fastRebuild (subsamples for
-    // large graphs); change → endFastRebuild (full quality on release).
-    const applyDetail = (detail) => {
-      if (detail.name === '_alpha') {
-        this._view.smoothAlpha = detail.alpha;
-      } else {
-        this._view.propStrengths[detail.name] = detail.strength;
-        this._view.propBearings[detail.name] = detail.bearing;
-      }
-    };
-    let rebuildRaf = null;
-    compass.addEventListener('input', (e) => {
-      if (!e.detail) return;
-      applyDetail(e.detail);
-      if (rebuildRaf == null) {
-        rebuildRaf = requestAnimationFrame(() => {
-          rebuildRaf = null;
-          this._view.fastRebuild();
-        });
-      }
-    });
-    compass.addEventListener('change', (e) => {
-      if (!e.detail) return;
-      applyDetail(e.detail);
-      // Cancel any rAF that hasn't fired yet — otherwise it would re-engage
-      // fast mode AFTER endFastRebuild() ran.
-      if (rebuildRaf != null) {
-        cancelAnimationFrame(rebuildRaf);
-        rebuildRaf = null;
-      }
-      this._view.endFastRebuild();
-    });
-    compass.addEventListener('colorby', (e) => {
-      if (!this._view || !e.detail) return;
-      this._view.colorBy = (this._view.colorBy === e.detail.name) ? null : e.detail.name;
-    });
+    // Cross-panel sync: when the compass changes labelProps, also update
+    // the controls panel's label checkboxes. bindToView's standard
+    // labelchange handler already sets view.labelProps + re-renders;
+    // this listener fires after to mirror it into the sibling panel.
     compass.addEventListener('labelchange', (e) => {
       if (!this._view || !e.detail) return;
-      this._view.labelProps = new Set(e.detail.labelProps);
-      this._view._refreshPropCache();
-      this._view.render();
-      // Sync controls checkboxes
       const ctrl = this._controlsPanel?.querySelector('bz-controls');
       if (ctrl) ctrl.labelProps = this._view.labelProps;
     });
-    compass.addEventListener('autotune', () => this._runAutotune());
+    // colorBy doesn't trigger statechange, so the sibling controls panel
+    // won't auto-sync its active-label state. Mirror it explicitly.
+    compass.addEventListener('colorby', () => {
+      if (!this._view) return;
+      const ctrl = this._controlsPanel?.querySelector('bz-controls');
+      if (ctrl) ctrl.colorBy = this._view.colorBy;
+    });
   }
 
   async _runAutotune() {
@@ -417,62 +374,24 @@ class BzGraph extends HTMLElement {
     controls.style.cssText = 'display:block;padding:6px;';
     panel.appendChild(controls);
 
-    // Sync from view
-    const sync = () => {
-      if (!this._view) return;
-      const v = this._view;
-      const groups = v.groupNames.map(g => ({
-        name: g, strength: v.propStrengths[g] || 0, bearing: v.propBearings[g] || 0,
-      }));
-      if (controls.groups.length === groups.length) controls.updateAll(groups);
-      else controls.groups = groups;
-      controls.labelProps = v.labelProps;
-    };
-    this._canvas.addEventListener('statechange', sync);
-    sync(); // initial sync — statechange already fired during init
+    // Wire all standard controls↔view events via the public bindToView API.
+    // Override autotune to use this host's _runAutotune.
+    controls.bindToView(this._view, { onAutotune: () => this._runAutotune() });
 
-    // Push changes → view. Same fast/full-rebuild split as the standalone
-    // bz-controls binding: input → fastRebuild (subsamples for large graphs);
-    // change → endFastRebuild (full quality on release).
-    const applyDetail = (detail) => {
-      this._view.propStrengths[detail.name] = detail.strength;
-      this._view.propBearings[detail.name] = detail.bearing;
-    };
-    let rebuildRaf = null;
-    controls.addEventListener('input', (e) => {
-      if (!e.detail) return;
-      applyDetail(e.detail);
-      if (rebuildRaf == null) {
-        rebuildRaf = requestAnimationFrame(() => {
-          rebuildRaf = null;
-          this._view.fastRebuild();
-        });
-      }
-    });
-    controls.addEventListener('change', (e) => {
-      if (!e.detail) return;
-      applyDetail(e.detail);
-      // Cancel any rAF that hasn't fired yet — otherwise it would re-engage
-      // fast mode AFTER endFastRebuild() ran.
-      if (rebuildRaf != null) {
-        cancelAnimationFrame(rebuildRaf);
-        rebuildRaf = null;
-      }
-      this._view.endFastRebuild();
-    });
-    controls.addEventListener('labelchange', e => {
-      this._view.labelProps = new Set(e.detail.labelProps);
-      this._view._refreshPropCache();
-      this._view.render();
-      // Sync compass bold labels
+    // Cross-panel sync: when the controls change labelProps, also update
+    // the compass panel's bold labels.
+    controls.addEventListener('labelchange', (e) => {
+      if (!this._view || !e.detail) return;
       const comp = this._compassPanel?.querySelector('bz-compass');
       if (comp) comp.labelProps = this._view.labelProps;
     });
-    controls.addEventListener('colorby', e => {
-      const v = this._view;
-      v.colorBy = (v.colorBy === e.detail.name) ? null : e.detail.name;
+    // colorBy doesn't trigger statechange, so the sibling compass panel
+    // won't auto-sync its active-spoke state. Mirror it explicitly.
+    controls.addEventListener('colorby', () => {
+      if (!this._view) return;
+      const comp = this._compassPanel?.querySelector('bz-compass');
+      if (comp) comp.colorBy = this._view.colorBy;
     });
-    controls.addEventListener('autotune', () => this._runAutotune());
   }
 
   _buildOpts() {
