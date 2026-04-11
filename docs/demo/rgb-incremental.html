@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RGB Color Cube — BlitZoom</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .subtitle { color: #8b949e; margin-bottom: 1rem; font-size: 0.9rem; }
+    bz-graph {
+      width: 100%;
+      max-width: 1200px;
+      height: 700px;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 12px;
+    }
+    .panel-row bz-compass {
+      flex-shrink: 0;
+      width: 240px;
+      height: 240px;
+      background: #111118;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+    .panel-row bz-controls {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      background: #111118;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.08);font:11px 'JetBrains Mono',monospace;align-self:stretch;margin:-1rem -1rem 1rem">
+    <a href="../index.html" style="color:#7c6af7;text-decoration:none">← BlitZoom</a>
+  </header>
+  <h1>RGB Color Cube (262,144 colors)</h1>
+  <p class="subtitle">Streamed in batches via addNodes(). One node per color in a 64×64×64 grid sample of the RGB cube, each rendered in its own RGB hue; the layout reorganizes them by color similarity.</p>
+  <script type="module" src="../blitzoom.js"></script>
+  <script type="module" src="../bz-compass.js"></script>
+  <script type="module" src="../bz-controls.js"></script>
+
+  <bz-graph id="g" level="6" legend label-props="label" color-by="family"
+            strengths="family:8,lightness:4,saturationCat:3" heatmap="density" incremental
+            label-font='{"topHL":18,"top":11,"bottomHL":11,"bottom":10}'>
+  </bz-graph>
+  <div class="panel-row">
+    <bz-compass for="g"></bz-compass>
+    <bz-controls for="g" checkboxes></bz-controls>
+  </div>
+
+  <script type="module">
+
+    // ─── Color helpers ───────────────────────────────────────────────────────
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2;
+      let h = 0, s = 0;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        else if (max === g) h = ((b - r) / d + 2) / 6;
+        else h = ((r - g) / d + 4) / 6;
+      }
+      return [h, s, l]; // h, s, l ∈ [0, 1]
+    }
+
+    function toHex(c) { return c.toString(16).padStart(2, '0'); }
+
+    // Map a hue to one of 12 named families. The bands are 30° wide each
+    // (12 × 30° = 360°). Saturation cutoff promotes near-grays into a
+    // separate "neutral" family regardless of hue.
+    const HUE_NAMES = [
+      'red', 'orange', 'yellow', 'lime', 'green', 'mint',
+      'cyan', 'azure', 'blue', 'purple', 'magenta', 'pink',
+    ];
+    function colorFamily(h, s, l) {
+      if (s < 0.12) return l < 0.15 ? 'black' : (l > 0.85 ? 'white' : 'gray');
+      const idx = Math.floor(((h + 1 / 24) % 1) * 12) % 12;
+      return HUE_NAMES[idx];
+    }
+
+    function lightnessCategory(l) {
+      if (l < 0.33) return 'dark';
+      if (l < 0.67) return 'mid';
+      return 'light';
+    }
+    function saturationCategory(s) {
+      if (s < 0.2) return 'gray';
+      if (s < 0.6) return 'muted';
+      return 'vivid';
+    }
+
+    // ─── Build the cube ──────────────────────────────────────────────────────
+    // 64 steps per axis = 262 144 nodes (every 4 RGB units). Adjust STEP up
+    // (larger = fewer nodes) for slower machines.
+    const STEP = 4;
+    const nodes = [];
+    for (let r = 0; r < 256; r += STEP) {
+      for (let g = 0; g < 256; g += STEP) {
+        for (let b = 0; b < 256; b += STEP) {
+          const [h, s, l] = rgbToHsl(r, g, b);
+          const hex = '#' + toHex(r) + toHex(g) + toHex(b);
+          nodes.push({
+            id: `${r}-${g}-${b}`,
+            label: hex,
+            color: hex,                                    // per-node literal color, no palette lookup
+            r, g, b,                                       // numeric — auto-binned
+            h, s, l,                                       // numeric — auto-binned
+            family: colorFamily(h, s, l),                  // 'red'..'pink' + 'gray'/'black'/'white'
+            warmth: r > b ? 'warm' : (r < b ? 'cool' : 'neutral'),
+            lightness: lightnessCategory(l),
+            saturationCat: saturationCategory(s),
+          });
+        }
+      }
+    }
+
+    // ─── Stream into the static <bz-graph> ───────────────────────────────────
+    const g = document.getElementById('g');
+    await g.ready;
+
+    const BATCH_SIZE = 2000;
+    const total = nodes.length;
+    for (let i = 0; i < total; i += BATCH_SIZE) {
+      const batch = nodes.slice(i, i + BATCH_SIZE);
+      const upTo = Math.min(i + BATCH_SIZE, total);
+      g.view.showProgress(`Streaming ${upTo.toLocaleString()} / ${total.toLocaleString()}`);
+      await g.addNodes(batch, [], { animate: false });
+    }
+    g.view.showProgress(null);
+  </script>
+</body>
+</html>

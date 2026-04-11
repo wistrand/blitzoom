@@ -193,7 +193,7 @@ function bootstrapEmptyGraph(view, newNodes) {
   const seen = new Set();
   for (const rn of newNodes) {
     for (const k in rn) {
-      if (k === 'id' || k === 'group' || k === 'label') continue;
+      if (k === 'id' || k === 'group' || k === 'label' || k === 'color') continue;
       if (!seen.has(k)) { seen.add(k); newExtras.push(k); }
     }
   }
@@ -218,7 +218,8 @@ function bootstrapEmptyGraph(view, newNodes) {
   const wrapped = newNodes.map(rn => {
     const extraProps = {};
     for (const k in rn) {
-      if (k !== 'id' && k !== 'group' && k !== 'label') extraProps[k] = rn[k];
+      if (k === 'id' || k === 'group' || k === 'label' || k === 'color') continue;
+      extraProps[k] = rn[k];
     }
     return { extraProps };
   });
@@ -301,10 +302,12 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
     const label = rn.label || id;
     const extraProps = {};
     for (const k in rn) {
-      if (k !== 'id' && k !== 'group' && k !== 'label') extraProps[k] = rn[k];
+      if (k === 'id' || k === 'group' || k === 'label' || k === 'color') continue;
+      extraProps[k] = rn[k];
     }
     const node = { id, group, label, degree: 0, edgeTypes: null, extraProps,
                    projections: {}, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
+    if (rn.color !== undefined) node.color = rn.color;
 
     const neighborGroups = (view.adjList[id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');
     node.projections = projectNode(
@@ -455,9 +458,11 @@ export async function updateNodes(view, updates, opts = {}) {
 
     if (u.group !== undefined) node.group = u.group;
     if (u.label !== undefined) node.label = u.label;
+    if (u.color !== undefined) node.color = u.color;
     if (!node.extraProps) node.extraProps = {};
     for (const k in u) {
-      if (k !== 'id' && k !== 'group' && k !== 'label') node.extraProps[k] = u[k];
+      if (k === 'id' || k === 'group' || k === 'label' || k === 'color') continue;
+      node.extraProps[k] = u[k];
     }
 
     const neighborGroups = (view.adjList[u.id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');

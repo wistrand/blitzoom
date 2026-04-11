@@ -503,12 +503,12 @@
     await g.ready;
 
     const BATCH_SIZE = 2000;
-    let added = 0;
-    for (let i = 0; i < nodes.length; i += BATCH_SIZE) {
+    const total = nodes.length;
+    for (let i = 0; i < total; i += BATCH_SIZE) {
       const batch = nodes.slice(i, i + BATCH_SIZE);
+      const upTo = Math.min(i + BATCH_SIZE, total);
+      g.view.showProgress(`Streaming ${upTo.toLocaleString()} / ${total.toLocaleString()}`);
       await g.addNodes(batch, [], { animate: false });
-      added += batch.length;
-      g.view.showProgress(`Streaming ${added.toLocaleString()} / ${count.toLocaleString()}`);
     }
     g.view.showProgress(null);
   </script>

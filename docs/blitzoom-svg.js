@@ -303,7 +303,7 @@ export function createSVGView(nodes, edges, opts = {}) {
     sizeBy, sizeLog, edgeMode, heatmapMode,
     showLegend, selectedIds, hoveredId: null, labelProps,
     _lightMode: lightMode,
-    _nodeColor: n => colorMap[n[colorBy] || ''] || '#888888',
+    _nodeColor: n => n.color || colorMap[n[colorBy] || ''] || '#888888',
     _nodeLabel: n => n.label || n.id,
     _nodeColorVal: n => n[colorBy] || '',
     _cachedColorMap: colorMap,

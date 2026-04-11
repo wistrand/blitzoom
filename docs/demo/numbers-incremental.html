@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Numbers 2..200000 by Arithmetic Properties — BlitZoom</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .subtitle { color: #8b949e; margin-bottom: 1rem; font-size: 0.9rem; }
+    bz-graph {
+      width: 100%;
+      max-width: 1200px;
+      height: 700px;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 12px;
+    }
+    .panel-row bz-compass {
+      flex-shrink: 0;
+      width: 240px;
+      height: 240px;
+      background: #111118;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+    .panel-row bz-controls {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      background: #111118;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.08);font:11px 'JetBrains Mono',monospace;align-self:stretch;margin:-1rem -1rem 1rem">
+    <a href="../index.html" style="color:#7c6af7;text-decoration:none">← BlitZoom</a>
+  </header>
+  <h1>Numbers 2..200,000 by Arithmetic Properties</h1>
+  <p class="subtitle">Streamed in batches via addNodes(). Each node is a natural number; the layout reorganizes them by shared factor structure.</p>
+  <script type="module" src="../blitzoom.js"></script>
+  <script type="module" src="../bz-compass.js"></script>
+  <script type="module" src="../bz-controls.js"></script>
+
+  <bz-graph id="g" level="6" legend label-props="label" color-by="omega"
+            strengths="isPrime:5,omega:6,lastDigit:4,digits:3" heatmap="density" incremental
+            label-font='{"topHL":18,"top":11,"bottomHL":11,"bottom":10}'>
+  </bz-graph>
+  <div class="panel-row">
+    <bz-compass for="g"></bz-compass>
+    <bz-controls for="g" checkboxes></bz-controls>
+  </div>
+
+  <script type="module">
+
+    // ─── Sieve of smallest prime factor ──────────────────────────────────────
+    // Single O(N log log N) pass; from spf we derive every other property in
+    // amortized O(log N) per number via repeated division.
+    const MAX_N = 200_000;
+    const spf = new Uint32Array(MAX_N + 1);
+    for (let i = 2; i <= MAX_N; i++) {
+      if (spf[i] === 0) {
+        for (let j = i; j <= MAX_N; j += i) {
+          if (spf[j] === 0) spf[j] = i;
+        }
+      }
+    }
+
+    // ─── Property derivations ────────────────────────────────────────────────
+    function factorize(n) {
+      const out = [];
+      while (n > 1) {
+        const p = spf[n];
+        let c = 0;
+        while (n % p === 0) { n /= p; c++; }
+        out.push([p, c]);
+      }
+      return out;
+    }
+    const isPrime = (n) => n >= 2 && spf[n] === n;
+    function omega(n) { return factorize(n).length; }
+    function tau(n) {
+      let d = 1;
+      for (const [, c] of factorize(n)) d *= (c + 1);
+      return d;
+    }
+    function largestPrimeFactor(n) {
+      let max = 0;
+      for (const [p] of factorize(n)) if (p > max) max = p;
+      return max;
+    }
+    function digitSum(n) {
+      let s = 0;
+      while (n > 0) { s += n % 10; n = (n / 10) | 0; }
+      return s;
+    }
+
+    // Build the full node list. Synchronous — for 200K numbers, ~1.5 s on a
+    // modern machine; the streaming loop below progressively reveals them.
+    const nodes = [];
+    for (let n = 2; n <= MAX_N; n++) {
+      const w = omega(n);
+      const prime = isPrime(n);
+      nodes.push({
+        id: `n${n}`,
+        label: String(n),
+        n,                                                 // numeric — auto-binned
+        digits: String(n).length,
+        digitSum: digitSum(n),
+        lastDigit: n % 10,
+        parity: (n & 1) ? 'odd' : 'even',
+        isPrime: prime ? 'prime' : 'composite',            // binary categorical
+        kind: prime ? 'prime' : (w === 2 ? 'semiprime' : 'composite'),
+        omega: w,
+        tau: tau(n),
+        lpf: largestPrimeFactor(n),                        // largest prime factor — numeric
+      });
+    }
+
+    // ─── Stream into the static <bz-graph> ───────────────────────────────────
+    const g = document.getElementById('g');
+    await g.ready;
+
+    const BATCH_SIZE = 2000;
+    const total = nodes.length;
+    for (let i = 0; i < total; i += BATCH_SIZE) {
+      const batch = nodes.slice(i, i + BATCH_SIZE);
+      const upTo = Math.min(i + BATCH_SIZE, total);
+      g.view.showProgress(`Streaming ${upTo.toLocaleString()} / ${total.toLocaleString()}`);
+      await g.addNodes(batch, [], { animate: false });
+    }
+    g.view.showProgress(null);
+  </script>
+</body>
+</html>

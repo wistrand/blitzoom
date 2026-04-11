@@ -408,15 +408,11 @@ export class BlitZoomCanvas {
   }
 
   _nodeColorVal(n) { return getNodePropValue(n, this._cachedDominant, this.adjList); }
-  _nodeColor(n) { return this._cachedColorMap[this._nodeColorVal(n)] || '#888888'; }
-  _supernodeColor(sn) {
-    const counts = {};
-    for (const m of sn.members) {
-      const val = this._nodeColorVal(m);
-      counts[val] = (counts[val] || 0) + 1;
-    }
-    return (this._cachedColorMap[maxCountKey(counts)]) || '#888888';
-  }
+  // Per-node `n.color` (a literal CSS color string set on the input node)
+  // wins over the categorical propColors lookup. Lets datasets that already
+  // know the color per node — RGB cubes, brand colors, status dashboards —
+  // declare it directly without abusing a property group as a color carrier.
+  _nodeColor(n) { return n.color || this._cachedColorMap[this._nodeColorVal(n)] || '#888888'; }
 
   // ─── Level & layout ────────────────────────────────────────────────────────
 
@@ -502,7 +498,11 @@ export class BlitZoomCanvas {
   render() {
     if (this._renderPending) return;
     this._renderPending = true;
-    // Capture edge mode at schedule time, not draw time
+    // Capture edge mode at schedule time, not draw time. fastRebuild()
+    // suppresses edges before calling render() and restores immediately
+    // after — by the time the rAF fires, the user's value is back, so the
+    // draw needs to honor what was set when render() was asked for, not
+    // what's set when the frame actually runs.
     const edgeModeAtSchedule = this.edgeMode;
     requestAnimationFrame(() => {
       this._renderPending = false;
@@ -609,25 +609,13 @@ export class BlitZoomCanvas {
     }
   }
 
-  /** Show progress overlay on the canvas. Set to null to clear. */
+  /** Show progress overlay on the canvas. Set to null to clear.
+   *  The overlay is drawn by `render()` whenever `_progressText` is set, so
+   *  it persists across blend/render cycles triggered by addNodes during
+   *  streaming — not just at the moment showProgress was called. */
   showProgress(text) {
     this._progressText = text;
-    // Render the graph first, then overlay progress on top
     render(this);
-    if (text) {
-      const ctx = this.canvas.getContext('2d');
-      const W = this.W, H = this.H;
-      // Semi-transparent bar behind text
-      const barH = 28;
-      const y = H / 2 - barH / 2;
-      ctx.fillStyle = 'rgba(10, 10, 15, 0.8)';
-      ctx.fillRect(0, y, W, barH);
-      ctx.fillStyle = '#c8c8d8';
-      ctx.font = '13px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(text, W / 2, H / 2);
-    }
   }
 
   renderNow() { render(this); this._a11yCheck(); }
@@ -935,16 +923,6 @@ export class BlitZoomCanvas {
     this._lastBlendMs = performance.now() - t0;
     this._blendGen++;
     this.canvas.dispatchEvent(new Event('blend'));
-  }
-
-  /** True if any group has a non-zero bearing set. Used to decide whether the
-   *  GPU blend path is safe (GPU shader doesn't yet apply rotation). */
-  _hasAnyBearing() {
-    if (!this.propBearings) return false;
-    for (const g in this.propBearings) {
-      if (this.propBearings[g]) return true;
-    }
-    return false;
   }
 
   /** Update property strengths and re-blend */

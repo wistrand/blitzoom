@@ -244,6 +244,25 @@ export function render(bz) {
   renderFn(bz, 'labels');
   if (bz.showLegend) renderLegend(bz);
   if (bz.showResetBtn) renderResetBtn(bz);
+  if (bz._progressText) renderProgressOverlay(bz);
+}
+
+// Progress overlay — drawn on top of every render so it persists across the
+// blend/layout/render cycles triggered by streaming addNodes calls. Without
+// this, showProgress() would paint once and be wiped by the next render.
+function renderProgressOverlay(bz) {
+  const ctx = bz.ctx;
+  const W = bz.W, H = bz.H;
+  const text = bz._progressText;
+  const barH = 28;
+  const y = H / 2 - barH / 2;
+  ctx.fillStyle = 'rgba(10, 10, 15, 0.85)';
+  ctx.fillRect(0, y, W, barH);
+  ctx.fillStyle = '#c8c8d8';
+  ctx.font = '13px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, W / 2, H / 2);
 }
 
 // ─── Supernode rendering ─────────────────────────────────────────────────────
