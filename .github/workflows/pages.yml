@@ -67,6 +67,26 @@ jobs:
         with:
           path: docs
 
+  # When this deploy job calls actions/deploy-pages, GitHub *also* fires a
+  # second workflow run in the Actions tab called `pages-build-deployment`.
+  # That's GitHub's internal Pages publishing infrastructure, not the old
+  # "Deploy from a branch" mode. It can't be hidden, disabled, or prevented
+  # by any YAML you write. The two runs are sequential — yours uploads the
+  # artifact, then `pages-build-deployment` serves it from the CDN.
+  #
+  # Known annoyance since October 2022 (~3.5 years as of writing). Dozens of
+  # community discussion threads (#36555, #37914, #102334, #43116, #158055,
+  # quarto-dev #5810, etc.). GitHub's stance has been consistent: "working
+  # as intended", will not be fixed. Maintainers since 2022:
+  #   "the only guarantee is that the build/deployment is triggered after a
+  #    push on your selected branch. There are no other guarantees being
+  #    made with regards to workflow orchestration."
+  # The standard advice given to confused users is "migrate to custom
+  # workflows so you only have one" — which is exactly what they already
+  # did, and is what triggers the duplicate. Cruel.
+  #
+  # Bottom line: ignore the second `pages-build-deployment` run in the
+  # Actions tab. It's expected. Both runs succeeding = site deployed.
   deploy:
     needs: build
     runs-on: ubuntu-latest
