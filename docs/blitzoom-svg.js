@@ -563,7 +563,8 @@ export function exportSVG(bz, opts = {}) {
         const lineH = 16;
         const pad = 8;
         const headerH = 14;
-        const headerText = bz._cachedDominant.toUpperCase();
+        const headerName = bz.displayNameFor ? bz.displayNameFor(bz._cachedDominant) : bz._cachedDominant;
+        const headerText = headerName.toUpperCase();
 
         const boxW = 120;
         const boxH = headerH + entries.length * lineH + (overflow > 0 ? lineH : 0) + pad * 2;

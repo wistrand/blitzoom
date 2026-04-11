@@ -1,0 +1,167 @@
+{
+  "nodes": [
+    { "id": "sls-meco",                "label": "SLS main engines cutoff",                  "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "icps-perigee-raise",      "label": "ICPS perigee raise burn",                  "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "unassigned" },
+    { "id": "icps-orbit-raise",        "label": "ICPS orbit raise burn",                    "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "unassigned" },
+    { "id": "water-checkout",          "label": "Potable water dispenser checkout",         "category": "maintenance", "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "toilet-checkout",         "label": "Toilet system checkout",                   "category": "maintenance", "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "co2-test",                "label": "Carbon dioxide removal test",              "category": "maintenance", "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "cabin-reconfig",          "label": "Cabin reconfiguration",                    "category": "maintenance", "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "spacesuit-doff",          "label": "Spacesuit doffing",                        "category": "medical",     "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "orion-handling",          "label": "Orion handling test",                      "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "icps-sep-demo",           "label": "ICPS separation for prox ops",             "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "unassigned" },
+    { "id": "prox-ops-demo",           "label": "Proximity operations demonstration",       "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "wiseman-glover" },
+    { "id": "icps-disposal",           "label": "ICPS disposal burn",                       "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "unassigned" },
+    { "id": "sleep-1",                 "label": "First sleep period",                       "category": "rest",        "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "wake-for-burn",           "label": "Wake for engine firing",                   "category": "rest",        "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "tli-setup-burn",          "label": "Engine firing for TLI geometry",           "category": "navigation",  "phase": "ascent",          "flightDay": 1,  "crew": "unassigned" },
+    { "id": "dsn-checkout",            "label": "Emergency comms DSN checkout",             "category": "comms",       "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+    { "id": "sleep-2",                 "label": "Return to sleep",                          "category": "rest",        "phase": "ascent",          "flightDay": 1,  "crew": "all" },
+
+    { "id": "flywheel-setup",          "label": "Flywheel exercise device setup",           "category": "medical",     "phase": "translunar",      "flightDay": 2,  "crew": "wiseman-glover" },
+    { "id": "exercise-wg",             "label": "Exercise workout (Wiseman/Glover)",        "category": "medical",     "phase": "translunar",      "flightDay": 2,  "crew": "wiseman-glover" },
+    { "id": "exercise-kh",             "label": "Exercise workout (Koch/Hansen)",           "category": "medical",     "phase": "translunar",      "flightDay": 2,  "crew": "koch-hansen" },
+    { "id": "tli-prep",                "label": "TLI burn preparation",                     "category": "navigation",  "phase": "translunar",      "flightDay": 2,  "crew": "koch" },
+    { "id": "tli-burn",                "label": "Translunar injection burn",                "category": "navigation",  "phase": "translunar",      "flightDay": 2,  "crew": "all" },
+    { "id": "acclimation",             "label": "Space environment acclimation",            "category": "rest",        "phase": "translunar",      "flightDay": 2,  "crew": "all" },
+    { "id": "downlink-1",              "label": "Space-to-ground video downlink",           "category": "comms",       "phase": "translunar",      "flightDay": 2,  "crew": "all" },
+
+    { "id": "tcm1-prep",               "label": "Outbound TCM 1 preparation",               "category": "navigation",  "phase": "translunar",      "flightDay": 3,  "crew": "hansen" },
+    { "id": "tcm1",                    "label": "Outbound trajectory correction burn 1",    "category": "navigation",  "phase": "translunar",      "flightDay": 3,  "crew": "unassigned" },
+    { "id": "cpr-demo",                "label": "CPR demonstration in space",               "category": "medical",     "phase": "translunar",      "flightDay": 3,  "crew": "glover-koch-hansen" },
+    { "id": "medical-kit-check",       "label": "Medical kit checkout",                     "category": "medical",     "phase": "translunar",      "flightDay": 3,  "crew": "wiseman-glover" },
+    { "id": "dsn-comm-test",           "label": "DSN emergency comms test",                 "category": "comms",       "phase": "translunar",      "flightDay": 3,  "crew": "koch" },
+    { "id": "obs-rehearsal",           "label": "Observation choreography rehearsal",       "category": "science",     "phase": "translunar",      "flightDay": 3,  "crew": "all" },
+
+    { "id": "tcm2",                    "label": "Outbound trajectory correction burn 2",    "category": "navigation",  "phase": "translunar",      "flightDay": 4,  "crew": "unassigned" },
+    { "id": "geo-target-review",       "label": "Geography target review",                  "category": "science",     "phase": "translunar",      "flightDay": 4,  "crew": "all" },
+    { "id": "celestial-photo",         "label": "Celestial body photography",               "category": "science",     "phase": "translunar",      "flightDay": 4,  "crew": "all" },
+
+    { "id": "lunar-soi-entry",         "label": "Lunar sphere of influence entry",          "category": "navigation",  "phase": "translunar",      "flightDay": 5,  "crew": "unassigned" },
+    { "id": "suit-donning",            "label": "Survival suit donning tests",              "category": "medical",     "phase": "translunar",      "flightDay": 5,  "crew": "all" },
+    { "id": "suit-pressure",           "label": "Spacesuit pressurization tests",           "category": "medical",     "phase": "translunar",      "flightDay": 5,  "crew": "all" },
+    { "id": "suit-seat-fit",           "label": "Spacesuit seat fitting",                   "category": "medical",     "phase": "translunar",      "flightDay": 5,  "crew": "all" },
+    { "id": "suit-eating",             "label": "Helmet port eating test",                  "category": "medical",     "phase": "translunar",      "flightDay": 5,  "crew": "all" },
+    { "id": "tcm3",                    "label": "Final outbound trajectory correction 3",   "category": "navigation",  "phase": "translunar",      "flightDay": 5,  "crew": "unassigned" },
+
+    { "id": "flyby-closest-approach",  "label": "Lunar flyby closest approach",             "category": "observation", "phase": "lunar-flyby",     "flightDay": 6,  "crew": "all" },
+    { "id": "lunar-photo",             "label": "Lunar photography and video",              "category": "science",     "phase": "lunar-flyby",     "flightDay": 6,  "crew": "all" },
+    { "id": "lunar-recording",         "label": "Real-time lunar observation recording",    "category": "science",     "phase": "lunar-flyby",     "flightDay": 6,  "crew": "all" },
+    { "id": "comm-blackout",           "label": "Communication blackout behind Moon",       "category": "comms",       "phase": "lunar-flyby",     "flightDay": 6,  "crew": "all" },
+
+    { "id": "lunar-soi-exit",          "label": "Exit lunar sphere of influence",           "category": "navigation",  "phase": "return",          "flightDay": 7,  "crew": "unassigned" },
+    { "id": "flyby-debrief",           "label": "Post-flyby crew debrief",                  "category": "comms",       "phase": "return",          "flightDay": 7,  "crew": "all" },
+    { "id": "rtcm1",                   "label": "Return trajectory correction burn 1",      "category": "navigation",  "phase": "return",          "flightDay": 7,  "crew": "unassigned" },
+    { "id": "off-duty-day7",           "label": "Off-duty time",                            "category": "rest",        "phase": "return",          "flightDay": 7,  "crew": "all" },
+
+    { "id": "radiation-shelter",       "label": "High-radiation shelter construction",      "category": "medical",     "phase": "return",          "flightDay": 8,  "crew": "all" },
+    { "id": "radiation-demo",          "label": "Radiation event contingency demo",         "category": "medical",     "phase": "return",          "flightDay": 8,  "crew": "all" },
+    { "id": "manual-piloting",         "label": "Manual piloting capability assessment",    "category": "navigation",  "phase": "return",          "flightDay": 8,  "crew": "all" },
+    { "id": "window-target",           "label": "Target centering in windows",              "category": "navigation",  "phase": "return",          "flightDay": 8,  "crew": "all" },
+    { "id": "tail-to-sun",             "label": "Tail-to-Sun attitude maneuver",            "category": "navigation",  "phase": "return",          "flightDay": 8,  "crew": "all" },
+    { "id": "attitude-compare",        "label": "Attitude control DOF comparison",          "category": "navigation",  "phase": "return",          "flightDay": 8,  "crew": "all" },
+
+    { "id": "reentry-review",          "label": "Reentry procedure review",                 "category": "navigation",  "phase": "return",          "flightDay": 9,  "crew": "all" },
+    { "id": "mcc-consult",             "label": "Flight control team consultation",         "category": "comms",       "phase": "return",          "flightDay": 9,  "crew": "all" },
+    { "id": "rtcm2",                   "label": "Return trajectory correction burn 2",      "category": "navigation",  "phase": "return",          "flightDay": 9,  "crew": "unassigned" },
+    { "id": "waste-backup",            "label": "Waste collection backup demo",             "category": "maintenance", "phase": "return",          "flightDay": 9,  "crew": "all" },
+    { "id": "ortho-fitting",           "label": "Orthostatic intolerance garment fitting",  "category": "medical",     "phase": "return",          "flightDay": 9,  "crew": "all" },
+    { "id": "body-measurements",       "label": "Body circumference measurements",          "category": "medical",     "phase": "return",          "flightDay": 9,  "crew": "all" },
+    { "id": "garment-survey",          "label": "Compression garment questionnaire",        "category": "medical",     "phase": "return",          "flightDay": 9,  "crew": "all" },
+
+    { "id": "rtcm3",                   "label": "Final return trajectory correction 3",     "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "unassigned" },
+    { "id": "cabin-restore",           "label": "Cabin pre-flight restoration",             "category": "maintenance", "phase": "reentry-recovery","flightDay": 10, "crew": "all" },
+    { "id": "stowage",                 "label": "Equipment stowage",                        "category": "maintenance", "phase": "reentry-recovery","flightDay": 10, "crew": "all" },
+    { "id": "seat-install",            "label": "Seat installation and securing",           "category": "maintenance", "phase": "reentry-recovery","flightDay": 10, "crew": "all" },
+    { "id": "spacesuit-don",           "label": "Spacesuit donning for reentry",            "category": "medical",     "phase": "reentry-recovery","flightDay": 10, "crew": "all" },
+    { "id": "sm-separation",           "label": "Service module separation",                "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "unassigned" },
+    { "id": "reentry",                 "label": "Atmospheric reentry",                      "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "all" },
+    { "id": "fbc-jettison",            "label": "Forward bay cover jettison",               "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "unassigned" },
+    { "id": "drogue-deploy",           "label": "Drogue parachute deployment",              "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "unassigned" },
+    { "id": "pilot-chute-deploy",      "label": "Pilot parachute deployment",               "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "unassigned" },
+    { "id": "main-chute-deploy",       "label": "Main parachute deployment",                "category": "navigation",  "phase": "reentry-recovery","flightDay": 10, "crew": "unassigned" },
+    { "id": "splashdown",              "label": "Pacific Ocean splashdown",                 "category": "recovery",    "phase": "reentry-recovery","flightDay": 10, "crew": "all" },
+    { "id": "recovery",                "label": "Recovery by NASA and US Navy",             "category": "recovery",    "phase": "reentry-recovery","flightDay": 10, "crew": "all" }
+  ],
+  "links": [
+    { "source": "sls-meco",             "target": "icps-perigee-raise",     "type": "icps" },
+    { "source": "icps-perigee-raise",   "target": "icps-orbit-raise",       "type": "icps" },
+    { "source": "icps-orbit-raise",     "target": "icps-sep-demo",          "type": "icps" },
+    { "source": "icps-sep-demo",        "target": "icps-disposal",          "type": "icps" },
+
+    { "source": "icps-sep-demo",        "target": "prox-ops-demo",          "type": "proxops" },
+    { "source": "prox-ops-demo",        "target": "icps-disposal",          "type": "proxops" },
+    { "source": "orion-handling",       "target": "prox-ops-demo",          "type": "proxops" },
+
+    { "source": "spacesuit-doff",       "target": "suit-donning",           "type": "spacesuit" },
+    { "source": "suit-donning",         "target": "suit-pressure",          "type": "spacesuit" },
+    { "source": "suit-pressure",        "target": "suit-seat-fit",          "type": "spacesuit" },
+    { "source": "suit-seat-fit",        "target": "suit-eating",            "type": "spacesuit" },
+    { "source": "suit-eating",          "target": "spacesuit-don",          "type": "spacesuit" },
+
+    { "source": "dsn-checkout",         "target": "downlink-1",             "type": "comms" },
+    { "source": "downlink-1",           "target": "dsn-comm-test",          "type": "comms" },
+    { "source": "dsn-comm-test",        "target": "comm-blackout",          "type": "comms" },
+    { "source": "comm-blackout",        "target": "flyby-debrief",          "type": "comms" },
+    { "source": "flyby-debrief",        "target": "mcc-consult",            "type": "comms" },
+
+    { "source": "water-checkout",       "target": "toilet-checkout",        "type": "lifesupport" },
+    { "source": "toilet-checkout",      "target": "co2-test",               "type": "lifesupport" },
+    { "source": "co2-test",             "target": "waste-backup",           "type": "lifesupport" },
+
+    { "source": "cabin-reconfig",       "target": "cabin-restore",          "type": "cabin" },
+    { "source": "cabin-restore",        "target": "stowage",                "type": "cabin" },
+    { "source": "stowage",              "target": "seat-install",           "type": "cabin" },
+
+    { "source": "tli-setup-burn",       "target": "tli-prep",               "type": "burns" },
+    { "source": "tli-prep",             "target": "tli-burn",               "type": "burns" },
+    { "source": "tli-burn",             "target": "tcm1-prep",              "type": "burns" },
+    { "source": "tcm1-prep",            "target": "tcm1",                   "type": "burns" },
+    { "source": "tcm1",                 "target": "tcm2",                   "type": "burns" },
+    { "source": "tcm2",                 "target": "tcm3",                   "type": "burns" },
+    { "source": "tcm3",                 "target": "rtcm1",                  "type": "burns" },
+    { "source": "rtcm1",                "target": "rtcm2",                  "type": "burns" },
+    { "source": "rtcm2",                "target": "rtcm3",                  "type": "burns" },
+
+    { "source": "flywheel-setup",       "target": "exercise-wg",            "type": "exercise" },
+    { "source": "flywheel-setup",       "target": "exercise-kh",            "type": "exercise" },
+
+    { "source": "ortho-fitting",        "target": "body-measurements",      "type": "monitoring" },
+    { "source": "body-measurements",    "target": "garment-survey",         "type": "monitoring" },
+
+    { "source": "radiation-shelter",    "target": "radiation-demo",         "type": "radiation" },
+
+    { "source": "obs-rehearsal",        "target": "geo-target-review",      "type": "science" },
+    { "source": "geo-target-review",    "target": "celestial-photo",        "type": "science" },
+    { "source": "celestial-photo",      "target": "lunar-photo",            "type": "science" },
+    { "source": "lunar-photo",          "target": "lunar-recording",        "type": "science" },
+    { "source": "flyby-closest-approach","target": "lunar-photo",           "type": "science" },
+    { "source": "flyby-closest-approach","target": "lunar-recording",       "type": "science" },
+
+    { "source": "rtcm3",                "target": "sm-separation",          "type": "reentry" },
+    { "source": "sm-separation",        "target": "reentry",                "type": "reentry" },
+    { "source": "reentry",              "target": "fbc-jettison",           "type": "reentry" },
+    { "source": "fbc-jettison",         "target": "drogue-deploy",          "type": "reentry" },
+    { "source": "drogue-deploy",        "target": "pilot-chute-deploy",     "type": "reentry" },
+    { "source": "pilot-chute-deploy",   "target": "main-chute-deploy",      "type": "reentry" },
+    { "source": "main-chute-deploy",    "target": "splashdown",             "type": "reentry" },
+    { "source": "splashdown",           "target": "recovery",               "type": "reentry" },
+
+    { "source": "manual-piloting",      "target": "window-target",          "type": "piloting" },
+    { "source": "window-target",        "target": "tail-to-sun",            "type": "piloting" },
+    { "source": "tail-to-sun",          "target": "attitude-compare",       "type": "piloting" },
+
+    { "source": "cpr-demo",             "target": "medical-kit-check",      "type": "emergency-med" },
+    { "source": "radiation-demo",       "target": "medical-kit-check",      "type": "emergency-med" },
+
+    { "source": "lunar-soi-entry",      "target": "flyby-closest-approach", "type": "lunar-traj" },
+    { "source": "flyby-closest-approach","target": "lunar-soi-exit",        "type": "lunar-traj" },
+
+    { "source": "sleep-1",              "target": "wake-for-burn",          "type": "rest-cycle" },
+    { "source": "wake-for-burn",        "target": "sleep-2",                "type": "rest-cycle" },
+    { "source": "sleep-2",              "target": "acclimation",            "type": "rest-cycle" },
+    { "source": "acclimation",          "target": "off-duty-day7",          "type": "rest-cycle" },
+
+    { "source": "reentry-review",       "target": "mcc-consult",            "type": "return-planning" }
+  ]
+}

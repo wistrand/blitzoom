@@ -1075,7 +1075,10 @@ function renderLegend(bz) {
   }
   maxW = Math.min(maxW, maxLabelW);
 
-  const headerText = bz._cachedDominant.toUpperCase();
+  // Use displayNameFor to honor per-dataset display aliases (e.g. "category"
+  // instead of "group" for datasets whose source field uses a non-canonical name).
+  const headerName = bz.displayNameFor ? bz.displayNameFor(bz._cachedDominant) : bz._cachedDominant;
+  const headerText = headerName.toUpperCase();
   ctx.font = `bold 8px JetBrains Mono, monospace`;
   const headerW = ctx.measureText(headerText).width;
   const headerH = 14;

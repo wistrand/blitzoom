@@ -836,7 +836,15 @@ class BlitZoom {
       const groups = v.groupNames.map(g => {
         const cmap = v.propColors && v.propColors[g];
         const color = cmap ? Object.values(cmap)[0] || '#888' : '#888';
-        return { name: g, color, strength: v.propStrengths[g] || 0, bearing: v.propBearings[g] || 0 };
+        return {
+          name: g,
+          // Display label may differ from internal name when the dataset's
+          // source field is "category"/"type"/"kind" instead of "group".
+          displayName: v.displayNameFor ? v.displayNameFor(g) : g,
+          color,
+          strength: v.propStrengths[g] || 0,
+          bearing: v.propBearings[g] || 0,
+        };
       });
       controls.groups = groups;
       controls.labelProps = v.labelProps;
@@ -859,7 +867,10 @@ class BlitZoom {
     const controls = document.getElementById('strengthControls');
     if (!controls || !v.groupNames) return;
     const groups = v.groupNames.map(g => ({
-      name: g, strength: v.propStrengths[g] || 0, bearing: v.propBearings[g] || 0,
+      name: g,
+      displayName: v.displayNameFor ? v.displayNameFor(g) : g,
+      strength: v.propStrengths[g] || 0,
+      bearing: v.propBearings[g] || 0,
     }));
     const namesMatch = controls.groups.length === groups.length &&
       controls.groups.every((g, i) => g.name === groups[i].name);
@@ -903,6 +914,7 @@ class BlitZoom {
       const color = cmap ? Object.values(cmap)[0] || '#888' : '#888';
       return {
         name: g,
+        displayName: v.displayNameFor ? v.displayNameFor(g) : g,
         color,
         strength: v.propStrengths[g] || 0,
         bearing: v.propBearings[g] || 0,
@@ -1124,16 +1136,18 @@ class BlitZoom {
       edges: graph.edges,
       groupNames: graph.groupNames,
       hasEdgeTypes: graph.hasEdgeTypes,
+      groupDisplayName: parsed.groupSourceName || null,
     });
     if (progressBar) progressBar.value = 100;
   }
 
   _applyWorkerResult(result) {
     const v = this.view;
-    const { nodeMeta, projBuf, edges: workerEdges, groupNames, hasEdgeTypes: het } = result;
+    const { nodeMeta, projBuf, edges: workerEdges, groupNames, hasEdgeTypes: het, groupDisplayName } = result;
 
     v.groupNames = groupNames;
     v.hasEdgeTypes = het;
+    v._groupDisplayName = groupDisplayName || null;
 
     // Build color maps for every property group
     v.propColors = {};

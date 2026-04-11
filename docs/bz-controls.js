@@ -158,12 +158,15 @@ class BzControls extends HTMLElement {
 
       const showCb = this.hasAttribute('checkboxes');
       const checked = this._labelProps.has(g.name);
+      // Display label may differ from internal name (e.g. "category" instead
+      // of "group" for datasets that use a non-canonical source field).
+      const displayName = g.displayName || g.name;
       row.innerHTML = `${showCb ? `<input class="cb" type="checkbox" title="Include in label"${checked ? ' checked' : ''}>` : ''}
-        <span class="label${this._colorBy === g.name ? ' active' : ''}" title="Color by ${g.name}">${g.name}</span>
+        <span class="label${this._colorBy === g.name ? ' active' : ''}" title="Color by ${displayName}">${displayName}</span>
         <input class="slider" type="range" min="0" max="${this._maxStrength}" step="0.1" value="${g.strength || 0}">
         <span class="val">${Math.round((g.strength || 0) * 10) / 10}</span>
         <div class="dial${deg ? ' nonzero' : ''}" tabindex="0" role="slider"
-             aria-label="Bearing for ${g.name}" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${deg}"
+             aria-label="Bearing for ${displayName}" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${deg}"
              aria-valuetext="${deg} degrees">
           <div class="tick" style="transform:rotate(${deg}deg)"></div>
         </div>`;
@@ -538,7 +541,15 @@ class BzControls extends HTMLElement {
     const groups = v.groupNames.map(g => {
       const cmap = v.propColors && v.propColors[g];
       const color = cmap ? Object.values(cmap)[0] || '#888' : '#888';
-      return { name: g, color, strength: v.propStrengths[g] || 0, bearing: v.propBearings[g] || 0 };
+      return {
+        name: g,
+        // Display label may differ from internal name when the dataset's
+        // source field is "category" / "type" / "kind" instead of "group".
+        displayName: v.displayNameFor ? v.displayNameFor(g) : g,
+        color,
+        strength: v.propStrengths[g] || 0,
+        bearing: v.propBearings[g] || 0,
+      };
     });
     if (this._groups.length === groups.length) {
       const same = groups.every((g, i) => {
