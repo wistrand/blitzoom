@@ -285,7 +285,7 @@ class BzCompass extends HTMLElement {
       const cos = Math.cos(a);
       const anchor = Math.abs(cos) < 0.1 ? 'middle' : cos > 0 ? 'start' : 'end';
       const fontSize = Math.max(8, Math.min(11, R / (G + 1)));
-      let name = this._groups[i].name;
+      let name = this._groups[i].displayName || this._groups[i].name;
       if (name.length > maxLabelLen) name = name.slice(0, maxLabelLen - 1) + '…';
       p.push(`<text x="${f1(lx)}" y="${f1(ly + 4)}" fill="${fg}" fill-opacity="0.7" font-size="${fontSize}" text-anchor="${anchor}">${esc(name)}</text>`);
     }
@@ -322,7 +322,7 @@ class BzCompass extends HTMLElement {
       const color = g.color || accent;
       p.push(`<circle cx="${f1(hx)}" cy="${f1(hy)}" r="7" fill="${color}" fill-opacity="0.7"/>`);
       const deg = Math.round((g.bearing || 0) * 180 / Math.PI);
-      p.push(`<title>${esc(g.name)}: ${Math.round(g.strength * 10) / 10} / ${deg}°</title>`);
+      p.push(`<title>${esc(g.displayName || g.name)}: ${Math.round(g.strength * 10) / 10} / ${deg}°</title>`);
     }
 
     // Center dot
@@ -558,6 +558,10 @@ class BzCompass extends HTMLElement {
       const color = cmap ? Object.values(cmap)[0] || '#888' : '#888';
       return {
         name: g,
+        // Display label may differ from internal name when the dataset's
+        // source field is "category" / "type" / "kind" instead of "group".
+        // Falls back to `g` if the view has no display alias for it.
+        displayName: v.displayNameFor ? v.displayNameFor(g) : g,
         color,
         strength: v.propStrengths[g] || 0,
         bearing: v.propBearings[g] || 0,
@@ -745,13 +749,14 @@ class BzCompass extends HTMLElement {
       ctx.globalAlpha = 0.7;
       const cos = Math.cos(a);
       ctx.textAlign = Math.abs(cos) < 0.1 ? 'center' : cos > 0 ? 'left' : 'right';
-      let name = this._groups[i].name;
+      const fullName = this._groups[i].displayName || this._groups[i].name;
+      let name = fullName;
       // Truncate if too wide for available space
       const budgetPx = maxLabelPx * dpr;
       while (name.length > 2 && ctx.measureText(name).width > budgetPx) {
         name = name.slice(0, -1);
       }
-      if (name !== this._groups[i].name) name += '…';
+      if (name !== fullName) name += '…';
       // Nudge label inward if it would clip the canvas edge
       const tw = ctx.measureText(name).width;
       const margin = 2 * dpr;
@@ -875,7 +880,7 @@ class BzCompass extends HTMLElement {
         ctx.fillStyle = fg;
         ctx.textAlign = 'center';
         ctx.fillText(label, hx, hy - (HANDLE_RADIUS + 6) * dpr);
-        ctx.fillText(g.name, hx, hy + (HANDLE_RADIUS + 12) * dpr);
+        ctx.fillText(g.displayName || g.name, hx, hy + (HANDLE_RADIUS + 12) * dpr);
       }
     }
 

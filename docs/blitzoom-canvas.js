@@ -88,6 +88,13 @@ export class BlitZoomCanvas {
     this.nodeIndexFull = opts.nodeIndexFull || {};
     this.adjList = opts.adjList || {};
     this.groupNames = opts.groupNames || [];
+    // Optional display name for the canonical 'group' property — set when a
+    // dataset's source field is something other than "group" (e.g.
+    // "category", "type", "kind"). The internal name stays "group" so the
+    // algorithm vocabulary, propStrengths keys, URL hash positions, and all
+    // existing presets are unchanged. Only the UI label is overridden via
+    // displayNameFor() below.
+    this._groupDisplayName = opts.groupDisplayName || null;
     this.propStrengths = { ...opts.propStrengths } || {};
     this.propBearings = { ...(opts.propBearings || {}) }; // per-group rotation in radians
     this.propColors = opts.propColors || {};
@@ -366,6 +373,16 @@ export class BlitZoomCanvas {
     this._refreshPropCache();
     this.layoutAll();
     this.render();
+  }
+
+  /** Map a property group name to its UI display label. The canonical
+   *  internal name "group" can be aliased per-dataset to e.g. "category"
+   *  / "type" / "kind" via the `groupDisplayName` constructor option (set
+   *  by parsers when the source field uses a non-canonical name). All
+   *  other property groups display under their own name unchanged. */
+  displayNameFor(name) {
+    if (name === 'group' && this._groupDisplayName) return this._groupDisplayName;
+    return name;
   }
 
   get lightMode() { return this._lightMode; }

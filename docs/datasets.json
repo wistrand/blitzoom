@@ -22,6 +22,8 @@
     "settings": { "strengths": { "Faction": 6, "label": 2 }, "labelProps": ["label"] } },
   { "id": "penguins",   "name": "Palmer Penguins",  "edges": "data/penguins.csv",                                                       "desc": "344 penguins, CSV (no edges)",
     "settings": { "strengths": { "group": 6, "bill_length_mm": 4, "flipper_length_mm": 4, "body_mass_g": 3, "sex": 2 }, "labelProps": ["group"] } },
+  { "id": "artemis2",   "name": "Artemis II",       "edges": "data/artemis2.json",                                                      "desc": "73 mission activities + 60 subsystem chains, April 2026 lunar flyby",
+    "settings": { "strengths": { "group": 8, "phase": 6, "edgetype": 7, "crew": 3, "flightDay": 4 }, "smoothAlpha": 0.4, "labelProps": ["label"] } },
   { "id": "synth-pkg",  "name": "Synth Packages",   "edges": "data/synth-packages.edges",     "nodes": "data/synth-packages.nodes",     "desc": "1.9K synthetic nodes",
     "settings": { "strengths": { "group": 5, "downloads": 3, "license": 2 }, "labelProps": ["label", "group"] } },
   { "id": "email-eu",   "name": "Email EU",         "edges": "data/email-eu.edges",                                                     "desc": "1K nodes, edge-only",

@@ -258,15 +258,45 @@ export function parseD3(data) {
   const idByIndex = [];
   let anonCounter = 0;
 
+  // d3-force itself doesn't require any specific node fields beyond `id` (and
+  // even that is configurable via nodeId()) — see https://github.com/d3/d3-force/issues/140
+  // for Bostock's confirmation. The `group`/`name` convention comes from the
+  // Miserables example. Accept the same role aliases the CSV path uses
+  // (LABEL_CANDIDATES, GROUP_CANDIDATES) so a node with `category` instead of
+  // `group`, or `title` instead of `label`, gets recognized correctly.
+  // Priority: explicit `id` > `name` for the node id; LABEL_CANDIDATES order
+  // for the label; GROUP_CANDIDATES order for the group. The first match wins;
+  // remaining candidates fall through to extraProps.
+  const findFirst = (n, candidates) => {
+    for (const c of candidates) {
+      if (n[c] != null && String(n[c]).trim()) return { key: c, val: String(n[c]) };
+    }
+    return null;
+  };
+  // Capture the first source field name that resolves the group role across
+  // the dataset, so the UI can display "category" / "type" / "kind" / etc.
+  // instead of the canonical internal name "group". Stays null when nodes
+  // use the canonical "group" key (same as before — the UI shows "group").
+  let groupSourceName = null;
   for (const n of data.nodes) {
     // D3 convention: some files use `name` instead of `id`
     const rawId = n.id ?? n.name;
     const id = (rawId != null && String(rawId).trim()) ? String(rawId) : `row_${anonCounter++}`;
-    const label = n.label || n.name || String(id);
-    const group = n.group != null ? String(n.group) : 'unknown';
+    const labelMatch = findFirst(n, LABEL_CANDIDATES);
+    const label = labelMatch ? labelMatch.val : (n.name || String(id));
+    const groupMatch = findFirst(n, GROUP_CANDIDATES);
+    const group = groupMatch ? groupMatch.val : 'unknown';
+    if (groupMatch && groupSourceName === null && groupMatch.key !== 'group') {
+      groupSourceName = groupMatch.key;
+    }
+    // Skip the consumed role keys plus `id`/`name` so they don't double-up
+    // as extra property groups.
+    const consumed = new Set(['id', 'name']);
+    if (labelMatch) consumed.add(labelMatch.key);
+    if (groupMatch) consumed.add(groupMatch.key);
     const extraProps = {};
     for (const k in n) {
-      if (k === 'id' || k === 'label' || k === 'group' || k === 'name') continue;
+      if (consumed.has(k)) continue;
       const v = n[k];
       if (v === null || v === undefined) continue;
       extraProps[k] = typeof v === 'string' ? v : String(v);
@@ -312,7 +342,7 @@ export function parseD3(data) {
   // Passed through to the viewer for display and optional preset application.
   const metadata = data.metadata || null;
 
-  return { nodes, edges, extraPropNames: [...extraPropSet], metadata };
+  return { nodes, edges, extraPropNames: [...extraPropSet], metadata, groupSourceName };
 }
 
 /**
