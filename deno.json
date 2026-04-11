@@ -8,7 +8,7 @@
     "test:gt": "deno test --no-check --allow-read tests/ground_truth_test.ts",
     "test:gpu": "deno test --unstable-webgpu --no-check --allow-read tests/gpu_test.ts && deno test --unstable-webgpu --no-check --allow-read tests/gpu_pipeline_test.ts && deno test --unstable-webgpu --no-check --allow-read tests/gpu_blend_test.ts",
     "bench": "deno run --allow-read scripts/bench-hashslot.js && deno run --allow-read scripts/bench-minhash.js && deno run --allow-read scripts/bench-pipeline.js && deno run --allow-read scripts/bench-render.js && deno run --allow-read scripts/bench-viewer.js",
-    "bundle": "deno bundle --minify docs/blitzoom.js > docs/dist/blitzoom.bundle.js",
+    "bundle": "mkdir -p docs/dist && deno bundle --minify docs/blitzoom.js > docs/dist/blitzoom.bundle.js",
     "skill:zip": "rm -f docs/skills/blitzoom.zip && cd docs/skills && zip -r blitzoom.zip blitzoom"
   }
 }
