@@ -2,8 +2,17 @@
 
 Empirical test of a closed-form collision law for the MinHash → Gaussian 2D
 projection, run against the shipped pipeline and seeded matrices on 11 datasets
-(~3.3M node pairs). Script: [scripts/false-neighbor-validation.mjs](../scripts/false-neighbor-validation.mjs)
-(`node scripts/false-neighbor-validation.mjs`, ~60s, deterministic output).
+(~3.3M node pairs), followed by a diagnosis of the largest measured
+false-neighbor rate (Pokemon, 18%) and a validated fix (per-group seed search,
+−45% to −95% FNR on affected datasets).
+
+Scripts (each runs under Node or `deno run --allow-read`, deterministic output):
+
+| Script                                                                             | What it does                                                        |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [false-neighbor-validation.mjs](../scripts/false-neighbor-validation.mjs)          | Kernel-law validation across 11 datasets (~60s)                     |
+| [false-neighbor-pokemon.mjs](../scripts/false-neighbor-pokemon.mjs)                | Pokemon FNR anatomy, auto-tune/bearings interaction, seed fix (~2m) |
+| [false-neighbor-seed-sweep.mjs](../scripts/false-neighbor-seed-sweep.mjs)          | Seed search across 7 property datasets, with controls (~2m)         |
 
 This addresses two open items from [SPEC.md](SPEC.md): the "no direct geometric
 justification" hedge on treating MinHash signatures as vectors, and the
@@ -47,7 +56,7 @@ empirical vs semi-analytic FNR with "dissimilar" = weighted Jaccard < 0.10.
 Amazon is node-subsampled to 15K (pair statistics need a representative node
 set, not the full graph).
 
-## Results
+## Part 1: Kernel-law validation across 11 datasets
 
 KS = Kolmogorov-Smirnov distance of t against the χ²₂ CDF (descriptive; pairs
 are not independent). Calibration and FNR at ε = 0.1·σ_layout.
@@ -74,7 +83,7 @@ Bridge check (label group, all datasets): measured r tracks exact Jaccard
 monotonically; for J > 0.2 the bias is +0.03 to +0.12, matching the predicted
 direction.
 
-## Findings
+### Findings
 
 1. **The single-group kernel law holds.** 10 of 11 datasets have KS ≤ 0.065,
    including edge-only graphs and the Amazon sample. Synth Packages, whose
@@ -111,7 +120,7 @@ direction.
    error is a property none of the comparison baselines (ForceAtlas2, t-SNE,
    UMAP) offer.
 
-## Scope limits
+### Scope limits
 
 - All measurements at α = 0 (pure property layout) with default-style
   strengths. Edge-only datasets ship with α ≈ 1, where positions come from
@@ -123,13 +132,122 @@ direction.
 - "Dissimilar" is defined by weighted Jaccard under the same weights that
   produce the layout; hand-tuned strengths shift both together.
 
+## Part 2: Anatomy of Pokemon's 18% FNR
+
+Script: [false-neighbor-pokemon.mjs](../scripts/false-neighbor-pokemon.mjs).
+Pokemon's `group` column is the primary type — 18 categories. A category is a
+single token, so every member shares one signature and projects to exactly one
+**anchor point**. The default layout (`group:3` dominant) is 18 fixed anchors
+with floor-weighted jitter, and the shipped seed dealt a bad draw:
+
+| Closest anchor pairs (median distance 21.5) | Observed false pairs within ε |
+| ------------------------------------------- | ----------------------------- |
+| Psychic × Dragon: 1.52                      | Psychic × Water: 69           |
+| Fighting × Poison: 1.88                     | Dragon × Water: 46            |
+| Water × Dragon: 4.11                        | Bug × Fire: 23                |
+| Fire × Psychic: 4.23                        | Dragon × Psychic: 23          |
+| Grass × Bug: 4.33                           | Bug × Grass: 16               |
+
+Every top false-pair combo is a closest-anchor pair, with counts scaled by
+population product (Water has 127 nodes). This is the analytic capacity bound
+realized: C anchors drawn from an isotropic 2D Gaussian have a close-pair
+tail, and the entire FNR lives in it.
+
+### Why auto-tune cannot see it
+
+Headless `autoTuneStrengths` picks generation-solo 8 (α=0) — FNR 19.1%, no
+better than default's 18.3%. Two structural reasons:
+
+- **The purity term is single-group.** Purity is scored only for the dominant
+  weighted group. Under a generation-dominant config, a cell mixing Water and
+  Psychic is "pure" if the members share a generation — type-mixing is
+  invisible to the objective.
+- **Bearings never engage, and could not help.** `autoTuneBearings` returns
+  `{}` for solo-strength configs (its entry guard requires ≥2 groups with
+  strength > 0), and a bearing rotates a group's anchor set rigidly — within-
+  group anchor collisions are invariant under any rotation.
+
+The semi-analytic kernel FNR ranks all tested configs in the same order as the
+empirical rate (predicted 16.4 / 18.0 / 21.0 / 26.5 vs empirical 18.3 / 19.1 /
+22.3 / 26.7 for default / generation-solo / group+generation / equal-3), so it
+is usable as an objective ingredient.
+
+### The fix: seed search
+
+Anchor placement is one draw of the seeded PRNG. Scoring 50 candidate seeds for
+the `group` matrix by analytic collision mass —
+`Σ pop_a·pop_b·exp(−(D_ab·w)²/(2σ²_floor))`, O(C²) per seed, microseconds —
+and re-projecting with the winner:
+
+| Config                            | FNR   |
+| --------------------------------- | ----- |
+| default, shipped seed             | 18.3% |
+| auto-tune's choice (generation-8) | 19.1% |
+| default, reseeded group matrix    | 10.0% |
+
+The kernel could not predict this improvement (it sees signature correlations,
+not anchor geometry) — the collision-mass score is the seed-aware complement to
+the seed-blind kernel.
+
+## Part 3: Seed search across datasets
+
+Script: [false-neighbor-seed-sweep.mjs](../scripts/false-neighbor-seed-sweep.mjs).
+Default-style weights, FNR at ε = 0.1σ, best of 50 candidate seeds by
+collision mass:
+
+| Dataset         | C (group) | Collision mass shipped → best | FNR shipped → reseeded | Layout σ    |
+| --------------- | --------: | ----------------------------- | ---------------------- | ----------- |
+| Pokemon         |        18 | 55K → 21K (38%)               | 18.3% → 10.0%          | 4.4 → 6.4   |
+| Porsche         |        13 | 4.3K → 0.6K (13%)             | 9.8% → 0.5%            | 4.1 → 6.2   |
+| Marvel          |         7 | 2.1K → 0.2K (8%)              | 0.9% → 0.0%            | 6.2 → 7.2   |
+| Epstein         |         5 | 1.0K → ~0 (0%)                | 0.1% → 0.0%            | 6.0 → 11.3  |
+| Synth Packages  |        12 | 60K → 33K (55%)               | 7.4% → 4.3%            | 8.1 → 7.5   |
+| BlitZoom Source |        66 | 48K → 28K (58%)               | 3.7% → 3.6%            | 5.9 → 6.9   |
+| MITRE ATT&CK    |        14 | 1.83M → 96K (5%)              | 0% → 0% (vacuous τ)    | 3.6 → 7.3   |
+
+- **The fix generalizes.** Porsche's FNR is nearly eliminated (9.8% → 0.5%);
+  every dataset with a meaningful rate improved. Controls pass: Marvel and
+  Epstein went to zero, nothing got worse (Synth's σ dipped 8.1 → 7.5, the
+  only observed cost).
+- **The mechanism's boundary is cardinality.** BlitZoom Source (C = 66) did
+  not move — with that many anchors, collision mass is diffuse and no seed can
+  dodge it. Anchor collision dominates FNR when the dominant group is a
+  low-cardinality categorical (roughly C ≤ 20), which is also the regime the
+  strength defaults and auto-tune select most often.
+- **MITRE's shipped seed is the worst draw in the corpus** (mass 1.83M, 30×
+  Pokemon's); reseeding cuts it to 5% and doubles layout spread. Colliding
+  anchors compress pairwise distances — the same direction as MITRE's blend
+  anomaly in Part 1 (mean t = 1.08, distances ~√2 narrower than predicted).
+  The two findings plausibly share a cause; testable by re-running the Part 1
+  blend validation on MITRE with the reseeded matrix.
+
+## Recommendations for auto-tune
+
+In order of value-per-effort, based on the measurements above:
+
+1. **Per-group seed selection as a tuned parameter.** Score ~50 candidate
+   seeds per categorical group by collision mass, keep winners in dataset
+   settings / URL hash alongside strengths — determinism is preserved the same
+   way strength settings preserve it. Demonstrated −45% to −95% FNR. Plumbing
+   note: `normQuantize`/`radialQuantize` derive σ via `projNormSq(seed)`, so a
+   per-group seed override must flow through there too.
+2. **Collision-mass term in the objective** — penalize configs whose dominant
+   categorical group has high predicted collision mass (O(C²), free at tuner
+   scale).
+3. **Multi-group purity** — average purity over the cached categorical groups
+   (or top-2 by weight) instead of only the dominant one, so type-mixing under
+   a differently-dominated config costs score.
+4. **`autoTuneBearings` entry guard** — solo-strength configs (the tuner's
+   most common winners) currently no-op silently; the guard should count
+   effective groups or be removed.
+
 ## Follow-ups worth doing
 
-- MITRE shows both failure modes at once (label token sharing + correlated
-  groups); separating the two effects would sharpen the failure model.
-- Pokemon's 18% FNR is the one case users actually encounter false neighbors
-  at meaningful rates — identifying which groups drive it could feed back into
-  auto-tune.
+- Re-run the Part 1 blend validation on MITRE with a reseeded group matrix —
+  if the KS distance drops, the blend anomaly and the anchor-collision finding
+  share a cause.
+- MITRE also shows label-token sharing (single-group KS 0.140); separating
+  that effect from group correlation would complete the failure model.
 - The kernel + histogram estimator is cheap enough to ship as a layout-trust
   diagnostic (predicted FNR before layout, from `computeNodeSig` +
   `jaccardEstimate` sampling).
