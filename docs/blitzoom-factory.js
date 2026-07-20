@@ -4,7 +4,7 @@
 import { BlitZoomCanvas } from './blitzoom-canvas.js';
 import { ZOOM_LEVELS } from './blitzoom-algo.js';
 import { generateGroupColors } from './blitzoom-colors.js';
-import { autoTuneStrengths } from './blitzoom-utils.js';
+import { autoTuneStrengths, autoTuneProjSeeds } from './blitzoom-utils.js';
 import { runPipeline, computeProjections, computeNumericBins, computeAdjGroups } from './blitzoom-pipeline.js';
 import { initGPU } from './blitzoom-gpu.js';
 
@@ -117,6 +117,12 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
       if (result.labelProps && !opts.labelProps) {
         view.labelProps = new Set(result.labelProps.filter(p => view.groupNames.includes(p)));
       }
+      // Seed search for the dominant categorical group — skipped when the
+      // caller pinned seeds explicitly via opts.projSeeds.
+      if (!opts.projSeeds) {
+        const seedPick = autoTuneProjSeeds(view.nodes, view.groupNames, view.propStrengths, { numericBins: view._numericBins });
+        if (seedPick) view.bulkSetProjSeeds({ [seedPick.group]: seedPick.seed });
+      }
       view._quantStats = {};
     }
 
@@ -169,7 +175,7 @@ export function hydrateAndLink(nodeArray, projBuf, groupNames, edges) {
  */
 export function createBlitZoomView(canvas, edgesText, nodesText, opts = {}) {
   opts = applyIncrementalPreset(opts);
-  const result = runPipeline(edgesText, nodesText);
+  const result = runPipeline(edgesText, nodesText, opts.projSeeds || null);
   const { nodes, nodeIndexFull, adjList } = hydrateAndLink(result.nodeArray, result.projBuf, result.groupNames, result.edges);
   return _finalize(canvas, nodes, result.edges, nodeIndexFull, adjList, result.groupNames, result.hasEdgeTypes, {
     _numericBins: result.numericBins, _extraPropNames: result.extraPropNames, ...opts,
@@ -226,7 +232,7 @@ export function createBlitZoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
   const adjGroups = computeAdjGroups(nodeArray, tempAdj, nodeIndex);
   const numericBins = computeNumericBins(nodeArray, extraPropNames);
 
-  const { projBuf } = computeProjections(nodeArray, adjGroups, groupNames, false, extraPropNames, numericBins);
+  const { projBuf } = computeProjections(nodeArray, adjGroups, groupNames, false, extraPropNames, numericBins, opts.projSeeds || null);
   const { nodes, nodeIndexFull, adjList } = hydrateAndLink(nodeArray, projBuf, groupNames, edges);
   return _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, false, {
     _numericBins: numericBins, _extraPropNames: extraPropNames, ...opts,

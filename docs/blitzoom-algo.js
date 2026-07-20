@@ -141,6 +141,17 @@ export function jaccardEstimate(sigA, sigB) {
 
 // ─── Gaussian projection ─────────────────────────────────────────────────────
 
+// Seed for a group's projection matrix: the per-group override if present,
+// else PROJECTION_SEED_BASE + group index. Overrides come from the seed
+// search (collision-mass minimization over candidate seeds — see
+// agent_docs/RESEARCH-false-neighbor-validation.md); they must flow to every
+// matrix build site AND to normQuantize/radialQuantize, whose σ is derived
+// from the same seeds.
+export function projectionSeedForGroup(gi, groupName, projSeeds) {
+  const s = projSeeds && projSeeds[groupName];
+  return (s !== undefined && s !== null) ? s : PROJECTION_SEED_BASE + gi;
+}
+
 // Always produces a 2×cols matrix (128D → 2D projection).
 export function buildGaussianProjection(seed, cols) {
   const u = mulberry32(seed);
@@ -316,12 +327,12 @@ export function gaussianQuantize(nodes, stats) {
 // percentile in [0, 1), then map to disk radius via sqrt for area-uniform
 // spread on the unit disk. The four grid corners are unused; at the grid
 // scale (~4B cells) the 21% loss is invisible.
-export function radialQuantize(nodes, groupNames, effW, totalW) {
+export function radialQuantize(nodes, groupNames, effW, totalW, projSeeds = null) {
   // Compute σ_x² and σ_y² from projection matrix norms (same as
   // normQuantize), then sum: 2σ²_radial = σ_x² + σ_y² for isotropic blend.
   let varX = 0, varY = 0;
   for (let gi = 0; gi < groupNames.length; gi++) {
-    const norms = projNormSq(PROJECTION_SEED_BASE + gi);
+    const norms = projNormSq(projectionSeedForGroup(gi, groupNames[gi], projSeeds));
     const w = effW[groupNames[gi]];
     varX += w * w * norms[0];
     varY += w * w * norms[1];
@@ -383,12 +394,13 @@ function projNormSq(seed) {
  * @param {string[]} groupNames
  * @param {object} effW - { groupName: effectiveWeight } (from unifiedBlend's floor logic)
  * @param {number} totalW - sum of effective weights
+ * @param {object|null} [projSeeds] - per-group seed overrides { groupName: seed }
  */
-export function normQuantize(nodes, groupNames, effW, totalW) {
+export function normQuantize(nodes, groupNames, effW, totalW, projSeeds = null) {
   // Compute σ from projection matrix norms
   let varX = 0, varY = 0;
   for (let gi = 0; gi < groupNames.length; gi++) {
-    const norms = projNormSq(PROJECTION_SEED_BASE + gi);
+    const norms = projNormSq(projectionSeedForGroup(gi, groupNames[gi], projSeeds));
     const w = effW[groupNames[gi]];
     varX += w * w * norms[0];
     varY += w * w * norms[1];
@@ -457,7 +469,7 @@ function getBlendBuffers(N) {
  *   blend (not persisted in the node projections), so it's fully reversible and
  *   compositionally cheap.
  */
-export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null) {
+export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null, projSeeds = null) {
   const w = propStrengths;
   // Adaptive strength floor: max(10% of max strength, absolute minimum of 0.10).
   // Prevents low-entropy collapse: zero-strength high-entropy groups always contribute 10% spreading.
@@ -524,8 +536,8 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
 
   const doQuant = () => {
     if (quantMode === 'gaussian') gaussianQuantize(nodes, quantStats);
-    else if (quantMode === 'norm') normQuantize(nodes, groupNames, effW, propTotal);
-    else if (quantMode === 'polar') radialQuantize(nodes, groupNames, effW, propTotal);
+    else if (quantMode === 'norm') normQuantize(nodes, groupNames, effW, propTotal, projSeeds);
+    else if (quantMode === 'polar') radialQuantize(nodes, groupNames, effW, propTotal, projSeeds);
     else normalizeAndQuantize(nodes);
   };
   if (smoothAlpha === 0 || passes === 0) { doQuant(); return; }

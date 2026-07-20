@@ -5,7 +5,8 @@ import {
   buildGaussianProjection, cellIdAtLevel,
 } from './blitzoom-algo.js';
 import { generateGroupColors } from './blitzoom-colors.js';
-import { autoTuneStrengths, autoTuneBearings } from './blitzoom-utils.js';
+import { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } from './blitzoom-utils.js';
+import { createFNREstimator, defaultReferenceStrengths } from './blitzoom-fnr.js';
 import { initGPU, computeProjectionsGPU, setGpuBlendProfiling } from './blitzoom-gpu.js';
 import { isWebGL2Available } from './blitzoom-gl-renderer.js';
 import { exportSVG } from './blitzoom-svg.js';
@@ -21,44 +22,56 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 *  nodes actually distribute across cells at each level. The ideal initial view
 *  has a MIX of supernodes (multi-member cells) and singletons, with the total
 *  count of distinct visible items in a readable range (not too few, not too
-*  many). Walks from coarsest (L1) to finest, returning the first level that
-*  satisfies: distinct cells in [MIN, MAX] AND some multi-member cells exist.
+*  many). Among levels with distinct cells in [MIN, MAX] where at least 30% of
+*  nodes sit in multi-member cells, picks the one whose count is closest (in
+*  log space) to a size-scaled target (4·√N, clamped to [40, 300]).
+*  First-fit-coarsest was the old rule; it systematically landed at the bottom
+*  of the band (~30 blobs at ~100% aggregation), which undersells
+*  well-separated layouts — the tuned + reseeded blends resolve their clusters
+*  one level finer. The aggregation floor keeps tiny datasets from drifting to
+*  a near-raw scatter just because their cell count creeps toward the target.
 *  Falls through to RAW for small datasets where no aggregated level qualifies.
 *  Dataset presets can override via settings.initialLevel. */
 function pickInitialLevel(nodes, zoomLevels, rawLevel) {
   if (!nodes || nodes.length === 0) return rawLevel;
   const TARGET_MIN = 25;  // ~25 visible items is the floor for "something to look at"
   const TARGET_MAX = 400; // beyond ~400, the view gets crowded / labels overlap
+  const AGG_MIN = 0.3;    // ≥30% of nodes aggregated, else the level reads as raw scatter
+  const target = Math.min(300, Math.max(40, 4 * Math.sqrt(nodes.length)));
   const MAX_IDX = zoomLevels.length - 1; // highest aggregated level (RAW is rawLevel)
 
+  let bestIdx = -1, bestDist = Infinity, overflowIdx = -1;
   for (let idx = 0; idx <= MAX_IDX; idx++) {
     const bits = zoomLevels[idx];
     if (bits === undefined) continue;
     const shift = 16 - bits;
     const gridK = 1 << bits;
     const counts = new Map();
-    let anyMulti = false;
+    let total = 0;
     for (const n of nodes) {
       if (n.gx === undefined) continue;
       const key = (n.gx >> shift) * gridK + (n.gy >> shift);
-      const c = (counts.get(key) || 0) + 1;
-      counts.set(key, c);
-      if (c > 1) anyMulti = true;
+      counts.set(key, (counts.get(key) || 0) + 1);
+      total++;
     }
     const distinct = counts.size;
-    // A good level has enough detail to be interesting (>= MIN), isn't too
-    // crowded (<= MAX), and actually has some aggregation happening (multi-
-    // member cells — otherwise raw is better).
-    if (distinct >= TARGET_MIN && distinct <= TARGET_MAX && anyMulti) {
-      return idx;
-    }
-    // We've gone too fine — back off to the previous level (which was under MAX).
-    if (distinct > TARGET_MAX) {
-      return Math.max(0, idx - 1);
+    // Distinct counts are nondecreasing with level (bit-prefix containment),
+    // so once we exceed MAX every finer level is also over — stop scanning.
+    if (distinct > TARGET_MAX) { overflowIdx = idx; break; }
+    if (distinct >= TARGET_MIN) {
+      let inMulti = 0;
+      for (const c of counts.values()) if (c > 1) inMulti += c;
+      if (inMulti >= AGG_MIN * total) {
+        const d = Math.abs(Math.log(distinct / target));
+        if (d < bestDist) { bestDist = d; bestIdx = idx; }
+      }
     }
   }
-  // No aggregated level satisfied the band — dataset is small enough to show
-  // every node individually.
+  if (bestIdx >= 0) return bestIdx;
+  // No level landed inside the band with enough aggregation. If the counts
+  // jumped straight over the band, back off to the level just before the overflow.
+  if (overflowIdx >= 0) return Math.max(0, overflowIdx - 1);
+  // Dataset is small enough to show every node individually.
   return rawLevel;
 }
 
@@ -142,9 +155,10 @@ class BlitZoom {
 
   // ─── URL hash: compact positional format ──────────────────────────────────
   // Settings use group-order positional arrays (groupNames order is stable per
-  // dataset). Format: st=5,0,8,0  b=28.6,0,0,0  lp=0,2  cb=1
-  // All settings are serialized together — if any is present, all are present.
-  // This eliminates partial-state bugs entirely.
+  // dataset). Format: st=5,0,8,0  b=28.6,0,0,0  lp=0,2  cb=1  sd=2001,37403,...
+  // All settings are serialized together — if any is present, all are present
+  // (sd/lp are the exceptions: emitted only when non-default/non-empty, absent
+  // means defaults). This eliminates partial-state bugs entirely.
 
   _serializeHash() {
     const v = this.view;
@@ -177,6 +191,13 @@ class BlitZoom {
       // Color-by: group index, -1 = auto
       const cbIdx = v.colorBy ? v.groupNames.indexOf(v.colorBy) : -1;
       parts.push(`cb=${cbIdx}`);
+      // Projection seeds: positional absolute seeds, only when any group
+      // overrides its default (PROJECTION_SEED_BASE + index)
+      if (v.projSeeds && Object.keys(v.projSeeds).length) {
+        const sd = new Array(G);
+        for (let i = 0; i < G; i++) sd[i] = v.projSeeds[v.groupNames[i]] ?? (PROJECTION_SEED_BASE + i);
+        parts.push(`sd=${sd.join(',')}`);
+      }
       // Label props: comma-separated group indices
       if (v.labelProps && v.labelProps.size) {
         const lpIdx = [];
@@ -256,6 +277,20 @@ class BlitZoom {
       // Color-by: group index, -1 or absent = auto
       const cbIdx = params.cb !== undefined ? parseInt(params.cb) : -1;
       v.colorBy = (cbIdx >= 0 && cbIdx < G) ? v.groupNames[cbIdx] : null;
+      // Projection seeds: positional absolute; absent (or wrong length) =
+      // defaults. Authoritative: clears overrides not present in the hash.
+      // bulkSetProjSeeds re-projects changed groups synchronously; the blend
+      // below picks the new projections up.
+      let sdVals = params.sd ? params.sd.split(',').map(s => parseInt(s)) : null;
+      if (sdVals && sdVals.length !== G) {
+        console.warn(`[hash] sd length mismatch: ${sdVals.length} vs ${G} groups — using default seeds`);
+        sdVals = null;
+      }
+      const seedObj = {};
+      for (let i = 0; i < G; i++) {
+        seedObj[v.groupNames[i]] = (sdVals && Number.isFinite(sdVals[i])) ? sdVals[i] : null;
+      }
+      v.bulkSetProjSeeds(seedObj);
       // Label props: group indices
       v.labelProps.clear();
       if (params.lp) {
@@ -605,7 +640,35 @@ class BlitZoom {
     const desc = isRaw
       ? `RAW: individual nodes. MinHash(k=128) → Gaussian projection → 2D. Grid (gx,gy) uint16.`
       : `L${lvNum}: k=${k}/axis → ${k*k} cells. Shift uint16 gx,gy right by ${GRID_BITS-lvNum} bits.`;
-    document.getElementById('algo-info').textContent = desc;
+    document.getElementById('algo-info').textContent = desc + this._fnrDiagnostic();
+  }
+
+  /** Layout-trust line: semi-analytic false-neighbor estimate for the current
+   *  strengths (kernel + sampled similarity histogram — see
+   *  agent_docs/RESEARCH-false-neighbor-validation.md). Conservative: within
+   *  ~2.5pp on 6 of 8 validated datasets, over-predicts when wrong, including
+   *  under reseeded matrices. Property-space only — suppressed at high α
+   *  where positions come from topology smoothing. "n/a" when the τ = 0.1
+   *  dissimilarity threshold is vacuous (floor-weighted groups whose shared
+   *  baseline tokens keep every pair above τ). */
+  _fnrDiagnostic() {
+    const v = this.view;
+    if (!v.nodes || v.nodes.length < 4 || !v.groupNames) return '';
+    try {
+      if (!this._fnrEst) {
+        this._fnrEst = createFNREstimator(v.nodes, {
+          groupNames: v.groupNames, numericBins: v._numericBins,
+          adjList: v.adjList, nodeIndexFull: v.nodeIndexFull,
+          refStrengths: defaultReferenceStrengths(v.nodes, v.groupNames),
+        });
+      }
+      if (v.smoothAlpha >= 0.75) return '';
+      const r = this._fnrEst.estimate(v.propStrengths);
+      if (r.vacuous) return ' Est. false neighbors: n/a.';
+      return ` Est. false neighbors ~${Math.round(100 * r.fnr)}% @0.1σ.`;
+    } catch (e) {
+      return '';
+    }
   }
 
   _showDetail(hit) {
@@ -796,6 +859,11 @@ class BlitZoom {
       for (const prop of settings.labelProps) {
         if (v.groupNames.includes(prop)) v.labelProps.add(prop);
       }
+    }
+    // Projection seeds: `settings.projSeeds = {groupName: seed}` — seed-search
+    // winners kept in dataset presets (re-projects the affected groups).
+    if (settings.projSeeds) {
+      v.bulkSetProjSeeds(settings.projSeeds);
     }
     if (settings.quantMode) {
       v.quantMode = settings.quantMode;
@@ -1173,6 +1241,11 @@ class BlitZoom {
     }
     v.groupColors = v.propColors['group'];
 
+    // Fresh load: clear any per-group seed overrides. The worker/pipeline
+    // always projects with default seeds; overrides (from hash restore or
+    // auto-tune) are applied post-load via bulkSetProjSeeds, which re-projects.
+    v.projSeeds = {};
+    this._fnrEst = null; // false-neighbor estimator is per-dataset — rebuild lazily
     v.groupProjections = {};
     for (let i = 0; i < v.groupNames.length; i++) {
       v.groupProjections[v.groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
@@ -1424,8 +1497,8 @@ class BlitZoom {
     try {
       const projFn = useGPUProj ? computeProjectionsGPU : computeProjections;
       const result = this._lastParsed
-        ? await runPipelineFromObjectsGPU(this._lastParsed.nodes, this._lastParsed.edges, this._lastParsed.extraPropNames, projFn)
-        : await runPipelineGPU(this._lastEdgesText, this._lastNodesText, projFn);
+        ? await runPipelineFromObjectsGPU(this._lastParsed.nodes, this._lastParsed.edges, this._lastParsed.extraPropNames, projFn, v.projSeeds)
+        : await runPipelineGPU(this._lastEdgesText, this._lastNodesText, projFn, v.projSeeds);
       const G = result.groupNames.length;
       for (let i = 0; i < v.nodes.length; i++) {
         for (let g = 0; g < G; g++) {
@@ -1669,6 +1742,19 @@ class BlitZoom {
       // Auto-tune bearings: closed-form trace maximization.
       const bearings = autoTuneBearings(v.nodes, v.groupNames, result.strengths);
       v.propBearings = bearings;
+      // Seed search: collision-mass minimization for the dominant categorical
+      // group (see agent_docs/RESEARCH-false-neighbor-validation.md).
+      // Authoritative like strengths — overrides from a previous tune are
+      // cleared before applying the new winner.
+      const seedObj = {};
+      for (const g of Object.keys(v.projSeeds || {})) seedObj[g] = null;
+      const seedPick = autoTuneProjSeeds(v.nodes, v.groupNames, result.strengths, { numericBins: v._numericBins });
+      if (seedPick) {
+        seedObj[seedPick.group] = seedPick.seed;
+        console.log(`[auto-tune] reseeded '${seedPick.group}': seed ${seedPick.seed}, ` +
+          `collision mass ${Math.round(seedPick.shippedMass)} → ${Math.round(seedPick.bestMass)}`);
+      }
+      v.bulkSetProjSeeds(seedObj);
       document.getElementById('nudgeSlider').value = v.smoothAlpha;
       document.getElementById('nudgeVal').textContent = v.smoothAlpha.toFixed(2);
       v._progressText = null;

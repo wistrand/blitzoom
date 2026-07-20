@@ -1,6 +1,8 @@
 # Auto-Tune: Architecture and Implementation
 
-Heuristic optimizer for BlitZoom strength/alpha/quant parameters. Implemented in
+Heuristic optimizer for BlitZoom strength/alpha/quant parameters, followed by
+closed-form per-group bearings (`autoTuneBearings`) and a projection seed
+search for the dominant categorical group (`autoTuneProjSeeds`). Implemented in
 [blitzoom-utils.js](../docs/blitzoom-utils.js). Exploits the O(n) blend+quantize
 cost to evaluate many configurations and find a well-structured layout.
 
@@ -10,15 +12,15 @@ cost to evaluate many configurations and find a well-structured layout.
 
 - **Spread** = occupied cells / total cells. Penalizes collapse (everyone in one cell).
 - **Clumpiness** = coefficient of variation of per-cell node counts. Penalizes uniform scatter (all cells equal) and rewards clusters with gaps.
-- **Group purity** = weighted average of majority-category fraction per cell, softened via `sqrt`. Penalizes mixed clusters and rewards layouts where cells are semantically clean (all nodes in a cell share the same category for the currently-dominant weighted group). Range ~1/K (random) to 1.0 (every cell pure). Skipped (treated as 1) when no categorical group has a cached category array.
+- **Group purity** = weighted average of majority-category fraction per cell, softened via `sqrt` and averaged over **all cached categorical groups**. Penalizes mixed clusters and rewards layouts where cells are semantically clean across every categorical lens, not just the dominant weighted one. Range ~1/K (random) to 1.0 (every cell pure). Skipped (treated as 1) when no categorical group has a cached category array.
 
-Computation: O(n) per evaluation. Counts cell occupancy via `Map` on shifted `gx/gy`, plus per-cell per-category counts when a purity category array is available.
+Computation: O(n × cached categoricals) per evaluation. Counts cell occupancy via `Map` on shifted `gx/gy`, plus per-cell per-category counts for each cached category array.
 
 ### Why purity matters
 
-Without purity, the metric only measures spatial structure — "the points are clustered" — without checking whether **semantically similar** points cluster together. A random layout that happens to have uneven density can score the same as a clean group-separated layout. The purity term rewards layouts where the currently-dominant weighted group actually produces clean per-cell groupings.
+Without purity, the metric only measures spatial structure — "the points are clustered" — without checking whether **semantically similar** points cluster together. A random layout that happens to have uneven density can score the same as a clean group-separated layout.
 
-Because the dominant group changes across trials (coordinate descent varies weights), the purity term is re-evaluated per trial using the category array of whichever group has the highest strength in that trial.
+Purity is scored over all cached categoricals (config-independent) rather than only the trial's dominant weighted group. With dominant-only purity, a generation-dominant config that mixes Water and Psychic types in one cell scored as "pure" whenever cell members shared a generation — type-mixing was invisible to the objective (the Pokemon 19.1%-FNR case in [RESEARCH-false-neighbor-validation.md](RESEARCH-false-neighbor-validation.md), auto-tune recommendation 3). Averaging over every categorical lens makes cross-group mixing cost score regardless of which group the trial happens to weight.
 
 ### Adaptive grid level
 
@@ -60,7 +62,9 @@ Before starting the strength search, the optimizer scans tunable groups for dist
 
 At initialization, for each tunable group (except `edgetype`, which is multi-valued per node), build an array `category[i]` = the node's value for that group. Only cache groups with 2–50 distinct values — excludes high-cardinality numerics (`bill_length_mm`, `body_mass_g`) and identifiers where exact-equality purity is nonsensical.
 
-Per trial, `pickCategoryArray(weights)` returns the cached array for the currently-dominant weighted group. If the dominant group isn't in the cache (or no categorical is weighted), falls back to the `group` cache, then any cached group, then `null` (purity skipped).
+Every trial scores purity against the full set of cached category arrays (`purityCategories`, built once) — the list is config-independent, so there is no per-trial category selection. `null` (purity skipped) only when no group qualifies for the cache.
+
+An optional `opts.fnrPenalty` hook (strengths → predicted false-neighbor rate) can multiply the score by `exp(−2·FNR)`. The shipped callers do not enable it: measured on the validation corpus, the kernel-based penalty left the Pokemon and Synth winners unchanged and degraded Porsche's — real false-neighbor rates are dominated by anchor geometry (a per-seed property the seed-blind kernel cannot rank; RESEARCH doc Part 4), which the post-tune seed search addresses instead.
 
 ## Why auto-tune works
 
@@ -268,19 +272,34 @@ Two coordinate-descent passes over groups (sorted by weight descending):
 
 Returns `{}` (no rotation) when:
 - Fewer than 2 groups — rotation is meaningless with one projection axis
-- Fewer than 2 groups with user-set strength > 0 — floored groups are noise, rotating them adds no signal
 - Fewer than 4 nodes — covariance is degenerate
+
+There is deliberately no solo-strength guard. The strength floor makes every
+group effective (10% of max each — with many groups the floored total rivals
+the dominant group), so rotating the dominant group relative to the floored
+ones is meaningful even when only one strength is user-set. An earlier guard
+(require ≥2 user-set strengths) silently no-op'd on solo configs — the
+tuner's most common winners; removing it measurably improved false-neighbor
+rates on solo-tuned datasets (Pokemon generation-solo 6.3% → 5.6%, Marvel
+eye-solo 0.4% → 0.0% at ε = 0.1σ; see
+[RESEARCH-false-neighbor-validation.md](RESEARCH-false-neighbor-validation.md)
+auto-tune recommendation 4).
 
 Groups at exactly the strength floor (user weight 0) are skipped during optimization — they contribute via the floor but their arbitrary PRNG direction shouldn't be "optimized" since the user didn't select them.
 
 ### Integration
 
-Called inside `_applyTuneResult` after `autoTuneStrengths` completes:
+Called inside `_applyTuneResult` after `autoTuneStrengths` completes, followed
+by the projection seed search (collision-mass minimization for the dominant
+single-token categorical group — see
+[RESEARCH-false-neighbor-validation.md](RESEARCH-false-neighbor-validation.md)):
 
 ```
 autoTuneStrengths(...)  →  result.strengths
 autoTuneBearings(nodes, groupNames, result.strengths)  →  bearings {}
 v.propBearings = bearings
+autoTuneProjSeeds(nodes, groupNames, result.strengths, {numericBins})  →  {group, seed} | null
+v.bulkSetProjSeeds(...)   (clears stale overrides, applies winner, re-projects)
 rebuildProjections()  →  _blend() → statechange event → UI sync
 ```
 

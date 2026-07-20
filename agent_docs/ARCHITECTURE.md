@@ -34,6 +34,7 @@ docs/                    Web application (ES modules, served by Deno)
   blitzoom-canvas.js        Standalone embeddable component — canvas, interaction, rendering, event hub
   blitzoom-viewer.js        BlitZoom app (composes BlitZoomCanvas) — UI, workers, data loading, drop zones
   blitzoom-utils.js         Auto-tune optimizer (async, yield-based, AbortSignal + timeout)
+  blitzoom-fnr.js           Semi-analytic false-neighbor estimator (kernel + sampled similarity histogram)
   stix2snap.js              STIX 2.1 → object pipeline (parseSTIX, browser-compatible)
   blitzoom-svg.js           SVG export — exportSVG(bz, opts) + createSVGView() headless factory
   blitzoom-worker.js        Web Worker coordinator — uses pipeline, fans out projection
@@ -48,7 +49,7 @@ docs/demo/                 Standalone demo and test pages
   gpu-test.html             GPU vs CPU side-by-side visual comparison
   webgl-test.html           Side-by-side Canvas 2D vs WebGL2 visual comparison
 
-tests/pipeline_test.ts     172 Deno tests: algo, pipeline, numeric, undefined, E2E, SVG, parsers, format dispatch, auto-tune
+tests/                     Deno tests: algo, pipeline, numeric, undefined, E2E, SVG, parsers, format dispatch, auto-tune, projSeeds, FNR estimator, import-cycle DAG, ground truth, GPU, false-neighbor goldens
 
 docs/data/                 SNAP graph datasets + D3/JGF/GEXF/Cytoscape/CSV samples (.gz compressed for large)
 benchmarks/                Layout comparison vs ForceAtlas2, UMAP, t-SNE (Docker runner)
@@ -83,9 +84,10 @@ Layer 1 (→ algo only, plus colors for svg):
   blitzoom-svg.js               (algo, colors) SVG export
 
 Layer 2 (→ layer 1):
-  blitzoom-mutations.js         (algo, pipeline, colors)        addNodes/removeNodes/updateNodes, fullRebuild, bootstrapEmptyGraph
+  blitzoom-mutations.js         (algo, pipeline, colors)        addNodes/removeNodes/updateNodes, fullRebuild, bootstrapEmptyGraph, reprojectGroups
   blitzoom-gpu.js               (algo, pipeline)                WebGPU compute
   blitzoom-parsers.js           (pipeline, stix2snap)           CSV/D3/JGF/GraphML/GEXF/Cytoscape/STIX dispatcher
+  blitzoom-fnr.js               (algo, pipeline)                Semi-analytic false-neighbor estimator
 
 Layer 3:
   blitzoom-canvas.js            (algo, colors, gpu, mutations, gl-renderer, renderer)   BlitZoomCanvas class
@@ -95,10 +97,10 @@ Layer 4:
 
 Layer 5:
   bz-graph.js                   (factory, colors, parsers; side-effect bz-compass, bz-controls)   <bz-graph> custom element
-  blitzoom-viewer.js            (algo, canvas, colors, utils, gpu, gl-renderer, svg, pipeline, parsers)   Viewer app
+  blitzoom-viewer.js            (algo, canvas, colors, utils, fnr, gpu, gl-renderer, svg, pipeline, parsers)   Viewer app
 
 Layer 6 (entry point):
-  blitzoom.js                   (canvas, factory, bz-graph, pipeline, utils, svg, gpu, gl-renderer, colors)   Public API re-exports
+  blitzoom.js                   (canvas, factory, bz-graph, pipeline, utils, fnr, svg, gpu, gl-renderer, colors)   Public API re-exports
 
 Workers (separate top-level — loaded via `new Worker()`, not by main code):
   blitzoom-worker.js            (pipeline)             Coordinator
@@ -140,7 +142,7 @@ Pure functions, no DOM. Single source of truth for MinHash/projection/quantizati
 - **Constants**: `MINHASH_K=128`, `GRID_BITS=16`, `GRID_SIZE=65536`, `ZOOM_LEVELS[1..14]`, `RAW_LEVEL=14`, `LEVEL_LABELS`, `STRENGTH_FLOOR_RATIO=0.10`, `STRENGTH_FLOOR_MIN=0.10`
 - **MinHash** (GC-optimized): `HASH_PARAMS_A/B` (Int32Array), `computeMinHashInto` → reusable `_sig` Float64Array (NaN sentinel for empty tokens), `computeMinHash` (allocating wrapper). Universal hash via Mersenne fast-mod (`hashSlot` + `mersMod`) — split 16-bit halves to stay within safe integer range.
 - **Projection** (GC-optimized): `projectInto(sig, ROT, buf, offset)` → writes to buffer, `projectWith` (convenience wrapper returning `[px, py]`). NaN sentinel check: `sig[0] !== sig[0]`.
-- **Blend**: `unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings)`
+- **Blend**: `unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings, projSeeds)`
 - **Quantization**: `normalizeAndQuantize(nodes)` (rank-based, O(n log n)), `gaussianQuantize(nodes, stats)` (Φ(z) via precomputed lookup table, O(n)), `normQuantize(nodes, groupNames, propStrengths)` (projection-matrix norms as σ, zero data dependency — stable for incremental updates). Norm cache: `_normSqCache` maps seed → `[||R[0]||², ||R[1]||²]`.
 - **Grid**: `cellIdAtLevel(gx, gy, level)`
 - **Level building**: `buildLevelNodes` (phase 1: bucket nodes into supernodes, O(n)) + `buildLevelEdges` (phase 2: aggregate edges, O(|E|), numeric key packing for levels 1-13, string keys for level 14) + `buildLevel` (combined wrapper). Caches `cachedColor`/`cachedLabel` on supernodes.
@@ -166,7 +168,8 @@ Incremental graph mutation functions. Standalone functions that operate on a Bli
 - **`addNodes(view, nodes, edges, opts)`** — project new nodes, register, extend colors, blend, animate. Queues concurrent calls; drains queue after completion. Triggers `_fullRebuild` after 10% cumulative growth.
 - **`removeNodes(view, ids, opts)`** — filter edges, clean adjList, recompute maxDegree, blend, animate.
 - **`updateNodes(view, updates, opts)`** — merge properties, re-project only changed nodes, extend colors, blend, animate.
-- **`fullRebuild(view)`** — recompute numeric bins + adjGroups + all projections. Animated transition.
+- **`fullRebuild(view)`** — recompute numeric bins + adjGroups + all projections (respects `view.projSeeds`). Animated transition.
+- **`reprojectGroups(view, groups)`** — re-project only the given groups for every node using the current `groupProjections` matrices. Used by `bulkSetProjSeeds` after a per-group seed change; with `quantMode: 'norm'` unaffected coordinates stay identical.
 - **`snapshotPositions(view)`** — capture supernode/node positions keyed by bid/id.
 - **`animateTransition(view, prevPositions, durationMs)`** — lerp existing items, fade in new items. Stores cleanup function on `view._animCleanup` for cancellation.
 - **Shared helpers**: `cancelAnimation`, `waitForMutex`, `extendColorMaps`, `blendAndAnimate`.
@@ -256,7 +259,7 @@ Standalone embeddable canvas component. No external DOM dependencies beyond a `<
 
 **Level crossfade**: `_snapshotForCrossfade()` captures the current canvas into an absolutely-positioned overlay that fades out over 350ms, providing a smooth visual transition between zoom levels. The overlay is positioned at the canvas's `offsetTop`/`offsetLeft` within its parent container (not fixed at `top:0;left:0`) so it aligns correctly regardless of layout — e.g., in grid layouts where the canvas is not at the container origin.
 
-**Public API**: `setStrengths()`, `setBearing()`, `setAlpha()`, `setOptions()`, `addNodes()`, `removeNodes()`, `updateNodes()`, `fastRebuild()`, `endFastRebuild()`, `forwardKeyEvent()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
+**Public API**: `setStrengths()`, `setBearing()`, `setProjSeed()`, `bulkSetProjSeeds()`, `setAlpha()`, `setOptions()`, `addNodes()`, `removeNodes()`, `updateNodes()`, `fastRebuild()`, `endFastRebuild()`, `forwardKeyEvent()`, `destroy()`. Callbacks: `onSelect`, `onHover`, `onDeselect`, `onLevelChange`, `onZoomToHit`, `onSwitchLevel`, `onKeydown`.
 
 ### [blitzoom-factory.js](../docs/blitzoom-factory.js) (215 lines)
 
@@ -279,7 +282,7 @@ Factory functions for creating BlitZoomCanvas instances. Extracted from blitzoom
 
 **Data loading**: module workers with transferable Float64Array. `DATASETS[]` presets. Hash state restore on load. Loader screen stays visible until blend + layout + render complete — sidebar and canvas revealed together to prevent flash of unblended (0,0) positions or sidebar-without-canvas.
 
-**URL hash**: compact positional format. View: `d`, `l`, `z`, `x`, `y`, `bl`, `s`. Settings (all-or-nothing): `st=5,0,8` (strengths by group order), `b=28.6,0,0` (bearings in degrees, 2 decimals), `a=0.5` (alpha, 3 decimals), `cb=1` (colorBy index, -1=auto), `lp=0,2` (label prop indices). Strengths at 3 decimal precision. Updates via `replaceState` on each render (via `onRender` callback). On restore, positional array lengths sanity-checked against `groupNames.length`; stale hashes silently ignored. All settings applied atomically with full blend + layout + render. Matches both curated datasets (`d=name`) and URL-loaded datasets (`edges=url`).
+**URL hash**: compact positional format. View: `d`, `l`, `z`, `x`, `y`, `bl`, `s`. Settings (all-or-nothing): `st=5,0,8` (strengths by group order), `b=28.6,0,0` (bearings in degrees, 2 decimals), `a=0.5` (alpha, 3 decimals), `cb=1` (colorBy index, -1=auto), `lp=0,2` (label prop indices), `sd=2001,37403` (projection seeds, absolute, emitted only when overridden; absent = defaults). Strengths at 3 decimal precision. Updates via `replaceState` on each render (via `onRender` callback). On restore, positional array lengths sanity-checked against `groupNames.length`; stale hashes silently ignored. All settings applied atomically with full blend + layout + render. Matches both curated datasets (`d=name`) and URL-loaded datasets (`edges=url`).
 
 **UI**: dynamic weight sliders, preset buttons, label checkboxes, size-by toggle (members/edges), quantization mode toggle (gaussian/rank), heatmap mode cycle (off/splat/density), edge mode cycle (curves/lines/none), GL toggle button (WebGL2 on/off, shows "N/A" when unavailable), GPU tri-state button (Auto → GPU → CPU, cycles on click), FPS counter (F key or click top-left), detail panel (slide-in overlay with grouped linked nodes), single-click delayed 250ms for dblclick disambiguation. Cancel button on load screen (visible when data already loaded) returns to current view. GL wrapper div hidden/shown with loader screen. Mobile: compact toolbar, hidden hint section. Press **S** to download SVG export.
 

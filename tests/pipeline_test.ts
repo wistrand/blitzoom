@@ -2,11 +2,12 @@ import { assertEquals, assertExists, assert, assertAlmostEquals } from "https://
 
 // Load algo first (pipeline depends on it)
 import {
-  MINHASH_K, GRID_SIZE, ZOOM_LEVELS, RAW_LEVEL,
+  MINHASH_K, GRID_SIZE, ZOOM_LEVELS, RAW_LEVEL, PROJECTION_SEED_BASE,
   computeMinHash, computeMinHashInto, _sig, projectWith, projectInto,
   buildGaussianProjection, hashToken, jaccardEstimate, cellIdAtLevel,
   normalizeAndQuantize, unifiedBlend, buildLevel, buildLevelNodes, buildLevelEdges,
   maxCountKey, getNodePropValue, getSupernodeDominantValue,
+  projectionSeedForGroup, normQuantize, computeEffectiveWeights,
 } from "../docs/blitzoom-algo.js";
 import { generateGroupColors } from "../docs/blitzoom-colors.js";
 
@@ -2302,4 +2303,92 @@ Deno.test("exportSVG: aggregated level uses supernodes", () => {
   const circleCount = (svg.match(/<circle cx=/g) || []).length;
   assert(circleCount <= 4, "Level 1 (2x2) should have at most 4 supernodes");
   assert(circleCount > 0, "Should have at least 1 supernode");
+});
+
+// ─── Projection seed overrides (projSeeds) ───────────────────────────────────
+
+Deno.test("projectionSeedForGroup: default and override", () => {
+  assertEquals(projectionSeedForGroup(0, 'group', null), PROJECTION_SEED_BASE);
+  assertEquals(projectionSeedForGroup(3, 'neighbors', {}), PROJECTION_SEED_BASE + 3);
+  assertEquals(projectionSeedForGroup(0, 'group', { group: 37403 }), 37403);
+  assertEquals(projectionSeedForGroup(1, 'label', { group: 37403 }), PROJECTION_SEED_BASE + 1);
+});
+
+Deno.test("computeProjections: projSeeds override changes only that group, deterministically", () => {
+  const nodes = [
+    { id: 'a', group: 'x', label: 'Alpha', degree: 0, edgeTypes: null, extraProps: {} },
+    { id: 'b', group: 'y', label: 'Beta', degree: 0, edgeTypes: null, extraProps: {} },
+  ];
+  const groupNames = ['group', 'label', 'structure', 'neighbors'];
+  const adjGroups = [[], []];
+  const G = groupNames.length;
+  const base = computeProjections(nodes, adjGroups, groupNames, false, [], {});
+  const seeded = computeProjections(nodes, adjGroups, groupNames, false, [], {}, { group: 37403 });
+  for (let i = 0; i < nodes.length; i++) {
+    const off = i * G * 2;
+    // group (index 0) must differ
+    assert(base.projBuf[off] !== seeded.projBuf[off] || base.projBuf[off + 1] !== seeded.projBuf[off + 1],
+      "overridden group projection should change");
+    // all other groups bit-identical
+    for (let g = 1; g < G; g++) {
+      assertEquals(base.projBuf[off + g * 2], seeded.projBuf[off + g * 2]);
+      assertEquals(base.projBuf[off + g * 2 + 1], seeded.projBuf[off + g * 2 + 1]);
+    }
+  }
+  const seeded2 = computeProjections(nodes, adjGroups, groupNames, false, [], {}, { group: 37403 });
+  assertEquals([...seeded.projBuf], [...seeded2.projBuf]);
+});
+
+// ─── False-neighbor estimator (blitzoom-fnr.js) ──────────────────────────────
+
+import { createFNREstimator, defaultReferenceStrengths } from "../docs/blitzoom-fnr.js";
+
+Deno.test("createFNREstimator: deterministic, bounded, detects vacuous tau", () => {
+  const groupNames = ['group', 'label', 'structure', 'neighbors'];
+  const mkNodes = (bDegree: number) => {
+    const nodes: any[] = [];
+    for (let i = 0; i < 20; i++) nodes.push({ id: 'a' + i, group: 'x', label: 'Node' + i, degree: 0, edgeTypes: null, extraProps: {} });
+    for (let i = 0; i < 20; i++) nodes.push({ id: 'b' + i, group: 'y', label: 'Item' + i, degree: bDegree, edgeTypes: null, extraProps: {} });
+    return nodes;
+  };
+  // Equal degrees: shared structure/neighbors baseline tokens keep every
+  // pair's weighted Jaccard above tau with only 4 groups → vacuous
+  const estV = createFNREstimator(mkNodes(0), { groupNames, numericBins: {} });
+  assertEquals(estV.sampleSize, 40);
+  assertEquals(estV.pairs, 780);
+  const rv = estV.estimate({ group: 3 });
+  assert(rv.vacuous, "equal-degree clusters on 4 groups should be tau-vacuous");
+  assertEquals(rv.fnr, null);
+  // Differing degrees break the structure baseline → cross-cluster pairs are
+  // dissimilar and the estimate is a real number
+  const est = createFNREstimator(mkNodes(5), { groupNames, numericBins: {} });
+  const r = est.estimate({ group: 3 });
+  assert(!r.vacuous);
+  assert(r.fnr !== null && r.fnr >= 0 && r.fnr <= 1);
+  assert(r.base > 0.4 && r.base < 0.6, "cross-cluster pairs (~51%) should be dissimilar");
+  assert(r.sigma > 0);
+  const r2 = est.estimate({ group: 3 });
+  assertEquals(r.fnr, r2.fnr);
+});
+
+Deno.test("defaultReferenceStrengths: group when multi-valued, else first categorical extra", () => {
+  const multi = [{ group: 'x', extraProps: {} }, { group: 'y', extraProps: {} }];
+  assertEquals(defaultReferenceStrengths(multi, ['group', 'label', 'structure', 'neighbors']), { group: 3 });
+  const single = [
+    { group: 'unknown', extraProps: { kind: 'a' } },
+    { group: 'unknown', extraProps: { kind: 'b' } },
+  ];
+  assertEquals(defaultReferenceStrengths(single, ['group', 'label', 'structure', 'neighbors', 'kind']), { kind: 3 });
+});
+
+Deno.test("normQuantize: sigma derives from projSeeds overrides", () => {
+  const groupNames = ['group', 'label', 'structure', 'neighbors'];
+  const { effW, totalW } = computeEffectiveWeights(groupNames, { group: 3 });
+  const mk = () => [{ px: 1.0, py: -0.5, gx: 0, gy: 0 }];
+  const a = mk(); normQuantize(a, groupNames, effW, totalW);
+  const b = mk(); normQuantize(b, groupNames, effW, totalW, { group: 37403 });
+  const c = mk(); normQuantize(c, groupNames, effW, totalW, { group: 37403 });
+  assert(a[0].gx !== b[0].gx || a[0].gy !== b[0].gy, "overridden seed should shift norm sigma");
+  assertEquals(b[0].gx, c[0].gx);
+  assertEquals(b[0].gy, c[0].gy);
 });

@@ -12,7 +12,7 @@
 //   const view = new BlitZoomCanvas(canvasElement, { nodes, edges, ... });
 
 import {
-  MINHASH_K, PROJECTION_SEED_BASE, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
+  MINHASH_K, PROJECTION_SEED_BASE, projectionSeedForGroup, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
   buildGaussianProjection, unifiedBlend, buildLevel,
   buildLevelNodes, buildLevelEdges, cellIdAtLevel,
   getNodePropValue, getSupernodeDominantValue, maxCountKey,
@@ -22,7 +22,7 @@ import { gpuUnifiedBlend } from './blitzoom-gpu.js';
 import {
   addNodes as _addNodes, removeNodes as _removeNodes, updateNodes as _updateNodes,
   snapshotPositions as _snapshotPositions, animateTransition as _animateTransition,
-  fullRebuild as _fullRebuild,
+  fullRebuild as _fullRebuild, reprojectGroups as _reprojectGroups,
 } from './blitzoom-mutations.js';
 import { initGL, renderGL } from './blitzoom-gl-renderer.js';
 
@@ -119,9 +119,11 @@ export class BlitZoomCanvas {
     this._skipEdgeBuild = false;   // true while in fast mode — suppresses level edge build scheduling
     this._fastRebuildPromise = null; // in-flight fastRebuild promise — endFastRebuild awaits it before cleanup
 
-    // Build projection matrices
+    // Build projection matrices (per-group seed overrides via projSeeds)
+    this.projSeeds = { ...(opts.projSeeds || {}) };
     for (let i = 0; i < this.groupNames.length; i++) {
-      this.groupProjections[this.groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
+      this.groupProjections[this.groupNames[i]] =
+        buildGaussianProjection(projectionSeedForGroup(i, this.groupNames[i], this.projSeeds), MINHASH_K);
     }
 
     // Compute max degree
@@ -927,7 +929,7 @@ export class BlitZoomCanvas {
 
     if (this._useGPU && N > 50000 && passes > 0) {
       try {
-        await gpuUnifiedBlend(this.nodes, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings);
+        await gpuUnifiedBlend(this.nodes, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings, this.projSeeds);
         this._lastBlendMs = performance.now() - t0;
         this._blendGen++;
         this.canvas.dispatchEvent(new Event('blend'));
@@ -936,7 +938,7 @@ export class BlitZoomCanvas {
         console.warn('[GPU] Blend failed, falling back to CPU:', e.message);
       }
     }
-    unifiedBlend(this.nodes, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings);
+    unifiedBlend(this.nodes, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings, this.projSeeds);
     this._lastBlendMs = performance.now() - t0;
     this._blendGen++;
     this.canvas.dispatchEvent(new Event('blend'));
@@ -966,6 +968,43 @@ export class BlitZoomCanvas {
     Object.assign(this.propBearings, obj);
     this._quantStats = {};
     this.levels = new Array(ZOOM_LEVELS.length).fill(null);
+  }
+
+  /** Override the projection-matrix seed for a single group and re-blend.
+   *  Rebuilds that group's matrix, re-projects the group for every node,
+   *  then runs the same quantize + level-invalidation chain as a strength
+   *  change. Pass null/undefined (or the default seed) to revert the group
+   *  to its shipped seed. */
+  setProjSeed(group, seed) {
+    const changed = this.bulkSetProjSeeds({ [group]: seed });
+    if (changed.length) this._blend().then(() => { this.layoutAll(); this.render(); });
+  }
+
+  /** Bulk-set projection seeds (e.g. from URL hash restore or auto-tune)
+   *  without blending. For each entry: a null/undefined value or the group's
+   *  default seed clears the override. Groups whose matrix actually changed
+   *  are rebuilt and re-projected synchronously. Returns the list of changed
+   *  group names; caller is responsible for triggering a subsequent blend. */
+  bulkSetProjSeeds(obj) {
+    if (!obj) return [];
+    const changed = [];
+    for (const [g, seed] of Object.entries(obj)) {
+      const gi = this.groupNames.indexOf(g);
+      if (gi < 0) continue;
+      const def = PROJECTION_SEED_BASE + gi;
+      const target = (seed === null || seed === undefined || seed === def) ? undefined : seed;
+      if (this.projSeeds[g] === target) continue;
+      if (target === undefined) delete this.projSeeds[g];
+      else this.projSeeds[g] = target;
+      this.groupProjections[g] = buildGaussianProjection(target ?? def, MINHASH_K);
+      changed.push(g);
+    }
+    if (changed.length) {
+      _reprojectGroups(this, changed);
+      this._quantStats = {};
+      this.levels = new Array(ZOOM_LEVELS.length).fill(null);
+    }
+    return changed;
   }
 
   /** Switch quantization mode and re-blend.

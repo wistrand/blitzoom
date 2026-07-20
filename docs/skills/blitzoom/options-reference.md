@@ -14,6 +14,7 @@ All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are opti
 | `sizeLog`        | boolean        | false         | Log scale for node size                                                                                              |
 | `smoothAlpha`    | number         | 0             | Topology blend weight, 0 (property only) to 1 (topology only)                                                       |
 | `strengths`      | object         | `{group:3}`   | Override property group strengths. Keys are group names, values are 0-10.                                            |
+| `projSeeds`      | object         | `{}`          | Per-group projection-matrix seed overrides, e.g. `{group: 37403}`. Reseeding a low-cardinality categorical group can sharply cut false neighbors; auto-tune picks seeds automatically. |
 | `labelProps`     | array          | []            | Property names to show as node labels                                                                                |
 | `showLegend`     | boolean/number | false         | Draw color legend. 0=off, 1=BR, 2=BL, 3=TL, 4=TR                                                                   |
 | `showResetBtn`   | boolean        | false         | Draw reset button in top-right corner                                                                                |

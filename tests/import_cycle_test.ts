@@ -39,6 +39,7 @@ const LAYERS: Record<string, number> = {
   "blitzoom-mutations.js":     2,
   "blitzoom-gpu.js":           2,
   "blitzoom-parsers.js":       2,
+  "blitzoom-fnr.js":           2,
   // Layer 3
   "blitzoom-canvas.js":        3,
   // Layer 4
