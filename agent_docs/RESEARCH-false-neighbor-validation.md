@@ -2,7 +2,7 @@
 
 Empirical test of a closed-form collision law for the MinHash → Gaussian 2D
 projection, run against the shipped pipeline and seeded matrices on 11 datasets
-(~3.3M node pairs), followed by a diagnosis of the largest measured
+(~2.9M node pairs), followed by a diagnosis of the largest measured
 false-neighbor rate (Pokemon, 18%), a validated fix (per-group seed search,
 −45% to −95% FNR on affected datasets), and a 51-seed sweep showing the blend
 kernel law holds in expectation over seeds while single-seed calibration
@@ -83,8 +83,10 @@ baseline tokens (`leaf:false`, single-valued `group`) keep every pair's
 weighted Jaccard above τ, so no pair counts as dissimilar.
 
 Bridge check (label group, all datasets): measured r tracks exact Jaccard
-monotonically; for J > 0.2 the bias is +0.03 to +0.12, matching the predicted
-direction.
+monotonically (up to n=1 bins); the bias is positive for J ≳ 0.3 on every
+dataset, matching the predicted direction, but its magnitude varies more than
+a single range — Synth's dominant J∈[0.2,0.3) bin is only +0.006, Epstein's
+is −0.009, and Marvel peaks at +0.166.
 
 ### Findings
 
@@ -209,6 +211,10 @@ collision mass:
 | Synth Packages  |        12 | 60K → 33K (55%)               | 7.4% → 4.3%            | 8.1 → 7.5   |
 | BlitZoom Source |        66 | 48K → 28K (58%)               | 3.7% → 3.6%            | 5.9 → 6.9   |
 | MITRE ATT&CK    |        14 | 1.83M → 96K (5%)              | 0% → 0% (vacuous τ)    | 3.6 → 7.3   |
+
+Shipped FNR values can differ slightly from Part 1 (Synth: 7.4% here vs 6.9%
+there) — the two scripts stride pairs at different budgets (500K vs 400K), so
+they sample different pair subsets of the same layout.
 
 - **The fix generalizes.** Porsche's FNR is nearly eliminated (9.8% → 0.5%);
   every dataset with a meaningful rate improved. Controls pass: Marvel and
