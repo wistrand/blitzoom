@@ -61,7 +61,7 @@ Each property group row in the sidebar has a 24×24px bearing dial (`.bearing-di
 
 Two coordinate-descent passes over groups. Total cost: O(N·G) — same as one blend call. No sampling, no scoring. Runs inside `_applyTuneResult` after `autoTuneStrengths` completes.
 
-Entry guards: returns `{}` when <2 groups with user-set strength >0, or <4 nodes.
+Entry guards: returns `{}` when <2 groups total, or <4 nodes. There is no solo-strength guard — the strength floor makes every group effective, so solo configs (the auto-tuner's most common winners) get bearings too; see [ARCHITECTURE-auto-tune.md](ARCHITECTURE-auto-tune.md) "Entry guards" for the measured rationale.
 
 See [ARCHITECTURE-auto-tune.md](ARCHITECTURE-auto-tune.md) for full details.
 

@@ -115,10 +115,12 @@ deno task src2snap data/output-prefix
 2. **MinHash** (k=128) each token set into a fixed-length signature via universal hashing
 3. **Project** each z-score normalized signature to 2D via a seeded Gaussian random matrix (one per group)
 4. **Blend** the per-group 2D positions as a weighted combination + optional topology smoothing
-5. **Quantize** blended positions to a uint16 grid (65536×65536) — Gaussian (default, density-preserving) or rank (uniform occupancy)
+5. **Quantize** blended positions to a uint16 grid (65536×65536) — Gaussian (default, density-preserving), rank (uniform occupancy), or norm (data-independent scale for incremental insertion)
 6. **Zoom** by bit-shifting grid coordinates: level L gives a 2^L × 2^L cell grid
 
 Strength changes only repeat steps 4-5: O(n × G) for anchor recomputation plus O(passes × (n + |E|)) for topology smoothing when α > 0. Zoom is O(1) per node. Signatures are not stored — recomputed on demand for detail panel visualization. See [SPEC.md](agent_docs/SPEC.md) for the full algorithm design.
+
+The projection's collision behavior follows a validated closed-form law (χ²₂ on 10 of 11 test datasets); measured false-neighbor rates are 0-18% at ε = 0.1σ, and per-group seed search cuts the worst rates by 45-95%. See [RESEARCH-false-neighbor-validation.md](agent_docs/RESEARCH-false-neighbor-validation.md).
 
 ## Architecture
 
@@ -137,10 +139,11 @@ All ES modules. No build step. No dependencies. See [ARCHITECTURE.md](agent_docs
 ## Testing
 
 ```sh
-deno task test    # 177 tests, ~100ms
+deno task test    # pipeline + import-cycle tests, sub-second
+deno task test:gt # ground-truth + false-neighbor golden values
 ```
 
-Covers: MinHash determinism, projection correctness, bit-prefix containment, numeric tokenization, undefined value handling, E2E with Epstein dataset.
+Covers: MinHash determinism, projection correctness, bit-prefix containment, numeric tokenization, undefined value handling, projection seed overrides, the false-neighbor estimator, import-DAG enforcement, and E2E with the Epstein dataset.
 
 ## License
 

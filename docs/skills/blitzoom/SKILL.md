@@ -52,6 +52,7 @@ The bundle is a single minified file (~98KB gzipped) that includes everything �
 | `color-by`          | `"group"`               | Override which property group's colors to display (null=auto). **Display-only — does not affect layout.** Use `strengths` to control layout. |
 | `color-scheme`      | `"1"`                   | Scheme index (0=vivid, 1=viridis, 2=plasma...)           |
 | `quant`             | `"norm"`                | `gaussian` (default), `rank`, `norm`. Low-level override — most users want `incremental` instead. |
+| `proj-seeds`        | `"group:37403"`         | Per-group projection-matrix seed overrides. Reseeding a low-cardinality categorical group can sharply cut false neighbors; auto-tune picks seeds automatically. |
 | `legend`            | (boolean)               | Show color legend                                        |
 | `light-mode`        | (boolean)               | Light theme                                              |
 | `webgl`             | (boolean)               | WebGL2 rendering                                         |
@@ -291,6 +292,7 @@ Nodes need `id` (required), `group`, `label`. Any other property becomes an extr
 ```js
 view.setStrengths({ group: 8, kind: 3 });    // re-blend with new strengths
 view.setBearing('group', Math.PI / 4);        // rotate group projection
+view.setProjSeed('group', 37403);             // reseed group's projection matrix
 view.setAlpha(0.5);                           // topology blend weight
 view.setOptions({ heatmapMode: 'density' });  // display options
 
@@ -309,12 +311,18 @@ const svgString = exportSVG(view, opts);      // SVG export
 ### Auto-tune
 
 ```js
-import { autoTuneStrengths } from './blitzoom.js';
+import { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } from './blitzoom.js';
 
 const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, {
   strengths: true, alpha: true,
 });
 // result: { strengths, alpha, quantMode, labelProps, score }
+
+// Follow-ups the built-in auto-tune flows run for you:
+const bearings = autoTuneBearings(view.nodes, view.groupNames, result.strengths);
+const seedPick = autoTuneProjSeeds(view.nodes, view.groupNames, result.strengths,
+  { numericBins: view._numericBins });   // { group, seed } or null
+if (seedPick) view.bulkSetProjSeeds({ [seedPick.group]: seedPick.seed });
 ```
 
 ### SVG export
@@ -358,7 +366,8 @@ export { BlitZoomCanvas } from './blitzoom-canvas.js';
 export { BzGraph } from './bz-graph.js';
 
 // Utilities
-export { autoTuneStrengths, autoTuneBearings } from './blitzoom-utils.js';
+export { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } from './blitzoom-utils.js';
+export { createFNREstimator, defaultReferenceStrengths } from './blitzoom-fnr.js';
 export { exportSVG, createSVGView } from './blitzoom-svg.js';
 export { projectNode } from './blitzoom-pipeline.js';
 export { parseAny, detectFormat } from './blitzoom-parsers.js';

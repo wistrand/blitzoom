@@ -2,7 +2,7 @@
 // Standalone functions that operate on a BlitZoomCanvas instance (view).
 // Extracted from blitzoom-canvas.js to keep the component focused on rendering.
 
-import { ZOOM_LEVELS, RAW_LEVEL, getNodePropValue, PROJECTION_SEED_BASE, MINHASH_K, buildGaussianProjection } from './blitzoom-algo.js';
+import { ZOOM_LEVELS, RAW_LEVEL, getNodePropValue, PROJECTION_SEED_BASE, projectionSeedForGroup, MINHASH_K, buildGaussianProjection } from './blitzoom-algo.js';
 import { projectNode, computeProjections, computeNumericBins, computeAdjGroups } from './blitzoom-pipeline.js';
 import { generateGroupColors } from './blitzoom-colors.js';
 
@@ -207,7 +207,7 @@ function bootstrapEmptyGraph(view, newNodes) {
     if (view.groupNames.includes(ep)) continue;
     view.groupNames.push(ep);
     const idx = view.groupNames.length - 1;
-    view.groupProjections[ep] = buildGaussianProjection(PROJECTION_SEED_BASE + idx, MINHASH_K);
+    view.groupProjections[ep] = buildGaussianProjection(projectionSeedForGroup(idx, ep, view.projSeeds), MINHASH_K);
     if (view.propStrengths[ep] === undefined) view.propStrengths[ep] = 0;
     if (!view.propColors[ep]) view.propColors[ep] = {};
   }
@@ -508,7 +508,7 @@ export async function fullRebuild(view) {
   const numericBins = computeNumericBins(view.nodes, view._extraPropNames);
 
   const { projBuf } = computeProjections(
-    view.nodes, adjGroups, view.groupNames, view.hasEdgeTypes, view._extraPropNames, numericBins
+    view.nodes, adjGroups, view.groupNames, view.hasEdgeTypes, view._extraPropNames, numericBins, view.projSeeds
   );
 
   const G = view.groupNames.length;
@@ -529,4 +529,30 @@ export async function fullRebuild(view) {
 
   view._progressText = null;
   console.log(`[BlitZoomCanvas] Full rebuild: ${N} nodes, ${view._extraPropNames.length} extra props`);
+}
+
+/**
+ * Re-project only the given groups for every node, using the view's current
+ * groupProjections matrices. Used after a per-group seed change
+ * (bulkSetProjSeeds) — other groups' projections are untouched, so with
+ * quantMode 'norm' unaffected coordinates stay identical. Synchronous;
+ * cost is one single-group MinHash + projection per node per group.
+ * Does not blend — callers trigger the blend + layout + render chain.
+ */
+export function reprojectGroups(view, groups) {
+  const only = new Set(groups);
+  if (only.size === 0 || view.nodes.length === 0) return;
+  const G = view.groupNames.length;
+  const buf = new Float64Array(G * 2);
+  for (const n of view.nodes) {
+    buf.fill(0); // skipped/empty groups must read as neutral [0,0], not stale
+    const neighborGroups = (view.adjList[n.id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');
+    const proj = projectNode(
+      n, neighborGroups, view.groupProjections, view.groupNames,
+      view.hasEdgeTypes, view._extraPropNames, view._numericBins, buf, 0, only
+    );
+    for (const g of only) {
+      if (proj[g]) n.projections[g] = proj[g];
+    }
+  }
 }

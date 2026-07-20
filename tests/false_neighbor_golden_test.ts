@@ -13,6 +13,7 @@ import { runPipeline, tokenizeLabel, tokenizeNumeric, degreeBucket } from '../do
 import {
   MINHASH_K, computeMinHash, computeEffectiveWeights, buildGaussianProjection, projectWith,
 } from '../docs/blitzoom-algo.js';
+import { createFNREstimator, defaultReferenceStrengths } from '../docs/blitzoom-fnr.js';
 
 const K = MINHASH_K;
 const TAU = 0.10;
@@ -122,4 +123,22 @@ Deno.test('golden: Pokemon false-neighbor rate 18.3% at ε = 0.1σ (study Part 1
   assertEquals(inEps, 1731);
   assertEquals(falseIn, 317); // 317/1731 = 18.3%
   assert(falseIn / inEps > 0.18 && falseIn / inEps < 0.19);
+});
+
+Deno.test('golden: semi-analytic FNR estimator on Pokemon (study Part 1: emp 18.3%, full-pair pred 16.4%)', () => {
+  const adjList: Record<string, string[]> = {};
+  const nodeIndexFull: Record<string, unknown> = {};
+  for (const n of nodeArray) { adjList[n.id] = []; nodeIndexFull[n.id] = n; }
+  for (const e of g.edges) { adjList[e.src]?.push(e.dst); adjList[e.dst]?.push(e.src); }
+  const ref = defaultReferenceStrengths(nodeArray, groupNames);
+  assertEquals(ref, { group: 3 });
+  const est = createFNREstimator(nodeArray, {
+    groupNames, numericBins, adjList, nodeIndexFull, refStrengths: ref,
+  });
+  assertEquals(est.sampleSize, 160);
+  assertEquals(est.pairs, 12720);
+  const r = est.estimate({ group: 3 });
+  assert(!r.vacuous);
+  assertAlmostEquals(r.fnr!, 0.140985, 1e-5);  // 160-node sample; full-pair value is 16.4%
+  assertAlmostEquals(r.sigma, 4.61020, 1e-3);
 });

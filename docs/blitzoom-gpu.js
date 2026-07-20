@@ -2,7 +2,7 @@
 // Takes pre-hashed token values (uint32) and computes signatures + 2D projections.
 // Falls back gracefully: callers should check `await initGPU()` before using.
 
-import { MINHASH_K, LARGE_PRIME, PROJECTION_SEED_BASE, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize, normQuantize, radialQuantize, computeEffectiveWeights } from './blitzoom-algo.js';
+import { MINHASH_K, LARGE_PRIME, PROJECTION_SEED_BASE, projectionSeedForGroup, HASH_PARAMS_A, HASH_PARAMS_B, mulberry32, hashToken, buildGaussianProjection, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN, normalizeAndQuantize, gaussianQuantize, normQuantize, radialQuantize, computeEffectiveWeights } from './blitzoom-algo.js';
 import { tokenizeLabel, tokenizeNumeric, degreeBucket } from './blitzoom-pipeline.js';
 
 let device = null;
@@ -295,7 +295,7 @@ export async function gpuMinHashProject(allTokens, taskOffsets, taskCounts, task
 // hashes to uint32, ships to GPU for MinHash + projection.
 // Returns { projBuf, groupNames } — same format as the CPU version.
 
-export async function computeProjectionsGPU(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins) {
+export async function computeProjectionsGPU(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins, projSeeds = null) {
   numericBins = numericBins || {};
   const N = nodeArray.length;
   const G = groupNames.length;
@@ -305,7 +305,7 @@ export async function computeProjectionsGPU(nodeArray, adjGroups, groupNames, ha
   // Build projection matrices (same seeds as CPU)
   const projMatrices = new Float32Array(G * 2 * MINHASH_K);
   for (let g = 0; g < G; g++) {
-    const R = buildGaussianProjection(PROJECTION_SEED_BASE + g, MINHASH_K);
+    const R = buildGaussianProjection(projectionSeedForGroup(g, groupNames[g], projSeeds), MINHASH_K);
     for (let i = 0; i < MINHASH_K; i++) {
       projMatrices[g * 2 * MINHASH_K + i] = R[0][i];
       projMatrices[g * 2 * MINHASH_K + MINHASH_K + i] = R[1][i];
@@ -737,7 +737,7 @@ export async function gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, ad
  * GPU-accelerated drop-in replacement for unifiedBlend.
  * Same signature: modifies nodes[i].px, .py, .gx, .gy in place.
  */
-export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null) {
+export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null, projSeeds = null) {
   const result = await gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, propBearings);
 
   // Apply blended positions to nodes
@@ -751,10 +751,10 @@ export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAl
     gaussianQuantize(nodes, quantStats || {});
   } else if (quantMode === 'norm') {
     const { effW, totalW } = computeEffectiveWeights(groupNames, propStrengths);
-    normQuantize(nodes, groupNames, effW, totalW);
+    normQuantize(nodes, groupNames, effW, totalW, projSeeds);
   } else if (quantMode === 'polar') {
     const { effW, totalW } = computeEffectiveWeights(groupNames, propStrengths);
-    radialQuantize(nodes, groupNames, effW, totalW);
+    radialQuantize(nodes, groupNames, effW, totalW, projSeeds);
   } else {
     normalizeAndQuantize(nodes);
   }

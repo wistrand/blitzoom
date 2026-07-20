@@ -18,7 +18,7 @@ Property similarity is estimated via Jaccard on token sets, sketched with MinHas
 
 A design convention: J(∅, ∅) is defined as 1 (mathematically it is 0/0, undefined). This causes nodes with no tokens in a property group to cluster together via their shared NaN signature, grouping "unknown" nodes where users can see them. The alternative J(∅, ∅) = 0 would scatter them randomly.
 
-Treating MinHash integer values as a vector and applying Gaussian projection has no direct geometric justification from MinHash theory. In practice, similar signatures produce correlated projected coordinates — an empirical observation rather than a proven property. Any method producing a fixed-dimensional vector per node can replace MinHash at the same point in the pipeline.
+Treating MinHash integer values as a vector and applying Gaussian projection has no direct geometric justification from MinHash theory. In practice, similar signatures produce correlated projected coordinates — originally an empirical observation, since validated quantitatively: the projection obeys a closed-form collision law (t = d²/(2k(1−r)) ~ χ²₂, KS ≤ 0.065 on 10 of 11 test datasets) with a characterized failure condition (difference vectors concentrated in a low-dimensional subspace, where one fixed matrix cannot self-average). See [RESEARCH-false-neighbor-validation.md](RESEARCH-false-neighbor-validation.md). Any method producing a fixed-dimensional vector per node can replace MinHash at the same point in the pipeline.
 
 The practical performance of the system depends heavily on tokenisation and grouping quality — schema-aware field naming, sensible discretisation of numeric fields, downweighting of common tokens, and grouping of properties by semantic independence. These choices determine whether the notion of similarity the pipeline faithfully preserves is actually the one users want.
 
@@ -97,6 +97,8 @@ Nodes sharing a cell at level L form a supernode. Cross-cell edges become weight
 ## Open validation questions
 
 The system requires empirical evaluation against: semantic neighbourhood preservation metrics; stability under strength changes and node insertion; oversmoothing onset as a function of α, passes, and graph structure; and task-based user evaluation for property graph exploration compared against force-directed, spectral, and embedding-based baselines.
+
+Partial progress on the first item: measured false-neighbor rates are 0-18% across 8 informative test datasets at ε = 0.1σ, a semi-analytic estimator predicts the rate within ~2.5 points on 6 of 8 (conservative when wrong) and ships as a viewer diagnostic, and per-group projection seed search reduces the worst rates by 45-95%. See [RESEARCH-false-neighbor-validation.md](RESEARCH-false-neighbor-validation.md).
 
 ---
 

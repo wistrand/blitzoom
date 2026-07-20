@@ -291,21 +291,51 @@ In order of value-per-effort, based on the measurements above:
    way strength settings preserve it. Demonstrated −45% to −95% FNR. Plumbing
    note: `normQuantize`/`radialQuantize` derive σ via `projNormSq(seed)`, so a
    per-group seed override must flow through there too.
+   **Implemented**: `autoTuneProjSeeds` in blitzoom-utils.js (same candidate
+   ladder and collision-mass score as the scripts here), applied by the viewer
+   and `<bz-graph>` auto-tune flows; `projSeeds` constructor option /
+   `setProjSeed` canvas API / `sd=` URL-hash param / `settings.projSeeds`
+   dataset presets. See the "Projection seeds" entry in CLAUDE.md.
 2. **Collision-mass term in the objective** — penalize configs whose dominant
    categorical group has high predicted collision mass (O(C²), free at tuner
    scale).
+   **Attempted, not enabled.** The mechanism ships as an `opts.fnrPenalty`
+   hook on `autoTuneStrengths` plus fixed-reference support in
+   `createFNREstimator` (blitzoom-fnr.js), but the shipped callers do not
+   pass it. Measured on this corpus with a gain-2 kernel penalty: Pokemon and
+   Synth winners unchanged (their FNR excess is anchor-geometry, invisible to
+   the seed-blind kernel — Part 4), and Porsche's winner degraded (empirical
+   reference-FNR 3.0% → 8.8%). Two design traps documented on the hook: the
+   dissimilarity reference must be config-independent (a candidate can hide
+   mixing by down-weighting the group it mixes — the purity failure in
+   Jaccard form), and per-config predicted σ diverges from measured σ per the
+   Part 4 seed-draw scatter, which reorders config rankings. The post-tune
+   seed search is the effective treatment for the same disease.
 3. **Multi-group purity** — average purity over the cached categorical groups
    (or top-2 by weight) instead of only the dominant one, so type-mixing under
    a differently-dominated config costs score.
+   **Implemented** (all cached categoricals, sqrt-purities averaged). On this
+   corpus it changes no winner — the dilution across categoricals mutes the
+   signal below the spread × CV gap — but it removes the blindness going
+   forward and costs O(cached categoricals) per score.
 4. **`autoTuneBearings` entry guard** — solo-strength configs (the tuner's
    most common winners) currently no-op silently; the guard should count
    effective groups or be removed.
+   **Implemented** (guard removed; G ≥ 2 and N ≥ 4 remain). Solo configs now
+   get bearings (e.g. Pokemon generation −44°), and the rotations measurably
+   help: FNR at ε = 0.1σ drops 6.3% → 5.6% (Pokemon generation-solo) and
+   0.4% → 0.0% (Marvel eye-solo) under a fixed similarity reference.
 
 ## Follow-ups worth doing
 
 - MITRE also shows label-token sharing (single-group KS 0.140); that
   single-group effect is untouched by the Part 4 result (the label matrix was
   never reseeded) and remains the one unmodeled piece of the failure story.
-- The kernel + histogram estimator is cheap enough to ship as a layout-trust
-  diagnostic (predicted FNR before layout, from `computeNodeSig` +
-  `jaccardEstimate` sampling).
+- ~~The kernel + histogram estimator is cheap enough to ship as a layout-trust
+  diagnostic.~~ **Shipped**: `createFNREstimator` in blitzoom-fnr.js (per-group
+  signature reconstruction over a ~160-node sample, ~12.7K pairs, built in
+  15-45ms, ~1ms per estimate; matches this doc's full-pair numbers within
+  sampling noise — Epstein 3.1%, Synth 16.9%, MITRE vacuous). The viewer shows
+  it in the algo-info line ("Est. false neighbors ~N% @0.1σ"), reports "n/a"
+  when τ is vacuous, and suppresses it at α ≥ 0.75 where positions come from
+  topology smoothing.

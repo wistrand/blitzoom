@@ -1,7 +1,10 @@
 // blitzoom-utils.js — Utility functions (auto-tune, etc).
 // Depends on blitzoom-algo.js for unifiedBlend and quantization.
 
-import { unifiedBlend, normalizeAndQuantize, gaussianQuantize, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN } from './blitzoom-algo.js';
+import {
+  unifiedBlend, normalizeAndQuantize, gaussianQuantize, STRENGTH_FLOOR_RATIO, STRENGTH_FLOOR_MIN,
+  MINHASH_K, PROJECTION_SEED_BASE, computeMinHash, computeEffectiveWeights, buildGaussianProjection, projectWith,
+} from './blitzoom-algo.js';
 
 // ─── Auto-tune optimizer ─────────────────────────────────────────────────────
 // Async heuristic search for strengths/alpha/quant that maximize layout quality.
@@ -16,29 +19,30 @@ import { unifiedBlend, normalizeAndQuantize, gaussianQuantize, STRENGTH_FLOOR_RA
  *
  * - spread: fraction of grid cells that are occupied (penalizes total collapse)
  * - clumpiness: CV of per-cell counts (penalizes uniform scatter, rewards clusters)
- * - purity: average fraction of each cell belonging to its majority category
- *   for the given `nodeCategory` array (penalizes mixed clusters, rewards
- *   semantic separation). Skipped (treated as 1) when nodeCategory is null.
+ * - purity: for each given category array, the fraction of each cell belonging
+ *   to its majority category; the final purity term averages sqrt-purity over
+ *   ALL given arrays. Scoring every cached categorical (not just the dominant
+ *   weighted group) makes cross-group mixing cost score — under a
+ *   generation-dominant config, a cell mixing Water and Psychic types was
+ *   previously invisible to the objective (the Pokemon 19.1%-FNR failure in
+ *   agent_docs/RESEARCH-false-neighbor-validation.md). Skipped (treated as 1)
+ *   when the list is null/empty.
  *
  * @param {Array} nodes        — must have .gx/.gy populated
  * @param {number} level       — grid subdivision level (3..7)
- * @param {Array<string>|null} nodeCategory — per-node category for purity, or null to skip
+ * @param {Array<Array<string>>|null} nodeCategories — per-node category arrays
+ *        (one per categorical group) for purity, or null to skip
  */
-function layoutScore(nodes, level, nodeCategory) {
+function layoutScore(nodes, level, nodeCategories) {
   const shift = 16 - level;
   const gridK = 1 << level;
   const totalCells = gridK * gridK;
   const cellCounts = new Map();
-  const cellCats = nodeCategory ? new Map() : null; // cell → Map<category, count>
+  const cellKeys = new Int32Array(nodes.length);
   for (let i = 0; i < nodes.length; i++) {
     const key = (nodes[i].gx >> shift) * gridK + (nodes[i].gy >> shift);
+    cellKeys[i] = key;
     cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
-    if (cellCats) {
-      const cat = nodeCategory[i];
-      let inner = cellCats.get(key);
-      if (!inner) { inner = new Map(); cellCats.set(key, inner); }
-      inner.set(cat, (inner.get(cat) || 0) + 1);
-    }
   }
   const occupied = cellCounts.size;
   if (occupied <= 1) return 0;
@@ -49,20 +53,30 @@ function layoutScore(nodes, level, nodeCategory) {
   const variance = sumSq / occupied - mean * mean;
   const cv = Math.sqrt(Math.max(0, variance)) / Math.max(1, mean);
 
-  // Group purity: weighted average of majority-category fraction per cell.
-  // Each cell contributes its majority count; total divided by total nodes.
-  // Range: ~1/K (random) to 1.0 (every cell is pure). Raised to 0.5 to soften
+  // Group purity: weighted average of majority-category fraction per cell,
+  // averaged over all category arrays. Each purity is raised to 0.5 to soften
   // the penalty — a layout with imperfect purity but great spread is still useful.
   let purity = 1;
-  if (cellCats) {
-    let majoritySum = 0, totalSum = 0;
-    for (const [key, inner] of cellCats) {
-      let maxCat = 0;
-      for (const c of inner.values()) if (c > maxCat) maxCat = c;
-      majoritySum += maxCat;
-      totalSum += cellCounts.get(key);
+  if (nodeCategories && nodeCategories.length) {
+    let acc = 0;
+    for (const nodeCategory of nodeCategories) {
+      const cellCats = new Map(); // cell → Map<category, count>
+      for (let i = 0; i < nodes.length; i++) {
+        let inner = cellCats.get(cellKeys[i]);
+        if (!inner) { inner = new Map(); cellCats.set(cellKeys[i], inner); }
+        const cat = nodeCategory[i];
+        inner.set(cat, (inner.get(cat) || 0) + 1);
+      }
+      let majoritySum = 0, totalSum = 0;
+      for (const [key, inner] of cellCats) {
+        let maxCat = 0;
+        for (const c of inner.values()) if (c > maxCat) maxCat = c;
+        majoritySum += maxCat;
+        totalSum += cellCounts.get(key);
+      }
+      acc += totalSum > 0 ? Math.sqrt(majoritySum / totalSum) : 1;
     }
-    purity = totalSum > 0 ? Math.sqrt(majoritySum / totalSum) : 1;
+    purity = acc / nodeCategories.length;
   }
 
   return spread * cv * purity;
@@ -212,19 +226,34 @@ export async function autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFul
   // preserved even with partial convergence; the final blend at the end uses
   // full passes for the actual layout the user sees.
   const TUNE_PASSES = 2;
-  // Pick the category array for purity scoring based on the current trial's
-  // dominant strength. Falls back to the 'group' category cache, otherwise the
-  // first available cached group, otherwise null (purity skipped).
-  const pickCategoryArray = (strengths) => {
-    if (categoryCache.size === 0) return null;
-    let dominant = null, maxW = 0;
-    for (const g of tunableGroups) {
-      const s = strengths[g] || 0;
-      if (s > maxW && categoryCache.has(g)) { maxW = s; dominant = g; }
+  // Purity is scored over ALL cached categorical groups (config-independent),
+  // so mixing under a differently-dominated config still costs score. See
+  // layoutScore's doc comment for why single-dominant-group purity failed.
+  const purityCategories = categoryCache.size ? [...categoryCache.values()] : null;
+  // Optional analytic false-neighbor penalty (opts.fnrPenalty: strengths →
+  // predicted FNR in [0,1], or null for no signal). Available for injection
+  // via createFNREstimator in blitzoom-fnr.js — utils (layer 1) cannot import
+  // the pipeline tokenizers itself. NOT enabled by the shipped callers:
+  // measured on the validation corpus, a gain-2 kernel penalty left the
+  // Pokemon/Synth winners unchanged and degraded Porsche's (empirical
+  // reference-FNR 3.0% → 8.8%) — the kernel is seed-blind, and real FNR is
+  // dominated by anchor geometry (RESEARCH doc Part 4), which only the
+  // post-tune seed search can address. Memoized per strengths key: the
+  // kernel FNR depends only on strengths, not alpha.
+  const fnrPenalty = typeof opts.fnrPenalty === 'function' ? opts.fnrPenalty : null;
+  const FNR_PENALTY_GAIN = 2; // score × exp(−gain·FNR): 16% FNR → ×0.73, 27% → ×0.58
+  const fnrCache = new Map();
+  const fnrFactor = (strengths) => {
+    if (!fnrPenalty) return 1;
+    let k = '';
+    for (const g of tunableGroups) k += (strengths[g] || 0) + ',';
+    let f = fnrCache.get(k);
+    if (f === undefined) {
+      const fnr = fnrPenalty(strengths);
+      f = (fnr == null || !(fnr > 0)) ? 1 : Math.exp(-FNR_PENALTY_GAIN * Math.min(1, fnr));
+      fnrCache.set(k, f);
     }
-    if (dominant) return categoryCache.get(dominant);
-    // No dominant categorical — use any cached one (prefer 'group')
-    return categoryCache.get('group') || categoryCache.values().next().value || null;
+    return f;
   };
   // Memoize (strengths, alpha) → result so refinement/descent revisits don't re-blend.
   const scoreCache = new Map();
@@ -240,13 +269,13 @@ export async function autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFul
     blendFn(nodes, groupNames, strengths, alpha, adjList, nodeIndexFull, TUNE_PASSES, 'gaussian', {});
     blends++;
     for (let i = 0; i < nodes.length; i++) { savedPx[i] = nodes[i].px; savedPy[i] = nodes[i].py; }
-    const nodeCategory = pickCategoryArray(strengths);
+    const penalty = fnrFactor(strengths);
     let localBest = -1, localQuant = 'gaussian';
     for (const q of QUANT_VALS) {
       for (let i = 0; i < nodes.length; i++) { nodes[i].px = savedPx[i]; nodes[i].py = savedPy[i]; }
       quantizeOnly(nodes, q);
       quants++;
-      const score = layoutScore(nodes, scoreLevel, nodeCategory);
+      const score = layoutScore(nodes, scoreLevel, purityCategories) * penalty;
       if (score > localBest) { localBest = score; localQuant = q; }
     }
     step++;
@@ -511,12 +540,13 @@ export function autoTuneBearings(nodes, groupNames, propStrengths) {
     effW[gi] = Math.max(propStrengths[groupNames[gi]] || 0, floor);
     propTotal += effW[gi];
   }
-  // Skip if fewer than 2 groups have any user-set strength (floor-only groups
-  // still contribute via the strength floor, but if the user set only 1 group,
-  // the floored groups are noise — rotating them won't help).
-  let userSet = 0;
-  for (let gi = 0; gi < G; gi++) if ((propStrengths[groupNames[gi]] || 0) > 0) userSet++;
-  if (userSet < 2) return {};
+  // No solo-config guard: the strength floor makes every group effective
+  // (10% of max each — with many groups the floored total rivals the dominant
+  // group), so rotating the dominant group relative to the floored ones is
+  // meaningful even when only one strength is user-set. The old guard
+  // (require ≥2 user-set strengths) silently no-op'd on solo configs — the
+  // tuner's most common winners (see RESEARCH-false-neighbor-validation.md,
+  // auto-tune recommendation 4).
 
   const N = nodes.length;
   if (N < 4) return {};
@@ -626,4 +656,96 @@ export function autoTuneBearings(nodes, groupNames, propStrengths) {
     }
   }
   return result;
+}
+
+// ─── Projection seed search ──────────────────────────────────────────────────
+// A low-cardinality categorical group projects each category to a single
+// anchor point; the shipped seed is one draw of anchor geometry, and a bad
+// draw places anchors close together, which is where the measured
+// false-neighbor rate lives (−45% to −95% FNR from reseeding; see
+// agent_docs/RESEARCH-false-neighbor-validation.md). This scores candidate
+// seeds by analytic collision mass — Σ pop_a·pop_b·exp(−(D_ab·w)²/(2σ²_floor))
+// over anchor pairs, O(C²) per seed — and returns the winner.
+
+/**
+ * Find a better projection seed for the dominant single-token categorical
+ * group. Eligible groups: 'group', or an extra property with no numeric bins
+ * (both tokenize to exactly one `name:value` token, so every category shares
+ * one signature → one anchor). Numeric groups (3-level tokenization) and the
+ * built-in multi-token groups have no anchor structure to search.
+ *
+ * @param {Array} nodes - canvas/pipeline nodes ({ group, extraProps })
+ * @param {string[]} groupNames
+ * @param {object} propStrengths
+ * @param {object} [opts] - { numericBins, candidates=50, minCategories=2, maxCategories=20 }
+ * @returns {object|null} { group, seed, shippedMass, bestMass } when a strictly
+ *          better seed exists for an eligible group, else null.
+ */
+export function autoTuneProjSeeds(nodes, groupNames, propStrengths, opts = {}) {
+  const numericBins = opts.numericBins || {};
+  const candidates = opts.candidates ?? 50;
+  const minC = opts.minCategories ?? 2;
+  const maxC = opts.maxCategories ?? 20;
+  if (!nodes.length) return null;
+
+  // Dominant eligible group: highest strength among single-token categoricals.
+  const BUILTIN_MULTI = new Set(['label', 'structure', 'neighbors', 'edgetype']);
+  let g = null, gi = -1, best = 0;
+  for (let i = 0; i < groupNames.length; i++) {
+    const name = groupNames[i];
+    const s = propStrengths[name] || 0;
+    if (s <= best) continue;
+    if (BUILTIN_MULTI.has(name) || numericBins[name]) continue;
+    g = name; gi = i; best = s;
+  }
+  if (!g) return null;
+
+  // Category populations (empty values project to neutral [0,0] regardless of
+  // seed — excluded).
+  const pops = new Map();
+  for (const n of nodes) {
+    const val = g === 'group' ? n.group : n.extraProps && n.extraProps[g];
+    if (val === undefined || val === null || val === '') continue;
+    pops.set(val, (pops.get(val) || 0) + 1);
+  }
+  const cats = [...pops.keys()];
+  const C = cats.length;
+  if (C < minC || C > maxC) return null;
+
+  // One-token signatures per category (token format matches projectNode/
+  // tokenizeNumeric for the non-numeric path).
+  const catSigs = cats.map(c => computeMinHash([(g === 'group' ? 'group:' : g + ':') + c], 1));
+  const popArr = cats.map(c => pops.get(c));
+
+  // Floor variance from all other groups: Σ (w/W)² · 2k
+  const { effW, totalW } = computeEffectiveWeights(groupNames, propStrengths);
+  const wfrac = effW[g] / totalW;
+  let s2floor = 0;
+  for (const gn of groupNames) {
+    if (gn !== g) s2floor += (effW[gn] / totalW) ** 2 * 2 * MINHASH_K;
+  }
+
+  const collisionMass = (seed) => {
+    const R = buildGaussianProjection(seed, MINHASH_K);
+    const anchors = catSigs.map(sig => projectWith(sig, R));
+    let mass = 0;
+    for (let x = 0; x < C; x++) {
+      for (let y = x + 1; y < C; y++) {
+        const D = Math.hypot(anchors[x][0] - anchors[y][0], anchors[x][1] - anchors[y][1]);
+        mass += popArr[x] * popArr[y] * Math.exp(-((D * wfrac) ** 2) / (2 * s2floor));
+      }
+    }
+    return mass;
+  };
+
+  const shippedSeed = PROJECTION_SEED_BASE + gi;
+  const shippedMass = collisionMass(shippedSeed);
+  let bestSeed = shippedSeed, bestMass = shippedMass;
+  for (let t = 1; t <= candidates; t++) {
+    const seed = shippedSeed + 10000 + t * 977; // same deterministic ladder as the research scripts
+    const mass = collisionMass(seed);
+    if (mass < bestMass) { bestMass = mass; bestSeed = seed; }
+  }
+  if (bestSeed === shippedSeed) return null;
+  return { group: g, seed: bestSeed, shippedMass, bestMass };
 }

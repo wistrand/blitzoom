@@ -13,7 +13,8 @@ export { BzGraph } from './bz-graph.js';
 export { projectNode } from './blitzoom-pipeline.js';
 
 // Utilities
-export { autoTuneStrengths, autoTuneBearings } from './blitzoom-utils.js';
+export { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } from './blitzoom-utils.js';
+export { createFNREstimator, defaultReferenceStrengths } from './blitzoom-fnr.js';
 export { exportSVG, createSVGView } from './blitzoom-svg.js';
 
 // Feature probes

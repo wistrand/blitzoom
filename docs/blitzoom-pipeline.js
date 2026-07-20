@@ -1,7 +1,7 @@
 // blitzoom-pipeline.js — Shared parsing, graph building, and tokenization/projection.
 // No DOM, no Worker API. Usable from Web Workers, Deno, or browser.
 
-import { MINHASH_K, PROJECTION_SEED_BASE, buildGaussianProjection, computeMinHash, computeMinHashInto, _sig, projectInto } from './blitzoom-algo.js';
+import { MINHASH_K, PROJECTION_SEED_BASE, projectionSeedForGroup, buildGaussianProjection, computeMinHash, computeMinHashInto, _sig, projectInto } from './blitzoom-algo.js';
 
 // ─── SNAP file parsers ───────────────────────────────────────────────────────
 
@@ -292,9 +292,12 @@ const _tokenBuf = new Array(200);
  * @param {object} numericBins - { propName: { min, max, coarse, medium, fine } }
  * @param {Float64Array} [projBuf] - optional output buffer
  * @param {number} [baseOff=0] - offset into projBuf
+ * @param {Set<string>|null} [onlyGroups] - if set, only these groups are projected.
+ *        Skipped groups keep whatever the buffer held — callers must merge only
+ *        the requested groups from the returned object.
  * @returns {object} projections - { groupName: [px, py], ... }
  */
-export function projectNode(node, neighborGroups, groupProjections, groupNames, hasEdgeTypes, extraPropNames, numericBins, projBuf, baseOff) {
+export function projectNode(node, neighborGroups, groupProjections, groupNames, hasEdgeTypes, extraPropNames, numericBins, projBuf, baseOff, onlyGroups = null) {
   const G = groupNames.length;
   const gIdx = {};
   for (let i = 0; i < G; i++) gIdx[groupNames[i]] = i;
@@ -304,33 +307,41 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
   const off = projBuf ? baseOff : 0;
 
   // group
-  _tokenBuf[0] = 'group:' + node.group;
-  computeMinHashInto(_tokenBuf, 1);
-  projectInto(_sig, groupProjections.group, tmpBuf, off + gIdx.group * 2);
+  if (!onlyGroups || onlyGroups.has('group')) {
+    _tokenBuf[0] = 'group:' + node.group;
+    computeMinHashInto(_tokenBuf, 1);
+    projectInto(_sig, groupProjections.group, tmpBuf, off + gIdx.group * 2);
+  }
 
   // label
-  const labelEnd = tokenizeLabel(node.label, node.id, _tokenBuf, 0);
-  computeMinHashInto(_tokenBuf, labelEnd);
-  projectInto(_sig, groupProjections.label, tmpBuf, off + gIdx.label * 2);
+  if (!onlyGroups || onlyGroups.has('label')) {
+    const labelEnd = tokenizeLabel(node.label, node.id, _tokenBuf, 0);
+    computeMinHashInto(_tokenBuf, labelEnd);
+    projectInto(_sig, groupProjections.label, tmpBuf, off + gIdx.label * 2);
+  }
 
   // structure
-  _tokenBuf[0] = 'deg:' + degreeBucket(node.degree);
-  _tokenBuf[1] = 'leaf:' + (node.degree === 0);
-  computeMinHashInto(_tokenBuf, 2);
-  projectInto(_sig, groupProjections.structure, tmpBuf, off + gIdx.structure * 2);
+  if (!onlyGroups || onlyGroups.has('structure')) {
+    _tokenBuf[0] = 'deg:' + degreeBucket(node.degree);
+    _tokenBuf[1] = 'leaf:' + (node.degree === 0);
+    computeMinHashInto(_tokenBuf, 2);
+    projectInto(_sig, groupProjections.structure, tmpBuf, off + gIdx.structure * 2);
+  }
 
   // neighbors
   let tc = 0;
-  if (neighborGroups.length > 0) {
-    for (let ai = 0; ai < neighborGroups.length; ai++) _tokenBuf[tc++] = 'ngroup:' + neighborGroups[ai];
-  } else {
-    _tokenBuf[0] = 'ngroup:isolated'; tc = 1;
+  if (!onlyGroups || onlyGroups.has('neighbors')) {
+    if (neighborGroups.length > 0) {
+      for (let ai = 0; ai < neighborGroups.length; ai++) _tokenBuf[tc++] = 'ngroup:' + neighborGroups[ai];
+    } else {
+      _tokenBuf[0] = 'ngroup:isolated'; tc = 1;
+    }
+    computeMinHashInto(_tokenBuf, tc);
+    projectInto(_sig, groupProjections.neighbors, tmpBuf, off + gIdx.neighbors * 2);
   }
-  computeMinHashInto(_tokenBuf, tc);
-  projectInto(_sig, groupProjections.neighbors, tmpBuf, off + gIdx.neighbors * 2);
 
   // edge types
-  if (hasEdgeTypes && gIdx.edgetype !== undefined) {
+  if (hasEdgeTypes && gIdx.edgetype !== undefined && (!onlyGroups || onlyGroups.has('edgetype'))) {
     tc = 0;
     if (node.edgeTypes && node.edgeTypes.length > 0) {
       for (let ei = 0; ei < node.edgeTypes.length; ei++) _tokenBuf[tc++] = 'etype:' + node.edgeTypes[ei];
@@ -344,6 +355,7 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
   // extra props (with multi-resolution numeric tokenization)
   for (let epi = 0; epi < extraPropNames.length; epi++) {
     const ep = extraPropNames[epi];
+    if (onlyGroups && !onlyGroups.has(ep)) continue;
     const val = node.extraProps && node.extraProps[ep];
     const epEnd = tokenizeNumeric(ep, val, numericBins[ep], _tokenBuf, 0);
     if (epEnd > 0) {
@@ -362,11 +374,11 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
   return projections;
 }
 
-export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins) {
+export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins, projSeeds = null) {
   numericBins = numericBins || {};
   const groupProjections = {};
   for (let i = 0; i < groupNames.length; i++) {
-    groupProjections[groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
+    groupProjections[groupNames[i]] = buildGaussianProjection(projectionSeedForGroup(i, groupNames[i], projSeeds), MINHASH_K);
   }
 
   const N = nodeArray.length;
@@ -398,7 +410,7 @@ export function computeNodeSig(node) {
  * @param {string|null} edgesText - SNAP .edges text, or null/empty for nodes-only graphs
  * @param {string|null} nodesText - SNAP .nodes text (required when edgesText is empty)
  */
-export function runPipeline(edgesText, nodesText) {
+export function runPipeline(edgesText, nodesText, projSeeds = null) {
   const parsed = parseEdgesFile(edgesText);
   const nodesResult = nodesText ? parseNodesFile(nodesText) : null;
   const nodesMap = nodesResult ? nodesResult.nodes : null;
@@ -406,7 +418,7 @@ export function runPipeline(edgesText, nodesText) {
 
   const graph = buildGraph(parsed, nodesMap, extraPropNames);
   const { projBuf } = computeProjections(
-    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins
+    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins, projSeeds
   );
 
   return { ...graph, projBuf, extraPropNames };
@@ -419,7 +431,7 @@ export function runPipeline(edgesText, nodesText) {
  * @param {function} computeProjectionsGPU - async GPU projection function from blitzoom-gpu.js
  * @returns {Promise<object>} same shape as runPipeline
  */
-export async function runPipelineGPU(edgesText, nodesText, computeProjectionsGPU) {
+export async function runPipelineGPU(edgesText, nodesText, computeProjectionsGPU, projSeeds = null) {
   const parsed = parseEdgesFile(edgesText);
   const nodesResult = nodesText ? parseNodesFile(nodesText) : null;
   const nodesMap = nodesResult ? nodesResult.nodes : null;
@@ -427,7 +439,7 @@ export async function runPipelineGPU(edgesText, nodesText, computeProjectionsGPU
 
   const graph = buildGraph(parsed, nodesMap, extraPropNames);
   const { projBuf } = await computeProjectionsGPU(
-    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins
+    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins, projSeeds
   );
 
   return { ...graph, projBuf, extraPropNames };
@@ -486,11 +498,11 @@ function edgesToParsed(edges) {
  *        Ordered list of extra property group names (same as parseNodesFile output).
  * @returns {object} same shape as runPipeline
  */
-export function runPipelineFromObjects(nodesMap, edges, extraPropNames = []) {
+export function runPipelineFromObjects(nodesMap, edges, extraPropNames = [], projSeeds = null) {
   const parsed = edgesToParsed(edges);
   const graph = buildGraph(parsed, nodesMap, extraPropNames);
   const { projBuf } = computeProjections(
-    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins
+    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames, graph.numericBins, projSeeds
   );
   return { ...graph, projBuf, extraPropNames };
 }
@@ -499,11 +511,11 @@ export function runPipelineFromObjects(nodesMap, edges, extraPropNames = []) {
  * GPU variant of runPipelineFromObjects.
  * @param {function} computeProjectionsGPU - async GPU projection function from blitzoom-gpu.js
  */
-export async function runPipelineFromObjectsGPU(nodesMap, edges, extraPropNames, computeProjectionsGPU) {
+export async function runPipelineFromObjectsGPU(nodesMap, edges, extraPropNames, computeProjectionsGPU, projSeeds = null) {
   const parsed = edgesToParsed(edges);
   const graph = buildGraph(parsed, nodesMap, extraPropNames || []);
   const { projBuf } = await computeProjectionsGPU(
-    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames || [], graph.numericBins
+    graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, extraPropNames || [], graph.numericBins, projSeeds
   );
   return { ...graph, projBuf, extraPropNames: extraPropNames || [] };
 }

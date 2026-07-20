@@ -337,7 +337,7 @@ class BzGraph extends HTMLElement {
     if (this._tuneAbort) { this._tuneAbort.abort(); return; }
     try {
       this._tuneAbort = new AbortController();
-      const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
+      const { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } = await import('./blitzoom-utils.js');
       const v = this._view;
       v.showProgress('Auto-tuning...');
       const result = await autoTuneStrengths(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
@@ -355,6 +355,13 @@ class BzGraph extends HTMLElement {
       v._quantStats = {};
       const bearings = autoTuneBearings(v.nodes, v.groupNames, result.strengths);
       v.propBearings = bearings;
+      // Seed search for the dominant categorical group (clears prior overrides
+      // first — the tune result is authoritative, same as the viewer).
+      const seedObj = {};
+      for (const g of Object.keys(v.projSeeds || {})) seedObj[g] = null;
+      const seedPick = autoTuneProjSeeds(v.nodes, v.groupNames, result.strengths, { numericBins: v._numericBins });
+      if (seedPick) seedObj[seedPick.group] = seedPick.seed;
+      v.bulkSetProjSeeds(seedObj);
       v.levels = new Array(v.levels.length).fill(null);
       await v._blend();
       v.layoutAll();
@@ -425,6 +432,15 @@ class BzGraph extends HTMLElement {
     const labelPropsAttr = this.getAttribute('label-props');
     if (labelPropsAttr) {
       opts.labelProps = labelPropsAttr.split(',').map(s => s.trim());
+    }
+    // Projection seed overrides from attribute: proj-seeds="group:37403"
+    const projSeedsAttr = this.getAttribute('proj-seeds');
+    if (projSeedsAttr) {
+      opts.projSeeds = {};
+      for (const pair of projSeedsAttr.split(',')) {
+        const [k, v] = pair.split(':');
+        if (k && v) opts.projSeeds[k.trim()] = parseInt(v.trim()) || undefined;
+      }
     }
     // Mapped attributes
     for (const [attr, def] of Object.entries(ATTR_MAP)) {
