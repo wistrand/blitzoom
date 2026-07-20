@@ -63,7 +63,7 @@ Drop any of these files onto the canvas or loader panel, or load them via URL â€
 
 ## Datasets
 
-The curated dataset list with presets, paths, and node/edge counts lives in [docs/datasets.json](docs/datasets.json). Sample data files (SNAP pairs + D3/JGF/GraphML/GEXF/Cytoscape/STIX/CSV) live under [docs/data/](docs/data/). Notable scale points used in testing and demos: Karate Club (34 nodes, smallest), Epstein (364 nodes, mid), BlitZoom Source (~1K nodes, MITRE ATT&CK (~5K), Facebook (4K nodes / 88K edges, dense), Amazon co-purchase (367K nodes / 988K edges, largest tested).
+The curated dataset list with presets, paths, and node/edge counts lives in [docs/datasets.json](docs/datasets.json). Sample data files (SNAP pairs + D3/JGF/GraphML/GEXF/Cytoscape/STIX/CSV) live under [docs/data/](docs/data/). Notable scale points used in testing and demos: Karate Club (34 nodes, smallest), Epstein (514 nodes, mid), BlitZoom Source (~1K nodes, MITRE ATT&CK (~5K), Facebook (4K nodes / 88K edges, dense), Amazon co-purchase (367K nodes / 988K edges, largest tested).
 
 ## Key Design Decisions
 

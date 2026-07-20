@@ -85,9 +85,9 @@ D	Dave	manager	88
 | Dataset            | Nodes | Edges  | Source              |
 | ------------------ | ----- | ------ | ------------------- |
 | Karate Club        | 34    | 78     | Zachary 1977        |
-| Epstein Network    | 364   | 534    | Public records      |
-| BlitZoom Source    | 966   | 2,609  | This project's code |
-| Synth Packages     | 1,868 | 4,044  | Generated           |
+| Epstein Network    | 514   | 534    | Public records      |
+| BlitZoom Source    | 1,046 | 3,113  | This project's code |
+| Synth Packages     | 2,000 | 4,050  | Generated           |
 | MITRE ATT&CK       | 4,736 | 25,856 | MITRE ATT&CK v15    |
 | Email EU           | 1,005 | 25,571 | SNAP Stanford       |
 | Facebook           | 4,039 | 88,234 | SNAP Stanford       |
