@@ -1,7 +1,10 @@
 // blitzoom-gl-renderer.js — WebGL2 renderer for BlitZoom.
 // WebGL2 instanced rendering: grid, edges, heatmap, circles.
 
-import { RAW_LEVEL, ZOOM_LEVELS } from './blitzoom-algo.js';
+import {
+  RAW_LEVEL, ZOOM_LEVELS, maxEdgesToDraw, sampleEdges, edgeEndpoints, incidentEdges, edgesTouching,
+  rawEdgeRow, superEdgeRow,
+} from './blitzoom-algo.js';
 
 /**
  * Check if WebGL2 is available. Creates and destroys a temporary canvas.
@@ -661,17 +664,6 @@ function _ensureBuf(buf, minFloats) {
   return new Float32Array(Math.max(minFloats, buf.length * 2));
 }
 
-// ─── Edge hash (deterministic sampling, matches Canvas 2D renderer) ───────────
-
-function edgeHash(i) {
-  let h = (i * 2654435761) >>> 0;
-  return (h & 0x7fffffff) / 0x80000000;
-}
-
-function maxEdgesToDraw(nodeCount) {
-  return Math.min(5000, Math.max(200, nodeCount * 3));
-}
-
 // ─── Build edge instance data ─────────────────────────────────────────────────
 
 function _buildEdgeInstances(bz) {
@@ -684,23 +676,22 @@ function _buildEdgeInstances(bz) {
 
   const diag = Math.sqrt(W * W + H * H);
   const maxEdgeLen = diag * 1.2;
-  const maxEdgeLenSq = maxEdgeLen * maxEdgeLen;
   const fadeStart = diag * 0.25;
   const fadeStartSq = fadeStart * fadeStart;
   const fadeRange = maxEdgeLen - fadeStart;
 
-  let edges, nodeCount, getNode, getEdgeSrc, getEdgeDst, getEdgeWeight, getNodeId;
+  let edges, nodeCount, getNode, getEdgeSrc, getEdgeDst, getEdgeWeight, rowOf, rowCount, source, level = null;
 
   if (isRaw) {
     edges = bz.edges;
     nodeCount = bz.nodes.length;
-    getNode = id => bz.nodeIndexFull[id];
+    source = bz.nodeIndexFull;
+    getNode = id => source[id];
     getEdgeSrc = e => e.src;
     getEdgeDst = e => e.dst;
     getEdgeWeight = () => 1;
-    getNodeId = id => id;
   } else {
-    const level = bz.getLevel(bz.currentLevel);
+    level = bz.getLevel(bz.currentLevel);
     if (!level._snByBid) {
       level._snByBid = new Map();
       for (const sn of level.supernodes) level._snByBid.set(sn.bid, sn);
@@ -708,20 +699,19 @@ function _buildEdgeInstances(bz) {
     const snMap = level._snByBid;
     edges = level.snEdges;
     nodeCount = level.supernodes.length;
+    source = snMap;
     getNode = id => snMap.get(id);
     getEdgeSrc = e => e.a;
     getEdgeDst = e => e.b;
     getEdgeWeight = e => e.weight;
-    getNodeId = id => id;
   }
 
-  const maxEdges = maxEdgesToDraw(nodeCount);
-  const sampleRate = edges.length > maxEdges ? maxEdges / edges.length : 1;
+  const ends = edgeEndpoints(edges, source, e => getNode(getEdgeSrc(e)), e => getNode(getEdgeDst(e)));
+  const { idx, count } = sampleEdges(edges, ends, bz.pan, rz, W, H, maxEdgesToDraw(nodeCount));
   // 8 floats per edge instance: startX, startY, endX, endY, r, g, b, a
-  _edgeBuf = _ensureBuf(_edgeBuf, Math.min(edges.length, maxEdges) * 8);
+  _edgeBuf = _ensureBuf(_edgeBuf, count * 8);
   const normalEdges = _edgeBuf;
   let normalCount = 0;
-  let drawn = 0;
 
   // Edge color: supernodes = accent purple, raw = muted blue-grey
   const eR = isRaw ? 100 / 255 : 124 / 255;
@@ -729,19 +719,14 @@ function _buildEdgeInstances(bz) {
   const eB = isRaw ? 140 / 255 : 247 / 255;
   const maxAlpha = isRaw ? 0.25 : 0.4;
 
-  for (let i = 0; i < edges.length; i++) {
+  for (let j = 0; j < count; j++) {
+    const i = idx[j];
     const e = edges[i];
-    const a = getNode(getEdgeSrc(e)), b = getNode(getEdgeDst(e));
-    if (!a || !b) continue;
+    const a = ends.a[i], b = ends.b[i];
     const pax = a.x * rz + bz.pan.x, pay = a.y * rz + bz.pan.y;
     const pbx = b.x * rz + bz.pan.x, pby = b.y * rz + bz.pan.y;
     const dx = pax - pbx, dy = pay - pby;
     const distSq = dx * dx + dy * dy;
-    if (distSq > maxEdgeLenSq) continue;
-    if (sampleRate < 1) {
-      if (edgeHash(i) > sampleRate * (2 - distSq / maxEdgeLenSq)) continue;
-    }
-    if (++drawn > maxEdges) break;
     const distFade = distSq <= fadeStartSq ? 1 : Math.max(0, 1 - (Math.sqrt(distSq) - fadeStart) / fadeRange);
     const w = getEdgeWeight(e);
     const alpha = isRaw ? maxAlpha * distFade : Math.min(maxAlpha, 0.05 + w * 0.05) * distFade;
@@ -759,18 +744,21 @@ function _buildEdgeInstances(bz) {
     normalCount++;
   }
 
-  // Highlighted edges for selected/hovered
+  // Highlighted edges for selected/hovered — only their incident edges.
   if (hasSel || hov !== null) {
-    _hiliteBuf = _ensureBuf(_hiliteBuf, edges.length * 8);
+    if (isRaw) { rowOf = rawEdgeRow(bz); rowCount = bz._projRows; }
+    else { rowOf = superEdgeRow(level); rowCount = level.supernodes.length; }
+    const hits = new Set(selIds);
+    if (hov !== null) hits.add(hov);
+    const inc = incidentEdges(edges, isRaw ? source : level, getEdgeSrc, getEdgeDst, rowOf, rowCount);
+    const hl = edgesTouching(inc, edges, getEdgeSrc, getEdgeDst, rowOf, hits);
+    _hiliteBuf = _ensureBuf(_hiliteBuf, hl.length * 8);
     const hBuf = _hiliteBuf;
     let hCount = 0;
-    for (let i = 0; i < edges.length; i++) {
+    for (const i of hl) {
       const e = edges[i];
       const srcId = getEdgeSrc(e), dstId = getEdgeDst(e);
-      const aHit = selIds.has(srcId) || srcId === hov;
-      const bHit = selIds.has(dstId) || dstId === hov;
-      if (!aHit && !bHit) continue;
-      const a = getNode(srcId), b = getNode(dstId);
+      const a = ends.a[i], b = ends.b[i];
       if (!a || !b) continue;
       const pax = a.x * rz + bz.pan.x, pay = a.y * rz + bz.pan.y;
       const pbx = b.x * rz + bz.pan.x, pby = b.y * rz + bz.pan.y;

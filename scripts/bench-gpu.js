@@ -103,17 +103,10 @@ for (const ds of DATASETS) {
 
   // ─── Blend benchmark ──────────────────────────────────────────────────
 
-  // Hydrate nodes with projections (use CPU result)
+  // Hydrate nodes: projIdx = row into cpuProj.projBuf (use CPU result)
   const cpuProj = computeProjections(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins);
   function makeNodes() {
-    return nodeArray.map((n, i) => {
-      const projections = {};
-      for (let g = 0; g < G; g++) {
-        const off = (i * G + g) * 2;
-        projections[groupNames[g]] = [cpuProj.projBuf[off], cpuProj.projBuf[off + 1]];
-      }
-      return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-    });
+    return nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   }
 
   const nodeIndex = Object.fromEntries(nodeArray.map(n => [n.id, n]));
@@ -133,7 +126,7 @@ for (const ds of DATASETS) {
     const nodes = makeNodes();
     const ni = Object.fromEntries(nodes.map(n => [n.id, n]));
     const t0 = performance.now();
-    unifiedBlend(nodes, groupNames, strengths, 0.5, adjList, ni, 5, 'gaussian');
+    unifiedBlend(nodes, cpuProj.projBuf, groupNames, strengths, 0.5, adjList, ni, 5, 'gaussian');
     const elapsed = performance.now() - t0;
     if (i >= warmup) cpuBlendTimes.push(elapsed);
   }
@@ -144,7 +137,7 @@ for (const ds of DATASETS) {
     const nodes = makeNodes();
     const ni = Object.fromEntries(nodes.map(n => [n.id, n]));
     const t0 = performance.now();
-    await gpuBlend(nodes, groupNames, strengths, 0.5, adjList, ni, 5);
+    await gpuBlend(nodes, cpuProj.projBuf, groupNames, strengths, 0.5, adjList, ni, 5);
     const elapsed = performance.now() - t0;
     if (i >= warmup) gpuBlendTimes.push(elapsed);
   }

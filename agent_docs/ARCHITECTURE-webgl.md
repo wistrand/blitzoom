@@ -86,9 +86,9 @@ All instance data written to `_instanceVBO` (shared, dynamic) per draw call.
 renderGL(gl, bz)
   1. clear (color from canvas CSS background)
   2. grid            — fullscreen quad, procedural lines in fragment shader
-  3. normal edges    — instanced lines or curves
+  3. normal edges    — instanced lines or curves (edges chosen by sampleEdges)
   4. heatmap         — density: FBO splat + resolve, or splat: additive glow
-  5. hilite edges    — instanced, thicker, for selected/hovered nodes
+  5. hilite edges    — instanced, thicker, for selected/hovered nodes (edgesTouching)
   6. glow halos      — instanced radial gradient for selected/hovered
   7. circles         — instanced SDF circles with fill + stroke
 ```
@@ -213,6 +213,14 @@ with `webgl: true`).
 | Level change        | rebuild                 | rebuild      | rebuild |
 | Selection change    | hilite pass only        | glow + alpha | no      |
 | Weight/blend change | rebuild                 | rebuild      | rebuild |
+
+Edge instances come from the helpers shared with Canvas 2D and SVG in
+[blitzoom-algo.js](../docs/blitzoom-algo.js): `sampleEdges` picks normal edges
+(viewport-culled, deterministic, expected count `maxEdgesToDraw(N)`, endpoints
+read from the cached `edgeEndpoints` arrays), and `incidentEdges` +
+`edgesTouching` give the selected/hovered nodes' edges without scanning the
+edge list. The highlight buffer is sized to the edges actually drawn. See
+ARCHITECTURE.md "Edge sampling" / "Highlight edges".
 
 Instance data uses persistent typed-array buffers that grow as needed (zero
 per-frame GC after warmup). `visibleCount` and `maxSizeVal` are cached to avoid

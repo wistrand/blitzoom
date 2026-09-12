@@ -457,9 +457,37 @@ function getBlendBuffers(N) {
 }
 
 /**
+ * Pack legacy per-node `projections` objects ({ groupName: [x, y] }) into a
+ * flat projection buffer, setting each node's `projIdx` to its array index.
+ * Missing groups read as [0, 0]. Drops the per-node objects. For callers that
+ * build nodes by hand; the pipeline already produces the flat layout.
+ * @returns {Float64Array} buffer with row stride groupNames.length * 2
+ */
+export function packProjections(nodes, groupNames) {
+  const G = groupNames.length, S = G * 2;
+  const buf = new Float64Array(nodes.length * S);
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i], p = n.projections;
+    if (p) {
+      for (let gi = 0; gi < G; gi++) {
+        const v = p[groupNames[gi]];
+        if (v) { buf[i * S + gi * 2] = v[0]; buf[i * S + gi * 2 + 1] = v[1]; }
+      }
+    }
+    n.projIdx = i;
+    n.projections = undefined;
+  }
+  return buf;
+}
+
+/**
  * Sum per-group 2D projections into a blended (px, py), then optionally smooth
  * across neighbors, then quantize onto the uint16 grid.
  *
+ * @param {object[]} nodes - nodes with `projIdx` (row into projBuf)
+ * @param {Float64Array} projBuf - flat projections: group gi of row r at
+ *   [(r * groupNames.length + gi) * 2], [+1]
+ * @param {string[]} groupNames
  * @param {object} propStrengths - per-group scalar strength
  * @param {object|null} propBearings - per-group rotation angle in radians, or null.
  *   When null, no rotation is applied (fast path preserved). When provided, each
@@ -469,7 +497,7 @@ function getBlendBuffers(N) {
  *   blend (not persisted in the node projections), so it's fully reversible and
  *   compositionally cheap.
  */
-export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null, projSeeds = null) {
+export function unifiedBlend(nodes, projBuf, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null, projSeeds = null) {
   const w = propStrengths;
   // Adaptive strength floor: max(10% of max strength, absolute minimum of 0.10).
   // Prevents low-entropy collapse: zero-strength high-entropy groups always contribute 10% spreading.
@@ -478,6 +506,9 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
   // Precompute per-group cos/sin for bearings. Fast path when no bearings: skip
   // both the precompute and the rotation branch in the per-node loop.
   const G = groupNames.length;
+  const S = G * 2;
+  const effWArr = new Float64Array(G);
+  for (let gi = 0; gi < G; gi++) effWArr[gi] = effW[groupNames[gi]];
   let cosBearing = null, sinBearing = null, hasAnyBearing = false;
   if (propBearings) {
     for (const g of groupNames) {
@@ -502,16 +533,13 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
     // Bearings present — rotate each group's contribution before summing.
     for (let i = 0; i < N; i++) {
       const nd = nodes[i];
+      const base = nd.projIdx * S;
       let px = 0, py = 0;
       for (let gi = 0; gi < G; gi++) {
-        const g = groupNames[gi];
-        const p = nd.projections[g];
-        if (p) {
-          const gx = p[0], gy = p[1];
-          const c = cosBearing[gi], s = sinBearing[gi];
-          px += (gx * c - gy * s) * effW[g];
-          py += (gx * s + gy * c) * effW[g];
-        }
+        const gx = projBuf[base + gi * 2], gy = projBuf[base + gi * 2 + 1];
+        const c = cosBearing[gi], s = sinBearing[gi], wg = effWArr[gi];
+        px += (gx * c - gy * s) * wg;
+        py += (gx * s + gy * c) * wg;
       }
       propPx[i] = px / propTotal;
       propPy[i] = py / propTotal;
@@ -519,13 +547,15 @@ export function unifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjL
       nd.py = propPy[i];
     }
   } else {
-    // No bearings — original fast path, untouched.
+    // No bearings — fast path, no rotation.
     for (let i = 0; i < N; i++) {
       const nd = nodes[i];
+      const base = nd.projIdx * S;
       let px = 0, py = 0;
-      for (const g of groupNames) {
-        const p = nd.projections[g];
-        if (p) { px += p[0] * effW[g]; py += p[1] * effW[g]; }
+      for (let gi = 0; gi < G; gi++) {
+        const wg = effWArr[gi];
+        px += projBuf[base + gi * 2] * wg;
+        py += projBuf[base + gi * 2 + 1] * wg;
       }
       propPx[i] = px / propTotal;
       propPy[i] = py / propTotal;
@@ -683,6 +713,205 @@ export function buildLevel(level, nodes, edges, nodeIndexFull, colorValFn, label
   const lvl = buildLevelNodes(level, nodes, colorValFn, labelValFn, colorLookup);
   buildLevelEdges(lvl, edges, nodeIndexFull, level);
   return lvl;
+}
+
+// ─── Edge selection for rendering (Canvas 2D, WebGL, SVG) ───────────────────
+
+/** Hash edge index to [0,1) — stable across renders for the same edge set. */
+export function edgeHash(i) {
+  const h = (i * 2654435761) >>> 0; // Knuth multiplicative hash
+  return (h & 0x7fffffff) / 0x80000000;
+}
+
+/** Adaptive edge cap: scales with node count to avoid clutter on dense graphs. */
+export function maxEdgesToDraw(nodeCount) {
+  return Math.min(5000, Math.max(200, nodeCount * 3));
+}
+
+// Two-level cache for edgeEndpoints / incidentEdges: edge array → lookup
+// source (nodeIndexFull, supernode map, level) → entry. Weak on both keys, so a
+// replaced edge set or node set is freed with its entry, and two views that
+// share an edge array but not node objects (e.g. two createSVGView calls on the
+// same pipeline edges) never share endpoints.
+function cacheFor(store, edges) {
+  let bySource = store.get(edges);
+  if (!bySource) { bySource = new WeakMap(); store.set(edges, bySource); }
+  return bySource;
+}
+
+/** WeakMap-safe source key: falls back to the edge array for a non-object source. */
+function sourceKey(source, edges) {
+  return (source !== null && typeof source === 'object') ? source : edges;
+}
+const _endpointCache = new WeakMap();
+
+/**
+ * Endpoint objects for every edge: `a[i]` / `b[i]` are nodeA(edges[i]) /
+ * nodeB(edges[i]) (undefined if unresolved), where nodeA/nodeB look up in
+ * `source`. Cached per (edge array, source). Turns the per-frame endpoint
+ * lookup — a string-keyed dictionary probe for raw edges — into an array
+ * read. Valid while the pair keeps its endpoints: mutations that remove nodes
+ * replace the edge array, updates keep node objects, and appends (addNodes
+ * pushes into the same array) are resolved incrementally.
+ * @returns {{a: Array, b: Array}}
+ */
+export function edgeEndpoints(edges, source, nodeA, nodeB) {
+  const bySource = cacheFor(_endpointCache, edges);
+  const key = sourceKey(source, edges);
+  let c = bySource.get(key);
+  if (!c || c.a.length > edges.length) {
+    c = { a: [], b: [] };
+    bySource.set(key, c);
+  }
+  for (let i = c.a.length; i < edges.length; i++) {
+    const e = edges[i];
+    c.a.push(nodeA(e));
+    c.b.push(nodeB(e));
+  }
+  return c;
+}
+
+// Scratch for sampleEdges, grown on demand. Not reentrant: callers consume
+// the returned indices before the next call.
+let _candIdx = new Uint32Array(0);
+let _candW = new Float32Array(0);
+
+/**
+ * Pick the edges to draw this frame. Pass 1 keeps candidates: both endpoints
+ * resolve, screen length <= 1.2 viewport diagonals, and the segment's bounding
+ * box (padded for curve bulge and stroke) intersects the viewport. Each gets a
+ * weight w = 1 - 0.5·d²/maxLen² in [0.5, 1] (short edges preferred 2:1).
+ * Pass 2, when candidates exceed maxEdges, keeps candidate i iff
+ * edgeHash(i) < rate·w with rate = maxEdges / Σw, so the expected count is
+ * maxEdges and every position in the edge array has the same chance —
+ * no early cutoff that starves the tail of the array.
+ *
+ * @param {Array} edges
+ * @param {{a: Array, b: Array}} ends - endpoint objects ({x, y}) per edge,
+ *   from edgeEndpoints
+ * @param {{x: number, y: number}} pan
+ * @param {number} rz - render zoom (world → screen scale)
+ * @param {number} W - viewport width in px
+ * @param {number} H - viewport height in px
+ * @param {number} maxEdges
+ * @returns {{idx: Uint32Array, count: number}} ascending edge indices in
+ *   idx[0..count); the array is shared scratch, valid until the next call
+ */
+export function sampleEdges(edges, ends, pan, rz, W, H, maxEdges) {
+  const E = edges.length;
+  const A = ends.a, B = ends.b;
+  if (_candIdx.length < E) { _candIdx = new Uint32Array(E); _candW = new Float32Array(E); }
+  const diag = Math.sqrt(W * W + H * H);
+  const maxLenSq = (diag * 1.2) * (diag * 1.2);
+  let n = 0, sumW = 0;
+  for (let i = 0; i < E; i++) {
+    const a = A[i], b = B[i];
+    if (!a || !b) continue;
+    const ax = a.x * rz + pan.x, ay = a.y * rz + pan.y;
+    const bx = b.x * rz + pan.x, by = b.y * rz + pan.y;
+    const dx = ax - bx, dy = ay - by;
+    const distSq = dx * dx + dy * dy;
+    if (distSq > maxLenSq) continue;
+    // Curve control points sit at most 0.15·len off the chord, and
+    // |dx| + |dy| >= len, so this pad covers the bulge; +2 covers the stroke.
+    const pad = 0.15 * (Math.abs(dx) + Math.abs(dy)) + 2;
+    if ((ax > bx ? ax : bx) < -pad || (ax < bx ? ax : bx) > W + pad) continue;
+    if ((ay > by ? ay : by) < -pad || (ay < by ? ay : by) > H + pad) continue;
+    const w = 1 - 0.5 * distSq / maxLenSq;
+    _candIdx[n] = i;
+    _candW[n] = w;
+    sumW += w;
+    n++;
+  }
+  if (n <= maxEdges) return { idx: _candIdx, count: n };
+  const rate = maxEdges / sumW;
+  let count = 0;
+  for (let j = 0; j < n; j++) {
+    const i = _candIdx[j];
+    if (edgeHash(i) < rate * _candW[j]) _candIdx[count++] = i; // in-place: count <= j
+  }
+  return { idx: _candIdx, count };
+}
+
+const _incidenceCache = new WeakMap(); // see cacheFor
+
+/**
+ * Incident-edge index (CSR) so highlight passes visit only the edges of the
+ * hovered/selected endpoints instead of scanning every edge per frame.
+ * `rowOf(key)` maps an endpoint key (node id or supernode bid) to a dense row
+ * in [0, rowCount), or -1 if unknown; edges with an unknown endpoint are not
+ * indexed (renderers skip them anyway). Self-loops are listed once. Cached per
+ * (edge array, source — the object rowOf reads) until the array's length or
+ * rowCount changes.
+ * @returns {{offsets: Uint32Array, list: Uint32Array}}
+ */
+export function incidentEdges(edges, source, srcKey, dstKey, rowOf, rowCount) {
+  const bySource = cacheFor(_incidenceCache, edges);
+  const key = sourceKey(source, edges);
+  const c = bySource.get(key);
+  if (c && c.len === edges.length && c.rows === rowCount) return c;
+  const E = edges.length;
+  const ends = new Int32Array(E * 2);
+  const offsets = new Uint32Array(rowCount + 1);
+  for (let i = 0; i < E; i++) {
+    const e = edges[i];
+    const a = rowOf(srcKey(e)), b = rowOf(dstKey(e));
+    if (a < 0 || b < 0) { ends[2 * i] = -1; continue; }
+    ends[2 * i] = a;
+    ends[2 * i + 1] = b;
+    offsets[a + 1]++;
+    if (b !== a) offsets[b + 1]++;
+  }
+  for (let r = 0; r < rowCount; r++) offsets[r + 1] += offsets[r];
+  const list = new Uint32Array(offsets[rowCount]);
+  const fill = offsets.slice(0, rowCount);
+  for (let i = 0; i < E; i++) {
+    const a = ends[2 * i];
+    if (a < 0) continue;
+    const b = ends[2 * i + 1];
+    list[fill[a]++] = i;
+    if (b !== a) list[fill[b]++] = i;
+  }
+  const inc = { len: E, rows: rowCount, offsets, list };
+  bySource.set(key, inc);
+  return inc;
+}
+
+/**
+ * Collect the indices of edges touching any key in `hitKeys`, via an
+ * incidentEdges index. An edge between two hit endpoints is returned once.
+ * @returns {number[]}
+ */
+export function edgesTouching(inc, edges, srcKey, dstKey, rowOf, hitKeys) {
+  const out = [];
+  const done = new Set();
+  for (const key of hitKeys) {
+    const r = rowOf(key);
+    if (r < 0) continue;
+    for (let j = inc.offsets[r]; j < inc.offsets[r + 1]; j++) {
+      const i = inc.list[j];
+      const e = edges[i];
+      const s = srcKey(e);
+      const other = s === key ? dstKey(e) : s;
+      if (other !== key && done.has(other)) continue;
+      out.push(i);
+    }
+    done.add(key);
+  }
+  return out;
+}
+
+/** Row lookups for incidentEdges: raw nodes by id (projIdx), supernodes by bid. */
+export function rawEdgeRow(bz) {
+  return id => { const n = bz.nodeIndexFull[id]; return n ? n.projIdx : -1; };
+}
+export function superEdgeRow(level) {
+  if (!level._snRow) {
+    level._snRow = new Map();
+    for (let i = 0; i < level.supernodes.length; i++) level._snRow.set(level.supernodes[i].bid, i);
+  }
+  const m = level._snRow;
+  return bid => { const r = m.get(bid); return r === undefined ? -1 : r; };
 }
 
 // ─── Node property helpers ───────────────────────────────────────────────────

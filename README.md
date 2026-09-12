@@ -125,7 +125,7 @@ The projection's collision behavior follows a validated closed-form law (χ²₂
 ## Architecture
 
 ```
-blitzoom-algo.js        Pure algorithms (MinHash, projection, blend, levels)
+blitzoom-algo.js        Pure algorithms (MinHash, projection, blend, levels, edge sampling)
 blitzoom-pipeline.js    Parsers, graph building, tokenization pipeline
 blitzoom-renderer.js    Canvas rendering (5-layer: edges → heatmap → hilite → circles → labels)
 blitzoom-canvas.js      Standalone embeddable component — canvas, interaction, rendering

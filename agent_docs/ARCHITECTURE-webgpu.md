@@ -30,9 +30,19 @@ await initGPU()
 If any step fails, `_gpuUnavailable = true`, GPU button shows "N/A", all
 operations use CPU. The probe completes before the first dataset load.
 
+`initGPU()` never rejects and never hangs: `requestAdapter` and
+`requestDevice` each race a 5 s timeout (`GPU_INIT_TIMEOUT_MS`) and a timeout
+resolves `false` (a device that arrives late is destroyed). This matters
+because the factory's init path awaits it, and `view.ready` plus every
+mutation wait on that path. Concurrent calls share one attempt; a failed
+attempt is retried on the next call. A pipeline-creation error destroys the
+device so a later call doesn't report a half-built device as ready.
+`destroyGPU()` also drops the blend cache, whose buffers belonged to the old
+device.
+
 For embedded views, `createBlitZoomView` accepts `autoGPU: true` (default) to
 auto-enable WebGPU when N×G > 2000. The factory returns synchronously; initial
-blend kicks off async (GPU probe → blend → render). GPU kicks in for the
+blend kicks off async (GPU probe → blend → render), tracked by `view.ready`. GPU kicks in for the
 initial blend and subsequent interactive changes once initialization completes.
 
 ## Projection: GPU vs CPU selection
@@ -77,13 +87,16 @@ WGSL shader (`WGSL` constant in blitzoom-gpu.js), workgroup size 256:
 
 ## Blend
 
-`gpuUnifiedBlend` is a drop-in replacement for `unifiedBlend`. Same signature,
-modifies nodes in place, runs quantization on CPU after GPU blend.
+`gpuUnifiedBlend` is a drop-in replacement for `unifiedBlend`: same arguments
+(`nodes, projBuf, groupNames, ...`) plus an optional trailing `topoGen` that keys
+the CSR cache. Modifies nodes in place, runs quantization on CPU after GPU blend.
+Bearings are supported: they rotate the property anchors, which are computed on
+the CPU before upload (the same place the CPU blend applies them).
 
 ### GPU blend pipeline
 
 ```
-CPU: compute property anchors from projections + effective weights
+CPU: compute property anchors from projBuf + effective weights (+ bearings)
 CPU: build CSR adjacency (adjOffsets, adjTargets)
 GPU: 5 passes of neighbor averaging with ping-pong buffers
 CPU: quantize (gaussianQuantize or normalizeAndQuantize)
@@ -234,7 +247,7 @@ async and properly awaited at every call site:
 **Blend buffers** are cached across blend calls via `getBlendCache(N, totalEdges)`. Invalidated when dataset changes (different N or edge count). The cache stores:
 - **GPU buffers**: `propAnchors` (interleaved px/py), `adjOffsets`/`adjTargets` (CSR), `posA`/`posB` (ping-pong), `params` (uniform), `read` (MAP_READ)
 - **Bind groups**: `bgAtoB`/`bgBtoA` — cached alongside buffers, only recreated on cache invalidation
-- **CSR arrays**: `csrOffsets`/`csrTargets` — CPU-side typed arrays cached to skip the ~200ms CSR rebuild on subsequent blends with the same dataset
+- **CSR arrays**: `csrOffsets`/`csrTargets` — CPU-side typed arrays cached to skip the ~200ms CSR rebuild on subsequent blends with the same dataset. Reused only while the node array (CSR indices are array positions), the `adjList` object, N, and the `topoGen` argument are all unchanged. `BlitZoomCanvas` passes `view._topoGen`, which `addNodes`/`removeNodes` bump, so an edge-only `addNodes` (same N, same arrays) still rebuilds. A rebuilt CSR sets `adjUploaded = false`, so it is re-uploaded even when N and the edge count match the existing GPU buffers.
 - **Adjacency upload flag**: `adjUploaded` — adjacency uploaded to GPU once per dataset
 
 Minimum buffer size: 256 bytes (GPU alignment requirement — smaller buffers cause silent bind group failures).

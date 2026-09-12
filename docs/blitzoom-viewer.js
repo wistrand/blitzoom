@@ -1251,15 +1251,11 @@ class BlitZoom {
       v.groupProjections[v.groupNames[i]] = buildGaussianProjection(PROJECTION_SEED_BASE + i, MINHASH_K);
     }
 
-    const G = groupNames.length;
-    v.nodes = nodeMeta.map((meta, i) => {
-      const projections = {};
-      for (let g = 0; g < G; g++) {
-        const off = (i * G + g) * 2;
-        projections[groupNames[g]] = [projBuf[off], projBuf[off + 1]];
-      }
-      return { ...meta, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-    });
+    // Projections stay in the worker's flat buffer; node i owns row i.
+    v.nodes = nodeMeta.map((meta, i) => ({ ...meta, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
+    v.projBuf = projBuf;
+    v._projRows = v.nodes.length;
+    v._topoGen++; // new topology: invalidates the GPU CSR cache and fast-mode sample
 
     v.nodeIndexFull = Object.fromEntries(v.nodes.map(n => [n.id, n]));
     v.edges = workerEdges;
@@ -1463,7 +1459,7 @@ class BlitZoom {
         }
         console.log(`[auto-tune] subsampled ${v.nodes.length} → ${tuneNodes.length} nodes`);
       }
-      const result = await autoTuneStrengths(tuneNodes, v.groupNames, tuneAdj, tuneIndex, {
+      const result = await autoTuneStrengths(tuneNodes, v.projBuf, v.groupNames, tuneAdj, tuneIndex, {
         strengths: true, alpha: true, quant: false,
         signal: this._tuneAbort.signal,
         onProgress: (info) => {
@@ -1484,6 +1480,28 @@ class BlitZoom {
     }
   }
 
+  /** Copy a re-run pipeline's projections into the view's buffer. Row i of
+   *  the result is v.nodes[i]; groups are matched by name. */
+  _copyProjections(result) {
+    const v = this.view;
+    const G = result.groupNames.length, vS = v.groupNames.length * 2;
+    const vg = result.groupNames.map(g => v.groupNames.indexOf(g));
+    // Row i of the result is v.nodes[i] (same source data, same buildGraph
+    // order). Guard the count anyway — reading past the result buffer would
+    // write undefined (i.e. NaN) into the view's projections.
+    const rows = Math.min(v.nodes.length, (result.projBuf.length / (G * 2)) | 0);
+    if (rows !== v.nodes.length) console.warn(`[BlitZoom] re-projection returned ${rows} rows for ${v.nodes.length} nodes; keeping the rest`);
+    for (let i = 0; i < rows; i++) {
+      const dst = v.nodes[i].projIdx * vS;
+      for (let g = 0; g < G; g++) {
+        if (vg[g] < 0) continue;
+        const src = (i * G + g) * 2;
+        v.projBuf[dst + vg[g] * 2] = result.projBuf[src];
+        v.projBuf[dst + vg[g] * 2 + 1] = result.projBuf[src + 1];
+      }
+    }
+  }
+
   /** Apply GPU projection to already-loaded data. No re-parse, no re-load. */
   async _applyGPUToCurrentData() {
     if (!this._lastEdgesText && !this._lastParsed) return;
@@ -1499,14 +1517,7 @@ class BlitZoom {
       const result = this._lastParsed
         ? await runPipelineFromObjectsGPU(this._lastParsed.nodes, this._lastParsed.edges, this._lastParsed.extraPropNames, projFn, v.projSeeds)
         : await runPipelineGPU(this._lastEdgesText, this._lastNodesText, projFn, v.projSeeds);
-      const G = result.groupNames.length;
-      for (let i = 0; i < v.nodes.length; i++) {
-        for (let g = 0; g < G; g++) {
-          const off = (i * G + g) * 2;
-          const p = v.nodes[i].projections[result.groupNames[g]];
-          if (p) { p[0] = result.projBuf[off]; p[1] = result.projBuf[off + 1]; }
-        }
-      }
+      this._copyProjections(result);
       v._quantStats = {};
       v.levels = new Array(ZOOM_LEVELS.length).fill(null);
       v._progressText = null;
@@ -1529,16 +1540,9 @@ class BlitZoom {
     v.showProgress('Re-projecting (CPU)...');
     try {
       const result = this._lastParsed
-        ? runPipelineFromObjects(this._lastParsed.nodes, this._lastParsed.edges, this._lastParsed.extraPropNames)
-        : runPipeline(this._lastEdgesText, this._lastNodesText);
-      const G = result.groupNames.length;
-      for (let i = 0; i < v.nodes.length; i++) {
-        for (let g = 0; g < G; g++) {
-          const off = (i * G + g) * 2;
-          const p = v.nodes[i].projections[result.groupNames[g]];
-          if (p) { p[0] = result.projBuf[off]; p[1] = result.projBuf[off + 1]; }
-        }
-      }
+        ? runPipelineFromObjects(this._lastParsed.nodes, this._lastParsed.edges, this._lastParsed.extraPropNames, v.projSeeds)
+        : runPipeline(this._lastEdgesText, this._lastNodesText, v.projSeeds);
+      this._copyProjections(result);
       v._quantStats = {};
       v._progressText = null;
       await this.rebuildProjections();
@@ -1740,7 +1744,7 @@ class BlitZoom {
         // label checkboxes synced via statechange → _syncControls
       }
       // Auto-tune bearings: closed-form trace maximization.
-      const bearings = autoTuneBearings(v.nodes, v.groupNames, result.strengths);
+      const bearings = autoTuneBearings(v.nodes, v.projBuf, v.groupNames, result.strengths);
       v.propBearings = bearings;
       // Seed search: collision-mass minimization for the dominant categorical
       // group (see agent_docs/RESEARCH-false-neighbor-validation.md).
@@ -1796,7 +1800,7 @@ class BlitZoom {
           }
           console.log(`[auto-tune] subsampled ${v.nodes.length} → ${tuneNodes.length} nodes`);
         }
-        const result = await autoTuneStrengths(tuneNodes, v.groupNames, tuneAdj, tuneIndex, {
+        const result = await autoTuneStrengths(tuneNodes, v.projBuf, v.groupNames, tuneAdj, tuneIndex, {
           strengths: true, alpha: true, quant: false,
           signal: this._tuneAbort.signal,
           onProgress: (info) => {

@@ -1,21 +1,12 @@
 // blitzoom-svg.js — SVG export for BlitZoom.
 
-import { RAW_LEVEL, ZOOM_LEVELS, buildLevel } from './blitzoom-algo.js';
+import { RAW_LEVEL, ZOOM_LEVELS, buildLevel, maxEdgesToDraw, sampleEdges, edgeEndpoints } from './blitzoom-algo.js';
 import { generateGroupColors } from './blitzoom-colors.js';
 
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 function scaleSize(val, bz) {
   return bz.sizeLog ? Math.log2(val + 1) : val;
-}
-
-function edgeHash(i) {
-  let h = (i * 2654435761) >>> 0;
-  return (h & 0x7fffffff) / 0x80000000;
-}
-
-function maxEdgesToDraw(nodeCount) {
-  return Math.min(5000, Math.max(200, nodeCount * 3));
 }
 
 // ─── Density heatmap as SVG contour bands ─────────────────────────────────────
@@ -388,12 +379,9 @@ export function exportSVG(bz, opts = {}) {
   if (edges && bz.edgeMode !== 'none') {
     const diag = Math.sqrt(W * W + H * H);
     const maxEdgeLen = diag * 1.2;
-    const maxEdgeLenSq = maxEdgeLen * maxEdgeLen;
     const fadeStart = diag * 0.25;
     const fadeStartSq = fadeStart * fadeStart;
     const fadeRange = maxEdgeLen - fadeStart;
-    const maxE = maxEdgesToDraw(allNodes.length);
-    const sampleRate = (isRaw ? bz.edges.length : snEdges.length) > maxE ? maxE / (isRaw ? bz.edges.length : snEdges.length) : 1;
     const edgeColor = isRaw ? [100, 100, 140] : [124, 106, 247];
     const maxAlpha = isRaw ? 0.25 : 0.4;
 
@@ -416,18 +404,16 @@ export function exportSVG(bz, opts = {}) {
     const edgeList = isRaw ? bz.edges : snEdges;
 
     parts.push(`<g fill="none">`);
-    let drawn = 0;
-    for (let i = 0; i < edgeList.length; i++) {
+    const ends = edgeEndpoints(edgeList, nodeMap, e => getNode(getSrc(e)), e => getNode(getDst(e)));
+    const { idx, count } = sampleEdges(edgeList, ends, bz.pan, rz, W, H, maxEdgesToDraw(allNodes.length));
+    for (let j = 0; j < count; j++) {
+      const i = idx[j];
       const e = edgeList[i];
-      const a = getNode(getSrc(e)), b = getNode(getDst(e));
-      if (!a || !b) continue;
+      const a = ends.a[i], b = ends.b[i];
       const ax = a.x * rz + bz.pan.x, ay = a.y * rz + bz.pan.y;
       const bx = b.x * rz + bz.pan.x, by = b.y * rz + bz.pan.y;
       const dx = ax - bx, dy = ay - by;
       const distSq = dx * dx + dy * dy;
-      if (distSq > maxEdgeLenSq) continue;
-      if (sampleRate < 1 && edgeHash(i) > sampleRate * (2 - distSq / maxEdgeLenSq)) continue;
-      if (++drawn > maxE) break;
       const distFade = distSq <= fadeStartSq ? 1 : Math.max(0, 1 - (Math.sqrt(distSq) - fadeStart) / fadeRange);
       const w = getWeight(e);
       const alpha = isRaw ? maxAlpha * distFade : Math.min(maxAlpha, 0.05 + w * 0.05) * distFade;

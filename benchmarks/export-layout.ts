@@ -40,21 +40,13 @@ const nodesText = opts.nodes ? await Deno.readTextFile(opts.nodes) : null;
 const result = runPipeline(edgesText, nodesText);
 const { nodeArray, groupNames, projBuf } = result;
 
-// Build node objects with projections (same as blitzoom-canvas.js _hydrateAndLink)
-const G = groupNames.length;
 const groupProjections = {};
 for (let i = 0; i < groupNames.length; i++) {
   groupProjections[groupNames[i]] = buildGaussianProjection(2001 + i, MINHASH_K);
 }
 
-const nodes = nodeArray.map((meta, i) => {
-  const projections = {};
-  for (let g = 0; g < G; g++) {
-    const off = (i * G + g) * 2;
-    projections[groupNames[g]] = [projBuf[off], projBuf[off + 1]];
-  }
-  return { ...meta, projections, px: 0, py: 0, gx: 0, gy: 0 };
-});
+// Build node objects: projIdx = row into projBuf
+const nodes = nodeArray.map((meta, i) => ({ ...meta, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
 // Build adjacency list
 const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
@@ -76,18 +68,18 @@ for (const g of groupNames) propStrengths[g] = opts.strengths[g] ?? 0;
 let propBearings = null;
 if (opts.autotune) {
   const t0 = performance.now();
-  const tuneResult = await autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFull, {
+  const tuneResult = await autoTuneStrengths(nodes, projBuf, groupNames, adjList, nodeIndexFull, {
     strengths: true, alpha: true, quant: true,
   });
   for (const g of groupNames) propStrengths[g] = tuneResult.strengths[g] ?? 0;
   opts.alpha = tuneResult.alpha;
   opts.quant = tuneResult.quantMode;
-  propBearings = autoTuneBearings(nodes, groupNames, propStrengths);
+  propBearings = autoTuneBearings(nodes, projBuf, groupNames, propStrengths);
   console.log(`  Auto-tune: ${Math.round(performance.now() - t0)}ms, score=${tuneResult.score.toFixed(3)}`);
 }
 
 // Blend + quantize
-unifiedBlend(nodes, groupNames, propStrengths, opts.alpha, adjList, nodeIndexFull, 5, opts.quant, {}, propBearings);
+unifiedBlend(nodes, projBuf, groupNames, propStrengths, opts.alpha, adjList, nodeIndexFull, 5, opts.quant, {}, propBearings);
 
 // Export
 const lines = ['# id\tpx\tpy\tgx\tgy'];

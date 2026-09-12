@@ -424,9 +424,8 @@ class BzControls extends HTMLElement {
       }
       // Coalesce bursts of change events (e.g. _zeroAll dispatching N+1
       // events synchronously) into a single endFastRebuild via microtask.
-      // Without this, only the first event's blend runs (the rest hit the
-      // _blending guard and no-op), leaving propStrengths fully zeroed but
-      // the rendered layout reflecting only the first group's change.
+      // One blend covers the whole burst instead of a blend for the first
+      // event plus a coalesced follow-up for the rest.
       if (!this._bindEndRebuildPending) {
         this._bindEndRebuildPending = true;
         queueMicrotask(() => {
@@ -462,7 +461,7 @@ class BzControls extends HTMLElement {
           tuneAbort = new AbortController();
           view.showProgress('Auto-tuning...');
           const { autoTuneStrengths, autoTuneBearings } = await import('./blitzoom-utils.js');
-          const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, {
+          const result = await autoTuneStrengths(view.nodes, view.projBuf, view.groupNames, view.adjList, view.nodeIndexFull, {
             strengths: true, alpha: true, signal: tuneAbort.signal,
             onProgress: (info) => {
               const pct = Math.round(100 * info.step / Math.max(1, info.total));
@@ -475,7 +474,7 @@ class BzControls extends HTMLElement {
           view.smoothAlpha = result.alpha;
           if (view.quantMode !== 'norm') view.quantMode = result.quantMode;
           view._quantStats = {};
-          const bearings = autoTuneBearings(view.nodes, view.groupNames, result.strengths);
+          const bearings = autoTuneBearings(view.nodes, view.projBuf, view.groupNames, result.strengths);
           view.propBearings = bearings;
           view.levels = new Array(view.levels.length).fill(null);
           await view._blend();

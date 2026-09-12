@@ -184,13 +184,57 @@ fn main(@builtin(global_invocation_id) gid: vec3u) {
 
 // ─── Initialization ──────────────────────────────────────────────────────────
 
-export async function initGPU() {
-  if (device) return true;
-  if (!navigator.gpu) { console.log('[GPU] navigator.gpu not available'); return false; }
-  const adapter = await navigator.gpu.requestAdapter();
+// requestAdapter/requestDevice can hang on some drivers. Callers await
+// initGPU on the init path (factory → view.ready → mutations), so a hang
+// must turn into "no GPU" instead of blocking forever.
+const GPU_INIT_TIMEOUT_MS = 5000;
+const TIMED_OUT = Symbol('timeout');
+let _initPromise = null;
+
+/** Resolve to the promise's value, or TIMED_OUT after `ms`. */
+function withTimeout(promise, ms) {
+  let timer;
+  const t = new Promise(r => { timer = setTimeout(() => r(TIMED_OUT), ms); });
+  return Promise.race([promise, t]).finally(() => clearTimeout(timer));
+}
+
+/**
+ * Acquire a WebGPU device and build the projection pipeline. Resolves true on
+ * success; false if WebGPU is unavailable, errors, or doesn't answer within
+ * GPU_INIT_TIMEOUT_MS. Never rejects. Concurrent calls share one attempt; a
+ * failed attempt is retried on the next call.
+ */
+export function initGPU() {
+  if (device) return Promise.resolve(true);
+  if (!_initPromise) {
+    _initPromise = _initGPU()
+      .catch(err => {
+        console.warn('[GPU] Init failed:', err?.message || err);
+        // A throw after the device was acquired (e.g. shader compilation) must
+        // not leave a device without a pipeline — initGPU would then report
+        // ready and every GPU call would throw.
+        if (device && !pipeline) { try { device.destroy(); } catch {} device = null; }
+        return false;
+      })
+      .then(ok => { if (!ok) _initPromise = null; return ok; });
+  }
+  return _initPromise;
+}
+
+async function _initGPU() {
+  if (typeof navigator === 'undefined' || !navigator.gpu) { console.log('[GPU] navigator.gpu not available'); return false; }
+  const adapter = await withTimeout(navigator.gpu.requestAdapter(), GPU_INIT_TIMEOUT_MS);
+  if (adapter === TIMED_OUT) { console.warn(`[GPU] requestAdapter timed out after ${GPU_INIT_TIMEOUT_MS}ms`); return false; }
   if (!adapter) { console.log('[GPU] No GPU adapter found'); return false; }
   try { const info = adapter.info || {}; console.log('[GPU] Adapter:', info.vendor || 'unknown', info.architecture || '', info.device || ''); } catch {}
-  device = await adapter.requestDevice();
+  const devicePromise = adapter.requestDevice();
+  const dev = await withTimeout(devicePromise, GPU_INIT_TIMEOUT_MS);
+  if (dev === TIMED_OUT) {
+    devicePromise.then(d => d.destroy(), () => {}); // release a late device
+    console.warn(`[GPU] requestDevice timed out after ${GPU_INIT_TIMEOUT_MS}ms`);
+    return false;
+  }
+  device = dev;
   console.log('[GPU] Device acquired, maxStorageBuffersPerShaderStage:', device.limits.maxStorageBuffersPerShaderStage);
 
   device.pushErrorScope('validation');
@@ -204,7 +248,11 @@ export async function initGPU() {
     compute: { module, entryPoint: 'main' },
   });
   const err = await device.popErrorScope();
-  if (err) { console.error('Pipeline creation error:', err.message); return false; }
+  if (err) {
+    console.error('Pipeline creation error:', err.message);
+    device.destroy(); device = null; pipeline = null; // so initGPU doesn't report a half-built device as ready
+    return false;
+  }
   return true;
 }
 
@@ -477,18 +525,35 @@ async function ensureBlendPipeline() {
 /**
  * GPU topology blend. Matches CPU unifiedBlend (property anchor + neighbor avg).
  *
- * @param {object[]} nodes - node array with .projections, .id, .degree
+ * @param {object[]} nodes - node array with .projIdx, .id, .degree
+ * @param {Float64Array} projBuf - flat projections (row stride groupNames.length * 2)
  * @param {string[]} groupNames
  * @param {object} propStrengths - { groupName: strength }
  * @param {number} smoothAlpha - topology weight 0..1
  * @param {object} adjList - { nodeId: [neighborId, ...] }
  * @param {object} nodeIndexFull - { nodeId: node }
  * @param {number} passes
+ * @param {object|null} [propBearings]
+ * @param {number} [topoGen=0] - topology generation; callers that mutate
+ *   adjList in place (e.g. BlitZoomCanvas via addNodes/removeNodes) bump it
+ *   so the cached CSR adjacency is rebuilt
  * @returns {Promise<{px: Float32Array, py: Float32Array}>} blended positions
  */
-// Cached GPU buffers — reused across blend calls for the same dataset.
-// Invalidated when N or edge count changes (new dataset load).
+// Cached GPU buffers — reused across blend calls while N and the directed
+// edge count are unchanged. The CSR adjacency held alongside has its own,
+// stricter validity check (see gpuBlend).
 let _blendCache = null;
+let _anchorBuf = new Float32Array(0);
+
+// Identity tokens for cache keys. The cache compares tokens rather than
+// holding the node array / adjList, so a replaced dataset can be collected.
+const _objIds = new WeakMap();
+let _nextObjId = 1;
+function objId(o) {
+  let id = _objIds.get(o);
+  if (id === undefined) { id = _nextObjId++; _objIds.set(o, id); }
+  return id;
+}
 
 function getBlendCache(N, totalEdges) {
   if (_blendCache && _blendCache.N === N && _blendCache.totalEdges === totalEdges) return _blendCache;
@@ -511,7 +576,7 @@ function getBlendCache(N, totalEdges) {
   return _blendCache;
 }
 
-export async function gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, propBearings = null) {
+export async function gpuBlend(nodes, projBuf, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, propBearings = null, topoGen = 0) {
   await ensureBlendPipeline();
   const prof = _gpuBlendProfiling;
   const t_total = prof ? performance.now() : 0;
@@ -544,24 +609,25 @@ export async function gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, ad
     }
   }
 
-  const propAnchorsArr = new Float32Array(N * 2);
+  const S = G * 2;
+  const effWArr = new Float64Array(G);
+  for (let gi = 0; gi < G; gi++) effWArr[gi] = effW[groupNames[gi]];
+  // Reused across calls; writeBuffer copies it before returning.
+  if (_anchorBuf.length < N * 2) _anchorBuf = new Float32Array(N * 2);
+  const propAnchorsArr = _anchorBuf.subarray(0, N * 2);
   for (let i = 0; i < N; i++) {
-    const nd = nodes[i];
+    const base = nodes[i].projIdx * S;
     let px = 0, py = 0;
     if (hasAnyBearing) {
       for (let gi = 0; gi < G; gi++) {
-        const g = groupNames[gi];
-        const p = nd.projections[g];
-        if (p) {
-          const gx = p[0], gy = p[1];
-          px += (gx * cosBearing[gi] - gy * sinBearing[gi]) * effW[g];
-          py += (gx * sinBearing[gi] + gy * cosBearing[gi]) * effW[g];
-        }
+        const gx = projBuf[base + gi * 2], gy = projBuf[base + gi * 2 + 1];
+        px += (gx * cosBearing[gi] - gy * sinBearing[gi]) * effWArr[gi];
+        py += (gx * sinBearing[gi] + gy * cosBearing[gi]) * effWArr[gi];
       }
     } else {
-      for (const g of groupNames) {
-        const p = nd.projections[g];
-        if (p) { px += p[0] * effW[g]; py += p[1] * effW[g]; }
+      for (let gi = 0; gi < G; gi++) {
+        px += projBuf[base + gi * 2] * effWArr[gi];
+        py += projBuf[base + gi * 2 + 1] * effWArr[gi];
       }
     }
     propAnchorsArr[i * 2] = px / propTotal;
@@ -569,15 +635,22 @@ export async function gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, ad
   }
   const anchorComputeMs = prof ? performance.now() - t_anchor : 0;
 
-  // ── CSR adjacency (cached — only rebuilt when dataset changes) ────────
+  // ── CSR adjacency (cached while topology and node order are unchanged) ─
+  // Valid only for the same node array (CSR indices are array positions),
+  // the same adjList object, the same N, and the same topology generation —
+  // an edge-only addNodes changes none of the first three.
   const t_csr = prof ? performance.now() : 0;
 
   let totalEdges, adjOffsetsArr, adjTargetsArr;
-  if (_blendCache && _blendCache.N === N && _blendCache.csrOffsets) {
+  const c = _blendCache;
+  const nodesId = objId(nodes), adjId = objId(adjList);
+  const csrValid = c && c.csrOffsets && c.N === N && c.csrNodesId === nodesId
+    && c.csrAdjId === adjId && c.topoGen === topoGen;
+  if (csrValid) {
     // Reuse cached CSR from previous blend (same nodes/edges, different strengths)
-    totalEdges = _blendCache.totalEdges;
-    adjOffsetsArr = _blendCache.csrOffsets;
-    adjTargetsArr = _blendCache.csrTargets;
+    totalEdges = c.totalEdges;
+    adjOffsetsArr = c.csrOffsets;
+    adjTargetsArr = c.csrTargets;
   } else {
     const idToIdx = {};
     for (let i = 0; i < N; i++) idToIdx[nodes[i].id] = i;
@@ -611,9 +684,16 @@ export async function gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, ad
   const t_upload = prof ? performance.now() : 0;
 
   const cache = getBlendCache(N, totalEdges);
-  // Store CSR arrays in cache for reuse on subsequent blends
-  cache.csrOffsets = adjOffsetsArr;
-  cache.csrTargets = adjTargetsArr;
+  if (!csrValid) {
+    // Store the new CSR for reuse and force its upload — getBlendCache keeps
+    // the old buffers (adjUploaded = true) when N and totalEdges are unchanged.
+    cache.csrOffsets = adjOffsetsArr;
+    cache.csrTargets = adjTargetsArr;
+    cache.csrNodesId = nodesId;
+    cache.csrAdjId = adjId;
+    cache.topoGen = topoGen;
+    cache.adjUploaded = false;
+  }
   const b = cache.bufs;
 
   device.queue.writeBuffer(b.propAnchors, 0, propAnchorsArr);
@@ -737,8 +817,8 @@ export async function gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, ad
  * GPU-accelerated drop-in replacement for unifiedBlend.
  * Same signature: modifies nodes[i].px, .py, .gx, .gy in place.
  */
-export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null, projSeeds = null) {
-  const result = await gpuBlend(nodes, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, propBearings);
+export async function gpuUnifiedBlend(nodes, projBuf, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, quantMode, quantStats, propBearings = null, projSeeds = null, topoGen = 0) {
+  const result = await gpuBlend(nodes, projBuf, groupNames, propStrengths, smoothAlpha, adjList, nodeIndexFull, passes, propBearings, topoGen);
 
   // Apply blended positions to nodes
   for (let i = 0; i < nodes.length; i++) {
@@ -762,6 +842,8 @@ export async function gpuUnifiedBlend(nodes, groupNames, propStrengths, smoothAl
 
 export function destroyGPU() {
   if (device) { device.destroy(); device = null; pipeline = null; blendPipeline = null; }
+  _blendCache = null; // its buffers belonged to the destroyed device
+  _initPromise = null;
 }
 
 // ─── Profiling ──────────────────────────────────────────────────────────────

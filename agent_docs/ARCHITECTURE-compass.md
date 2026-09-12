@@ -86,7 +86,7 @@ Dead zones: ±5° angular snap to 0 bearing near home angle. 8% radial snap to 0
 
 No JavaScript needed. The compass:
 
-1. Listens for the `ready` event on the target `<bz-graph>`
+1. Binds immediately if the target `<bz-graph>` already has a view, otherwise listens for its `ready` event (fired after the initial layout, including auto-tune)
 2. Pulls groups, strengths, bearings, and colors from `el.view`
 3. Wires `input` events → updates `view.propStrengths` / `view.propBearings`, rAF-gated re-blend
 4. Monkey-patches `view.render` to detect `_blendGen` changes and sync back (with equality check to prevent loops)

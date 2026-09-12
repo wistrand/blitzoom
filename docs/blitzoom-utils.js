@@ -95,7 +95,7 @@ const yieldFrame = typeof requestAnimationFrame !== 'undefined'
   ? () => new Promise(resolve => requestAnimationFrame(resolve))
   : () => new Promise(resolve => setTimeout(resolve, 0));
 
-export async function autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFull, opts = {}) {
+export async function autoTuneStrengths(nodes, projBuf, groupNames, adjList, nodeIndexFull, opts = {}) {
   const t0 = performance.now();
   const doStrengths = (opts.strengths ?? opts.weights) !== false;
   const doAlpha = opts.alpha !== false;
@@ -266,7 +266,7 @@ export async function autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFul
     const key = cacheKey(strengths, alpha);
     const cached = scoreCache.get(key);
     if (cached) { step++; return cached; }
-    blendFn(nodes, groupNames, strengths, alpha, adjList, nodeIndexFull, TUNE_PASSES, 'gaussian', {});
+    blendFn(nodes, projBuf, groupNames, strengths, alpha, adjList, nodeIndexFull, TUNE_PASSES, 'gaussian', {});
     blends++;
     for (let i = 0; i < nodes.length; i++) { savedPx[i] = nodes[i].px; savedPy[i] = nodes[i].py; }
     const penalty = fnrFactor(strengths);
@@ -462,7 +462,7 @@ export async function autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFul
   }
 
   // Final blend with best params
-  unifiedBlend(nodes, groupNames, bestStrengths, bestAlpha, adjList, nodeIndexFull, 5, bestQuant, {});
+  unifiedBlend(nodes, projBuf, groupNames, bestStrengths, bestAlpha, adjList, nodeIndexFull, 5, bestQuant, {});
   if (onProgress) onProgress({ phase: 'done', step: totalEstimate, total: totalEstimate, score: bestScore });
 
   // Pick label properties.
@@ -523,7 +523,7 @@ export async function autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFul
 // Two coordinate-descent passes over groups. Cost: O(N·G) per pass — same as
 // one blend call. Returns a bearings object {groupName: radians}.
 
-export function autoTuneBearings(nodes, groupNames, propStrengths) {
+export function autoTuneBearings(nodes, projBuf, groupNames, propStrengths) {
   const G = groupNames.length;
   if (G < 2) return {};
 
@@ -554,14 +554,15 @@ export function autoTuneBearings(nodes, groupNames, propStrengths) {
   // Per-group weighted projection arrays (unrotated). ux[gi][i], uy[gi][i].
   const ux = new Array(G);
   const uy = new Array(G);
+  const S = G * 2;
   for (let gi = 0; gi < G; gi++) {
     const gxArr = new Float64Array(N);
     const gyArr = new Float64Array(N);
-    const g = groupNames[gi];
     const w = effW[gi] / propTotal;
     for (let i = 0; i < N; i++) {
-      const p = nodes[i].projections[g];
-      if (p) { gxArr[i] = p[0] * w; gyArr[i] = p[1] * w; }
+      const o = nodes[i].projIdx * S + gi * 2;
+      gxArr[i] = projBuf[o] * w;
+      gyArr[i] = projBuf[o + 1] * w;
     }
     ux[gi] = gxArr;
     uy[gi] = gyArr;

@@ -86,8 +86,9 @@ Works at both raw level (`bz.nodes`) and aggregated levels (`level.supernodes`).
 
 ## Edge rendering
 
-- **Sampling**: deterministic hash-based (`edgeHash`) with distance bias — closer
-  edges are more likely to survive sampling. Cap at `min(5000, max(200, N*3))`.
+- **Sampling**: `sampleEdges` from [blitzoom-algo.js](../docs/blitzoom-algo.js), shared with
+  the Canvas 2D and WebGL renderers — viewport-culled, deterministic hash-based
+  with a 2:1 short-edge bias, expected count `min(5000, max(200, N*3))`.
 - **Distance fade**: full opacity within 25% of diagonal, linear fade to zero at 120%.
 - **Curve mode**: cubic Bézier with perpendicular offset (30%/70% control points),
   matching the canvas `drawCurveEdge` visual.
@@ -198,8 +199,6 @@ corners). Shows up to 12 entries sorted by frequency, with `+N more` overflow.
 | ----------------------- | ---------------------------------------------- |
 | `esc(s)`                | XML-escape for text content                    |
 | `scaleSize(val, bz)`    | Applies log2 scaling when `bz.sizeLog` is true |
-| `edgeHash(i)`           | Deterministic [0,1) hash for edge sampling     |
-| `maxEdgesToDraw(N)`     | Edge count cap: `clamp(N*3, 200, 5000)`        |
 | `traceThresholdRegions` | Moore neighbor contour tracing                 |
 | `simplifyRDP`           | Ramer-Douglas-Peucker line simplification      |
 | `smoothChaikin`         | Chaikin corner-cutting subdivision             |
@@ -211,7 +210,7 @@ corners). Shows up to 12 entries sorted by frequency, with `+N more` overflow.
 - Density heatmap is an approximation (contour bands vs per-pixel raster).
   Fine density gradients visible on canvas may merge or disappear in SVG.
 - No WebGL equivalent — always uses CPU-side node positions.
-- Edge sampling is deterministic but may differ from the canvas frame's
-  adaptive sampling (which also considers frame rate).
+- Edge sampling uses the same `sampleEdges` call as the canvas, so the exported
+  edge set matches the frame for the same view state.
 - SVG file size grows with edge count and contour complexity. Large graphs
   (>5K nodes) can produce multi-MB SVGs.

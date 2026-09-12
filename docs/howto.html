@@ -231,7 +231,7 @@
   { initialLevel: 3, heatmapMode: <span class="string">'density'</span>, showLegend: true }
 );</pre>
 
-<p>That parses the data, runs the full MinHash + projection + blend pipeline, and renders an interactive canvas with pan, zoom, click-to-select, and scroll-to-zoom-level. Here it is with the Epstein dataset:</p>
+<p>That parses the data, runs the full MinHash + projection + blend pipeline, and renders an interactive canvas with pan, zoom, click-to-select, and scroll-to-zoom-level. Parsing and projection run before the call returns; the blend and first render run right after, on the main thread. <code>await view.ready</code> resolves once the laid-out graph has rendered. Here it is with the Epstein dataset:</p>
 
 <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);margin:24px 0">
   <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">Epstein network. Scroll to zoom. Drag to pan. Click to select.</div>
@@ -342,7 +342,7 @@ eve	Eve	management	director	12</pre>
   strengths: { group: 5, lang: 8 },
 });</pre>
 
-<p>Only <code>id</code> is required. <code>group</code> defaults to <code>"unknown"</code> and <code>label</code> defaults to the node's <code>id</code>. Any other property becomes an extra property group. Numeric values (like <code>exp</code>) get multi-resolution tokenization automatically.</p>
+<p>Only <code>id</code> is required. <code>group</code> defaults to <code>"unknown"</code> and <code>label</code> defaults to the node's <code>id</code>. Any other property becomes an extra property group; keys are collected from every node, and a node without a key gets a neutral projection for that group. Numeric values (like <code>exp</code>) get multi-resolution tokenization automatically. An edge may carry a <code>type</code> for graphs with edge types.</p>
 
 <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);margin:24px 0">
   <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim)">8 nodes from JS objects. No file parsing.</div>
@@ -376,9 +376,9 @@ eve	Eve	management	director	12</pre>
 &lt;/script&gt;
 </pre>
 
-<p>The <code>await g.ready</code> Promise resolves once the build completes — modeled on <code>document.fonts.ready</code> and <code>navigator.serviceWorker.ready</code>. Use it from any async function; it works regardless of when you read it (before or after the build finishes). The legacy <code>addEventListener('ready', ...)</code> shape still works.</p>
+<p>The <code>await g.ready</code> Promise resolves once the initial layout has been blended and rendered (after auto-tune, if enabled) — modeled on <code>document.fonts.ready</code> and <code>navigator.serviceWorker.ready</code>. Use it from any async function; it works regardless of when you read it (before or after the build finishes). The legacy <code>addEventListener('ready', ...)</code> shape still works.</p>
 
-<p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly — required when streaming many batches in a loop. A periodic full rebuild triggers automatically after <code>rebuildThreshold × originalN</code> cumulative inserts to refresh stale numeric bins and topology tokens; the <code>incremental</code> preset disables this entirely (sets the threshold to <code>Infinity</code>) since norm projections are deterministic per-node and rebuilds are unnecessary.</p>
+<p>All three methods animate by default (existing items lerp to new positions, new items fade in). Pass <code>{ animate: false }</code> to snap instantly — required when streaming many batches in a loop. Topology groups (<code>structure</code>, <code>neighbors</code>) are re-projected on every node whose degree or neighbors change: new nodes, endpoints of added or removed edges, and neighbors of a node whose <code>group</code> changes. A periodic full rebuild triggers automatically after <code>rebuildThreshold × originalN</code> cumulative inserts to refresh numeric bins; the <code>incremental</code> preset disables this entirely (sets the threshold to <code>Infinity</code>) so existing positions never shift from a bin recompute.</p>
 
 <p>Each preset default can still be overridden by passing the matching attribute alongside <code>incremental</code>. For example, <code>incremental rebuild-threshold="0.5"</code> opts back into periodic rebuilds at 50% growth while keeping the rest of the preset.</p>
 
@@ -396,7 +396,7 @@ eve	Eve	management	director	12</pre>
 
 <p>The first <code>addNodes</code> call into an empty graph runs a <strong>schema bootstrap</strong>: it derives the property-group names (<code>category</code>, <code>block</code>, etc.) from the first batch's node fields, builds projection matrices for them, computes numeric bins, and applies any <code>strengths</code> you set via attributes. The schema is then locked in.</p>
 
-<p><strong>Limitation:</strong> property keys not present in the first batch are silently dropped on subsequent batches — same as the existing static-build behavior. Include at least one representative node with every field you'll need in the first batch. For datasets where every node has the same fields (the typical case), this is invisible.</p>
+<p><strong>Limitation:</strong> property keys not present in the first batch are silently dropped on subsequent batches. Include at least one representative node with every field you'll need in the first batch. For datasets where every node has the same fields (the typical case), this is invisible.</p>
 
 <p><strong>Why norm mode?</strong> There's a fundamental tradeoff: you can't have data-independent scale, optimal grid utilization, <em>and</em> zero displacement on insertion. Gaussian adapts its scale to the data (best grids, but every node shifts when new data arrives). Norm uses a fixed scale derived from the projection matrices (stable positions, but 5-30% worse grid utilization on datasets with low property diversity). Use <code>norm</code> for incremental/streaming use cases; use <code>gaussian</code> for static datasets where you load once and explore.</p>
 
@@ -434,6 +434,7 @@ el.addEventListener(<span class="string">'nodesupdated'</span>, e =&gt; console.
 <span class="keyword">const</span> view = <span class="fn">createBlitZoomFromGraph</span>(canvas,
   [{id: <span class="string">'a'</span>, group: <span class="string">'x'</span>}], [], { incremental: <span class="keyword">true</span> }
 );
+<span class="keyword">await</span> view.ready; <span class="comment">// initial blend + layout + render done</span>
 
 <span class="keyword">await</span> view.<span class="fn">addNodes</span>([{id: <span class="string">'b'</span>, group: <span class="string">'y'</span>}], [{src: <span class="string">'a'</span>, dst: <span class="string">'b'</span>}]);
 <span class="keyword">await</span> view.<span class="fn">updateNodes</span>([{id: <span class="string">'b'</span>, group: <span class="string">'z'</span>}]);
@@ -598,7 +599,8 @@ view.<span class="fn">setOptions</span>({
 });
 
 <span class="comment">// view is returned synchronously — usable immediately</span>
-<span class="comment">// auto-tune runs async and re-renders when done</span></pre>
+<span class="comment">// auto-tune runs async and re-renders when done</span>
+<span class="keyword">await</span> view.ready; <span class="comment">// resolves after auto-tune + the tuned blend + first render</span></pre>
 
 <p>Control which parameters are tuned:</p>
 
@@ -618,7 +620,7 @@ view.<span class="fn">setOptions</span>({
 <pre><span class="keyword">import</span> { autoTuneStrengths } <span class="keyword">from</span> <span class="string">'./blitzoom.js'</span>;
 
 <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="fn">autoTuneStrengths</span>(
-  view.nodes, view.groupNames, view.adjList, view.nodeIndexFull,
+  view.nodes, view.projBuf, view.groupNames, view.adjList, view.nodeIndexFull,
   {
     weights: <span class="keyword">true</span>, alpha: <span class="keyword">true</span>, quant: <span class="keyword">true</span>,
     <span class="fn">onProgress</span>(info) {
@@ -693,16 +695,9 @@ Deno.writeTextFileSync(<span class="string">'graph.svg'</span>, svg);</pre>
 console.log(result.nodeArray.length, <span class="string">'nodes'</span>);
 console.log(result.groupNames);  <span class="comment">// ['group', 'label', 'structure', ...]</span>
 
-<span class="comment">// Hydrate nodes with projections</span>
-<span class="keyword">const</span> G = result.groupNames.length;
-<span class="keyword">const</span> nodes = result.nodeArray.map((n, i) => {
-  <span class="keyword">const</span> projections = {};
-  <span class="keyword">for</span> (<span class="keyword">let</span> g = 0; g < G; g++) {
-    <span class="keyword">const</span> off = (i * G + g) * 2;
-    projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-  }
-  <span class="keyword">return</span> { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-});
+<span class="comment">// Hydrate nodes: projIdx is the node's row in result.projBuf</span>
+<span class="comment">// (group g of row i at projBuf[(i * G + g) * 2], [+1])</span>
+<span class="keyword">const</span> nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
 
 <span class="comment">// Build adjacency</span>
 <span class="keyword">const</span> nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
@@ -717,7 +712,7 @@ console.log(result.groupNames);  <span class="comment">// ['group', 'label', 'st
 <span class="comment">// Blend with custom strengths</span>
 <span class="keyword">const</span> strengths = { group: 5, edgetype: 8 };
 <span class="keyword">for</span> (<span class="keyword">const</span> g <span class="keyword">of</span> result.groupNames) strengths[g] ??= 1;
-<span class="fn">unifiedBlend</span>(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, <span class="string">'rank'</span>);
+<span class="fn">unifiedBlend</span>(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, <span class="string">'rank'</span>);
 
 <span class="comment">// Build a zoom level and inspect supernodes</span>
 <span class="keyword">const</span> level = <span class="fn">buildLevel</span>(4, nodes, result.edges, nodeIndex,
@@ -752,7 +747,7 @@ console.log(biggest.cachedLabel, biggest.members.length, <span class="string">'m
 
 <ul style="margin:12px 0 16px 20px;font-size:15px;line-height:1.7">
   <li><strong>Disable heatmap</strong> for graphs over ~50K nodes: <code>heatmapMode: 'off'</code>. Density heatmap is the most expensive render pass.</li>
-  <li><strong>Use <code>edgeMode: 'none'</code></strong> to skip edge rendering entirely. Edge drawing is O(visible edges) and can dominate frame time at high zoom levels.</li>
+  <li><strong>Use <code>edgeMode: 'none'</code></strong> to skip edge rendering entirely. Every frame scans the full edge list to cull edges to the viewport (array reads over cached endpoints), then draws at most 5,000; on graphs with ~1M edges the scan can dominate frame time.</li>
   <li><strong>Enable WebGL</strong> with <code>webgl: true</code> to offload circle, edge, and heatmap geometry to the GPU via instanced rendering.</li>
   <li><strong>Enable GPU pipeline</strong> with <code>useGPU: true</code> to run projection and blend on the GPU via WebGPU compute shaders. This is the biggest win for pipeline time on very large graphs.</li>
   <li><strong>Hierarchical aggregation</strong> does the heavy lifting: at lower zoom levels, thousands of nodes collapse into a few hundred supernodes. Frame time depends on visible supernodes, not total graph size.</li>
@@ -1050,16 +1045,22 @@ compass.addEventListener(<span class="string">'input'</span>, e =&gt; {
 <table>
   <tr><th>File</th><th>Role</th></tr>
   <tr><td><code>blitzoom.js</code></td><td>Public API entrypoint (recommended import)</td></tr>
-  <tr><td><code>blitzoom-canvas.js</code></td><td>Canvas component, <code>createBlitZoomView()</code> factory</td></tr>
-  <tr><td><code>blitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization</td></tr>
+  <tr><td><code>blitzoom-canvas.js</code></td><td><code>BlitZoomCanvas</code> component</td></tr>
+  <tr><td><code>blitzoom-factory.js</code></td><td><code>createBlitZoomView()</code>, <code>createBlitZoomFromGraph()</code> factories</td></tr>
+  <tr><td><code>blitzoom-mutations.js</code></td><td><code>addNodes</code> / <code>removeNodes</code> / <code>updateNodes</code></td></tr>
+  <tr><td><code>blitzoom-algo.js</code></td><td>MinHash, projection, blend, quantization, edge sampling</td></tr>
   <tr><td><code>blitzoom-pipeline.js</code></td><td>SNAP parsing, graph building, tokenization</td></tr>
+  <tr><td><code>blitzoom-parsers.js</code></td><td>CSV, D3, JGF, GraphML, GEXF, Cytoscape, STIX import (<code>parseAny</code>)</td></tr>
+  <tr><td><code>stix2snap.js</code></td><td>STIX 2.1 bundle parser (used by <code>parseAny</code>)</td></tr>
   <tr><td><code>blitzoom-renderer.js</code></td><td>Canvas 2D rendering, hit testing, layout</td></tr>
   <tr><td><code>blitzoom-utils.js</code></td><td>Auto-tune optimizer</td></tr>
+  <tr><td><code>blitzoom-fnr.js</code></td><td>False-neighbor rate estimator</td></tr>
   <tr><td><code>blitzoom-gl-renderer.js</code></td><td>WebGL2 instanced rendering</td></tr>
   <tr><td><code>blitzoom-gpu.js</code></td><td>WebGPU compute acceleration</td></tr>
   <tr><td><code>blitzoom-svg.js</code></td><td>SVG export (<code>exportSVG</code>, <code>createSVGView</code>)</td></tr>
   <tr><td><code>blitzoom-colors.js</code></td><td>Color schemes (vivid, viridis, plasma, etc.)</td></tr>
   <tr><td><code>bz-graph.js</code></td><td><code>&lt;bz-graph&gt;</code> web component</td></tr>
+  <tr><td><code>bz-compass.js</code>, <code>bz-controls.js</code></td><td><code>&lt;bz-compass&gt;</code> and <code>&lt;bz-controls&gt;</code> companion components</td></tr>
   <tr><td><code>dist/blitzoom.bundle.js</code></td><td>Minified single-file bundle (all of the above)</td></tr>
 </table>
 

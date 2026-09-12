@@ -28,7 +28,7 @@ Cost: `cos/sin` looked up once per group per blend, 2 mul + 1 add per (node, gro
 - `this.propBearings = {}` — per-group rotation in radians
 - `setBearing(group, radians)` — sets one group, triggers re-blend + render
 - `bulkSetBearings(obj)` — sets multiple without per-group re-blending (caller triggers blend)
-- GPU fallback: when bearings are set, `_blend()` falls back to CPU (WebGPU compute shader lacks rotation support)
+- GPU blend: bearings rotate the per-group property anchors, which `gpuBlend` computes on the CPU before upload, so the GPU path supports them directly (the shader only averages neighbors and never sees rotation).
 
 ### URL hash persistence
 
@@ -69,6 +69,6 @@ See [ARCHITECTURE-auto-tune.md](ARCHITECTURE-auto-tune.md) for full details.
 
 - Bearings are purely a blend-time operation — no re-projection needed.
 - `_quantStats` is cleared on every blend-triggering change (strengths, bearings, alpha) — layouts are path-independent.
-- GPU compute blend falls back to CPU when bearings are set.
+- The GPU blend supports bearings: they rotate the property anchors, which `gpuBlend` computes on the CPU before upload.
 - Bearing auto-tune does NOT run during the tuner's search — only after the final strengths are chosen.
 - URL hash uses positional arrays: `b=28.6,0,0` (degrees, group order). Always serialized with `st=` as an all-or-nothing settings block.

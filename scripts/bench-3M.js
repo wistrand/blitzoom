@@ -28,18 +28,21 @@ const t0 = performance.now();
 const nodes = new Array(N);
 const nodeIndex = {};
 const adjList = {};
+const G = GROUP_NAMES.length;
+const projBuf = new Float64Array(N * G * 2);
 
 for (let i = 0; i < N; i++) {
   const id = `n${i}`;
   const group = `g${i % GROUPS}`;
   // Fake projections: random 2D per group, simulating what the pipeline produces
-  const projections = {};
-  for (const g of GROUP_NAMES) {
-    projections[g] = [(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4];
+  for (let gi = 0; gi < G; gi++) {
+    const o = (i * G + gi) * 2;
+    projBuf[o] = (Math.random() - 0.5) * 4;
+    projBuf[o + 1] = (Math.random() - 0.5) * 4;
   }
   nodes[i] = {
     id, group, label: id, degree: 0,
-    projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0,
+    projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0,
   };
   nodeIndex[id] = nodes[i];
   adjList[id] = [];
@@ -72,24 +75,24 @@ console.log('\n=== Blend + Quantize ===');
 
 const quantStats = {};
 const t2 = performance.now();
-unifiedBlend(nodes, GROUP_NAMES, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
+unifiedBlend(nodes, projBuf, GROUP_NAMES, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
 console.log(`  Blend (α=0, gaussian): ${fmt(performance.now() - t2)}`);
 
 // Re-blend with rank for comparison
 const t2b = performance.now();
-unifiedBlend(nodes, GROUP_NAMES, strengths, 0, adjList, nodeIndex, 5, 'rank');
+unifiedBlend(nodes, projBuf, GROUP_NAMES, strengths, 0, adjList, nodeIndex, 5, 'rank');
 console.log(`  Blend (α=0, rank): ${fmt(performance.now() - t2b)}`);
 
 // Strength change
 strengths['group'] = 1;
 strengths['score'] = 8;
 const t2c = performance.now();
-unifiedBlend(nodes, GROUP_NAMES, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
+unifiedBlend(nodes, projBuf, GROUP_NAMES, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
 console.log(`  Strength change (reblend): ${fmt(performance.now() - t2c)}`);
 
 // Topology
 const t2d = performance.now();
-unifiedBlend(nodes, GROUP_NAMES, strengths, 0.3, adjList, nodeIndex, 5, 'gaussian', quantStats);
+unifiedBlend(nodes, projBuf, GROUP_NAMES, strengths, 0.3, adjList, nodeIndex, 5, 'gaussian', quantStats);
 console.log(`  Topo blend (α=0.3, 5 passes): ${fmt(performance.now() - t2d)}`);
 
 // ─── Level building (two-phase) ──────────────────────────────────────────
@@ -175,7 +178,7 @@ console.log(`  Spatial speedup: ~${(tLinear / LINEAR_LOOKUPS / ((performance.now
 // ─── Memory estimate ──────────────────────────────────────────────────────
 
 console.log('\n=== Memory Estimate ===');
-const nodeBytes = N * (6 * 2 * 8 + 6 * 8 + 100); // projections + coords + overhead
+const nodeBytes = N * (6 * 2 * 8 + 6 * 8 + 100); // projBuf + coords + overhead
 const edgeBytes = edges.length * 50; // {src, dst} strings + overhead
 const adjBytes = N * EDGES_PER_NODE * 2 * 30; // adjList arrays
 console.log(`  Nodes: ~${(nodeBytes / 1e9).toFixed(1)} GB`);

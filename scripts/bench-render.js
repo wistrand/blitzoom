@@ -10,16 +10,8 @@ function fmt(ms) { return ms < 1 ? `${(ms * 1000).toFixed(0)}µs` : `${ms.toFixe
 const edgesText = Deno.readTextFileSync('docs/data/mitre-attack.edges');
 const nodesText = Deno.readTextFileSync('docs/data/mitre-attack.nodes');
 const result = runPipeline(edgesText, nodesText);
-const G = result.groupNames.length;
 
-const nodes = result.nodeArray.map((n, i) => {
-  const projections = {};
-  for (let g = 0; g < G; g++) {
-    const off = (i * G + g) * 2;
-    projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-  }
-  return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-});
+const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
 const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
 const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
 for (const e of result.edges) {
@@ -27,7 +19,7 @@ for (const e of result.edges) {
 }
 const strengths = {};
 for (const g of result.groupNames) strengths[g] = g === 'group' ? 3 : 0;
-unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian');
+unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian');
 
 const N = nodes.length;
 const E = result.edges.length;

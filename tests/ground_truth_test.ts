@@ -56,15 +56,7 @@ for (const tc of cases) {
     const nodesText = tc.nodes ? Deno.readTextFileSync(tc.nodes) : null;
     const result = runPipeline(edgesText, nodesText);
 
-    const G = result.groupNames.length;
-    const nodes = result.nodeArray.map((n: any, i: number) => {
-      const projections: Record<string, number[]> = {};
-      for (let g = 0; g < G; g++) {
-        const off = (i * G + g) * 2;
-        projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-      }
-      return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-    });
+    const nodes = result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
     const adjList: Record<string, string[]> = {};
     for (const n of nodes) adjList[n.id] = [];
@@ -80,7 +72,7 @@ for (const tc of cases) {
     const propStrengths: Record<string, number> = {};
     for (const g of result.groupNames) propStrengths[g] = tc.strengths[g] ?? 0;
 
-    unifiedBlend(nodes, result.groupNames, propStrengths, tc.alpha, adjList, nodeIndexFull, 5, tc.quant, {});
+    unifiedBlend(nodes, result.projBuf, result.groupNames, propStrengths, tc.alpha, adjList, nodeIndexFull, 5, tc.quant, {});
 
     // Compare
     let maxPxDelta = 0, maxGyDelta = 0, gxMismatches = 0;

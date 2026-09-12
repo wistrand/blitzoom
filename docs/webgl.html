@@ -317,6 +317,10 @@ vec2 tang = 3(1-t)&sup2;&middot;(c1-start) + 6(1-t)t&middot;(c2-c1) + 3t&sup2;&m
 
 <p>No per-frame CPU tessellation. No buffer allocation per edge. One instanced draw call renders all curves, regardless of count.</p>
 
+<h3>Which edges are drawn</h3>
+
+<p>Edge selection is shared with the Canvas 2D renderer and SVG export, so all three draw the same edges for the same view. Each frame, edges that are longer than 1.2 viewport diagonals or whose bounding box (padded for the curve bulge) misses the viewport are dropped. If more than <code>min(5000, max(200, 3N))</code> remain, a deterministic hash of each edge's index keeps an expected 5,000 of them, preferring short edges 2:1. Every position in the edge list has the same chance, so zooming in shows the edges in view instead of spending the budget on edges off-screen. Highlighted edges for the selected and hovered nodes come from a cached incident-edge index, so hovering costs the hovered node's degree, not a scan of every edge.</p>
+
 <!-- Edge comparison diagram -->
 <div class="fig">
   <svg viewBox="0 0 480 120" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono', monospace" font-size="11">
@@ -454,7 +458,7 @@ float line = 1.0 - smoothstep(0.0, 1.0, min(g.x, g.y));</code></pre>
   <tr><td>Weight / blend change</td><td>rebuild</td><td>rebuild</td><td>rebuild</td></tr>
 </table>
 
-<p>This "rebuild every frame" approach is simple and avoids state synchronization bugs. The instanced draw calls themselves are fast &mdash; the cost is dominated by JavaScript array construction, not GPU work.</p>
+<p>This "rebuild every frame" approach is simple and avoids state synchronization bugs. The instanced draw calls themselves are fast &mdash; the cost is dominated by JavaScript array construction, not GPU work. For edges, the per-frame work is one pass over the edge list reading cached endpoint arrays to cull and sample, then building instances for at most ~5,000 edges.</p>
 
 <h2 id="fallback">Fallback</h2>
 

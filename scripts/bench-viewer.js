@@ -45,15 +45,7 @@ function generateSNAP(nodeCount, edgesPerNode, groupCount, extraProps) {
 // ─── Hydrate + adjacency (same as viewer) ─────────────────────────────────
 
 function hydrateResult(result) {
-  const G = result.groupNames.length;
-  const nodes = result.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+  const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
   for (const e of result.edges) {
@@ -151,7 +143,7 @@ for (const sc of SCALES) {
   const quantStats = {};
 
   const t3 = performance.now();
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
   const tBlend = performance.now() - t3;
   console.log(`  Blend (α=0, gaussian): ${fmt(tBlend)}`);
 
@@ -176,13 +168,13 @@ for (const sc of SCALES) {
   const t5 = performance.now();
   strengths['group'] = 1;
   strengths[sc.extras[0]] = 8;
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian', quantStats);
   const tReblend = performance.now() - t5;
   console.log(`  Strength change (reblend): ${fmt(tReblend)}`);
 
   // Topology smoothing (what happens when user increases α)
   const t6 = performance.now();
-  unifiedBlend(nodes, result.groupNames, strengths, 0.5, adjList, nodeIndex, 5, 'gaussian', quantStats);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0.5, adjList, nodeIndex, 5, 'gaussian', quantStats);
   const tTopo = performance.now() - t6;
   console.log(`  Topo blend (α=0.5): ${fmt(tTopo)}`);
 

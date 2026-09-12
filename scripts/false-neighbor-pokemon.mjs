@@ -33,11 +33,8 @@ const g = runPipeline(
   readFileSync(`${REPO}/docs/data/pokemon.nodes`, 'utf8'));
 const { nodeArray, adjGroups, groupNames, numericBins, projBuf, adjList, nodeIndex } = g;
 const N = nodeArray.length, G = groupNames.length;
-for (let i = 0; i < N; i++) {
-  const p = {};
-  for (let gi = 0; gi < G; gi++) p[groupNames[gi]] = [projBuf[i * G * 2 + gi * 2], projBuf[i * G * 2 + gi * 2 + 1]];
-  nodeArray[i].projections = p;
-}
+for (let i = 0; i < N; i++) nodeArray[i].projIdx = i;
+const GROUP_GI = groupNames.indexOf('group');
 console.log(`pokemon: N=${N} groups=[${groupNames.join(', ')}]`);
 
 // ── Token sets + z-scored sigs (same reconstruction as false-neighbor-validation) ──
@@ -89,9 +86,8 @@ function blendPositions(strengths, alpha = 0, passes = 5, bearings = null) {
   for (let i = 0; i < N; i++) {
     let x = 0, y = 0;
     for (let gi = 0; gi < G; gi++) {
-      const p = nodeArray[i].projections[groupNames[gi]];
-      if (!p) continue;
-      let ax = p[0], ay = p[1];
+      const o = (nodeArray[i].projIdx * G + gi) * 2;
+      let ax = projBuf[o], ay = projBuf[o + 1];
       const th = bearings?.[groupNames[gi]] || 0;
       if (th) { const c = Math.cos(th), s = Math.sin(th); const rx = ax * c - ay * s; ay = ax * s + ay * c; ax = rx; }
       x += ax * effW[groupNames[gi]]; y += ay * effW[groupNames[gi]];
@@ -181,7 +177,9 @@ console.log('\n===== Part A: anatomy of the default layout =====');
 // The 18 type anchors under the 'group' projection (one point per type).
 const anchors = new Map();
 for (let i = 0; i < N; i++) {
-  if (!anchors.has(nodeArray[i].group)) anchors.set(nodeArray[i].group, nodeArray[i].projections.group);
+  if (anchors.has(nodeArray[i].group)) continue;
+  const o = (nodeArray[i].projIdx * G + GROUP_GI) * 2;
+  anchors.set(nodeArray[i].group, [projBuf[o], projBuf[o + 1]]);
 }
 const types = [...anchors.keys()];
 const pairsByDist = [];
@@ -200,11 +198,11 @@ evalConfig('default group:3', { group: 3 }, 0, null, true);
 
 // ── Part B: auto-tune ───────────────────────────────────────────────────────
 console.log('\n===== Part B: auto-tune =====');
-const tune = await autoTuneStrengths(nodeArray, groupNames, adjList, nodeIndex, { timeout: 60000 });
+const tune = await autoTuneStrengths(nodeArray, projBuf, groupNames, adjList, nodeIndex, { timeout: 60000 });
 console.log('autotune result:', JSON.stringify({ strengths: tune.strengths, alpha: tune.alpha, quant: tune.quant, score: +tune.score?.toFixed?.(4) || tune.score }));
 evalConfig('autotune', tune.strengths, tune.alpha, null, true);
 
-const bearings = autoTuneBearings(nodeArray, groupNames, tune.strengths);
+const bearings = autoTuneBearings(nodeArray, projBuf, groupNames, tune.strengths);
 console.log('autotune bearings (deg):', JSON.stringify(Object.fromEntries(Object.entries(bearings).map(([k, v]) => [k, +(v * 180 / Math.PI).toFixed(1)]))));
 evalConfig('autotune+bearings', tune.strengths, tune.alpha, bearings, true);
 
@@ -260,5 +258,8 @@ for (let t = 1; t <= 50; t++) {
 }
 console.log(`best of 50 candidates: seed ${best.seed}, collision mass ${best.mass.toFixed(0)} (${(best.mass / shipped.mass * 100).toFixed(0)}% of shipped), min anchor dist ${best.minD.toFixed(2)}`);
 
-for (const n of nodeArray) n.projections.group = best.anchors.get(n.group).slice();
+for (const n of nodeArray) {
+  const a = best.anchors.get(n.group), o = (n.projIdx * G + GROUP_GI) * 2;
+  projBuf[o] = a[0]; projBuf[o + 1] = a[1];
+}
 evalConfig('default group:3, reseeded group matrix', { group: 3 }, 0, null, true);

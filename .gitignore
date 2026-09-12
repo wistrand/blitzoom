@@ -3,6 +3,7 @@
 tmp/
 stix/
 .claude/
+.idea/
 benchmarks/layouts/
 data/
 !docs/data/

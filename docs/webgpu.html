@@ -616,10 +616,10 @@ const buf = device.createBuffer({ size, usage, mappedAtCreation: true });</code>
 <pre><code>import { initGPU } from './blitzoom-gpu.js';
 
 const gpuAvailable = await initGPU();
-// Requests adapter + device, compiles both shader modules.
-// Returns false on any failure &mdash; caller uses CPU path.</code></pre>
+// Requests adapter + device, compiles the MinHash pipeline.
+// Resolves false on any failure or timeout &mdash; caller uses CPU path.</code></pre>
 
-<p>The <code>initGPU()</code> call is idempotent: subsequent calls return <code>true</code> immediately if the device is already acquired. Both compute pipelines (MinHash and blend) are compiled at init time, not on first use.</p>
+<p>The <code>initGPU()</code> call is idempotent: subsequent calls return <code>true</code> immediately if the device is already acquired, and concurrent calls share one attempt. It never rejects and never hangs: the adapter and device requests each time out after 5 seconds, which resolves <code>false</code>, and a failed attempt is retried on the next call. The MinHash pipeline is compiled at init; the blend pipeline compiles on the first GPU blend.</p>
 
 <h3>Projection (Full Pipeline)</h3>
 
@@ -640,12 +640,12 @@ const { projBuf, groupNames } = await computeProjectionsGPU(
 
 // Drop-in for CPU unifiedBlend &mdash; same signature:
 await gpuUnifiedBlend(
-  nodes, groupNames, propStrengths, smoothAlpha,
+  nodes, projBuf, groupNames, propStrengths, smoothAlpha,
   adjList, nodeIndexFull, passes, quantMode, quantStats
 );
 // Modifies nodes[i].px, .py, .gx, .gy in place</code></pre>
 
-<p>The blend wrapper computes property anchors and builds CSR adjacency on the CPU, runs the iterative Jacobi passes on the GPU, reads back the positions, and quantizes on the CPU. The caller doesn't need to know which path ran.</p>
+<p>The blend wrapper computes property anchors (including bearing rotation) and builds CSR adjacency on the CPU, runs the iterative Jacobi passes on the GPU, reads back the positions, and quantizes on the CPU. The caller doesn't need to know which path ran. The CSR adjacency is cached across blends and rebuilt when the node array, the adjacency object, the node count, or the optional trailing <code>topoGen</code> argument changes; <code>BlitZoomCanvas</code> passes a generation that <code>addNodes</code>/<code>removeNodes</code> bump, so edges added between existing nodes reach the GPU.</p>
 
 <h2 id="fallback">Fallback Strategy</h2>
 

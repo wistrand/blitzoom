@@ -278,9 +278,22 @@ export function tokenizeNumeric(propName, value, bins, tokenBuf, offset) {
 // Module-level shared token buffer for projection (non-reentrant, same as _sig).
 const _tokenBuf = new Array(200);
 
+// groupName → index map, cached per groupNames array. Keyed on identity and
+// length because bootstrapEmptyGraph extends groupNames in place.
+let _gIdxFor = null, _gIdxLen = -1, _gIdx = null;
+function groupIndexMap(groupNames) {
+  if (groupNames !== _gIdxFor || groupNames.length !== _gIdxLen) {
+    _gIdx = {};
+    for (let i = 0; i < groupNames.length; i++) _gIdx[groupNames[i]] = i;
+    _gIdxFor = groupNames;
+    _gIdxLen = groupNames.length;
+  }
+  return _gIdx;
+}
+
 /**
- * Project a single node's properties into 2D per-group coordinates.
- * Returns { groupName: [px, py], ... }. Optionally writes into a flat projBuf.
+ * Project a single node's properties into 2D per-group coordinates, written
+ * into a flat buffer: group gi lands at projBuf[baseOff + gi * 2], [+1].
  * Uses module-level _tokenBuf and _sig — not reentrant (safe because pipeline is sequential).
  *
  * @param {object} node - { group, label, id, degree, edgeTypes, extraProps }
@@ -290,34 +303,28 @@ const _tokenBuf = new Array(200);
  * @param {boolean} hasEdgeTypes
  * @param {string[]} extraPropNames
  * @param {object} numericBins - { propName: { min, max, coarse, medium, fine } }
- * @param {Float64Array} [projBuf] - optional output buffer
- * @param {number} [baseOff=0] - offset into projBuf
- * @param {Set<string>|null} [onlyGroups] - if set, only these groups are projected.
- *        Skipped groups keep whatever the buffer held — callers must merge only
- *        the requested groups from the returned object.
- * @returns {object} projections - { groupName: [px, py], ... }
+ * @param {Float64Array} projBuf - output buffer
+ * @param {number} baseOff - offset of this node's row in projBuf
+ * @param {Set<string>|null} [onlyGroups] - if set, only these groups are
+ *        written; the rest of the row is left untouched. Otherwise the whole
+ *        row is zeroed first, so groups with no tokens read as [0, 0].
  */
 export function projectNode(node, neighborGroups, groupProjections, groupNames, hasEdgeTypes, extraPropNames, numericBins, projBuf, baseOff, onlyGroups = null) {
-  const G = groupNames.length;
-  const gIdx = {};
-  for (let i = 0; i < G; i++) gIdx[groupNames[i]] = i;
-
-  // Temp buffer for reading back projections
-  const tmpBuf = projBuf || new Float64Array(G * 2);
-  const off = projBuf ? baseOff : 0;
+  const gIdx = groupIndexMap(groupNames);
+  if (!onlyGroups) projBuf.fill(0, baseOff, baseOff + groupNames.length * 2);
 
   // group
   if (!onlyGroups || onlyGroups.has('group')) {
     _tokenBuf[0] = 'group:' + node.group;
     computeMinHashInto(_tokenBuf, 1);
-    projectInto(_sig, groupProjections.group, tmpBuf, off + gIdx.group * 2);
+    projectInto(_sig, groupProjections.group, projBuf, baseOff + gIdx.group * 2);
   }
 
   // label
   if (!onlyGroups || onlyGroups.has('label')) {
     const labelEnd = tokenizeLabel(node.label, node.id, _tokenBuf, 0);
     computeMinHashInto(_tokenBuf, labelEnd);
-    projectInto(_sig, groupProjections.label, tmpBuf, off + gIdx.label * 2);
+    projectInto(_sig, groupProjections.label, projBuf, baseOff + gIdx.label * 2);
   }
 
   // structure
@@ -325,7 +332,7 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
     _tokenBuf[0] = 'deg:' + degreeBucket(node.degree);
     _tokenBuf[1] = 'leaf:' + (node.degree === 0);
     computeMinHashInto(_tokenBuf, 2);
-    projectInto(_sig, groupProjections.structure, tmpBuf, off + gIdx.structure * 2);
+    projectInto(_sig, groupProjections.structure, projBuf, baseOff + gIdx.structure * 2);
   }
 
   // neighbors
@@ -337,7 +344,7 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
       _tokenBuf[0] = 'ngroup:isolated'; tc = 1;
     }
     computeMinHashInto(_tokenBuf, tc);
-    projectInto(_sig, groupProjections.neighbors, tmpBuf, off + gIdx.neighbors * 2);
+    projectInto(_sig, groupProjections.neighbors, projBuf, baseOff + gIdx.neighbors * 2);
   }
 
   // edge types
@@ -349,7 +356,7 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
       _tokenBuf[0] = 'etype:none'; tc = 1;
     }
     computeMinHashInto(_tokenBuf, tc);
-    projectInto(_sig, groupProjections.edgetype, tmpBuf, off + gIdx.edgetype * 2);
+    projectInto(_sig, groupProjections.edgetype, projBuf, baseOff + gIdx.edgetype * 2);
   }
 
   // extra props (with multi-resolution numeric tokenization)
@@ -360,18 +367,14 @@ export function projectNode(node, neighborGroups, groupProjections, groupNames, 
     const epEnd = tokenizeNumeric(ep, val, numericBins[ep], _tokenBuf, 0);
     if (epEnd > 0) {
       computeMinHashInto(_tokenBuf, epEnd);
-      projectInto(_sig, groupProjections[ep], tmpBuf, off + gIdx[ep] * 2);
+      projectInto(_sig, groupProjections[ep], projBuf, baseOff + gIdx[ep] * 2);
+    } else {
+      // No tokens (empty/undefined value) → neutral projection. Explicit so a
+      // re-projection into an existing row doesn't keep the old value.
+      projBuf[baseOff + gIdx[ep] * 2] = 0;
+      projBuf[baseOff + gIdx[ep] * 2 + 1] = 0;
     }
-    // else: tmpBuf already initialized to 0,0
   }
-
-  // Build projections object
-  const projections = {};
-  for (let g = 0; g < G; g++) {
-    const o = off + g * 2;
-    projections[groupNames[g]] = [tmpBuf[o], tmpBuf[o + 1]];
-  }
-  return projections;
 }
 
 export function computeProjections(nodeArray, adjGroups, groupNames, hasEdgeTypes, extraPropNames, numericBins, projSeeds = null) {

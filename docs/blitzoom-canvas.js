@@ -8,12 +8,12 @@
 //   import { unifiedBlend, buildLevel, ... } from './blitzoom-algo.js';
 //
 //   const result = runPipeline(edgesText, nodesText);
-//   // ... hydrate nodes with projections, blend ...
-//   const view = new BlitZoomCanvas(canvasElement, { nodes, edges, ... });
+//   // ... hydrate nodes (projIdx = row in result.projBuf), blend ...
+//   const view = new BlitZoomCanvas(canvasElement, { nodes, projBuf: result.projBuf, edges, ... });
 
 import {
   MINHASH_K, PROJECTION_SEED_BASE, projectionSeedForGroup, GRID_SIZE, GRID_BITS, ZOOM_LEVELS, RAW_LEVEL, LEVEL_LABELS,
-  buildGaussianProjection, unifiedBlend, buildLevel,
+  buildGaussianProjection, unifiedBlend, buildLevel, packProjections,
   buildLevelNodes, buildLevelEdges, cellIdAtLevel,
   getNodePropValue, getSupernodeDominantValue, maxCountKey,
 } from './blitzoom-algo.js';
@@ -22,7 +22,7 @@ import { gpuUnifiedBlend } from './blitzoom-gpu.js';
 import {
   addNodes as _addNodes, removeNodes as _removeNodes, updateNodes as _updateNodes,
   snapshotPositions as _snapshotPositions, animateTransition as _animateTransition,
-  fullRebuild as _fullRebuild, reprojectGroups as _reprojectGroups,
+  fullRebuild as _fullRebuild, reprojectGroups as _reprojectGroups, cancelAnimation as _cancelAnimation,
 } from './blitzoom-mutations.js';
 import { initGL, renderGL } from './blitzoom-gl-renderer.js';
 
@@ -59,7 +59,10 @@ export class BlitZoomCanvas {
   /**
    * @param {HTMLCanvasElement} canvas
    * @param {object} opts
-   * @param {Array} opts.nodes - hydrated node objects with .projections, .px, .py, .gx, .gy, .x, .y
+   * @param {Array} opts.nodes - hydrated node objects with .projIdx, .px, .py, .gx, .gy, .x, .y
+   * @param {Float64Array} [opts.projBuf] - flat projections: group gi of node n at
+   *   [(n.projIdx * groupNames.length + gi) * 2], [+1]. If omitted, nodes carrying
+   *   legacy per-node `projections` objects ({group: [x, y]}) are packed into one.
    * @param {Array} opts.edges - [{src, dst}, ...]
    * @param {object} opts.nodeIndexFull - {id: node}
    * @param {object} opts.adjList - {id: [neighborIds]}
@@ -109,15 +112,41 @@ export class BlitZoomCanvas {
     this._originalN = this.nodes.length;
     this._rebuildThreshold = opts.rebuildThreshold ?? 0.10; // trigger full rebuild after 10% growth (Infinity to disable)
     this.incremental = !!opts.incremental; // public marker — true if the factory's incremental preset was applied
-    this._addNodesQueue = null;    // queued addNodes call while one is in progress
-    this._addNodesRunning = false; // true while addNodes is executing
+    this._mutationTail = null;     // promise chain serializing addNodes/removeNodes/updateNodes
+    this._pendingAdd = null;       // queued, not-yet-started addNodes batch (later adds merge into it)
     this._animRaf = null;          // rAF handle for in-flight addNodes animation
     this._animCleanup = null;      // cleanup function for cancelling animation
     this._animProgress = undefined; // animation progress (0-1) read by renderer for fade-in
     this._sampleNodes = null;      // spatial-grid subsample for fast-mode drag updates (see fastRebuild)
-    this._sampleNodesN = 0;        // nodes.length at the time _sampleNodes was built — used for staleness detection after addNodes/removeNodes
+    this._sampleNodesN = 0;        // nodes.length at the time _sampleNodes was built — staleness check (viewer loads replace nodes without a mutation)
+    this._sampleTopoGen = -1;      // _topoGen at the time _sampleNodes was built — catches remove + add of equal size
     this._skipEdgeBuild = false;   // true while in fast mode — suppresses level edge build scheduling
     this._fastRebuildPromise = null; // in-flight fastRebuild promise — endFastRebuild awaits it before cleanup
+    // Resolves (with the view) once the initial blend + layout + render has
+    // completed. Direct construction has no async init, so it starts resolved;
+    // the factory replaces it with its init promise (GPU probe → auto-tune →
+    // blend). The mutation chain starts from it, so mutations can't interleave
+    // with the init blend.
+    this.ready = Promise.resolve(this);
+
+    // Flat projection store. Rows are dense, unique, and ascending in
+    // `this.nodes` order (mutations append and compact in that order);
+    // `_projRows` is the number of rows in use.
+    if (opts.projBuf) {
+      this.projBuf = opts.projBuf;
+    } else {
+      // Legacy input: pack per-node `projections` objects (and assign projIdx)
+      // so every node indexes a valid row. Nodes with neither get zero rows —
+      // a degenerate layout, but no NaN positions.
+      if (this.nodes.length > 0 && !this.nodes.some(n => n.projections)) {
+        console.warn('[BlitZoomCanvas] nodes have no projections and no opts.projBuf was given; all projections are [0, 0]');
+      }
+      this.projBuf = packProjections(this.nodes, this.groupNames);
+    }
+    this._projRows = this.nodes.length;
+    // Bumped by mutations that change edges/adjacency in place; keys the
+    // GPU blend's cached CSR adjacency.
+    this._topoGen = 0;
 
     // Build projection matrices (per-group seed overrides via projSeeds)
     this.projSeeds = { ...(opts.projSeeds || {}) };
@@ -881,12 +910,30 @@ export class BlitZoomCanvas {
     }
   }
 
-  /** Run blend (GPU for large datasets when useGPU, else CPU) */
-  async _blend(fast = false) {
-    // Guard against concurrent blends (previous mapAsync still pending)
-    if (this._blending) return;
-    this._blending = true;
-    try { await this._blendInner(fast); } finally { this._blending = false; }
+  /**
+   * Run blend (GPU for large datasets when useGPU, else CPU). Blends never
+   * overlap (the GPU path awaits mapAsync mid-blend). A call made while one
+   * is in flight is not dropped: it schedules one follow-up blend after the
+   * current one, so state changed after the in-flight blend started (a
+   * strength drag, a mutation's new nodes) is always blended. Further calls
+   * coalesce into that follow-up; it runs full unless every request was fast.
+   * Resolves when a blend covering this call's state has finished.
+   */
+  _blend(fast = false) {
+    if (this._blendPromise) {
+      if (!this._blendRerun) {
+        this._blendRerunFast = fast;
+        this._blendRerun = this._blendPromise.catch(() => {}).then(() => {
+          this._blendRerun = null;
+          return this._blend(this._blendRerunFast);
+        });
+      } else {
+        this._blendRerunFast = this._blendRerunFast && fast;
+      }
+      return this._blendRerun;
+    }
+    this._blendPromise = this._blendInner(fast).finally(() => { this._blendPromise = null; });
+    return this._blendPromise;
   }
 
   async _blendInner(fast) {
@@ -929,7 +976,7 @@ export class BlitZoomCanvas {
 
     if (this._useGPU && N > 50000 && passes > 0) {
       try {
-        await gpuUnifiedBlend(this.nodes, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings, this.projSeeds);
+        await gpuUnifiedBlend(this.nodes, this.projBuf, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings, this.projSeeds, this._topoGen);
         this._lastBlendMs = performance.now() - t0;
         this._blendGen++;
         this.canvas.dispatchEvent(new Event('blend'));
@@ -938,7 +985,7 @@ export class BlitZoomCanvas {
         console.warn('[GPU] Blend failed, falling back to CPU:', e.message);
       }
     }
-    unifiedBlend(this.nodes, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings, this.projSeeds);
+    unifiedBlend(this.nodes, this.projBuf, this.groupNames, this.propStrengths, this.smoothAlpha, this.adjList, this.nodeIndexFull, passes, this.quantMode, this._quantStats, this.propBearings, this.projSeeds);
     this._lastBlendMs = performance.now() - t0;
     this._blendGen++;
     this.canvas.dispatchEvent(new Event('blend'));
@@ -1089,7 +1136,7 @@ export class BlitZoomCanvas {
       // from when the sample was first built, missing all later batches.
       // `removeNodes` is the symmetric case — the sample would still hold
       // references to nodes that no longer exist in `view.nodes`.
-      if (!this._sampleNodes || this._sampleNodesN !== this.nodes.length) {
+      if (!this._sampleNodes || this._sampleNodesN !== this.nodes.length || this._sampleTopoGen !== this._topoGen) {
         this._buildFastSample();
       }
 
@@ -1163,8 +1210,12 @@ export class BlitZoomCanvas {
       for (let i = 0; i < Math.min(take, arr.length); i++) this._sampleNodes.push(arr[i]);
     }
     this._sampleNodesN = this.nodes.length;
+    this._sampleTopoGen = this._topoGen;
   }
 
+  // Mutations run one at a time, in call order, starting after `ready` (so a
+  // call made right after the factory returns doesn't race the init blend /
+  // auto-tune). See enqueueMutation in blitzoom-mutations.js.
   /** Add nodes and edges incrementally. See blitzoom-mutations.js. */
   addNodes(newNodes, newEdges, opts) { return _addNodes(this, newNodes, newEdges, opts); }
   /** Remove nodes by ID. See blitzoom-mutations.js. */
@@ -1455,7 +1506,9 @@ export class BlitZoomCanvas {
 
   /** Clean up all event listeners and observers */
   destroy() {
+    this._destroyed = true; // queued mutations drop out (see enqueueMutation)
     this._abortController.abort();
+    _cancelAnimation(this); // a mutation's transition would keep rAF-looping on a detached canvas
     if (this._gl) this._destroyWebGL();
     if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
     if (this._edgeBuildRaf) { cancelAnimationFrame(this._edgeBuildRaf); this._edgeBuildRaf = null; }

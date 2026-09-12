@@ -103,7 +103,7 @@ bob	carol
 
 ### Programmatic access
 
-`<bz-graph>` exposes a `ready` Promise that resolves once the build completes — modeled on `document.fonts.ready` and `navigator.serviceWorker.ready`. Use it from any async function:
+`<bz-graph>` exposes a `ready` Promise that resolves once the initial layout has been blended and rendered (after auto-tune, if enabled) — modeled on `document.fonts.ready` and `navigator.serviceWorker.ready`. Use it from any async function:
 
 ```js
 const el = document.querySelector('bz-graph');
@@ -124,7 +124,11 @@ await g.addNodes(batch);
 
 No listener-vs-append ordering to worry about. The Promise rejects if the build fails.
 
+Mutations called before the view exists are queued and applied in call order once it is created; their promises settle when applied.
+
 The legacy `addEventListener('ready', ...)` still works for static-HTML callers who prefer the event shape. After a `_reload` (e.g. file drop), `g.ready` is replaced with a fresh pending Promise tracking the new build.
+
+Views created with `createBlitZoomView` / `createBlitZoomFromGraph` have the same contract: the factory returns immediately and `await view.ready` waits for the initial blend + layout + render. `addNodes`/`removeNodes`/`updateNodes` run one at a time in call order, starting after `ready`, so calling them right after the factory returns is safe.
 
 ### Companion components
 
@@ -149,7 +153,7 @@ Add, remove, and update nodes at runtime. Use `incremental` attribute for stable
   const g = document.getElementById('g');
   await g.ready;
 
-  // Add nodes + edges
+  // Add nodes + edges (an edge may carry `type` when the graph has edge types)
   await g.addNodes(
     [{id: 'n1', group: 'analyst'}, {id: 'n2', group: 'admin'}],
     [{src: 'n1', dst: 'n2'}]
@@ -218,9 +222,9 @@ Things to know about streaming:
 - **Auto-tune is suppressed under `incremental`** — auto-tune would shift positions, defeating the point. Tune your `strengths` manually upfront, or load a small representative seed, run auto-tune once outside `incremental` mode to read the result, then use those values in your streaming page.
 - **Batch size: 1K–5K nodes per `addNodes` call** is the sweet spot. Smaller batches add per-call overhead; larger batches block the renderer for too long per blend.
 - **`{ animate: false }` is required for streaming** — animation queues up across batches and stutters. Use snap-update for any batch loop.
-- **`await` between batches** — `await g.addNodes(...)` waits for the blend *and* one paint frame, so the streaming loop is naturally rate-limited to the display refresh and progress is visible without any manual yield. Don't fire-and-forget — concurrent calls queue, but you lose backpressure.
+- **`await` between batches** — `await g.addNodes(...)` waits for the blend *and* one paint frame, so the streaming loop is naturally rate-limited to the display refresh and progress is visible without any manual yield. Don't fire-and-forget — un-awaited calls queue in order (consecutive adds merge into one batch), but you lose backpressure.
 - **Progress display:** call `g.view.showProgress(text)` and `g.view.showProgress(null)` to clear. No need to invent your own status DOM.
-- **Property-group extension:** new categorical values for an existing property group (e.g. a new `category` value appearing in batch 30) extend the value set without shifting existing nodes — the per-node projection is deterministic. **New property groups not present in the first batch** are not added later; if the graph starts empty, the first `addNodes` call bootstraps the schema from that batch's fields and locks it in. If you have a seed (`<script type="application/json">`), the schema is derived from the seed instead. Either way, **include at least one representative node containing every field you'll need** in the first set of nodes the canvas sees.
+- **Property-group extension:** new categorical values for an existing property group (e.g. a new `category` value appearing in batch 30) extend the value set without shifting existing nodes — the per-node projection is deterministic. **New property groups not present in the first batch** are not added later; if the graph starts empty, the first `addNodes` call bootstraps the schema from that batch's fields and locks it in. If you have a seed (`<script type="application/json">`), the schema is the union of the seed nodes' fields instead. Either way, **include at least one representative node containing every field you'll need** in the first set of nodes the canvas sees.
 - **Override the threshold if you really want periodic rebuilds:** the preset disables them by default, but you can pass `rebuild-threshold="0.5"` alongside `incremental` to opt back in. This is rarely useful for streaming workloads.
 
 ### Quantization modes
@@ -245,7 +249,7 @@ el.addEventListener('nodesupdated', e => console.log(`~${e.detail.count}`));
 
 All mutation events include `e.detail.total` (current node count).
 
-Other events on the canvas: `statechange` (after any state mutation), `blend` (after blend completes), `ready` (on `<bz-graph>` after initial load). On companion components: `colorby` (label click, `e.detail.name`), `labelchange` (shift-click label or checkbox toggle, `e.detail.labelProps` array).
+Other events on the canvas: `statechange` (after any state mutation), `blend` (after blend completes), `ready` (on `<bz-graph>` after the initial layout has rendered). On companion components: `colorby` (label click, `e.detail.name`), `labelchange` (shift-click label or checkbox toggle, `e.detail.labelProps` array).
 
 ## Canvas API
 
@@ -283,9 +287,10 @@ const view = createBlitZoomFromGraph(canvas,
   [{ src: 'alice', dst: 'bob' }],
   { strengths: { group: 5, lang: 8 } }
 );
+await view.ready; // initial blend + layout + render done
 ```
 
-Nodes need `id` (required), `group`, `label`. Any other property becomes an extra property group. Numeric values get multi-resolution tokenization automatically.
+Nodes need `id` (required), `group`, `label`. Any other property becomes an extra property group; keys are collected from all nodes, and a node missing a key gets a neutral projection for that group. Numeric values get multi-resolution tokenization automatically. Edges may carry `type`. The factory returns synchronously; `await view.ready` for the laid-out graph.
 
 ### Instance methods
 
@@ -296,9 +301,10 @@ view.setProjSeed('group', 37403);             // reseed group's projection matri
 view.setAlpha(0.5);                           // topology blend weight
 view.setOptions({ heatmapMode: 'density' });  // display options
 
-await view.addNodes(nodes, edges, opts);      // incremental add
+await view.addNodes(nodes, edges, opts);      // incremental add (serialized, in call order)
 await view.removeNodes(['id1', 'id2'], opts); // incremental remove
 await view.updateNodes([{id: 'id1', group: 'new'}], opts); // update props
+await view.ready;                             // initial layout done (factory views)
 
 view.colorBy = 'kind';                        // override color group
 view.cycleColorScheme();                      // next color scheme
@@ -313,13 +319,13 @@ const svgString = exportSVG(view, opts);      // SVG export
 ```js
 import { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } from './blitzoom.js';
 
-const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, {
+const result = await autoTuneStrengths(view.nodes, view.projBuf, view.groupNames, view.adjList, view.nodeIndexFull, {
   strengths: true, alpha: true,
 });
 // result: { strengths, alpha, quantMode, labelProps, score }
 
 // Follow-ups the built-in auto-tune flows run for you:
-const bearings = autoTuneBearings(view.nodes, view.groupNames, result.strengths);
+const bearings = autoTuneBearings(view.nodes, view.projBuf, view.groupNames, result.strengths);
 const seedPick = autoTuneProjSeeds(view.nodes, view.groupNames, result.strengths,
   { numericBins: view._numericBins });   // { group, seed } or null
 if (seedPick) view.bulkSetProjSeeds({ [seedPick.group]: seedPick.seed });

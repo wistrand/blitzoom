@@ -1,7 +1,10 @@
 // blitzoom-renderer.js — Canvas rendering, heatmaps, edge drawing, hit testing.
 // Optimized to minimize GC pressure: reusable point objects, cached strings.
 
-import { RAW_LEVEL, ZOOM_LEVELS, GRID_SIZE, GRID_BITS, cellIdAtLevel } from './blitzoom-algo.js';
+import {
+  RAW_LEVEL, ZOOM_LEVELS, GRID_SIZE, GRID_BITS, cellIdAtLevel,
+  maxEdgesToDraw, sampleEdges, edgeEndpoints, incidentEdges, edgesTouching, rawEdgeRow, superEdgeRow,
+} from './blitzoom-algo.js';
 
 // Theme-aware colors — dark vs light mode
 const THEME = {
@@ -41,11 +44,6 @@ const THEME = {
   },
 };
 function _t(bz) { return bz._lightMode ? THEME.light : THEME.dark; }
-
-// Adaptive edge cap: scales with visible node count to avoid clutter on dense graphs
-function maxEdgesToDraw(nodeCount) {
-  return Math.min(5000, Math.max(200, nodeCount * 3));
-}
 
 // ─── Reusable scratch objects (avoid per-frame allocations) ──────────────────
 const _pa = {x: 0, y: 0};
@@ -87,13 +85,6 @@ function rgba(r, g, b, a) {
   const s = `rgba(${r},${g},${b},${a})`;
   _rgbaCache[key] = s;
   return s;
-}
-
-// ─── Deterministic edge sampling ─────────────────────────────────────────────
-// Hash edge index to [0,1) — stable across renders for the same edge set
-function edgeHash(i) {
-  let h = (i * 2654435761) >>> 0; // Knuth multiplicative hash
-  return (h & 0x7fffffff) / 0x80000000;
 }
 
 // ─── Size scaling ────────────────────────────────────────────────────────────
@@ -281,7 +272,6 @@ function renderSupernodes(bz, pass) {
 
   const diag = Math.sqrt(bz.W * bz.W + bz.H * bz.H);
   const maxEdgeLen = diag * 1.2;
-  const maxEdgeLenSq = maxEdgeLen * maxEdgeLen;
   const fadeStart = diag * 0.25;
   const fadeRange = maxEdgeLen - fadeStart;
   const rz = bz.renderZoom;
@@ -293,29 +283,21 @@ function renderSupernodes(bz, pass) {
 
   if (pass === 'edges') {
     // Normal edges — batched by alpha bucket to minimize beginPath/stroke calls
-    const maxEdges = maxEdgesToDraw(supernodes.length);
-    const snSampleRate = snEdges.length > maxEdges ? maxEdges / snEdges.length : 1;
-    let snDrawn = 0;
-
     const ALPHA_BUCKETS = 10;
     const edgeBuckets = new Array(ALPHA_BUCKETS);
     for (let b = 0; b < ALPHA_BUCKETS; b++) edgeBuckets[b] = [];
 
     const fadeStartSq = fadeStart * fadeStart;
-    for (let i = 0; i < snEdges.length; i++) {
+    const ends = edgeEndpoints(snEdges, snMap, e => snMap.get(e.a), e => snMap.get(e.b));
+    const { idx, count } = sampleEdges(snEdges, ends, bz.pan, rz, bz.W, bz.H, maxEdgesToDraw(supernodes.length));
+    for (let j = 0; j < count; j++) {
+      const i = idx[j];
       const e = snEdges[i];
-      const a = snMap.get(e.a), b = snMap.get(e.b);
-      if (!a || !b) continue;
+      const a = ends.a[i], b = ends.b[i];
       const pax = a.x * rz + bz.pan.x, pay = a.y * rz + bz.pan.y;
       const pbx = b.x * rz + bz.pan.x, pby = b.y * rz + bz.pan.y;
       const dx = pax - pbx, dy = pay - pby;
       const distSq = dx * dx + dy * dy;
-      if (distSq > maxEdgeLenSq) continue;
-      if (snSampleRate < 1) {
-        // Sampling bias: prefer short edges. Use distSq ratio to avoid sqrt.
-        if (edgeHash(i) > snSampleRate * (2 - distSq / maxEdgeLenSq)) continue;
-      }
-      if (++snDrawn > maxEdges) break;
       const distFade = distSq <= fadeStartSq ? 1 : Math.max(0, 1 - (Math.sqrt(distSq) - fadeStart) / fadeRange);
       const alpha = Math.min(0.4, 0.05 + e.weight * 0.05) * distFade;
       if (alpha < 0.01) continue;
@@ -345,11 +327,13 @@ function renderSupernodes(bz, pass) {
   if (pass === 'hilite') {
     // Highlighted edges for selected + hovered nodes
     if (hasSel || hov !== null) {
-      for (let i = 0; i < snEdges.length; i++) {
+      const srcKey = e => e.a, dstKey = e => e.b;
+      const rowOf = superEdgeRow(level);
+      const inc = incidentEdges(snEdges, level, srcKey, dstKey, rowOf, supernodes.length);
+      const hits = new Set(selIds);
+      if (hov !== null) hits.add(hov);
+      for (const i of edgesTouching(inc, snEdges, srcKey, dstKey, rowOf, hits)) {
         const e = snEdges[i];
-        const aHit = selIds.has(e.a) || e.a === hov;
-        const bHit = selIds.has(e.b) || e.b === hov;
-        if (!aHit && !bHit) continue;
         const a = snMap.get(e.a), b = snMap.get(e.b);
         if (!a || !b) continue;
         const pax = a.x * rz + bz.pan.x, pay = a.y * rz + bz.pan.y;
@@ -428,21 +412,28 @@ function renderSupernodes(bz, pass) {
     if (pass === 'labels') {
       // Build neighbor set for highlighted nodes (once per frame, cached on level)
       // Cap to top neighbors by edge weight to avoid clutter
-      if (!level._hlNeighbors || level._hlKey !== ('' + [...selIds] + '|' + hov)) {
+      // Keyed on snEdges too: super-edges arrive after the level's nodes.
+      const hlKey = '' + [...selIds] + '|' + hov + '|' + snEdges.length;
+      if (!level._hlNeighbors || level._hlKey !== hlKey) {
         const maxNbr = Math.max(5, Math.min(20, Math.floor(Math.min(bz.W, bz.H) / 40)));
         const candidates = [];
         if (hasSel || hov !== null) {
-          for (let j = 0; j < snEdges.length; j++) {
+          const srcKey = e => e.a, dstKey = e => e.b;
+          const rowOf = superEdgeRow(level);
+          const inc = incidentEdges(snEdges, level, srcKey, dstKey, rowOf, supernodes.length);
+          const hits = new Set(selIds);
+          if (hov !== null) hits.add(hov);
+          for (const j of edgesTouching(inc, snEdges, srcKey, dstKey, rowOf, hits)) {
             const e = snEdges[j];
-            if (selIds.has(e.a) || e.a === hov) candidates.push({ id: e.b, w: e.weight });
-            if (selIds.has(e.b) || e.b === hov) candidates.push({ id: e.a, w: e.weight });
+            if (hits.has(e.a)) candidates.push({ id: e.b, w: e.weight });
+            if (hits.has(e.b)) candidates.push({ id: e.a, w: e.weight });
           }
         }
         candidates.sort((a, b) => b.w - a.w);
         const ns = new Set();
         for (let j = 0; j < Math.min(candidates.length, maxNbr); j++) ns.add(candidates[j].id);
         level._hlNeighbors = ns;
-        level._hlKey = '' + [...selIds] + '|' + hov;
+        level._hlKey = hlKey;
       }
       const isNeighbor = level._hlNeighbors.has(sn.bid);
       const isMajorNeighbor = isNeighbor && importance > 0.5;
@@ -560,7 +551,6 @@ function renderNodes(bz, pass) {
 
   const diag = Math.sqrt(bz.W * bz.W + bz.H * bz.H);
   const maxEdgeLen = diag * 1.2;
-  const maxEdgeLenSq = maxEdgeLen * maxEdgeLen;
   const fadeStart = diag * 0.25;
   const fadeRange = maxEdgeLen - fadeStart;
 
@@ -571,28 +561,21 @@ function renderNodes(bz, pass) {
 
   if (pass === 'edges') {
     // Normal edges — drawn behind heatmap
-    const maxEdges = maxEdgesToDraw(bz.nodes.length);
-    const rawSampleRate = bz.edges.length > maxEdges ? maxEdges / bz.edges.length : 1;
-    let rawDrawn = 0;
-
     const ALPHA_BUCKETS = 10;
     const edgeBuckets = new Array(ALPHA_BUCKETS);
     for (let b = 0; b < ALPHA_BUCKETS; b++) edgeBuckets[b] = [];
 
     const fadeStartSq = fadeStart * fadeStart;
-    for (let i = 0; i < bz.edges.length; i++) {
-      const e = bz.edges[i];
-      const a = bz.nodeIndexFull[e.src], b = bz.nodeIndexFull[e.dst];
-      if (!a || !b) continue;
+    const nodeIdx = bz.nodeIndexFull;
+    const ends = edgeEndpoints(bz.edges, nodeIdx, e => nodeIdx[e.src], e => nodeIdx[e.dst]);
+    const { idx, count } = sampleEdges(bz.edges, ends, bz.pan, rz, bz.W, bz.H, maxEdgesToDraw(bz.nodes.length));
+    for (let j = 0; j < count; j++) {
+      const i = idx[j];
+      const a = ends.a[i], b = ends.b[i];
       const pax = a.x * rz + bz.pan.x, pay = a.y * rz + bz.pan.y;
       const pbx = b.x * rz + bz.pan.x, pby = b.y * rz + bz.pan.y;
       const dx = pax - pbx, dy = pay - pby;
       const distSq = dx * dx + dy * dy;
-      if (distSq > maxEdgeLenSq) continue;
-      if (rawSampleRate < 1) {
-        if (edgeHash(i) > rawSampleRate * (2 - distSq / maxEdgeLenSq)) continue;
-      }
-      if (++rawDrawn > maxEdges) break;
       const distFade = distSq <= fadeStartSq ? 1 : Math.max(0, 1 - (Math.sqrt(distSq) - fadeStart) / fadeRange);
       const alpha = 0.25 * distFade;
       if (alpha < 0.01) continue;
@@ -618,11 +601,13 @@ function renderNodes(bz, pass) {
   if (pass === 'hilite') {
     // Highlighted edges for selected + hovered nodes
     if (hasSel || hov !== null) {
-      for (let i = 0; i < bz.edges.length; i++) {
+      const srcKey = e => e.src, dstKey = e => e.dst;
+      const rowOf = rawEdgeRow(bz);
+      const inc = incidentEdges(bz.edges, bz.nodeIndexFull, srcKey, dstKey, rowOf, bz._projRows);
+      const hits = new Set(selIds);
+      if (hov !== null) hits.add(hov);
+      for (const i of edgesTouching(inc, bz.edges, srcKey, dstKey, rowOf, hits)) {
         const e = bz.edges[i];
-        const aHit = selIds.has(e.src) || e.src === hov;
-        const bHit = selIds.has(e.dst) || e.dst === hov;
-        if (!aHit && !bHit) continue;
         const a = bz.nodeIndexFull[e.src], b = bz.nodeIndexFull[e.dst];
         if (!a || !b) continue;
         const pax = a.x * rz + bz.pan.x, pay = a.y * rz + bz.pan.y;

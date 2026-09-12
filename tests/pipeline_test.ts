@@ -7,7 +7,7 @@ import {
   buildGaussianProjection, hashToken, jaccardEstimate, cellIdAtLevel,
   normalizeAndQuantize, unifiedBlend, buildLevel, buildLevelNodes, buildLevelEdges,
   maxCountKey, getNodePropValue, getSupernodeDominantValue,
-  projectionSeedForGroup, normQuantize, computeEffectiveWeights,
+  projectionSeedForGroup, normQuantize, computeEffectiveWeights, packProjections,
 } from "../docs/blitzoom-algo.js";
 import { generateGroupColors } from "../docs/blitzoom-colors.js";
 
@@ -1552,17 +1552,9 @@ Deno.test("normalizeAndQuantize: assigns uint16 grid coords", () => {
 
 Deno.test("buildLevel: creates supernodes and edges", () => {
   const result = runPipeline(SAMPLE_EDGES, SAMPLE_LABELS);
-  const G = result.groupNames.length;
 
-  // Hydrate nodes with projections
-  const nodes = result.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  // Hydrate nodes: projIdx = row into result.projBuf
+  const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
@@ -1574,7 +1566,7 @@ Deno.test("buildLevel: creates supernodes and edges", () => {
   // Blend to assign positions
   const strengths = {};
   for (const g of result.groupNames) strengths[g] = 1;
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5);
 
   // Build level 1 (2x2 grid)
   const level = buildLevel(1, nodes, result.edges, nodeIndex,
@@ -1616,14 +1608,7 @@ Deno.test("E2E: Epstein dataset loads and processes correctly", async () => {
   }
 
   // Blend and build levels
-  const nodes = result.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+  const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
 
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
@@ -1636,7 +1621,7 @@ Deno.test("E2E: Epstein dataset loads and processes correctly", async () => {
 
   const strengths = {};
   for (const g of result.groupNames) strengths[g] = g === "group" ? 3 : 1;
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5);
 
   // Verify grid coords assigned
   for (const n of nodes) {
@@ -1689,15 +1674,7 @@ Deno.test("E2E: Epstein with topology alpha > 0", async () => {
   const nodesText = await Deno.readTextFile("docs/data/epstein.nodes");
   const result = runPipeline(edgesText, nodesText);
 
-  const G = result.groupNames.length;
-  const nodes = result.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
@@ -1712,12 +1689,12 @@ Deno.test("E2E: Epstein with topology alpha > 0", async () => {
   for (const g of result.groupNames) strengths[g] = 1;
 
   // Blend with alpha=0
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5);
   const posAlpha0 = nodes.map(n => [n.px, n.py]);
 
   // Reset and blend with alpha=0.5
   for (const n of nodes) { n.px = 0; n.py = 0; n.gx = 0; n.gy = 0; }
-  unifiedBlend(nodes, result.groupNames, strengths, 0.5, adjList, nodeIndex, 5);
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0.5, adjList, nodeIndex, 5);
   const posAlpha05 = nodes.map(n => [n.px, n.py]);
 
   // Positions should differ
@@ -1738,15 +1715,7 @@ Deno.test("normQuantize: zero displacement on incremental insertion", async () =
   const nodesText = await Deno.readTextFile("docs/data/epstein.nodes");
   const result = runPipeline(edgesText, nodesText);
 
-  const G = result.groupNames.length;
-  const allNodes = result.nodeArray.map((n: any, i: number) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const allNodes = result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
   const adjList: Record<string, string[]> = {};
   const nodeIndex: Record<string, any> = {};
   for (const n of allNodes) { adjList[n.id] = []; nodeIndex[n.id] = n; }
@@ -1764,7 +1733,7 @@ Deno.test("normQuantize: zero displacement on incremental insertion", async () =
   const first100 = allNodes.slice(0, 100);
   const idx100: Record<string, any> = {};
   for (const n of first100) idx100[n.id] = n;
-  unifiedBlend(first100, result.groupNames, strengths, 0, adjList, idx100, 0, 'norm', {});
+  unifiedBlend(first100, result.projBuf, result.groupNames, strengths, 0, adjList, idx100, 0, 'norm', {});
 
   // Record their gx/gy
   const savedGx = first100.map(n => n.gx);
@@ -1772,7 +1741,7 @@ Deno.test("normQuantize: zero displacement on incremental insertion", async () =
 
   // Now blend ALL nodes with norm mode (simulating incremental add)
   for (const n of allNodes) { n.px = 0; n.py = 0; n.gx = 0; n.gy = 0; }
-  unifiedBlend(allNodes, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'norm', {});
+  unifiedBlend(allNodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'norm', {});
 
   // The first 100 nodes should have identical gx/gy
   let displaced = 0;
@@ -1787,15 +1756,7 @@ Deno.test("normQuantize: insertion order independence", async () => {
   const nodesText = await Deno.readTextFile("docs/data/karate.nodes");
   const result = runPipeline(edgesText, nodesText);
 
-  const G = result.groupNames.length;
-  const makeNodes = () => result.nodeArray.map((n: any, i: number) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const makeNodes = () => result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
   const adjList: Record<string, string[]> = {};
   const nodeIndex: Record<string, any> = {};
@@ -1812,13 +1773,13 @@ Deno.test("normQuantize: insertion order independence", async () => {
   for (const g of result.groupNames) if (!strengths[g]) strengths[g] = 0;
 
   // Blend in natural order
-  unifiedBlend(nodes1, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'norm', {});
+  unifiedBlend(nodes1, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'norm', {});
 
   // Blend in reversed order
   const nodes2 = makeNodes().reverse();
   const idx2: Record<string, any> = {};
   for (const n of nodes2) idx2[n.id] = n;
-  unifiedBlend(nodes2, result.groupNames, strengths, 0, adjList, idx2, 0, 'norm', {});
+  unifiedBlend(nodes2, result.projBuf, result.groupNames, strengths, 0, adjList, idx2, 0, 'norm', {});
 
   // Every node should have the same gx/gy regardless of order
   const map1 = Object.fromEntries(nodes1.map((n: any) => [n.id, { gx: n.gx, gy: n.gy }]));
@@ -1835,15 +1796,7 @@ Deno.test("normQuantize: gaussian mode DOES shift on insertion (control test)", 
   const nodesText = await Deno.readTextFile("docs/data/karate.nodes");
   const result = runPipeline(edgesText, nodesText);
 
-  const G = result.groupNames.length;
-  const allNodes = result.nodeArray.map((n: any, i: number) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const allNodes = result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
   const adjList: Record<string, string[]> = {};
   const nodeIndex: Record<string, any> = {};
   for (const n of allNodes) { adjList[n.id] = []; nodeIndex[n.id] = n; }
@@ -1861,12 +1814,12 @@ Deno.test("normQuantize: gaussian mode DOES shift on insertion (control test)", 
   const firstHalf = allNodes.slice(0, 17);
   const idx17: Record<string, any> = {};
   for (const n of firstHalf) idx17[n.id] = n;
-  unifiedBlend(firstHalf, result.groupNames, strengths, 0, adjList, idx17, 0, 'gaussian', {});
+  unifiedBlend(firstHalf, result.projBuf, result.groupNames, strengths, 0, adjList, idx17, 0, 'gaussian', {});
   const savedGx = firstHalf.map(n => n.gx);
 
   // Blend all with gaussian
   for (const n of allNodes) { n.px = 0; n.py = 0; n.gx = 0; n.gy = 0; }
-  unifiedBlend(allNodes, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'gaussian', {});
+  unifiedBlend(allNodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 0, 'gaussian', {});
 
   // Some nodes should have shifted (gaussian depends on data distribution)
   let displaced = 0;
@@ -1983,15 +1936,7 @@ Deno.test("buildLevelNodes: returns supernodes with empty snEdges", () => {
   const nodesResult = parseNodesFile(SAMPLE_LABELS);
   const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
   const { projBuf } = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins);
-  const G = graph.groupNames.length;
-  const nodes = graph.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[graph.groupNames[g]] = [projBuf[off], projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+  const nodes = graph.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
   for (const e of graph.edges) {
@@ -1999,7 +1944,7 @@ Deno.test("buildLevelNodes: returns supernodes with empty snEdges", () => {
   }
   const strengths: Record<string, number> = {};
   for (const g of graph.groupNames) strengths[g] = 1;
-  unifiedBlend(nodes, graph.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
+  unifiedBlend(nodes, projBuf, graph.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
 
   const lvl = buildLevelNodes(4, nodes, n => n.group, n => n.label || n.id, () => '#888');
   assert(lvl.supernodes.length > 0, "Should have supernodes");
@@ -2013,15 +1958,7 @@ Deno.test("buildLevelEdges: populates snEdges correctly", () => {
   const nodesResult = parseNodesFile(SAMPLE_LABELS);
   const graph = buildGraph(parsed, nodesResult.nodes, nodesResult.extraPropNames);
   const { projBuf } = computeProjections(graph.nodeArray, graph.adjGroups, graph.groupNames, graph.hasEdgeTypes, nodesResult.extraPropNames, graph.numericBins);
-  const G = graph.groupNames.length;
-  const nodes = graph.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[graph.groupNames[g]] = [projBuf[off], projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+  const nodes = graph.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
   for (const e of graph.edges) {
@@ -2029,7 +1966,7 @@ Deno.test("buildLevelEdges: populates snEdges correctly", () => {
   }
   const strengths: Record<string, number> = {};
   for (const g of graph.groupNames) strengths[g] = 1;
-  unifiedBlend(nodes, graph.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
+  unifiedBlend(nodes, projBuf, graph.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
 
   // Phase 1
   const lvl = buildLevelNodes(4, nodes, n => n.group, n => n.label || n.id, () => '#888');
@@ -2056,9 +1993,11 @@ function makeRotationFixture() {
     { id: 'a', degree: 0, edgeTypes: null, extraProps: {}, projections: { g1: [1, 0], g2: [0, 0] }, px: 0, py: 0, gx: 0, gy: 0 },
     { id: 'b', degree: 0, edgeTypes: null, extraProps: {}, projections: { g1: [0, 0], g2: [1, 0] }, px: 0, py: 0, gx: 0, gy: 0 },
   ];
+  const groupNames = ['g1', 'g2'];
+  const projBuf = packProjections(nodes, groupNames);
   const nodeIndex = { a: nodes[0], b: nodes[1] };
   const adjList = { a: [], b: [] };
-  return { nodes, nodeIndex, adjList, groupNames: ['g1', 'g2'] };
+  return { nodes, nodeIndex, adjList, groupNames, projBuf };
 }
 
 Deno.test("unifiedBlend: null/missing bearings preserves original behavior", () => {
@@ -2066,9 +2005,9 @@ Deno.test("unifiedBlend: null/missing bearings preserves original behavior", () 
   const fB = makeRotationFixture();
   const strengths = { g1: 5, g2: 5 };
   // 9-arg legacy form (no bearings parameter)
-  unifiedBlend(fA.nodes, fA.groupNames, strengths, 0, fA.adjList, fA.nodeIndex, 0, 'gaussian', {});
+  unifiedBlend(fA.nodes, fA.projBuf, fA.groupNames, strengths, 0, fA.adjList, fA.nodeIndex, 0, 'gaussian', {});
   // 10-arg form with explicit null bearings — must produce identical output
-  unifiedBlend(fB.nodes, fB.groupNames, strengths, 0, fB.adjList, fB.nodeIndex, 0, 'gaussian', {}, null);
+  unifiedBlend(fB.nodes, fB.projBuf, fB.groupNames, strengths, 0, fB.adjList, fB.nodeIndex, 0, 'gaussian', {}, null);
   for (let i = 0; i < fA.nodes.length; i++) {
     assertEquals(fA.nodes[i].gx, fB.nodes[i].gx);
     assertEquals(fA.nodes[i].gy, fB.nodes[i].gy);
@@ -2081,8 +2020,8 @@ Deno.test("unifiedBlend: empty bearings object is equivalent to null", () => {
   const fA = makeRotationFixture();
   const fB = makeRotationFixture();
   const strengths = { g1: 5, g2: 5 };
-  unifiedBlend(fA.nodes, fA.groupNames, strengths, 0, fA.adjList, fA.nodeIndex, 0, 'gaussian', {}, null);
-  unifiedBlend(fB.nodes, fB.groupNames, strengths, 0, fB.adjList, fB.nodeIndex, 0, 'gaussian', {}, {});
+  unifiedBlend(fA.nodes, fA.projBuf, fA.groupNames, strengths, 0, fA.adjList, fA.nodeIndex, 0, 'gaussian', {}, null);
+  unifiedBlend(fB.nodes, fB.projBuf, fB.groupNames, strengths, 0, fB.adjList, fB.nodeIndex, 0, 'gaussian', {}, {});
   for (let i = 0; i < fA.nodes.length; i++) {
     assertAlmostEquals(fA.nodes[i].px, fB.nodes[i].px, 1e-9);
     assertAlmostEquals(fA.nodes[i].py, fB.nodes[i].py, 1e-9);
@@ -2098,7 +2037,7 @@ Deno.test("unifiedBlend: 90° rotation on one group swaps x into y", () => {
   // nd.px/nd.py BEFORE quantization by using a fresh no-smooth call; but the
   // unifiedBlend API always quantizes. Instead, capture by calling with
   // gaussian quant and a fresh stats object — gx/gy will reflect the rotation.
-  unifiedBlend(f.nodes, f.groupNames, strengths, 0, f.adjList, f.nodeIndex, 0, 'gaussian', {}, bearings);
+  unifiedBlend(f.nodes, f.projBuf, f.groupNames, strengths, 0, f.adjList, f.nodeIndex, 0, 'gaussian', {}, bearings);
   // After 90° CCW rotation, (1,0) becomes (0,1). Node A's raw contribution
   // was (1,0) in g1 → rotated to (0,1). Node B's g1 contribution was (0,0) →
   // still (0,0). The floor mechanism mixes in g2 at 10% of max (1.0), so A's
@@ -2114,8 +2053,8 @@ Deno.test("unifiedBlend: rotation changes layout when bearings are set", () => {
   const f0 = makeRotationFixture();
   const f90 = makeRotationFixture();
   const strengths = { g1: 10, g2: 0 };
-  unifiedBlend(f0.nodes, f0.groupNames, strengths, 0, f0.adjList, f0.nodeIndex, 0, 'gaussian', {}, { g1: 0, g2: 0 });
-  unifiedBlend(f90.nodes, f90.groupNames, strengths, 0, f90.adjList, f90.nodeIndex, 0, 'gaussian', {}, { g1: Math.PI / 2, g2: 0 });
+  unifiedBlend(f0.nodes, f0.projBuf, f0.groupNames, strengths, 0, f0.adjList, f0.nodeIndex, 0, 'gaussian', {}, { g1: 0, g2: 0 });
+  unifiedBlend(f90.nodes, f90.projBuf, f90.groupNames, strengths, 0, f90.adjList, f90.nodeIndex, 0, 'gaussian', {}, { g1: Math.PI / 2, g2: 0 });
   // At 0° rotation, the g1 signal extends horizontally (px differs, py equal).
   // At 90° rotation, the g1 signal extends vertically (py differs, px equal).
   // Verify the quantized positions differ between the two blends.
@@ -2133,8 +2072,8 @@ Deno.test("unifiedBlend: 360° rotation returns to original layout (mod numerica
   const f0 = makeRotationFixture();
   const f360 = makeRotationFixture();
   const strengths = { g1: 5, g2: 5 };
-  unifiedBlend(f0.nodes, f0.groupNames, strengths, 0, f0.adjList, f0.nodeIndex, 0, 'gaussian', {}, null);
-  unifiedBlend(f360.nodes, f360.groupNames, strengths, 0, f360.adjList, f360.nodeIndex, 0, 'gaussian', {}, { g1: 2 * Math.PI, g2: 2 * Math.PI });
+  unifiedBlend(f0.nodes, f0.projBuf, f0.groupNames, strengths, 0, f0.adjList, f0.nodeIndex, 0, 'gaussian', {}, null);
+  unifiedBlend(f360.nodes, f360.projBuf, f360.groupNames, strengths, 0, f360.adjList, f360.nodeIndex, 0, 'gaussian', {}, { g1: 2 * Math.PI, g2: 2 * Math.PI });
   for (let i = 0; i < f0.nodes.length; i++) {
     // After full rotation, quantized grid positions should match (integer-valued)
     assertEquals(f0.nodes[i].gx, f360.nodes[i].gx);
@@ -2149,15 +2088,7 @@ import { exportSVG, createSVGView } from "../docs/blitzoom-svg.js";
 // Helper: run the real pipeline and build an SVG view via createSVGView
 function buildSVGView(viewOpts = {}) {
   const result = runPipeline(SAMPLE_EDGES, SAMPLE_LABELS);
-  const G = result.groupNames.length;
-  const nodes = result.nodeArray.map((n, i) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+  const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, [] as string[]]));
   for (const e of result.edges) {
@@ -2165,7 +2096,7 @@ function buildSVGView(viewOpts = {}) {
   }
   const strengths: Record<string, number> = {};
   for (const g of result.groupNames) strengths[g] = 1;
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
 
   return createSVGView(nodes, result.edges, {
     width: 400, height: 300,

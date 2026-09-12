@@ -32,7 +32,7 @@ All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are opti
 
 `createBlitZoomFromGraph(canvas, [], [], opts)` and `<bz-graph>` with no inline data both produce a valid empty canvas. The first `addNodes` call into an empty graph **derives the property-group schema from that batch's fields** (excluding `id`/`group`/`label`), builds projection matrices for the new groups, and computes numeric bins. Strengths set via `opts.strengths` (or the `strengths` attribute) are preserved across the bootstrap.
 
-**Limitation**: property keys not present in the first batch are silently dropped on subsequent batches — same as the existing static-build behavior. Include at least one representative node containing every field you'll need in the first set of nodes the canvas sees.
+**Limitation**: property keys not present in the first batch are silently dropped on subsequent batches. (A non-empty `createBlitZoomFromGraph` build takes the union of keys across all nodes.) Include at least one representative node containing every field you'll need in the first set of nodes the canvas sees.
 
 ## Callback options
 
@@ -55,3 +55,5 @@ All options for `createBlitZoomView` and `createBlitZoomFromGraph`. All are opti
 | --------- | ------- | ------- | ----------------------------------------------------------- |
 | `animate` | boolean | true    | Animate the transition (lerp existing items, fade in new)   |
 | `animMs`  | number  | 400     | Animation duration in milliseconds                          |
+
+Mutations run one at a time in call order, after the initial layout (`view.ready`). Each returned promise resolves once that mutation has been applied, blended, and animated. An `addNodes` made while another add is still queued merges into that batch (its `opts` apply). Edges passed to `addNodes` are `{src, dst}`, optionally with `type` when the graph has an edge-type group; edges whose endpoints don't exist are ignored.

@@ -170,7 +170,7 @@ On abort or timeout, the optimizer returns the best result found so far.
 ```javascript
 import { autoTuneStrengths } from './blitzoom-utils.js';
 
-const result = await autoTuneStrengths(nodes, groupNames, adjList, nodeIndexFull, {
+const result = await autoTuneStrengths(nodes, projBuf, groupNames, adjList, nodeIndexFull, {
   weights: true,      // tune property strengths
   alpha: true,        // tune topology weight
   quant: false,       // tune quantization mode (default: only gaussian)
@@ -197,7 +197,9 @@ const view = createBlitZoomView(canvas, edgesText, nodesText, {
 Returns `BlitZoomCanvas` synchronously with default weights. The optimizer runs
 async in the background, shows progress overlay on the canvas, and re-renders
 with tuned parameters (including label props) when done. Explicit `weights`,
-`smoothAlpha`, `quantMode`, `labelProps` in opts take precedence.
+`smoothAlpha`, `quantMode`, `labelProps` in opts take precedence. `view.ready`
+resolves after the tune and the tuned blend + render; mutations issued before
+then wait for it.
 
 ### Viewer
 
@@ -228,7 +230,7 @@ The amazon tune dropped from ~32s (pre-optimization) to ~12s — a 2.6× speedup
 
 ## Bearing auto-tune (closed-form trace maximization)
 
-After weight/alpha optimization, `autoTuneBearings(nodes, groupNames, propStrengths)` finds per-group rotations that maximize the total 2D spread of the blended layout. Implemented in [blitzoom-utils.js](../docs/blitzoom-utils.js).
+After weight/alpha optimization, `autoTuneBearings(nodes, projBuf, groupNames, propStrengths)` finds per-group rotations that maximize the total 2D spread of the blended layout. Implemented in [blitzoom-utils.js](../docs/blitzoom-utils.js).
 
 ### Mathematical basis
 
@@ -296,7 +298,7 @@ single-token categorical group — see
 
 ```
 autoTuneStrengths(...)  →  result.strengths
-autoTuneBearings(nodes, groupNames, result.strengths)  →  bearings {}
+autoTuneBearings(nodes, projBuf, groupNames, result.strengths)  →  bearings {}
 v.propBearings = bearings
 autoTuneProjSeeds(nodes, groupNames, result.strengths, {numericBins})  →  {group, seed} | null
 v.bulkSetProjSeeds(...)   (clears stale overrides, applies winner, re-projects)

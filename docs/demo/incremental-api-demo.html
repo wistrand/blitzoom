@@ -411,7 +411,7 @@ async function runAutoTune() {
   }
 
   try {
-    const result = await autoTuneStrengths(viewGauss.nodes, viewGauss.groupNames, tuneAdj, tuneIndex, {
+    const result = await autoTuneStrengths(viewGauss.nodes, viewGauss.projBuf, viewGauss.groupNames, tuneAdj, tuneIndex, {
       strengths: true, alpha: false, quant: false, timeout: 5000,
     });
 

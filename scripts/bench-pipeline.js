@@ -29,14 +29,7 @@ for (const ds of DATASETS) {
   console.log(`  runPipeline (parse+build+project): ${fmt(tPipeline)}`);
 
   // Hydrate nodes
-  const nodes = result.nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+  const nodes = result.nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   const nodeIndex = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
   for (const e of result.edges) {
@@ -50,19 +43,19 @@ for (const ds of DATASETS) {
 
   // Blend (α=0, no topology smoothing)
   const t1 = performance.now();
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian');
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'gaussian');
   const tBlendNoAlpha = performance.now() - t1;
   console.log(`  Blend (α=0, gaussian): ${fmt(tBlendNoAlpha)}`);
 
   // Re-blend with topology
   const t2 = performance.now();
-  unifiedBlend(nodes, result.groupNames, strengths, 0.5, adjList, nodeIndex, 5, 'gaussian');
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0.5, adjList, nodeIndex, 5, 'gaussian');
   const tBlendAlpha = performance.now() - t2;
   console.log(`  Blend (α=0.5, 5 passes, gaussian): ${fmt(tBlendAlpha)}`);
 
   // Rank quantization comparison
   const t2b = performance.now();
-  unifiedBlend(nodes, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
+  unifiedBlend(nodes, result.projBuf, result.groupNames, strengths, 0, adjList, nodeIndex, 5, 'rank');
   const tBlendRank = performance.now() - t2b;
   console.log(`  Blend (α=0, rank): ${fmt(tBlendRank)}`);
 

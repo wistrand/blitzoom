@@ -53,16 +53,10 @@ for (const tc of cases) {
   const nodesText = tc.nodes ? Deno.readTextFileSync(tc.nodes) : null;
   const result = runPipeline(edgesText, nodesText);
 
-  // Hydrate nodes with projections
+  // Hydrate nodes: projIdx = row into result.projBuf
   const G = result.groupNames.length;
-  const nodes = result.nodeArray.map((n: any, i: number) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const projBuf = result.projBuf;
+  const nodes = result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
   // Build adjList
   const adjList: Record<string, string[]> = {};
@@ -81,7 +75,7 @@ for (const tc of cases) {
   for (const g of result.groupNames) propStrengths[g] = tc.strengths[g] ?? 0;
 
   // Blend + quantize
-  unifiedBlend(nodes, result.groupNames, propStrengths, tc.alpha, adjList, nodeIndexFull, 5, tc.quant, {});
+  unifiedBlend(nodes, projBuf, result.groupNames, propStrengths, tc.alpha, adjList, nodeIndexFull, 5, tc.quant, {});
 
   // Save: id, px, py, gx, gy, projections per group
   const lines: string[] = [];
@@ -92,9 +86,9 @@ for (const tc of cases) {
   lines.push(`# nodes=${nodes.length} groups=${result.groupNames.join(',')}`);
 
   for (const n of nodes) {
-    const projVals = result.groupNames.map((g: string) => {
-      const p = n.projections[g];
-      return p ? `${p[0]}\t${p[1]}` : '0\t0';
+    const projVals = result.groupNames.map((_g: string, gi: number) => {
+      const o = (n.projIdx * G + gi) * 2;
+      return `${projBuf[o]}\t${projBuf[o + 1]}`;
     }).join('\t');
     lines.push(`${n.id}\t${n.px}\t${n.py}\t${n.gx}\t${n.gy}\t${projVals}`);
   }

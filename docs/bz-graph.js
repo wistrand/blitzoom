@@ -176,6 +176,7 @@ class BzGraph extends HTMLElement {
         // time. Used when the graph is populated entirely via streaming.
         this._view = createBlitZoomFromGraph(this._canvas, [], [], opts);
       }
+      this._flushPendingOps();
       // a11y debug toggle (handled via canvas keydown — canvas has tabindex from BlitZoomCanvas)
       this._canvas.addEventListener('keydown', e => {
         if (e.key === 'a') this.classList.toggle('a11y-debug');
@@ -185,14 +186,32 @@ class BzGraph extends HTMLElement {
       // Panels start hidden; toggle with r/R keyboard shortcuts after clicking graph
       if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
       if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
-
-      this.dispatchEvent(new Event('ready'));
-      this._readyResolve(this);
-      this._flushPendingAdds();
     } catch (err) {
       this._readyReject(err);
       throw err;
     }
+    await this._signalReady();
+  }
+
+  /**
+   * Wait for the current view's init (blend + layout + render) to finish,
+   * then fire the `ready` event and resolve `ready`.
+   * If a reload replaces the view first, this build's `ready` Promise
+   * follows the replacement build instead.
+   */
+  async _signalReady() {
+    const view = this._view;
+    const readyPromise = this.ready;
+    const resolve = this._readyResolve, reject = this._readyReject;
+    let err = null;
+    try { await view.ready; } catch (e) { err = e; }
+    if (this._view !== view) {
+      if (this.ready !== readyPromise) this.ready.then(resolve, reject);
+      return;
+    }
+    if (err) { reject(err); return; }
+    this.dispatchEvent(new Event('ready'));
+    resolve(this);
   }
 
   /** Tear down current view and panels, rebuild with new data. */
@@ -229,16 +248,15 @@ class BzGraph extends HTMLElement {
         // SNAP text pipeline
         this._view = createBlitZoomView(this._canvas, edgesText, nodesText, opts);
       }
+      this._flushPendingOps();
 
       if (this.getAttribute('compass') !== 'false') this._createCompassPanel();
       if (this.getAttribute('controls') !== 'false') this._createControlsPanel();
-      this.dispatchEvent(new Event('ready'));
-      this._readyResolve(this);
-      this._flushPendingAdds();
     } catch (err) {
       this._readyReject(err);
       throw err;
     }
+    this._signalReady();
   }
 
   /** Handle dropped files — classifies via shared utility, then reloads. */
@@ -340,7 +358,7 @@ class BzGraph extends HTMLElement {
       const { autoTuneStrengths, autoTuneBearings, autoTuneProjSeeds } = await import('./blitzoom-utils.js');
       const v = this._view;
       v.showProgress('Auto-tuning...');
-      const result = await autoTuneStrengths(v.nodes, v.groupNames, v.adjList, v.nodeIndexFull, {
+      const result = await autoTuneStrengths(v.nodes, v.projBuf, v.groupNames, v.adjList, v.nodeIndexFull, {
         strengths: true, alpha: true, signal: this._tuneAbort.signal,
         onProgress: (info) => {
           const pct = Math.round(100 * info.step / Math.max(1, info.total));
@@ -353,7 +371,7 @@ class BzGraph extends HTMLElement {
       v.smoothAlpha = result.alpha;
       if (v.quantMode !== 'norm') v.quantMode = result.quantMode;
       v._quantStats = {};
-      const bearings = autoTuneBearings(v.nodes, v.groupNames, result.strengths);
+      const bearings = autoTuneBearings(v.nodes, v.projBuf, v.groupNames, result.strengths);
       v.propBearings = bearings;
       // Seed search for the dominant categorical group (clears prior overrides
       // first — the tune result is authoritative, same as the viewer).
@@ -464,53 +482,54 @@ class BzGraph extends HTMLElement {
   // Public API: access the underlying BlitZoomCanvas
   get view() { return this._view; }
 
-  async _flushPendingAdds() {
-    if (!this._pendingAdds || !this._view) return;
-    const pending = this._pendingAdds;
-    this._pendingAdds = null;
-    for (const { nodes, edges, opts } of pending) {
-      await this._view.addNodes(nodes, edges, opts);
+  /**
+   * Route a mutation to the view, or queue it until the view exists. Queued
+   * calls are handed to the view in call order as soon as it is created
+   * (_flushPendingOps), ahead of any later call; the view then runs them
+   * after its initial layout. The returned promise settles when the
+   * mutation has been applied.
+   */
+  _mutate(method, args) {
+    if (this._view) return this._view[method](...args);
+    if (!this._pendingOps) this._pendingOps = [];
+    return new Promise((resolve, reject) => this._pendingOps.push({ method, args, resolve, reject }));
+  }
+
+  _flushPendingOps() {
+    if (!this._pendingOps || !this._view) return;
+    const pending = this._pendingOps;
+    this._pendingOps = null;
+    for (const { method, args, resolve, reject } of pending) {
+      this._view[method](...args).then(resolve, reject);
     }
   }
 
   /**
-   * Add nodes (and optionally edges) incrementally.
-   * Delegates to BlitZoomCanvas.addNodes(). If the view isn't ready yet,
-   * queues the call and applies it after the next 'ready' event.
+   * Add nodes (and optionally edges) incrementally. Delegates to
+   * BlitZoomCanvas.addNodes(); calls made before the view exists are queued.
    * @param {Array} nodes - [{id, group?, label?, ...extraProps}]
-   * @param {Array} [edges=[]] - [{src, dst}]
+   * @param {Array} [edges=[]] - [{src, dst, type?}]
    * @param {object} [opts] - { animate: true, animMs: 400 }
-   * @returns {Promise}
+   * @returns {Promise} settles once the nodes are applied and blended
    */
-  addNodes(nodes, edges, opts) {
-    if (this._view) return this._view.addNodes(nodes, edges, opts);
-    // Queue for when view is ready
-    if (!this._pendingAdds) this._pendingAdds = [];
-    this._pendingAdds.push({ nodes, edges, opts });
-    return Promise.resolve();
-  }
+  addNodes(nodes, edges, opts) { return this._mutate('addNodes', [nodes, edges, opts]); }
 
   /**
-   * Remove nodes by ID.
+   * Remove nodes by ID. Queued like addNodes if the view doesn't exist yet.
    * @param {string[]} ids - node IDs to remove
    * @param {object} [opts] - { animate: true, animMs: 400 }
    * @returns {Promise}
    */
-  removeNodes(ids, opts) {
-    if (this._view) return this._view.removeNodes(ids, opts);
-    return Promise.resolve();
-  }
+  removeNodes(ids, opts) { return this._mutate('removeNodes', [ids, opts]); }
 
   /**
-   * Update existing nodes' properties and re-project.
+   * Update existing nodes' properties and re-project. Queued like addNodes
+   * if the view doesn't exist yet.
    * @param {Array} updates - [{id, group?, label?, ...extraProps}]
    * @param {object} [opts] - { animate: true, animMs: 400 }
    * @returns {Promise}
    */
-  updateNodes(updates, opts) {
-    if (this._view) return this._view.updateNodes(updates, opts);
-    return Promise.resolve();
-  }
+  updateNodes(updates, opts) { return this._mutate('updateNodes', [updates, opts]); }
 
   attributeChangedCallback(name, oldVal, newVal) {
     if (!this._view || oldVal === newVal) return;

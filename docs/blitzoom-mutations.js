@@ -39,7 +39,7 @@ const _yieldFrame = typeof requestAnimationFrame !== 'undefined'
   : () => Promise.resolve();
 
 /** Cancel any in-flight mutation animation on the view. */
-function cancelAnimation(view) {
+export function cancelAnimation(view) {
   if (view._animRaf) {
     cancelAnimationFrame(view._animRaf);
     view._animRaf = null;
@@ -47,11 +47,63 @@ function cancelAnimation(view) {
   }
 }
 
-/** Wait for any in-progress mutation to finish. */
-async function waitForMutex(view) {
-  while (view._addNodesRunning) {
-    await new Promise(r => setTimeout(r, 50));
+/**
+ * Run `fn` after every mutation already scheduled on this view has settled,
+ * so addNodes/removeNodes/updateNodes never interleave. The chain starts from
+ * `view.ready` (the factory's init blend + auto-tune). A failed init or a
+ * failed mutation doesn't stall later ones. Returns fn's promise.
+ */
+function enqueueMutation(view, fn) {
+  const tail = view._mutationTail || Promise.resolve(view.ready).catch(() => {});
+  // A destroyed view drops anything still queued — its canvas is gone.
+  const run = tail.then(() => (view._destroyed ? undefined : fn()));
+  view._mutationTail = run.catch(() => {});
+  return run;
+}
+
+/** Groups whose tokens derive from degree and neighbor groups. */
+const TOPOLOGY_GROUPS = ['structure', 'neighbors'];
+
+/** Grow view.projBuf to hold at least `rows` rows (amortized doubling). */
+function ensureProjCapacity(view, rows) {
+  const S = view.groupNames.length * 2;
+  if (view.projBuf.length >= rows * S) return;
+  const next = new Float64Array(Math.max(rows, view._projRows * 2, 64) * S);
+  next.set(view.projBuf.subarray(0, view._projRows * S));
+  view.projBuf = next;
+}
+
+/**
+ * Close the row gaps left by removed nodes: surviving node i moves to row i.
+ * In-place forward copy is safe because rows are ascending in view.nodes
+ * order (every node's projIdx >= its index).
+ */
+function compactProjections(view) {
+  const S = view.groupNames.length * 2;
+  const buf = view.projBuf;
+  const nodes = view.nodes;
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (n.projIdx !== i) {
+      buf.copyWithin(i * S, n.projIdx * S, n.projIdx * S + S);
+      n.projIdx = i;
+    }
   }
+  view._projRows = nodes.length;
+}
+
+/** Full projection of one node into its row. */
+function projectIntoRow(view, node) {
+  projectNode(
+    node, neighborGroupsOf(view, node.id), view.groupProjections, view.groupNames,
+    view.hasEdgeTypes, view._extraPropNames, view._numericBins,
+    view.projBuf, node.projIdx * view.groupNames.length * 2
+  );
+}
+
+/** Groups of a node's current neighbors, in adjList order (projectNode input). */
+function neighborGroupsOf(view, id) {
+  return (view.adjList[id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');
 }
 
 /** Snapshot current visible item positions keyed by bid (supernodes) or id (raw nodes). */
@@ -69,8 +121,11 @@ export function snapshotPositions(view) {
   return positions;
 }
 
-/** Animate transition: lerp existing items, fade in new items. */
+/** Animate transition: lerp existing items, fade in new items.
+ *  No-op (snap to final positions) where requestAnimationFrame doesn't exist,
+ *  so mutations work headless (Deno/Node SVG export, tests). */
 export function animateTransition(view, prevPositions, durationMs = 400) {
+  if (typeof requestAnimationFrame === 'undefined') return Promise.resolve();
   return new Promise(resolve => {
     const isRaw = view.currentLevel === RAW_LEVEL;
     const items = isRaw ? view.nodes : view.getLevel(view.currentLevel).supernodes;
@@ -187,8 +242,8 @@ async function blendAndAnimate(view, prevPositions, animate, animMs) {
  */
 function bootstrapEmptyGraph(view, newNodes) {
   // Discover extra property keys from the new nodes (excluding the special
-  // id/group/label fields). Use the first node as the schema source — same
-  // strategy as createBlitZoomFromGraph.
+  // id/group/label fields): the union across the batch, in first-seen order —
+  // same strategy as createBlitZoomFromGraph.
   const newExtras = [];
   const seen = new Set();
   for (const rn of newNodes) {
@@ -261,39 +316,54 @@ function bootstrapEmptyGraph(view, newNodes) {
  * @param {Array} [newEdges=[]] - [{src, dst}]
  * @param {object} [opts] - { animate: true, animMs: 400 }
  */
-export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
-  // Queue if another mutation is in progress
-  if (view._addNodesRunning) {
-    if (view._addNodesQueue) {
-      view._addNodesQueue.nodes.push(...newNodes);
-      view._addNodesQueue.edges.push(...newEdges);
-    } else {
-      view._addNodesQueue = { nodes: [...newNodes], edges: [...newEdges], opts };
-    }
-    return;
+export function addNodes(view, newNodes, newEdges = [], opts = {}) {
+  // Coalesce with an addNodes call that is queued but not started yet: one
+  // blend for both, and every merged caller resolves when the batch lands.
+  // removeNodes/updateNodes clear _pendingAdd, so adds never jump ahead of them.
+  const pending = view._pendingAdd;
+  if (pending) {
+    for (const n of newNodes) pending.nodes.push(n);
+    for (const e of newEdges) pending.edges.push(e);
+    return pending.promise;
   }
-  view._addNodesRunning = true;
-  cancelAnimation(view);
-  try {
+  const batch = { nodes: [...newNodes], edges: [...newEdges], opts, promise: null };
+  view._pendingAdd = batch;
+  batch.promise = enqueueMutation(view, () => {
+    if (view._pendingAdd === batch) view._pendingAdd = null;
+    return applyAddNodes(view, batch.nodes, batch.edges, batch.opts);
+  });
+  return batch.promise;
+}
 
+async function applyAddNodes(view, newNodes, newEdges, opts) {
+  cancelAnimation(view);
   const animate = opts.animate !== false;
+  // Snapshot before the new nodes exist: at the raw level they'd otherwise be
+  // recorded at their initial (0, 0) and lerp in from there instead of fading in.
+  const prevPositions = animate ? snapshotPositions(view) : null;
 
   // 0. First-build detection. An empty graph has _originalN === 0 (set by
   // the canvas constructor). The first addNodes call into such a graph IS
   // the original build, not an incremental insert — its nodes shouldn't
   // count toward the rebuild-threshold accounting. We capture this state
-  // here and apply the right bookkeeping at step 6 below.
+  // here and apply the right bookkeeping at step 7 below.
   //
   // Schema bootstrap is a separate concern: only needed when no extra
   // property groups have been established yet. Bootstrap derives the
   // schema from this batch's fields, extends groupNames, and builds
   // projection matrices for the new groups.
   const isFirstBuild = view._originalN === 0 && newNodes.length > 0;
-  if (isFirstBuild && view._extraPropNames.length === 0) {
+  // Bootstrap only into a genuinely empty graph: it extends groupNames, which
+  // changes the projection row stride, so existing rows would be reinterpreted.
+  // (_originalN can still be 0 with nodes present if an earlier add threw
+  // before its bookkeeping step.)
+  if (isFirstBuild && view.nodes.length === 0 && view._extraPropNames.length === 0) {
     bootstrapEmptyGraph(view, newNodes);
   }
 
-  // 1. Build node objects and project each
+  // 1. Build node objects (projected in step 3, once their edges are in).
+  // Each new node takes the next projection row.
+  ensureProjCapacity(view, view._projRows + newNodes.length);
   const added = [];
   for (const rn of newNodes) {
     const id = rn.id;
@@ -305,15 +375,9 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
       if (k === 'id' || k === 'group' || k === 'label' || k === 'color') continue;
       extraProps[k] = rn[k];
     }
-    const node = { id, group, label, degree: 0, edgeTypes: null, extraProps,
-                   projections: {}, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
+    const node = { id, group, label, degree: 0, edgeTypes: view.hasEdgeTypes ? [] : null, extraProps,
+                   projIdx: view._projRows++, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
     if (rn.color !== undefined) node.color = rn.color;
-
-    const neighborGroups = (view.adjList[id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');
-    node.projections = projectNode(
-      node, neighborGroups, view.groupProjections, view.groupNames,
-      view.hasEdgeTypes, view._extraPropNames, view._numericBins
-    );
 
     view.nodes.push(node);
     view.nodeIndexFull[id] = node;
@@ -321,34 +385,56 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
     added.push(node);
   }
 
-  // 2. Add edges
+  // 2. Add edges. Pre-existing endpoints change degree and neighbor set (and
+  // edge types, when the graph has an edgetype group and the edge carries
+  // `type`, the same field the object pipeline reads), so their topology
+  // groups are re-projected in step 3.
+  const addedSet = new Set(added);
+  const touched = new Set();
   for (const e of newEdges) {
     const src = view.nodeIndexFull[e.src], dst = view.nodeIndexFull[e.dst];
     if (!src || !dst) continue;
     view.edges.push(e);
     src.degree++;
     dst.degree++;
+    if (view.hasEdgeTypes && e.type != null) {
+      if (!src.edgeTypes) src.edgeTypes = [];
+      if (!src.edgeTypes.includes(e.type)) src.edgeTypes.push(e.type);
+      if (dst !== src) {
+        if (!dst.edgeTypes) dst.edgeTypes = [];
+        if (!dst.edgeTypes.includes(e.type)) dst.edgeTypes.push(e.type);
+      }
+    }
     view.adjList[e.src].push(e.dst);
     view.adjList[e.dst].push(e.src);
     if (src.degree > view.maxDegree) view.maxDegree = src.degree;
     if (dst.degree > view.maxDegree) view.maxDegree = dst.degree;
+    if (!addedSet.has(src)) touched.add(src);
+    if (!addedSet.has(dst)) touched.add(dst);
   }
 
   if (added.length === 0 && newEdges.length === 0) return;
+  view._topoGen++;
 
-  // 3. Extend color maps
-  extendColorMaps(view, added);
+  // 3. Project new nodes with their final degree and neighbor groups, then
+  // refresh topology groups on touched existing nodes. Results match what
+  // fullRebuild would compute for those groups; nodes whose degree bucket
+  // and neighbor-group set are unchanged get identical projections.
+  for (const node of added) projectIntoRow(view, node);
+  reprojectGroups(view, view.hasEdgeTypes ? [...TOPOLOGY_GROUPS, 'edgetype'] : TOPOLOGY_GROUPS, touched);
 
-  // 4. Snapshot + blend + animate
-  const prevPositions = animate ? snapshotPositions(view) : null;
+  // 4. Extend color maps (touched nodes can have a new degree value)
+  extendColorMaps(view, touched.size > 0 ? [...added, ...touched] : added);
+
+  // 5. Blend + animate (snapshot taken at the top)
   await blendAndAnimate(view, prevPositions, animate && added.length > 0, opts.animMs || 400);
 
-  // 5. Dispatch event
+  // 6. Dispatch event
   view.canvas.dispatchEvent(new CustomEvent('nodesadded', {
     detail: { count: added.length, edgesAdded: newEdges.length, total: view.nodes.length },
   }));
 
-  // 6. Account for added nodes. If this was the first build into a
+  // 7. Account for added nodes. If this was the first build into a
   // previously empty graph, set _originalN to the new size (this batch
   // is the baseline) and leave _insertsSinceRebuild at 0 — the bootstrap
   // batch is not an incremental insert, it's the original. Otherwise,
@@ -359,18 +445,9 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
   } else {
     view._insertsSinceRebuild += added.length;
     if (view._originalN > 0 && view._insertsSinceRebuild > view._originalN * view._rebuildThreshold) {
-      await fullRebuild(view);
+      await fullRebuild(view, animate);
     }
   }
-
-  // 7. Drain queue
-  if (view._addNodesQueue) {
-    const q = view._addNodesQueue;
-    view._addNodesQueue = null;
-    await addNodes(view, q.nodes, q.edges, q.opts);
-  }
-
-  } finally { view._addNodesRunning = false; }
 }
 
 /**
@@ -379,12 +456,13 @@ export async function addNodes(view, newNodes, newEdges = [], opts = {}) {
  * @param {string[]} ids - node IDs to remove
  * @param {object} [opts] - { animate: true, animMs: 400 }
  */
-export async function removeNodes(view, ids, opts = {}) {
-  await waitForMutex(view);
-  view._addNodesRunning = true;
-  cancelAnimation(view);
-  try {
+export function removeNodes(view, ids, opts = {}) {
+  view._pendingAdd = null; // later adds queue behind this removal
+  return enqueueMutation(view, () => applyRemoveNodes(view, ids, opts));
+}
 
+async function applyRemoveNodes(view, ids, opts) {
+  cancelAnimation(view);
   const animate = opts.animate !== false;
   const removeSet = new Set(ids);
 
@@ -408,19 +486,29 @@ export async function removeNodes(view, ids, opts = {}) {
   }
   view.edges = keptEdges;
 
-  // Update adjList
+  // Update adjList. Surviving neighbors lose degree and possibly a neighbor
+  // group, so their topology groups are re-projected below.
+  const touched = new Set();
   for (const id of removeSet) {
     const neighbors = view.adjList[id] || [];
     for (const nid of neighbors) {
       if (view.adjList[nid]) {
         view.adjList[nid] = view.adjList[nid].filter(x => x !== id);
       }
+      if (!removeSet.has(nid) && view.nodeIndexFull[nid]) touched.add(view.nodeIndexFull[nid]);
     }
     delete view.adjList[id];
     delete view.nodeIndexFull[id];
   }
 
   view.nodes = view.nodes.filter(n => !removeSet.has(n.id));
+  view._topoGen++;
+  compactProjections(view);
+  // Edge types are not re-derived here: edges from the initial load don't
+  // carry their type (buildGraph keeps only per-node type sets), so a
+  // surviving neighbor keeps its full type set.
+  reprojectGroups(view, TOPOLOGY_GROUPS, touched);
+  if (touched.size > 0) extendColorMaps(view, touched); // new degree / neighbor-count values
 
   // Recompute maxDegree
   view.maxDegree = 1;
@@ -433,8 +521,6 @@ export async function removeNodes(view, ids, opts = {}) {
   view.canvas.dispatchEvent(new CustomEvent('nodesremoved', {
     detail: { count: removedCount, total: view.nodes.length },
   }));
-
-  } finally { view._addNodesRunning = false; }
 }
 
 /**
@@ -443,19 +529,29 @@ export async function removeNodes(view, ids, opts = {}) {
  * @param {Array} updates - [{id, group?, label?, ...extraProps}]
  * @param {object} [opts] - { animate: true, animMs: 400 }
  */
-export async function updateNodes(view, updates, opts = {}) {
-  await waitForMutex(view);
-  view._addNodesRunning = true;
-  cancelAnimation(view);
-  try {
+export function updateNodes(view, updates, opts = {}) {
+  view._pendingAdd = null; // later adds queue behind this update
+  return enqueueMutation(view, () => applyUpdateNodes(view, updates, opts));
+}
 
+async function applyUpdateNodes(view, updates, opts) {
+  cancelAnimation(view);
   const animate = opts.animate !== false;
   let changed = 0;
+  // Neighbors of nodes whose group changed carry that group in their
+  // `neighbors` tokens; re-projected after all updates are applied.
+  const touched = new Set();
 
   for (const u of updates) {
     const node = view.nodeIndexFull[u.id];
     if (!node) continue;
 
+    if (u.group !== undefined && u.group !== node.group) {
+      for (const nid of view.adjList[u.id] || []) {
+        const nb = view.nodeIndexFull[nid];
+        if (nb) touched.add(nb);
+      }
+    }
     if (u.group !== undefined) node.group = u.group;
     if (u.label !== undefined) node.label = u.label;
     if (u.color !== undefined) node.color = u.color;
@@ -465,15 +561,12 @@ export async function updateNodes(view, updates, opts = {}) {
       node.extraProps[k] = u[k];
     }
 
-    const neighborGroups = (view.adjList[u.id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');
-    node.projections = projectNode(
-      node, neighborGroups, view.groupProjections, view.groupNames,
-      view.hasEdgeTypes, view._extraPropNames, view._numericBins
-    );
+    projectIntoRow(view, node);
     changed++;
   }
 
   if (changed === 0) return;
+  reprojectGroups(view, ['neighbors'], touched);
 
   // Extend color maps for updated nodes
   const updatedNodes = updates.map(u => view.nodeIndexFull[u.id]).filter(Boolean);
@@ -485,15 +578,15 @@ export async function updateNodes(view, updates, opts = {}) {
   view.canvas.dispatchEvent(new CustomEvent('nodesupdated', {
     detail: { count: changed, total: view.nodes.length },
   }));
-
-  } finally { view._addNodesRunning = false; }
 }
 
 /**
  * Full projection rebuild — recomputes numeric bins, adjGroups, and all projections.
  * @param {BlitZoomCanvas} view
+ * @param {boolean} [animate=true] - false to snap (a streaming loop that passes
+ *   `{animate: false}` shouldn't get an animated transition from the periodic rebuild)
  */
-export async function fullRebuild(view) {
+export async function fullRebuild(view, animate = true) {
   const N = view.nodes.length;
   if (N === 0) return;
 
@@ -511,48 +604,39 @@ export async function fullRebuild(view) {
     view.nodes, adjGroups, view.groupNames, view.hasEdgeTypes, view._extraPropNames, numericBins, view.projSeeds
   );
 
-  const G = view.groupNames.length;
-  for (let i = 0; i < N; i++) {
-    const proj = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      proj[view.groupNames[g]] = [projBuf[off], projBuf[off + 1]];
-    }
-    view.nodes[i].projections = proj;
-  }
+  view.projBuf = projBuf;
+  for (let i = 0; i < N; i++) view.nodes[i].projIdx = i;
+  view._projRows = N;
 
   view._numericBins = numericBins;
   view._insertsSinceRebuild = 0;
   view._originalN = N;
 
-  await blendAndAnimate(view, prevPositions, true, 500);
+  await blendAndAnimate(view, prevPositions, animate, 500);
 
   view._progressText = null;
   console.log(`[BlitZoomCanvas] Full rebuild: ${N} nodes, ${view._extraPropNames.length} extra props`);
 }
 
 /**
- * Re-project only the given groups for every node, using the view's current
- * groupProjections matrices. Used after a per-group seed change
- * (bulkSetProjSeeds) — other groups' projections are untouched, so with
- * quantMode 'norm' unaffected coordinates stay identical. Synchronous;
- * cost is one single-group MinHash + projection per node per group.
- * Does not blend — callers trigger the blend + layout + render chain.
+ * Re-project only the given groups, using the view's current groupProjections
+ * matrices. Other groups' projections are untouched, so with quantMode 'norm'
+ * unaffected coordinates stay identical. Used after a per-group seed change
+ * (bulkSetProjSeeds, all nodes) and by mutations to refresh topology groups
+ * on nodes whose degree or neighbors changed (subset via `nodes`).
+ * Synchronous; cost is one single-group MinHash + projection per node per
+ * group. Does not blend — callers trigger the blend + layout + render chain.
+ * @param {Iterable<object>} [nodes=view.nodes]
  */
-export function reprojectGroups(view, groups) {
+export function reprojectGroups(view, groups, nodes = view.nodes) {
   const only = new Set(groups);
-  if (only.size === 0 || view.nodes.length === 0) return;
-  const G = view.groupNames.length;
-  const buf = new Float64Array(G * 2);
-  for (const n of view.nodes) {
-    buf.fill(0); // skipped/empty groups must read as neutral [0,0], not stale
-    const neighborGroups = (view.adjList[n.id] || []).map(nid => view.nodeIndexFull[nid]?.group || 'unknown');
-    const proj = projectNode(
-      n, neighborGroups, view.groupProjections, view.groupNames,
-      view.hasEdgeTypes, view._extraPropNames, view._numericBins, buf, 0, only
+  if (only.size === 0) return;
+  const S = view.groupNames.length * 2;
+  for (const n of nodes) {
+    projectNode(
+      n, neighborGroupsOf(view, n.id), view.groupProjections, view.groupNames,
+      view.hasEdgeTypes, view._extraPropNames, view._numericBins,
+      view.projBuf, n.projIdx * S, only
     );
-    for (const g of only) {
-      if (proj[g]) n.projections[g] = proj[g];
-    }
   }
 }

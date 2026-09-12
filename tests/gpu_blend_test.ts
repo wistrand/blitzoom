@@ -15,16 +15,9 @@ async function compareBlend(name: string, edgesPath: string, nodesPath: string |
   const nodesText = nodesPath ? Deno.readTextFileSync(nodesPath) : null;
   const result = runPipeline(edgesText, nodesText);
 
-  // Build nodes with projections (same as blitzoom-canvas _hydrateAndLink)
+  // Build nodes: projIdx = row into result.projBuf
   const G = result.groupNames.length;
-  const nodes = result.nodeArray.map((n: any, i: number) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const nodes = result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
   const adjList: Record<string, string[]> = {};
   for (const n of nodes) adjList[n.id] = [];
@@ -46,7 +39,7 @@ async function compareBlend(name: string, edgesPath: string, nodesPath: string |
   // unifiedBlend modifies px/py then quantizes (rank quant changes px/py).
   // We need pre-quantization px/py.
   const N = nodes.length;
-  const cpuNodes = nodes.map((n: any) => ({ ...n, projections: { ...n.projections } }));
+  const cpuNodes = nodes.map((n: any) => ({ ...n }));
   const cpuNodeIndex: Record<string, any> = {};
   for (const n of cpuNodes) cpuNodeIndex[n.id] = n;
 
@@ -62,9 +55,10 @@ async function compareBlend(name: string, edgesPath: string, nodesPath: string |
   const cpuPropPy = new Float64Array(N);
   for (let i = 0; i < N; i++) {
     let px = 0, py = 0;
-    for (const g of result.groupNames) {
-      const p = cpuNodes[i].projections[g];
-      if (p) { px += p[0] * effW[g]; py += p[1] * effW[g]; }
+    for (let gi = 0; gi < G; gi++) {
+      const g = result.groupNames[gi];
+      const o = (cpuNodes[i].projIdx * G + gi) * 2;
+      px += result.projBuf[o] * effW[g]; py += result.projBuf[o + 1] * effW[g];
     }
     cpuPropPx[i] = px / propTotal;
     cpuPropPy[i] = py / propTotal;
@@ -97,7 +91,7 @@ async function compareBlend(name: string, edgesPath: string, nodesPath: string |
   }
 
   // GPU blend
-  const gpuResult = await gpuBlend(nodes, result.groupNames, propStrengths, alpha, adjList, nodeIndexFull, 5);
+  const gpuResult = await gpuBlend(nodes, result.projBuf, result.groupNames, propStrengths, alpha, adjList, nodeIndexFull, 5);
 
   // Compare pre-quantization positions
   let maxDelta = 0;
@@ -209,18 +203,10 @@ Deno.test('GPU vs CPU full pipeline (blend + quantize): gx/gy match', async () =
     const edgesText = (ds as any).gz ? await gunzip(ds.edges) : Deno.readTextFileSync(ds.edges);
     const nodesText = ds.nodes ? ((ds as any).gz ? await gunzip(ds.nodes) : Deno.readTextFileSync(ds.nodes)) : null;
     const result = runPipeline(edgesText, nodesText);
-    const G = result.groupNames.length;
 
-    // Build two copies of nodes with projections
+    // Build two copies of nodes (both index into the shared result.projBuf)
     function buildNodes() {
-      return result.nodeArray.map((n: any, i: number) => {
-        const projections: Record<string, number[]> = {};
-        for (let g = 0; g < G; g++) {
-          const off = (i * G + g) * 2;
-          projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-        }
-        return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-      });
+      return result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
     }
     const cpuNodes = buildNodes();
     const gpuNodes = buildNodes();
@@ -245,11 +231,11 @@ Deno.test('GPU vs CPU full pipeline (blend + quantize): gx/gy match', async () =
 
     // CPU: full blend + quantize with fresh quantStats
     const cpuQuantStats = {};
-    unifiedBlend(cpuNodes, result.groupNames, propStrengths, ds.alpha, adjList, cpuNodeIndex, 5, 'gaussian', cpuQuantStats);
+    unifiedBlend(cpuNodes, result.projBuf, result.groupNames, propStrengths, ds.alpha, adjList, cpuNodeIndex, 5, 'gaussian', cpuQuantStats);
 
     // GPU: full blend + quantize with fresh quantStats
     const gpuQuantStats = {};
-    await gpuUnifiedBlend(gpuNodes, result.groupNames, propStrengths, ds.alpha, adjList, gpuNodeIndex, 5, 'gaussian', gpuQuantStats);
+    await gpuUnifiedBlend(gpuNodes, result.projBuf, result.groupNames, propStrengths, ds.alpha, adjList, gpuNodeIndex, 5, 'gaussian', gpuQuantStats);
 
     // Compare px/py (pre-quantization values stored by gaussianQuantize)
     let maxPxDelta = 0;
@@ -318,14 +304,7 @@ Deno.test('GPU blend profiling: Amazon (367K nodes)', async () => {
   const result = runPipeline(edgesText, nodesText);
 
   const G = result.groupNames.length;
-  const nodes = result.nodeArray.map((n: any, i: number) => {
-    const projections: Record<string, number[]> = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[result.groupNames[g]] = [result.projBuf[off], result.projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0 };
-  });
+  const nodes = result.nodeArray.map((n: any, i: number) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0 }));
 
   const adjList: Record<string, string[]> = {};
   for (const n of nodes) adjList[n.id] = [];
@@ -349,7 +328,7 @@ Deno.test('GPU blend profiling: Amazon (367K nodes)', async () => {
   // Run 3 profiled blends to see warm-cache behavior
   setGpuBlendProfiling(true);
   for (let i = 0; i < 3; i++) {
-    await gpuBlend(nodes, result.groupNames, propStrengths, 0.5, adjList, nodeIndexFull, 5);
+    await gpuBlend(nodes, result.projBuf, result.groupNames, propStrengths, 0.5, adjList, nodeIndexFull, 5);
     const p = getLastBlendProfile()!;
     console.log(`  Blend ${i}: total=${p.totalMs.toFixed(1)}ms anchor=${p.anchorComputeMs.toFixed(1)} csr=${p.csrBuildMs.toFixed(1)} upload=${p.bufferUploadMs.toFixed(1)} bind=${p.bindGroupCreateMs.toFixed(1)} dispatch=${p.gpuDispatchMs.toFixed(1)} readback=${p.readbackMs.toFixed(1)} deinterleave=${p.deinterleaveMs.toFixed(1)}`);
   }

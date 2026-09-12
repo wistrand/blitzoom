@@ -25,7 +25,7 @@ export function applyIncrementalPreset(opts) {
 
 // ─── Shared tail: strengths, colors, blend, construct view ──────────────────
 
-function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, hasEdgeTypes, opts) {
+function _finalize(canvas, nodes, projBuf, edges, nodeIndexFull, adjList, groupNames, hasEdgeTypes, opts) {
   // Default strengths: group=3 if it has >1 distinct value, label=1, rest=0.
   // If group is single-valued (e.g. CSV without a "group" column → all "unknown"),
   // find the first categorical extra prop with 2-50 distinct values instead.
@@ -76,7 +76,7 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
   let quantMode = opts.quantMode;
 
   const view = new BlitZoomCanvas(canvas, {
-    nodes, edges, nodeIndexFull, adjList,
+    nodes, projBuf, edges, nodeIndexFull, adjList,
     groupNames, propStrengths, propColors,
     groupColors: propColors['group'],
     hasEdgeTypes,
@@ -86,9 +86,10 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
   });
 
   // Async init: probe GPU → blend → (optional auto-tune) → render.
-  // Factory returns immediately; view renders once blend completes.
+  // Factory returns immediately; `await view.ready` waits for the first
+  // blend + layout + render (gx/gy are not populated before then).
   const wantGPU = opts.useGPU || (opts.autoGPU !== false && nodes.length * groupNames.length > 2000);
-  (async () => {
+  view.ready = (async () => {
     // Probe GPU (fast no-op if unavailable or not wanted)
     if (wantGPU) {
       const ok = await initGPU().catch(() => false);
@@ -108,7 +109,7 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
           : info.phase === 'done' ? 'done' : 'refining';
         view.showProgress(`Auto-tuning: ${phase} (${pct}%)`);
       };
-      const result = await autoTuneStrengths(view.nodes, view.groupNames, view.adjList, view.nodeIndexFull, tuneOpts);
+      const result = await autoTuneStrengths(view.nodes, view.projBuf, view.groupNames, view.adjList, view.nodeIndexFull, tuneOpts);
       if ((tuneOpts.strengths ?? tuneOpts.weights) !== false && !opts.strengths && !opts.weights) {
         for (const g of view.groupNames) view.propStrengths[g] = result.strengths[g] ?? 0;
       }
@@ -127,31 +128,30 @@ function _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, has
     }
 
     // Blend (GPU if enabled and large enough, else CPU)
+    if (view._destroyed) return view; // destroyed while probing/tuning
     view.levels = new Array(ZOOM_LEVELS.length).fill(null);
     await view._blend();
+    if (view._destroyed) return view;
     view._progressText = null;
     view._refreshPropCache();
     view.layoutAll();
     view.render();
     canvas.setAttribute('aria-label', `Graph visualization, ${nodes.length} nodes, ${edges.length} edges`);
     view.announce(`Graph loaded, ${nodes.length} nodes, ${edges.length} edges. ${view._describeLevel()}`);
+    return view;
   })();
+  // Log init failures for callers that never await `ready`; awaiters still
+  // see the rejection.
+  view.ready.catch(err => console.error('[BlitZoom] initial blend failed:', err));
 
   return view;
 }
 
-// ─── Hydrate nodes from projBuf + build adjList ─────────────────────────────
+// ─── Hydrate nodes + build adjList ──────────────────────────────────────────
+// Projections stay in the pipeline's flat projBuf; node i gets projIdx = i.
 
-export function hydrateAndLink(nodeArray, projBuf, groupNames, edges) {
-  const G = groupNames.length;
-  const nodes = nodeArray.map((n, i) => {
-    const projections = {};
-    for (let g = 0; g < G; g++) {
-      const off = (i * G + g) * 2;
-      projections[groupNames[g]] = [projBuf[off], projBuf[off + 1]];
-    }
-    return { ...n, projections, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 };
-  });
+export function hydrateAndLink(nodeArray, edges) {
+  const nodes = nodeArray.map((n, i) => ({ ...n, projIdx: i, px: 0, py: 0, gx: 0, gy: 0, x: 0, y: 0 }));
   const nodeIndexFull = Object.fromEntries(nodes.map(n => [n.id, n]));
   const adjList = Object.fromEntries(nodes.map(n => [n.id, []]));
   for (const e of edges) {
@@ -176,8 +176,8 @@ export function hydrateAndLink(nodeArray, projBuf, groupNames, edges) {
 export function createBlitZoomView(canvas, edgesText, nodesText, opts = {}) {
   opts = applyIncrementalPreset(opts);
   const result = runPipeline(edgesText, nodesText, opts.projSeeds || null);
-  const { nodes, nodeIndexFull, adjList } = hydrateAndLink(result.nodeArray, result.projBuf, result.groupNames, result.edges);
-  return _finalize(canvas, nodes, result.edges, nodeIndexFull, adjList, result.groupNames, result.hasEdgeTypes, {
+  const { nodes, nodeIndexFull, adjList } = hydrateAndLink(result.nodeArray, result.edges);
+  return _finalize(canvas, nodes, result.projBuf, result.edges, nodeIndexFull, adjList, result.groupNames, result.hasEdgeTypes, {
     _numericBins: result.numericBins, _extraPropNames: result.extraPropNames, ...opts,
   });
 }
@@ -222,10 +222,13 @@ export function createBlitZoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
     }
   }
 
-  const extraPropNames = [];
-  if (nodeArray.length > 0) {
-    for (const k of Object.keys(nodeArray[0].extraProps)) extraPropNames.push(k);
+  // Union of keys across all nodes, in first-seen order. Nodes missing a key
+  // emit 0 tokens for that group (neutral projection).
+  const extraPropSet = new Set();
+  for (const n of nodeArray) {
+    for (const k in n.extraProps) extraPropSet.add(k);
   }
+  const extraPropNames = [...extraPropSet];
   const groupNames = ['group', 'label', 'structure', 'neighbors'];
   for (const ep of extraPropNames) groupNames.push(ep);
 
@@ -233,8 +236,8 @@ export function createBlitZoomFromGraph(canvas, rawNodes, rawEdges, opts = {}) {
   const numericBins = computeNumericBins(nodeArray, extraPropNames);
 
   const { projBuf } = computeProjections(nodeArray, adjGroups, groupNames, false, extraPropNames, numericBins, opts.projSeeds || null);
-  const { nodes, nodeIndexFull, adjList } = hydrateAndLink(nodeArray, projBuf, groupNames, edges);
-  return _finalize(canvas, nodes, edges, nodeIndexFull, adjList, groupNames, false, {
+  const { nodes, nodeIndexFull, adjList } = hydrateAndLink(nodeArray, edges);
+  return _finalize(canvas, nodes, projBuf, edges, nodeIndexFull, adjList, groupNames, false, {
     _numericBins: numericBins, _extraPropNames: extraPropNames, ...opts,
   });
 }
