@@ -147,4 +147,4 @@ Covers: MinHash determinism, projection correctness, bit-prefix containment, num
 
 ## License
 
-MIT
+Apache License 2.0 — see [LICENSE](LICENSE).
